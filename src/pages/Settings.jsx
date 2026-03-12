@@ -101,6 +101,10 @@ export default function SettingsPage() {
                     <Input value={companyForm.website || ""} onChange={e => setCompanyForm({ ...companyForm, website: e.target.value })} />
                   </div>
                   <div>
+                    <Label>Default Tax Rate (%)</Label>
+                    <Input type="number" min="0" max="100" step="0.1" value={companyForm.default_tax_rate ?? ""} onChange={e => setCompanyForm({ ...companyForm, default_tax_rate: parseFloat(e.target.value) || 0 })} placeholder="0" />
+                  </div>
+                  <div>
                     <Label>Industry</Label>
                     <Select value={companyForm.industry || ""} onValueChange={v => setCompanyForm({ ...companyForm, industry: v })}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
