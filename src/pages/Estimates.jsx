@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useApp } from "../Layout";
+import { createPageUrl } from "@/utils";
 import {
   Plus, FileText, Search, Trash2, ChevronRight,
-  Send, CheckCircle, Clock, XCircle
+  CheckCircle, XCircle, Briefcase
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

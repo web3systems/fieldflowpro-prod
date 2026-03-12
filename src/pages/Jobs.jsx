@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useApp } from "../Layout";
+import { createPageUrl } from "@/utils";
 import {
-  Plus, Search, Filter, MapPin, Clock, User, ChevronRight,
-  Briefcase, Calendar, X
+  Plus, Search, Filter, MapPin, User, ChevronRight,
+  Briefcase, Calendar, X, FileText, DollarSign
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
