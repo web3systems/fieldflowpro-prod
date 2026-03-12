@@ -31,13 +31,20 @@ export default function Dashboard() {
   const [invoices, setInvoices] = useState([]);
   const [leads, setLeads] = useState([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (activeCompany) loadData();
   }, [activeCompany]);
 
   useEffect(() => {
-    base44.auth.me().then(u => setUser(u)).catch(() => {});
+    base44.auth.me().then(u => {
+      setUser(u);
+      // If this user is a customer (role = "user"), redirect to the customer portal
+      if (u?.role === "user") {
+        navigate("/CustomerPortal", { replace: true });
+      }
+    }).catch(() => {});
   }, []);
 
   async function loadData() {
