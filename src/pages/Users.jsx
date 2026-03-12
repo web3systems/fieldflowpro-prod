@@ -75,7 +75,7 @@ export default function Users() {
       }
 
       setSheetOpen(false);
-      setForm({ email: "", name: "", company_ids: [] });
+      setForm({ email: "", name: "", role: "standard", company_ids: [] });
       await loadData();
     } finally {
       setSaving(false);
