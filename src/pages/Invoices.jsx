@@ -139,6 +139,27 @@ export default function Invoices() {
   const totalPending = invoices.filter(i => ["sent", "viewed", "partial"].includes(i.status)).reduce((s, i) => s + (i.total || 0), 0);
   const totalOverdue = invoices.filter(i => i.status === "overdue").reduce((s, i) => s + (i.total || 0), 0);
 
+  async function handleStripePayment() {
+    const isInIframe = window.self !== window.top;
+    if (isInIframe) {
+      alert("Payment checkout only works from the published app, not from the preview.");
+      return;
+    }
+    setPaymentLoading(true);
+    const currentUrl = window.location.href.split("?")[0];
+    const response = await base44.functions.invoke("createStripeCheckout", {
+      invoice_id: editing.id,
+      success_url: currentUrl,
+      cancel_url: currentUrl,
+    });
+    setPaymentLoading(false);
+    if (response.data?.url) {
+      window.location.href = response.data.url;
+    } else {
+      alert(response.data?.error || "Failed to create payment session.");
+    }
+  }
+
   const getCustomerName = (id) => {
     const c = customers.find(c => c.id === id);
     return c ? `${c.first_name} ${c.last_name}` : "—";
