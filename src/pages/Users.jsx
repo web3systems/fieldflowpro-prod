@@ -236,6 +236,7 @@ export default function Users() {
         <SheetContent>
           <SheetHeader>
             <SheetTitle>Invite Employee</SheetTitle>
+            <SheetDescription>Send an invitation and assign company access.</SheetDescription>
           </SheetHeader>
           <div className="space-y-5 mt-6">
             <div className="space-y-1.5">
