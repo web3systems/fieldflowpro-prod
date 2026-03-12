@@ -35,6 +35,7 @@ const defaultForm = {
 
 export default function Customers() {
   const { activeCompany } = useApp();
+  const navigate = useNavigate();
   const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
