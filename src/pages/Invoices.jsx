@@ -115,7 +115,8 @@ export default function Invoices() {
   function openCreate() {
     setEditing(null);
     const num = `INV-${String(invoices.length + 1).padStart(4, "0")}`;
-    setForm({ ...defaultForm, invoice_number: num, line_items: [{ ...defaultItem }] });
+    const tax_rate = activeCompany?.default_tax_rate || 0;
+    setForm({ ...defaultForm, invoice_number: num, line_items: [{ ...defaultItem }], tax_rate });
     setSheetOpen(true);
   }
 

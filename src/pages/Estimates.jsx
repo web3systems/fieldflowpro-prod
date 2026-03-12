@@ -107,7 +107,8 @@ export default function Estimates() {
   function openCreate() {
     setEditing(null);
     const num = `EST-${String(estimates.length + 1).padStart(4, "0")}`;
-    setForm({ ...defaultForm, estimate_number: num, line_items: [{ ...defaultItem }] });
+    const tax_rate = activeCompany?.default_tax_rate || 0;
+    setForm({ ...defaultForm, estimate_number: num, line_items: [{ ...defaultItem }], tax_rate });
     setSheetOpen(true);
   }
 
