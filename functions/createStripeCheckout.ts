@@ -28,32 +28,15 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Invoice is already fully paid' }, { status: 400 });
     }
 
-    // Build line items from invoice
-    let lineItems = [];
-    if (invoice.line_items && invoice.line_items.length > 0) {
-      lineItems = invoice.line_items
-        .filter(item => item.total > 0)
-        .map(item => ({
-          price_data: {
-            currency: 'usd',
-            product_data: { name: item.description || 'Service' },
-            unit_amount: Math.round((item.unit_price || 0) * 100),
-          },
-          quantity: item.quantity || 1,
-        }));
-    }
-
-    // Fallback: single line item for the total due
-    if (lineItems.length === 0) {
-      lineItems = [{
-        price_data: {
-          currency: 'usd',
-          product_data: { name: `Invoice ${invoice.invoice_number || invoice_id}` },
-          unit_amount: Math.round(amountDue * 100),
-        },
-        quantity: 1,
-      }];
-    }
+    // Always use a single line item for the exact amount due (handles tax, discounts, partial payments)
+    const lineItems = [{
+      price_data: {
+        currency: 'usd',
+        product_data: { name: `Invoice ${invoice.invoice_number || invoice_id}` },
+        unit_amount: Math.round(amountDue * 100),
+      },
+      quantity: 1,
+    }];
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],

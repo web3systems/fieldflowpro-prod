@@ -61,8 +61,9 @@ export default function Estimates() {
       const customerId = params.get("customer_id");
       if (customerId) {
         const num = `EST-${String(estimates.length + 1).padStart(4, "0")}`;
+        const tax_rate = activeCompany?.default_tax_rate || 0;
         setEditing(null);
-        setForm({ ...defaultForm, estimate_number: num, customer_id: customerId, line_items: [{ ...defaultItem }] });
+        setForm({ ...defaultForm, estimate_number: num, customer_id: customerId, line_items: [{ ...defaultItem }], tax_rate });
         setSheetOpen(true);
         window.history.replaceState({}, "", window.location.pathname);
       }

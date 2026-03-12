@@ -69,8 +69,9 @@ export default function Invoices() {
         window.history.replaceState({}, "", window.location.pathname);
       } else if (customerId) {
         const num = `INV-${String(invoices.length + 1).padStart(4, "0")}`;
+        const tax_rate = activeCompany?.default_tax_rate || 0;
         setEditing(null);
-        setForm({ ...defaultForm, invoice_number: num, customer_id: customerId, line_items: [{ ...defaultItem }] });
+        setForm({ ...defaultForm, invoice_number: num, customer_id: customerId, line_items: [{ ...defaultItem }], tax_rate });
         setSheetOpen(true);
         window.history.replaceState({}, "", window.location.pathname);
       }
