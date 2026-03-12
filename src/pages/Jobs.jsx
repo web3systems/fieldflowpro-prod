@@ -61,6 +61,19 @@ export default function Jobs() {
     if (activeCompany) loadData();
   }, [activeCompany]);
 
+  useEffect(() => {
+    if (activeCompany && customers.length > 0) {
+      const params = new URLSearchParams(window.location.search);
+      const customerId = params.get("customer_id");
+      if (customerId) {
+        setEditing(null);
+        setForm({ ...defaultJob, customer_id: customerId });
+        setSheetOpen(true);
+        window.history.replaceState({}, "", window.location.pathname);
+      }
+    }
+  }, [activeCompany, customers]);
+
   async function loadData() {
     setLoading(true);
     const [j, c, t] = await Promise.all([
