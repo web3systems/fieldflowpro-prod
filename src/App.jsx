@@ -7,6 +7,7 @@ import PageNotFound from './lib/PageNotFound';
 import Schedule from './pages/Schedule';
 import Booking from './pages/Booking';
 import SuperAdminDashboard from './pages/SuperAdminDashboard';
+import Services from './pages/Services';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 
