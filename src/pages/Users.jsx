@@ -180,26 +180,50 @@ export default function Users() {
                     </div>
                   </div>
 
-                  {/* Company access checkboxes */}
-                  {companies.length > 0 && (
-                    <div className="mt-3 pt-3 border-t border-slate-100">
-                      <p className="text-xs font-medium text-slate-500 mb-2 uppercase tracking-wide">Company Access</p>
-                      <div className="flex flex-wrap gap-3">
-                        {companies.map(c => {
-                          const hasAccess = !!accessRecords.find(a => a.user_email === email && a.company_id === c.id);
-                          return (
-                            <label key={c.id} className="flex items-center gap-2 cursor-pointer">
-                              <Checkbox
-                                checked={hasAccess}
-                                onCheckedChange={(checked) => handleUpdateAccess(email, userName, c.id, checked)}
-                              />
-                              <span className="text-sm text-slate-700">{c.name}</span>
-                            </label>
-                          );
-                        })}
-                      </div>
+                  {/* Role + Company access */}
+                  <div className="mt-3 pt-3 border-t border-slate-100 flex flex-col gap-3">
+                    <div className="flex items-center gap-3">
+                      <p className="text-xs font-medium text-slate-500 uppercase tracking-wide w-20">Role</p>
+                      <Select
+                        value={accessRecords.find(a => a.user_email === email)?.role || "standard"}
+                        onValueChange={(val) => handleRoleChange(email, userName, val)}
+                      >
+                        <SelectTrigger className="w-36 h-7 text-xs">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {Object.entries(ROLE_LABELS).map(([val, ri]) => (
+                            <SelectItem key={val} value={val}>
+                              <span className="flex items-center gap-1.5">
+                                {val === "manager" ? <ShieldCheck className="w-3 h-3 text-blue-600" /> : <User className="w-3 h-3 text-slate-500" />}
+                                {ri.label}
+                              </span>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <span className="text-xs text-slate-400">{ROLE_LABELS[accessRecords.find(a => a.user_email === email)?.role || "standard"]?.desc}</span>
                     </div>
-                  )}
+                    {companies.length > 0 && (
+                      <div>
+                        <p className="text-xs font-medium text-slate-500 mb-2 uppercase tracking-wide">Company Access</p>
+                        <div className="flex flex-wrap gap-3">
+                          {companies.map(c => {
+                            const hasAccess = !!accessRecords.find(a => a.user_email === email && a.company_id === c.id);
+                            return (
+                              <label key={c.id} className="flex items-center gap-2 cursor-pointer">
+                                <Checkbox
+                                  checked={hasAccess}
+                                  onCheckedChange={(checked) => handleUpdateAccess(email, userName, c.id, checked)}
+                                />
+                                <span className="text-sm text-slate-700">{c.name}</span>
+                              </label>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </CardContent>
               </Card>
             );
