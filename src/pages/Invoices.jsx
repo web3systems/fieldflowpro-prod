@@ -48,6 +48,7 @@ export default function Invoices() {
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState(defaultForm);
   const [saving, setSaving] = useState(false);
+  const [paymentLoading, setPaymentLoading] = useState(false);
 
   useEffect(() => {
     if (activeCompany) loadData();
