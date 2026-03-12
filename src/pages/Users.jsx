@@ -15,7 +15,13 @@ import {
   AlertDialogHeader, AlertDialogTitle
 } from "@/components/ui/alert-dialog";
 import { Checkbox } from "@/components/ui/checkbox";
-import { UserPlus, Trash2, Mail, Building2, Users as UsersIcon, Search } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { UserPlus, Trash2, Mail, Building2, Users as UsersIcon, Search, ShieldCheck, User } from "lucide-react";
+
+const ROLE_LABELS = {
+  standard: { label: "Standard", desc: "Can use all non-admin features", color: "bg-slate-100 text-slate-700" },
+  manager: { label: "Manager", desc: "Full access including admin features", color: "bg-blue-100 text-blue-700" },
+};
 
 export default function Users() {
   const { companies } = useApp();
