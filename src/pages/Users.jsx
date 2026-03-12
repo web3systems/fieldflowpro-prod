@@ -67,7 +67,10 @@ export default function Users() {
             user_email: form.email,
             user_name: form.name,
             company_id: cid,
+            role: form.role,
           });
+        } else {
+          await base44.entities.UserCompanyAccess.update(existing.id, { role: form.role });
         }
       }
 
