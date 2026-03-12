@@ -390,6 +390,15 @@ export default function Jobs() {
               <Label>Internal Notes</Label>
               <Textarea value={form.internal_notes} onChange={e => setForm({ ...form, internal_notes: e.target.value })} rows={2} placeholder="Notes for your team..." />
             </div>
+            <div className="border-t pt-4">
+              <CustomerNotesSection
+                job={editing}
+                customer={customers.find(c => c.id === (editing?.customer_id || form.customer_id))}
+                onNoteAdded={(updatedNotes) => {
+                  setEditing(prev => prev ? { ...prev, customer_notes: updatedNotes } : prev);
+                }}
+              />
+            </div>
             <div className="flex gap-3 pt-2">
               <Button variant="outline" onClick={() => setSheetOpen(false)} className="flex-1">Cancel</Button>
               <Button onClick={handleSave} disabled={saving || !form.title} className="flex-1 bg-blue-600 hover:bg-blue-700">
