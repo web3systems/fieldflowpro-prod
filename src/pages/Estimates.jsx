@@ -4,8 +4,9 @@ import { useApp } from "../Layout";
 import { createPageUrl } from "@/utils";
 import {
   Plus, FileText, Search, Trash2, ChevronRight,
-  CheckCircle, XCircle, Briefcase
+  CheckCircle, XCircle, Briefcase, Download, Copy
 } from "lucide-react";
+import { downloadEstimatePdf } from "../components/documents/generatePdf";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";

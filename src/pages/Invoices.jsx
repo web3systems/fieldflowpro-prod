@@ -3,8 +3,10 @@ import { base44 } from "@/api/base44Client";
 import { useApp } from "../Layout";
 import {
   Plus, DollarSign, Search, ChevronRight, CheckCircle,
-  Clock, AlertCircle, Trash2, CreditCard, ExternalLink
+  Clock, AlertCircle, Trash2, CreditCard, ExternalLink,
+  Download, Mail, Send
 } from "lucide-react";
+import { downloadInvoicePdf } from "../components/documents/generatePdf";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
