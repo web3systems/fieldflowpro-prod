@@ -95,7 +95,7 @@ export default function Dashboard() {
   if (!activeCompany) {
     return (
       <div className="p-8 text-center">
-        <Building className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+        <Building2 className="w-12 h-12 text-slate-300 mx-auto mb-3" />
         <p className="text-slate-500">No company selected. Please go to Companies to set one up.</p>
         <Link to={createPageUrl("Companies")}>
           <Button className="mt-4">Manage Companies</Button>
