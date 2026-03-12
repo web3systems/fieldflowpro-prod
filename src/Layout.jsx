@@ -19,10 +19,10 @@ export const useApp = () => useContext(AppContext);
 
 const navItems = [
   { label: "Dashboard", icon: LayoutDashboard, page: "Dashboard" },
-  { label: "Jobs", icon: Briefcase, page: "Jobs" },
-  { label: "Customers", icon: Users, page: "Customers" },
   { label: "Leads", icon: UserPlus, page: "Leads" },
+  { label: "Customers", icon: Users, page: "Customers" },
   { label: "Estimates", icon: FileText, page: "Estimates" },
+  { label: "Jobs", icon: Briefcase, page: "Jobs" },
   { label: "Invoices", icon: DollarSign, page: "Invoices" },
   { label: "Team", icon: Wrench, page: "Team" },
   { label: "Reports", icon: BarChart3, page: "Reports" },
