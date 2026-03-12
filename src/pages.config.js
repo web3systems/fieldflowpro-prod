@@ -52,6 +52,7 @@ import Companies from './pages/Companies';
 import Jobs from './pages/Jobs';
 import Customers from './pages/Customers';
 import Leads from './pages/Leads';
+import Estimates from './pages/Estimates';
 import __Layout from './Layout.jsx';
 
 
@@ -61,6 +62,7 @@ export const PAGES = {
     "Jobs": Jobs,
     "Customers": Customers,
     "Leads": Leads,
+    "Estimates": Estimates,
 }
 
 export const pagesConfig = {
