@@ -256,10 +256,16 @@ export default function Jobs() {
                         </span>
                       )}
                       {job.address && (
-                        <span className="flex items-center gap-1 text-xs text-slate-500">
+                        <a
+                          href={`https://maps.google.com/?q=${encodeURIComponent([job.address, job.city, job.state, job.zip].filter(Boolean).join(', '))}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={e => e.stopPropagation()}
+                          className="flex items-center gap-1 text-xs text-blue-500 hover:underline"
+                        >
                           <MapPin className="w-3 h-3" />
                           {job.address}
-                        </span>
+                        </a>
                       )}
                     </div>
                   </div>
