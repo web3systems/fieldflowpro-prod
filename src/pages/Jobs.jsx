@@ -55,6 +55,7 @@ export default function Jobs() {
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState(defaultJob);
   const [saving, setSaving] = useState(false);
+  const [invoicePromptJob, setInvoicePromptJob] = useState(null); // job that just completed
 
   useEffect(() => {
     if (activeCompany) loadData();
@@ -88,6 +89,7 @@ export default function Jobs() {
   async function handleSave() {
     setSaving(true);
     const data = { ...form, company_id: activeCompany.id };
+    const wasCompleted = editing && editing.status !== "completed" && form.status === "completed";
     if (editing) {
       await base44.entities.Job.update(editing.id, data);
     } else {
@@ -96,11 +98,50 @@ export default function Jobs() {
     setSaving(false);
     setSheetOpen(false);
     await loadData();
+    if (wasCompleted) {
+      setInvoicePromptJob({ ...editing, ...data });
+    }
   }
 
   async function updateStatus(job, status) {
     await base44.entities.Job.update(job.id, { status });
     setJobs(jobs.map(j => j.id === job.id ? { ...j, status } : j));
+    if (status === "completed") {
+      setInvoicePromptJob({ ...job, status });
+    }
+  }
+
+  async function generateInvoiceFromJob(job) {
+    // If job came from an estimate, pull its line items
+    let line_items = [];
+    let subtotal = job.total_amount || 0;
+    if (job.estimate_id) {
+      const estimates = await base44.entities.Estimate.filter({ id: job.estimate_id });
+      const est = estimates[0];
+      if (est) {
+        line_items = est.line_items || [];
+        subtotal = est.subtotal || est.total || 0;
+      }
+    }
+    if (line_items.length === 0 && job.total_amount) {
+      line_items = [{ description: job.title, quantity: 1, unit_price: job.total_amount, total: job.total_amount }];
+    }
+    const invoiceCount = await base44.entities.Invoice.list();
+    const invoice_number = `INV-${String((invoiceCount.length || 0) + 1).padStart(4, "0")}`;
+    await base44.entities.Invoice.create({
+      company_id: job.company_id,
+      customer_id: job.customer_id,
+      job_id: job.id,
+      estimate_id: job.estimate_id || "",
+      invoice_number,
+      status: "draft",
+      line_items,
+      subtotal,
+      total: job.total_amount || subtotal,
+      amount_paid: 0,
+    });
+    setInvoicePromptJob(null);
+    window.location.href = createPageUrl("Invoices");
   }
 
   const filtered = jobs.filter(j => {
