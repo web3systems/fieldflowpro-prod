@@ -250,6 +250,16 @@ export default function Customers() {
                   <DollarSign className="w-4 h-4" />
                   <span className="text-xs font-medium">New Invoice</span>
                 </button>
+                {editing?.email && (
+                  <button
+                    onClick={handleSendPortalInvite}
+                    disabled={sendingPortalInvite}
+                    className="flex-1 flex flex-col items-center gap-1.5 py-2.5 rounded-lg bg-violet-500 hover:bg-violet-600 transition-colors text-white shadow-sm disabled:opacity-60"
+                  >
+                    <ExternalLink className="w-4 h-4" />
+                    <span className="text-xs font-medium">{sendingPortalInvite ? "Sending..." : "Portal Invite"}</span>
+                  </button>
+                )}
               </div>
             )}
             <div className="grid grid-cols-2 gap-3">
