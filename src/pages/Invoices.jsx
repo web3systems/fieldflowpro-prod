@@ -397,6 +397,29 @@ export default function Invoices() {
               <Textarea value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} rows={2} />
             </div>
 
+            {editing && (
+              <div className="flex gap-2 border-t pt-3">
+                <Button
+                  variant="outline"
+                  onClick={handleDownloadPdf}
+                  className="flex-1 gap-1.5"
+                >
+                  <Download className="w-4 h-4" /> Download PDF
+                </Button>
+                {customers.find(c => c.id === form.customer_id)?.email && !["paid", "void"].includes(form.status) && (
+                  <Button
+                    variant="outline"
+                    onClick={handleSendEmail}
+                    disabled={sendingEmail}
+                    className="flex-1 gap-1.5 border-blue-200 text-blue-600 hover:bg-blue-50"
+                  >
+                    <Mail className="w-4 h-4" />
+                    {sendingEmail ? "Sending..." : "Send to Customer"}
+                  </Button>
+                )}
+              </div>
+            )}
+
             {editing && !["paid", "void"].includes(form.status) && (
               <div className="border-t pt-4">
                 <p className="text-xs text-slate-500 mb-2 font-medium">Collect Payment</p>

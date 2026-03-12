@@ -415,6 +415,16 @@ export default function Estimates() {
                   This estimate was declined.
                 </div>
               )}
+              {editing && (
+                <div className="flex gap-2">
+                  <Button variant="outline" onClick={handleDownloadPdf} className="flex-1 gap-1.5">
+                    <Download className="w-4 h-4" /> PDF
+                  </Button>
+                  <Button variant="outline" onClick={handleDuplicate} disabled={duplicating} className="flex-1 gap-1.5">
+                    <Copy className="w-4 h-4" /> {duplicating ? "Duplicating..." : "Duplicate"}
+                  </Button>
+                </div>
+              )}
               <div className="flex gap-2">
                 <Button variant="outline" onClick={() => setSheetOpen(false)} className="flex-1">Cancel</Button>
                 <Button onClick={handleSave} disabled={saving || !form.title} className="flex-1 bg-blue-600 hover:bg-blue-700">
