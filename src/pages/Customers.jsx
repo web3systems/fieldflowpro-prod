@@ -45,6 +45,23 @@ export default function Customers() {
   const [form, setForm] = useState(defaultForm);
   const [saving, setSaving] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [sendingPortalInvite, setSendingPortalInvite] = useState(false);
+
+  function handleExportCsv() {
+    const rows = [["First Name", "Last Name", "Email", "Phone", "Address", "City", "State", "Status", "Source"]];
+    customers.forEach(c => rows.push([c.first_name || "", c.last_name || "", c.email || "", c.phone || "", c.address || "", c.city || "", c.state || "", c.status || "", c.source || ""]));
+    const csv = rows.map(r => r.map(v => `"${v}"`).join(",")).join("\n");
+    const a = document.createElement("a"); a.href = "data:text/csv;charset=utf-8," + encodeURIComponent(csv); a.download = "customers.csv"; a.click();
+  }
+
+  async function handleSendPortalInvite() {
+    if (!editing?.email) return;
+    setSendingPortalInvite(true);
+    const portalUrl = window.location.origin + "/CustomerPortal";
+    await base44.functions.invoke("sendPortalInvite", { customer_id: editing.id, portal_url: portalUrl });
+    setSendingPortalInvite(false);
+    alert("Portal invite sent to " + editing.email);
+  }
 
   useEffect(() => {
     if (activeCompany) loadCustomers();
@@ -108,9 +125,14 @@ export default function Customers() {
           <h1 className="text-2xl font-bold text-slate-900">Customers</h1>
           <p className="text-slate-500 text-sm mt-0.5">{filtered.length} customers</p>
         </div>
-        <Button onClick={openCreate} className="gap-2 bg-blue-600 hover:bg-blue-700">
-          <Plus className="w-4 h-4" /> Add Customer
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={handleExportCsv} className="gap-2 hidden sm:flex">
+            <Download className="w-4 h-4" /> Export CSV
+          </Button>
+          <Button onClick={openCreate} className="gap-2 bg-blue-600 hover:bg-blue-700">
+            <Plus className="w-4 h-4" /> Add Customer
+          </Button>
+        </div>
       </div>
 
       <div className="flex gap-3 flex-wrap">
