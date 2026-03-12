@@ -49,6 +49,7 @@ export default function Estimates() {
   const [form, setForm] = useState(defaultForm);
   const [saving, setSaving] = useState(false);
   const [approving, setApproving] = useState(false);
+  const [duplicating, setDuplicating] = useState(false);
 
   useEffect(() => {
     if (activeCompany) loadData();
