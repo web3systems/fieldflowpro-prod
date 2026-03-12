@@ -6,7 +6,7 @@ import { createPageUrl } from "@/utils";
 import {
   Briefcase, Users, DollarSign, TrendingUp,
   Clock, CheckCircle, AlertCircle, Plus,
-  ArrowRight, Calendar
+  ArrowRight, Calendar, Building2
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
