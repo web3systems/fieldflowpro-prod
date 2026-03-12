@@ -8,6 +8,7 @@ import Schedule from './pages/Schedule';
 import Booking from './pages/Booking';
 import SuperAdminDashboard from './pages/SuperAdminDashboard';
 import Services from './pages/Services';
+import LeadCapture from './pages/LeadCapture';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 
@@ -65,6 +66,7 @@ const AuthenticatedApp = () => {
       <Route path="/Booking" element={<Booking />} />
       <Route path="/SuperAdminDashboard" element={<LayoutWrapper currentPageName="SuperAdminDashboard"><SuperAdminDashboard /></LayoutWrapper>} />
       <Route path="/Services" element={<LayoutWrapper currentPageName="Services"><Services /></LayoutWrapper>} />
+      <Route path="/LeadCapture" element={<LeadCapture />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );

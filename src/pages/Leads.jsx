@@ -3,8 +3,9 @@ import { base44 } from "@/api/base44Client";
 import { useApp } from "../Layout";
 import {
   Plus, Search, UserPlus, Phone, Mail, TrendingUp,
-  ChevronRight, ArrowRight, Trash2, DollarSign
+  ChevronRight, ArrowRight, Trash2, DollarSign, Code2
 } from "lucide-react";
+import EmbedCodeModal from "../components/leads/EmbedCodeModal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -51,6 +52,7 @@ export default function Leads() {
   const [form, setForm] = useState(defaultForm);
   const [saving, setSaving] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [embedOpen, setEmbedOpen] = useState(false);
 
   useEffect(() => {
     if (activeCompany) loadLeads();
@@ -138,9 +140,14 @@ export default function Leads() {
             {filtered.length} leads · <span className="text-emerald-600 font-medium">${totalValue.toLocaleString()} estimated</span>
           </p>
         </div>
-        <Button onClick={openCreate} className="gap-2 bg-blue-600 hover:bg-blue-700">
-          <Plus className="w-4 h-4" /> Add Lead
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => setEmbedOpen(true)} className="gap-2">
+            <Code2 className="w-4 h-4" /> Get Embed Code
+          </Button>
+          <Button onClick={openCreate} className="gap-2 bg-blue-600 hover:bg-blue-700">
+            <Plus className="w-4 h-4" /> Add Lead
+          </Button>
+        </div>
       </div>
 
       {/* Pipeline stages summary */}
