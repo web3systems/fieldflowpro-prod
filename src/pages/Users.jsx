@@ -168,6 +168,11 @@ export default function Users() {
                       </div>
                     </div>
                     <div className="flex items-center gap-2 flex-shrink-0">
+                      {(() => {
+                        const userRole = accessRecords.find(a => a.user_email === email)?.role || "standard";
+                        const ri = ROLE_LABELS[userRole];
+                        return <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${ri.color}`}>{ri.label}</span>;
+                      })()}
                       <Badge variant="secondary" className="gap-1"><Building2 className="w-3 h-3" />{userCompanies.length} {userCompanies.length === 1 ? "company" : "companies"}</Badge>
                       <Button variant="ghost" size="icon" className="text-red-400 hover:text-red-600 hover:bg-red-50" onClick={() => setDeleteTarget(email)}>
                         <Trash2 className="w-4 h-4" />
