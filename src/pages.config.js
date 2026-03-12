@@ -56,6 +56,7 @@ import Estimates from './pages/Estimates';
 import Invoices from './pages/Invoices';
 import Team from './pages/Team';
 import Reports from './pages/Reports';
+import CustomerPortal from './pages/CustomerPortal';
 import __Layout from './Layout.jsx';
 
 
@@ -69,6 +70,7 @@ export const PAGES = {
     "Invoices": Invoices,
     "Team": Team,
     "Reports": Reports,
+    "CustomerPortal": CustomerPortal,
 }
 
 export const pagesConfig = {
