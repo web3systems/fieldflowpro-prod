@@ -120,6 +120,8 @@ export default function Dashboard() {
         </Link>
       </div>
 
+      <OnboardingBanner company={activeCompany} customers={customers} jobs={jobs} />
+
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map(({ label, value, icon: Icon, color, bg, sub }) => (
