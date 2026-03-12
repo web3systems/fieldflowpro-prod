@@ -209,21 +209,21 @@ export default function Customers() {
               <div className="flex gap-2 p-3 bg-slate-50 rounded-xl">
                 <button
                   onClick={() => { setSheetOpen(false); navigate(createPageUrl(`Estimates?customer_id=${editing.id}`)); }}
-                  className="flex-1 flex flex-col items-center gap-1.5 py-2.5 rounded-lg bg-white border border-slate-200 hover:border-blue-300 hover:bg-blue-50 transition-colors text-slate-600 hover:text-blue-600 shadow-sm"
+                  className="flex-1 flex flex-col items-center gap-1.5 py-2.5 rounded-lg bg-blue-500 hover:bg-blue-600 transition-colors text-white shadow-sm"
                 >
                   <FileText className="w-4 h-4" />
                   <span className="text-xs font-medium">New Estimate</span>
                 </button>
                 <button
                   onClick={() => { setSheetOpen(false); navigate(createPageUrl(`Jobs?customer_id=${editing.id}`)); }}
-                  className="flex-1 flex flex-col items-center gap-1.5 py-2.5 rounded-lg bg-white border border-slate-200 hover:border-purple-300 hover:bg-purple-50 transition-colors text-slate-600 hover:text-purple-600 shadow-sm"
+                  className="flex-1 flex flex-col items-center gap-1.5 py-2.5 rounded-lg bg-purple-500 hover:bg-purple-600 transition-colors text-white shadow-sm"
                 >
                   <Briefcase className="w-4 h-4" />
                   <span className="text-xs font-medium">New Job</span>
                 </button>
                 <button
                   onClick={() => { setSheetOpen(false); navigate(createPageUrl(`Invoices?customer_id=${editing.id}`)); }}
-                  className="flex-1 flex flex-col items-center gap-1.5 py-2.5 rounded-lg bg-white border border-slate-200 hover:border-green-300 hover:bg-green-50 transition-colors text-slate-600 hover:text-green-600 shadow-sm"
+                  className="flex-1 flex flex-col items-center gap-1.5 py-2.5 rounded-lg bg-green-500 hover:bg-green-600 transition-colors text-white shadow-sm"
                 >
                   <DollarSign className="w-4 h-4" />
                   <span className="text-xs font-medium">New Invoice</span>
