@@ -330,11 +330,44 @@ export default function Estimates() {
               <Textarea value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} rows={2} placeholder="Notes visible to customer..." />
             </div>
 
-            <div className="flex gap-3 pt-2">
-              <Button variant="outline" onClick={() => setSheetOpen(false)} className="flex-1">Cancel</Button>
-              <Button onClick={handleSave} disabled={saving || !form.title} className="flex-1 bg-blue-600 hover:bg-blue-700">
-                {saving ? "Saving..." : editing ? "Save Changes" : "Create Estimate"}
-              </Button>
+            <div className="flex gap-3 pt-2 flex-col">
+              {editing && !["approved", "declined"].includes(form.status) && (
+                <div className="flex gap-2">
+                  <Button
+                    onClick={handleDecline}
+                    variant="outline"
+                    className="flex-1 gap-2 border-red-200 text-red-600 hover:bg-red-50"
+                  >
+                    <XCircle className="w-4 h-4" /> Decline
+                  </Button>
+                  <Button
+                    onClick={handleApprove}
+                    disabled={approving}
+                    className="flex-1 gap-2 bg-green-600 hover:bg-green-700"
+                  >
+                    <CheckCircle className="w-4 h-4" />
+                    {approving ? "Creating Job..." : "Approve & Create Job"}
+                  </Button>
+                </div>
+              )}
+              {editing && form.status === "approved" && (
+                <div className="flex items-center gap-2 p-3 bg-green-50 rounded-lg text-green-700 text-sm">
+                  <Briefcase className="w-4 h-4" />
+                  This estimate has been approved — a job was created.
+                </div>
+              )}
+              {editing && form.status === "declined" && (
+                <div className="flex items-center gap-2 p-3 bg-red-50 rounded-lg text-red-600 text-sm">
+                  <XCircle className="w-4 h-4" />
+                  This estimate was declined.
+                </div>
+              )}
+              <div className="flex gap-2">
+                <Button variant="outline" onClick={() => setSheetOpen(false)} className="flex-1">Cancel</Button>
+                <Button onClick={handleSave} disabled={saving || !form.title} className="flex-1 bg-blue-600 hover:bg-blue-700">
+                  {saving ? "Saving..." : editing ? "Save Changes" : "Create Estimate"}
+                </Button>
+              </div>
             </div>
           </div>
         </SheetContent>
