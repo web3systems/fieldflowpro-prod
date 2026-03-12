@@ -47,6 +47,7 @@ export default function Estimates() {
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState(defaultForm);
   const [saving, setSaving] = useState(false);
+  const [approving, setApproving] = useState(false);
 
   useEffect(() => {
     if (activeCompany) loadData();
@@ -109,6 +110,34 @@ export default function Estimates() {
       await base44.entities.Estimate.create(data);
     }
     setSaving(false);
+    setSheetOpen(false);
+    await loadData();
+  }
+
+  async function handleApprove() {
+    setApproving(true);
+    // Mark estimate as approved
+    await base44.entities.Estimate.update(editing.id, { status: "approved" });
+    // Create a job from this estimate
+    const job = await base44.entities.Job.create({
+      company_id: activeCompany.id,
+      customer_id: form.customer_id,
+      estimate_id: editing.id,
+      title: form.title,
+      description: form.notes || "",
+      status: "new",
+      total_amount: form.total,
+      service_type: "",
+    });
+    setApproving(false);
+    setSheetOpen(false);
+    await loadData();
+    // Navigate to the jobs page
+    window.location.href = createPageUrl("Jobs");
+  }
+
+  async function handleDecline() {
+    await base44.entities.Estimate.update(editing.id, { status: "declined" });
     setSheetOpen(false);
     await loadData();
   }
