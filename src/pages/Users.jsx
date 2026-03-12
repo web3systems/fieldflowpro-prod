@@ -32,7 +32,7 @@ export default function Users() {
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [saving, setSaving] = useState(false);
   const [inviting, setInviting] = useState(false);
-  const [form, setForm] = useState({ email: "", name: "", company_ids: [] });
+  const [form, setForm] = useState({ email: "", name: "", role: "standard", company_ids: [] });
 
   useEffect(() => { loadData(); }, []);
 
