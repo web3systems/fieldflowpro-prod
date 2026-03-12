@@ -152,6 +152,38 @@ export default function Estimates() {
     window.location.href = createPageUrl("Jobs");
   }
 
+  async function handleDuplicate() {
+    setDuplicating(true);
+    const num = `EST-${String(estimates.length + 2).padStart(4, "0")}`;
+    const { id, created_date, updated_date, ...rest } = editing;
+    await base44.entities.Estimate.create({ ...rest, ...form, estimate_number: num, status: "draft" });
+    setDuplicating(false);
+    setSheetOpen(false);
+    await loadData();
+  }
+
+  function handleDownloadPdf() {
+    const customer = customers.find(c => c.id === form.customer_id);
+    downloadEstimatePdf({ ...form, id: editing?.id }, customer, activeCompany);
+  }
+
+  function handleExportCsv() {
+    const rows = [["Estimate #", "Title", "Customer", "Status", "Total", "Valid Until"]];
+    estimates.forEach(e => {
+      rows.push([
+        e.estimate_number || "",
+        e.title || "",
+        getCustomerName(e.customer_id),
+        e.status || "",
+        (e.total || 0).toFixed(2),
+        e.valid_until || "",
+      ]);
+    });
+    const csv = rows.map(r => r.map(v => `"${v}"`).join(",")).join("\n");
+    const a = document.createElement("a"); a.href = "data:text/csv;charset=utf-8," + encodeURIComponent(csv);
+    a.download = "estimates.csv"; a.click();
+  }
+
   async function handleDecline() {
     await base44.entities.Estimate.update(editing.id, { status: "declined" });
     setSheetOpen(false);

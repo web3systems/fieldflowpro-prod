@@ -148,6 +148,40 @@ export default function Invoices() {
   const totalPending = invoices.filter(i => ["sent", "viewed", "partial"].includes(i.status)).reduce((s, i) => s + (i.total || 0), 0);
   const totalOverdue = invoices.filter(i => i.status === "overdue").reduce((s, i) => s + (i.total || 0), 0);
 
+  async function handleSendEmail() {
+    setSendingEmail(true);
+    const portalUrl = window.location.origin + "/CustomerPortal";
+    await base44.functions.invoke("sendInvoiceEmail", {
+      invoice_id: editing.id,
+      portal_url: portalUrl,
+    });
+    setSendingEmail(false);
+    await loadData();
+    setSheetOpen(false);
+  }
+
+  function handleDownloadPdf() {
+    const customer = customers.find(c => c.id === form.customer_id);
+    downloadInvoicePdf({ ...form, id: editing?.id }, customer, activeCompany);
+  }
+
+  function handleExportCsv() {
+    const rows = [["Invoice #", "Customer", "Status", "Total", "Due Date", "Paid Date"]];
+    invoices.forEach(inv => {
+      rows.push([
+        inv.invoice_number || "",
+        getCustomerName(inv.customer_id),
+        inv.status || "",
+        (inv.total || 0).toFixed(2),
+        inv.due_date || "",
+        inv.paid_date || "",
+      ]);
+    });
+    const csv = rows.map(r => r.map(v => `"${v}"`).join(",")).join("\n");
+    const a = document.createElement("a"); a.href = "data:text/csv;charset=utf-8," + encodeURIComponent(csv);
+    a.download = "invoices.csv"; a.click();
+  }
+
   async function handleStripePayment() {
     const isInIframe = window.self !== window.top;
     if (isInIframe) {
