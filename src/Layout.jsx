@@ -5,7 +5,7 @@ import { createPageUrl } from "@/utils";
 import {
   LayoutDashboard, Users, Briefcase, FileText, DollarSign,
   UserPlus, Settings, Building2, Menu, X, ChevronDown,
-  Bell, LogOut, Wrench, BarChart3, Globe, Home, UsersRound
+  Bell, LogOut, Wrench, BarChart3, Globe, Home, UsersRound, CalendarDays
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -23,6 +23,7 @@ const navItems = [
   { label: "Customers", icon: Users, page: "Customers" },
   { label: "Estimates", icon: FileText, page: "Estimates" },
   { label: "Jobs", icon: Briefcase, page: "Jobs" },
+  { label: "Schedule", icon: CalendarDays, page: "Schedule" },
   { label: "Invoices", icon: DollarSign, page: "Invoices" },
   { label: "Team", icon: Wrench, page: "Team" },
   { label: "Reports", icon: BarChart3, page: "Reports" },

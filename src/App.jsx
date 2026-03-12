@@ -4,6 +4,8 @@ import { queryClientInstance } from '@/lib/query-client'
 import { pagesConfig } from './pages.config'
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
+import Schedule from './pages/Schedule';
+import Booking from './pages/Booking';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 
@@ -57,6 +59,8 @@ const AuthenticatedApp = () => {
           }
         />
       ))}
+      <Route path="/Schedule" element={<LayoutWrapper currentPageName="Schedule"><Schedule /></LayoutWrapper>} />
+      <Route path="/Booking" element={<Booking />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
