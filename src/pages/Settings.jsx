@@ -19,6 +19,7 @@ export default function SettingsPage() {
   const [companyForm, setCompanyForm] = useState({});
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [embedOpen, setEmbedOpen] = useState(false);
 
   useEffect(() => {
     loadUser();
