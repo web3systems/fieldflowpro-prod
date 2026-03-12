@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useApp } from "../Layout";
-import { BarChart3, TrendingUp, DollarSign, Users, Briefcase } from "lucide-react";
+import { BarChart3, TrendingUp, DollarSign, Users, Briefcase, Building2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
