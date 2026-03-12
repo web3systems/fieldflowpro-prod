@@ -281,9 +281,9 @@ export default function CustomerPortal() {
                                 </p>
                               )}
                               {job.address && (
-                                <p className="text-xs text-slate-400 mt-0.5 flex items-center gap-1">
+                                <a href={`https://maps.google.com/?q=${encodeURIComponent(job.address)}`} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-500 mt-0.5 flex items-center gap-1 hover:underline">
                                   <MapPin className="w-3 h-3" />{job.address}
-                                </p>
+                                </a>
                               )}
                             </div>
                             <Badge className={`text-xs ${statusInfo.color} flex-shrink-0`}>{statusInfo.label}</Badge>
