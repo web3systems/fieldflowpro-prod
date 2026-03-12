@@ -3,7 +3,8 @@ import { base44 } from "@/api/base44Client";
 import {
   Home, FileText, DollarSign, Calendar, User,
   CheckCircle, AlertCircle, Phone, Mail, MapPin,
-  LogOut, Briefcase, ChevronDown, Building2
+  LogOut, Briefcase, ChevronDown, Building2, PlusCircle,
+  ThumbsUp, ThumbsDown, ExternalLink
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -36,6 +37,9 @@ export default function CustomerPortal() {
   const [invoices, setInvoices] = useState([]);
   const [estimates, setEstimates] = useState([]);
   const [activeTab, setActiveTab] = useState("home");
+  const [bookingForm, setBookingForm] = useState({ service_type: "", preferred_date: "", preferred_time: "9:00 AM", notes: "" });
+  const [bookingSubmitted, setBookingSubmitted] = useState(false);
+  const [bookingLoading, setBookingLoading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [switcherOpen, setSwitcherOpen] = useState(false);
 
@@ -133,8 +137,38 @@ export default function CustomerPortal() {
   const totalOwed = pendingInvoices.reduce((s, i) => s + ((i.total || 0) - (i.amount_paid || 0)), 0);
   const headerColor = company?.primary_color || "#1e40af";
 
+  async function approveEstimate(est) {
+    await base44.entities.Estimate.update(est.id, { status: "approved" });
+    const updated = await base44.entities.Estimate.filter({ customer_id: activeAccount.customer.id });
+    setEstimates(updated);
+  }
+
+  async function declineEstimate(est) {
+    await base44.entities.Estimate.update(est.id, { status: "declined" });
+    const updated = await base44.entities.Estimate.filter({ customer_id: activeAccount.customer.id });
+    setEstimates(updated);
+  }
+
+  async function submitBookingRequest(e) {
+    e.preventDefault();
+    setBookingLoading(true);
+    await base44.functions.invoke('submitBooking', {
+      ...bookingForm,
+      company_id: company.id,
+      customer_id: customer.id,
+      first_name: customer.first_name,
+      last_name: customer.last_name,
+      email: customer.email,
+      phone: customer.phone,
+      address: customer.address,
+    });
+    setBookingLoading(false);
+    setBookingSubmitted(true);
+  }
+
   const tabs = [
     { id: "home", label: "Home", icon: Home },
+    { id: "book", label: "Book", icon: PlusCircle },
     { id: "jobs", label: "Jobs", icon: Briefcase },
     { id: "invoices", label: "Invoices", icon: DollarSign },
     { id: "estimates", label: "Estimates", icon: FileText },
@@ -401,6 +435,50 @@ export default function CustomerPortal() {
           </div>
         )}
 
+        {activeTab === "book" && (
+          <div className="space-y-4">
+            <h2 className="text-lg font-bold text-slate-900">Request a Service</h2>
+            {bookingSubmitted ? (
+              <Card className="border-0 shadow-sm">
+                <CardContent className="p-8 text-center">
+                  <CheckCircle className="w-12 h-12 text-green-400 mx-auto mb-3" />
+                  <p className="font-semibold text-slate-700">Request Submitted!</p>
+                  <p className="text-slate-400 text-sm mt-1">We'll confirm your appointment soon.</p>
+                  <button onClick={() => { setBookingSubmitted(false); setBookingForm({ service_type: "", preferred_date: "", preferred_time: "9:00 AM", notes: "" }); }} className="mt-4 text-sm font-medium text-blue-600">Book Another</button>
+                </CardContent>
+              </Card>
+            ) : (
+              <Card className="border-0 shadow-sm">
+                <CardContent className="p-5">
+                  <form onSubmit={submitBookingRequest} className="space-y-4">
+                    <div>
+                      <label className="text-sm font-medium text-slate-700 block mb-1">What service do you need? *</label>
+                      <input required className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" value={bookingForm.service_type} onChange={e => setBookingForm({ ...bookingForm, service_type: e.target.value })} placeholder="e.g. Lawn mowing, Deep clean..." />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-slate-700 block mb-1">Preferred Date *</label>
+                      <input required type="date" min={new Date().toISOString().split("T")[0]} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" value={bookingForm.preferred_date} onChange={e => setBookingForm({ ...bookingForm, preferred_date: e.target.value })} />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-slate-700 block mb-1">Preferred Time</label>
+                      <select className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" value={bookingForm.preferred_time} onChange={e => setBookingForm({ ...bookingForm, preferred_time: e.target.value })}>
+                        {["8:00 AM","9:00 AM","10:00 AM","11:00 AM","12:00 PM","1:00 PM","2:00 PM","3:00 PM","4:00 PM","5:00 PM"].map(t => <option key={t} value={t}>{t}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-slate-700 block mb-1">Notes</label>
+                      <textarea className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" rows={3} value={bookingForm.notes} onChange={e => setBookingForm({ ...bookingForm, notes: e.target.value })} placeholder="Any special instructions..." />
+                    </div>
+                    <button type="submit" disabled={bookingLoading} className="w-full py-3 rounded-xl font-semibold text-white transition-opacity disabled:opacity-60" style={{ backgroundColor: headerColor }}>
+                      {bookingLoading ? "Sending..." : "Send Request"}
+                    </button>
+                  </form>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        )}
+
         {activeTab === "estimates" && (
           <div className="space-y-3">
             <h2 className="text-lg font-bold text-slate-900">Estimates</h2>
@@ -419,7 +497,11 @@ export default function CustomerPortal() {
                       </div>
                       <div className="text-right">
                         <p className="text-lg font-bold text-slate-800">${(est.total || 0).toFixed(2)}</p>
-                        <Badge className="text-xs capitalize bg-blue-100 text-blue-700">{est.status}</Badge>
+                        <Badge className={`text-xs capitalize ${
+                          est.status === 'approved' ? 'bg-green-100 text-green-700' :
+                          est.status === 'declined' ? 'bg-red-100 text-red-700' :
+                          'bg-blue-100 text-blue-700'
+                        }`}>{est.status}</Badge>
                       </div>
                     </div>
                     {est.line_items?.length > 0 && (
@@ -434,6 +516,16 @@ export default function CustomerPortal() {
                     )}
                     {est.valid_until && (
                       <p className="text-xs text-slate-400 mt-2">Valid until {format(new Date(est.valid_until), "MMM d, yyyy")}</p>
+                    )}
+                    {["sent", "viewed", "draft"].includes(est.status) && (
+                      <div className="flex gap-2 mt-3 pt-3 border-t border-slate-100">
+                        <button onClick={() => approveEstimate(est)} className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium transition-colors">
+                          <ThumbsUp className="w-3.5 h-3.5" /> Approve
+                        </button>
+                        <button onClick={() => declineEstimate(est)} className="flex-1 flex items-center justify-center gap-1.5 py-2 border border-red-200 text-red-600 hover:bg-red-50 rounded-lg text-sm font-medium transition-colors">
+                          <ThumbsDown className="w-3.5 h-3.5" /> Decline
+                        </button>
+                      </div>
                     )}
                   </CardContent>
                 </Card>
