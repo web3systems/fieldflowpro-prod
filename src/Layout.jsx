@@ -61,7 +61,7 @@ export default function Layout({ children, currentPageName }) {
 
   async function loadCompanies() {
     try {
-      const isAdmin = user?.role === "admin" || user?.role === "super_admin";
+      const isAdmin = user?.role === "admin" || user?.role === "super_admin" || user?.role === "manager";
       const allCompanies = await base44.entities.Company.list();
       let list = allCompanies;
       if (!isAdmin && user?.email) {
