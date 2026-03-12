@@ -19,11 +19,8 @@ export default function UserNotRegisteredError() {
       const u = await base44.auth.me().catch(() => null);
       const userEmail = u?.email || email;
       const userName = u?.full_name || name;
-      // Check if request already exists
-      const existing = await base44.entities.AccessRequest.filter({ email: userEmail, status: "pending" });
-      if (existing.length === 0) {
-        await base44.entities.AccessRequest.create({ email: userEmail, name: userName, message, status: "pending" });
-      }
+      // Use backend function so unauthenticated/unregistered users can submit
+      await base44.functions.invoke("submitAccessRequest", { email: userEmail, name: userName, message });
       setSubmitted(true);
     } finally {
       setSubmitting(false);
