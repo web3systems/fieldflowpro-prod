@@ -125,11 +125,28 @@ export default function Dashboard() {
           <h1 className="text-2xl font-bold text-slate-900">{activeCompany?.name}</h1>
           <p className="text-slate-500 text-sm mt-0.5">{format(new Date(), "EEEE, MMMM d, yyyy")}</p>
         </div>
-        <Link to={createPageUrl("Jobs")}>
-          <Button size="sm" className="gap-2 bg-blue-600 hover:bg-blue-700">
-            <Plus className="w-4 h-4" /> New Job
-          </Button>
-        </Link>
+        <div className="flex items-center gap-2 flex-wrap justify-end">
+          <Link to={createPageUrl("Customers")}>
+            <Button size="sm" variant="outline" className="gap-1.5">
+              <Plus className="w-3.5 h-3.5" /> Customer
+            </Button>
+          </Link>
+          <Link to={createPageUrl("Estimates")}>
+            <Button size="sm" variant="outline" className="gap-1.5">
+              <Plus className="w-3.5 h-3.5" /> Estimate
+            </Button>
+          </Link>
+          <Link to={createPageUrl("Invoices")}>
+            <Button size="sm" variant="outline" className="gap-1.5">
+              <Plus className="w-3.5 h-3.5" /> Invoice
+            </Button>
+          </Link>
+          <Link to={createPageUrl("Jobs")}>
+            <Button size="sm" className="gap-1.5 bg-blue-600 hover:bg-blue-700">
+              <Plus className="w-3.5 h-3.5" /> New Job
+            </Button>
+          </Link>
+        </div>
       </div>
 
       <OnboardingBanner company={activeCompany} customers={customers} jobs={jobs} />
