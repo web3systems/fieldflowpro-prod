@@ -19,6 +19,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { format } from "date-fns";
+import CustomerNotesSection from "../components/jobs/CustomerNotesSection";
 
 const STATUS_OPTIONS = [
   { value: "new", label: "New", color: "bg-blue-100 text-blue-700 border-blue-200" },
