@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useApp } from "../Layout";
+import { createPageUrl } from "@/utils";
+import { useNavigate } from "react-router-dom";
 import {
   Plus, Search, Users, Phone, Mail, MapPin,
-  ChevronRight, Star, Pencil, Trash2
+  ChevronRight, Trash2, FileText, Briefcase, DollarSign
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
