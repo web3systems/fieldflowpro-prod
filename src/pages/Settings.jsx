@@ -116,6 +116,18 @@ export default function SettingsPage() {
                     </Select>
                   </div>
                 </div>
+                <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl">
+                  <p className="text-sm font-semibold text-slate-700 flex items-center gap-2 mb-1"><Link className="w-4 h-4" /> Customer Booking Link</p>
+                  <p className="text-xs text-slate-500 mb-2">Share this URL with customers so they can book services online.</p>
+                  <div className="flex items-center gap-2">
+                    <code className="flex-1 text-xs bg-white border border-slate-200 rounded-lg px-3 py-2 text-slate-700 truncate">
+                      {window.location.origin}/Booking?company_id={activeCompany?.id}
+                    </code>
+                    <Button size="sm" variant="outline" className="gap-1.5 flex-shrink-0" onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/Booking?company_id=${activeCompany?.id}`); }}>
+                      <Copy className="w-3.5 h-3.5" /> Copy
+                    </Button>
+                  </div>
+                </div>
                 <div className="pt-2">
                   <Button onClick={saveCompany} disabled={saving} className="gap-2 bg-blue-600 hover:bg-blue-700">
                     <Save className="w-4 h-4" />
