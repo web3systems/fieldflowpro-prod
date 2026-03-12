@@ -246,6 +246,24 @@ export default function Users() {
               <Label>Email Address *</Label>
               <Input type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} placeholder="employee@company.com" />
             </div>
+            <div className="space-y-1.5">
+              <Label>Role</Label>
+              <Select value={form.role} onValueChange={(val) => setForm(f => ({ ...f, role: val }))}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.entries(ROLE_LABELS).map(([val, ri]) => (
+                    <SelectItem key={val} value={val}>
+                      <span className="flex flex-col">
+                        <span className="font-medium">{ri.label}</span>
+                        <span className="text-xs text-slate-500">{ri.desc}</span>
+                      </span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             <div className="space-y-2">
               <Label>Assign to Companies</Label>
               {companies.map(c => (
