@@ -30,7 +30,7 @@ const navItems = [
 
 const adminItems = [
   { label: "Companies", icon: Building2, page: "Companies" },
-  { label: "Users", icon: Users, page: "Users" },
+  { label: "Users", icon: UsersRound, page: "Users" },
 ];
 
 export default function Layout({ children, currentPageName }) {
