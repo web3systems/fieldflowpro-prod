@@ -53,6 +53,20 @@ export default function Invoices() {
     if (activeCompany) loadData();
   }, [activeCompany]);
 
+  useEffect(() => {
+    if (activeCompany && customers.length > 0) {
+      const params = new URLSearchParams(window.location.search);
+      const customerId = params.get("customer_id");
+      if (customerId) {
+        const num = `INV-${String(invoices.length + 1).padStart(4, "0")}`;
+        setEditing(null);
+        setForm({ ...defaultForm, invoice_number: num, customer_id: customerId, line_items: [{ ...defaultItem }] });
+        setSheetOpen(true);
+        window.history.replaceState({}, "", window.location.pathname);
+      }
+    }
+  }, [activeCompany, customers]);
+
   async function loadData() {
     setLoading(true);
     const [inv, c] = await Promise.all([
