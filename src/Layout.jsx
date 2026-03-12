@@ -17,6 +17,17 @@ import {
 export const AppContext = createContext({});
 export const useApp = () => useContext(AppContext);
 
+function useAccessRequestCount(isSuperAdmin) {
+  const [count, setCount] = useState(0);
+  useEffect(() => {
+    if (!isSuperAdmin) return;
+    base44.entities.AccessRequest.filter({ status: "pending" })
+      .then(reqs => setCount(reqs.length))
+      .catch(() => {});
+  }, [isSuperAdmin]);
+  return count;
+}
+
 const navItems = [
   { label: "Dashboard", icon: LayoutDashboard, page: "Dashboard" },
   { label: "Leads", icon: UserPlus, page: "Leads" },
@@ -43,6 +54,8 @@ export default function Layout({ children, currentPageName }) {
   const location = useLocation();
 
   const isCustomerPortal = currentPageName === "CustomerPortal";
+  const isSuperAdminUser = user?.role === "super_admin" || user?.role === "admin";
+  const pendingRequestCount = useAccessRequestCount(isSuperAdminUser);
 
   useEffect(() => {
     loadUser();
@@ -233,9 +246,17 @@ export default function Layout({ children, currentPageName }) {
             </button>
             <div className="flex-1" />
             <div className="flex items-center gap-2">
-              <button className="relative p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg">
+              <Link
+                to={isSuperAdminUser ? createPageUrl("SuperAdminDashboard") : "#"}
+                className="relative p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg"
+              >
                 <Bell className="w-4 h-4" />
-              </button>
+                {pendingRequestCount > 0 && (
+                  <span className="absolute top-1 right-1 w-4 h-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold leading-none">
+                    {pendingRequestCount}
+                  </span>
+                )}
+              </Link>
               <Link
                 to={createPageUrl("Settings")}
                 className="p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg"
