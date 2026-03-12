@@ -58,6 +58,7 @@ import Leads from './pages/Leads';
 import Reports from './pages/Reports';
 import Settings from './pages/Settings';
 import Team from './pages/Team';
+import Users from './pages/Users';
 import __Layout from './Layout.jsx';
 
 
@@ -73,6 +74,7 @@ export const PAGES = {
     "Reports": Reports,
     "Settings": Settings,
     "Team": Team,
+    "Users": Users,
 }
 
 export const pagesConfig = {
