@@ -61,7 +61,14 @@ export default function Layout({ children, currentPageName }) {
 
   async function loadCompanies() {
     try {
-      const list = await base44.entities.Company.list();
+      const isAdmin = user?.role === "admin" || user?.role === "super_admin";
+      const allCompanies = await base44.entities.Company.list();
+      let list = allCompanies;
+      if (!isAdmin && user?.email) {
+        const access = await base44.entities.UserCompanyAccess.filter({ user_email: user.email });
+        const allowedIds = access.map(a => a.company_id);
+        list = allCompanies.filter(c => allowedIds.includes(c.id));
+      }
       setCompanies(list);
       const saved = localStorage.getItem("activeCompanyId");
       const found = list.find(c => c.id === saved) || list[0];
