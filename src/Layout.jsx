@@ -37,7 +37,7 @@ const navItems = [
   { label: "Schedule", icon: CalendarDays, page: "Schedule" },
   { label: "Invoices", icon: DollarSign, page: "Invoices" },
   { label: "Team", icon: Wrench, page: "Team" },
-  { label: "Services", icon: Globe, page: "Services" },
+  { label: "Services", icon: Wrench, page: "Services" },
   { label: "Reports", icon: BarChart3, page: "Reports" },
 ];
 
