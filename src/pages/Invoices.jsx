@@ -355,6 +355,22 @@ export default function Invoices() {
               <Textarea value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} rows={2} />
             </div>
 
+            {editing && !["paid", "void"].includes(form.status) && (
+              <div className="border-t pt-4">
+                <p className="text-xs text-slate-500 mb-2 font-medium">Collect Payment</p>
+                <Button
+                  onClick={handleStripePayment}
+                  disabled={paymentLoading}
+                  className="w-full gap-2 bg-violet-600 hover:bg-violet-700"
+                >
+                  <CreditCard className="w-4 h-4" />
+                  {paymentLoading ? "Redirecting..." : `Pay $${((form.total || 0) - (form.amount_paid || 0)).toFixed(2)} via Stripe`}
+                  <ExternalLink className="w-3.5 h-3.5 ml-auto" />
+                </Button>
+                <p className="text-xs text-slate-400 mt-1.5 text-center">Customer will be redirected to a secure Stripe checkout page</p>
+              </div>
+            )}
+
             <div className="flex gap-3 pt-2">
               <Button variant="outline" onClick={() => setSheetOpen(false)} className="flex-1">Cancel</Button>
               <Button onClick={handleSave} disabled={saving} className="flex-1 bg-blue-600 hover:bg-blue-700">
