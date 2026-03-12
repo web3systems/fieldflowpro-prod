@@ -85,11 +85,17 @@ export default function Users() {
 
   async function handleUpdateAccess(userEmail, userName, companyId, checked) {
     if (checked) {
-      await base44.entities.UserCompanyAccess.create({ user_email: userEmail, user_name: userName, company_id: companyId });
+      await base44.entities.UserCompanyAccess.create({ user_email: userEmail, user_name: userName, company_id: companyId, role: "standard" });
     } else {
       const rec = accessRecords.find(a => a.user_email === userEmail && a.company_id === companyId);
       if (rec) await base44.entities.UserCompanyAccess.delete(rec.id);
     }
+    await loadData();
+  }
+
+  async function handleRoleChange(userEmail, userName, role) {
+    const recs = accessRecords.filter(a => a.user_email === userEmail);
+    await Promise.all(recs.map(r => base44.entities.UserCompanyAccess.update(r.id, { role })));
     await loadData();
   }
 
