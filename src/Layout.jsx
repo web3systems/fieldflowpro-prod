@@ -85,6 +85,8 @@ export default function Layout({ children, currentPageName }) {
         list = allCompanies.filter(c => allowedIds.includes(c.id));
       }
       setCompanies(list);
+      // Super admins don't require a default company to be set
+      if (isAdmin && list.length === 0) return;
       const saved = localStorage.getItem("activeCompanyId");
       const found = list.find(c => c.id === saved) || list[0];
       setActiveCompany(found || null);
