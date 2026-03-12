@@ -319,6 +319,8 @@ export default function Leads() {
         </SheetContent>
       </Sheet>
 
+      <EmbedCodeModal open={embedOpen} onClose={() => setEmbedOpen(false)} company={activeCompany} />
+
       <AlertDialog open={!!deleteTarget} onOpenChange={() => setDeleteTarget(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
