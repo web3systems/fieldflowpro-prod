@@ -86,7 +86,7 @@ export default function Layout({ children, currentPageName }) {
     return <div className="min-h-screen bg-gray-50">{children}</div>;
   }
 
-  const isSuperAdmin = user?.role === "super_admin" || user?.role === "admin";
+  const isSuperAdmin = user?.role === "super_admin" || user?.role === "admin" || user?.role === "manager";
   const isActive = (page) => currentPageName === page;
 
   return (
