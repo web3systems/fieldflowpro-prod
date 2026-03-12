@@ -5,7 +5,7 @@ import { createPageUrl } from "@/utils";
 import { useNavigate } from "react-router-dom";
 import {
   Plus, Search, Users, Phone, Mail, MapPin,
-  ChevronRight, Trash2, FileText, Briefcase, DollarSign
+  ChevronRight, Trash2, FileText, Briefcase, DollarSign, Download, ExternalLink
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
