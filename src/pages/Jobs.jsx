@@ -264,6 +264,32 @@ export default function Jobs() {
         </div>
       )}
 
+      {/* Invoice Prompt Modal */}
+      {invoicePromptJob && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 text-center">
+            <div className="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <CheckCircle className="w-7 h-7 text-green-600" />
+            </div>
+            <h2 className="text-lg font-bold text-slate-800 mb-1">Job Completed!</h2>
+            <p className="text-slate-500 text-sm mb-5">
+              Would you like to generate an invoice for <span className="font-semibold text-slate-700">{invoicePromptJob.title}</span>?
+            </p>
+            <div className="flex gap-3">
+              <Button variant="outline" onClick={() => setInvoicePromptJob(null)} className="flex-1">
+                Not Now
+              </Button>
+              <Button
+                onClick={() => generateInvoiceFromJob(invoicePromptJob)}
+                className="flex-1 bg-blue-600 hover:bg-blue-700 gap-2"
+              >
+                <DollarSign className="w-4 h-4" /> Generate Invoice
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Job Sheet */}
       <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
         <SheetContent className="w-full sm:max-w-xl overflow-y-auto">
