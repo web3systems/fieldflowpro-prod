@@ -206,9 +206,14 @@ export default function Estimates() {
           <h1 className="text-2xl font-bold text-slate-900">Estimates</h1>
           <p className="text-slate-500 text-sm mt-0.5">{estimates.length} estimates</p>
         </div>
-        <Button onClick={openCreate} className="gap-2 bg-blue-600 hover:bg-blue-700">
-          <Plus className="w-4 h-4" /> New Estimate
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={handleExportCsv} className="gap-2 hidden sm:flex">
+            <Download className="w-4 h-4" /> Export CSV
+          </Button>
+          <Button onClick={openCreate} className="gap-2 bg-blue-600 hover:bg-blue-700">
+            <Plus className="w-4 h-4" /> New Estimate
+          </Button>
+        </div>
       </div>
 
       <div className="relative">
