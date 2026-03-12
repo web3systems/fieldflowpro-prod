@@ -23,8 +23,10 @@ const statusColors = {
 };
 
 export default function Dashboard() {
-  const { activeCompany } = useApp();
+  const { activeCompany, user: appUser } = useApp();
+  const [user, setUser] = useState(null);
   const [jobs, setJobs] = useState([]);
+  const [myTech, setMyTech] = useState(null);
   const [customers, setCustomers] = useState([]);
   const [invoices, setInvoices] = useState([]);
   const [leads, setLeads] = useState([]);
@@ -33,6 +35,10 @@ export default function Dashboard() {
   useEffect(() => {
     if (activeCompany) loadData();
   }, [activeCompany]);
+
+  useEffect(() => {
+    base44.auth.me().then(u => setUser(u)).catch(() => {});
+  }, []);
 
   async function loadData() {
     setLoading(true);
@@ -46,9 +52,15 @@ export default function Dashboard() {
     setCustomers(c);
     setInvoices(inv);
     setLeads(l);
+    // Find if current user is a technician
+    const techs = await base44.entities.Technician.filter({ company_id: activeCompany.id });
+    const me = await base44.auth.me();
+    const myT = techs.find(t => t.email === me?.email);
+    setMyTech(myT || null);
     setLoading(false);
   }
 
+  const myJobs = myTech ? jobs.filter(j => j.assigned_techs?.includes(myTech.id) && ["new","scheduled","in_progress"].includes(j.status)) : [];
   const activeJobs = jobs.filter(j => ["in_progress", "scheduled", "new"].includes(j.status));
   const todayJobs = jobs.filter(j => {
     if (!j.scheduled_start) return false;
@@ -121,6 +133,42 @@ export default function Dashboard() {
       </div>
 
       <OnboardingBanner company={activeCompany} customers={customers} jobs={jobs} />
+
+      {/* My Jobs (for technicians) */}
+      {myTech && myJobs.length > 0 && (
+        <Card className="border-0 shadow-sm border-l-4 border-l-blue-500">
+          <CardHeader className="px-4 py-3 border-b border-slate-100">
+            <CardTitle className="text-base font-semibold text-slate-800 flex items-center gap-2">
+              <Briefcase className="w-4 h-4 text-blue-500" />
+              My Assigned Jobs
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            <div className="divide-y divide-slate-100">
+              {myJobs.map(job => {
+                const cust = customers.find(c => c.id === job.customer_id);
+                return (
+                  <Link key={job.id} to={createPageUrl("Jobs")} className="flex items-center gap-3 px-4 py-3 hover:bg-slate-50 transition-colors">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-slate-800 truncate">{job.title}</p>
+                      <div className="flex items-center gap-3 mt-0.5">
+                        {cust && <span className="text-xs text-slate-400">{cust.first_name} {cust.last_name}</span>}
+                        {job.scheduled_start && <span className="text-xs text-slate-400 flex items-center gap-1"><Calendar className="w-3 h-3" />{format(new Date(job.scheduled_start), "MMM d · h:mm a")}</span>}
+                        {job.address && (
+                          <a href={`https://maps.google.com/?q=${encodeURIComponent(job.address)}`} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} className="text-xs text-blue-500 hover:underline flex items-center gap-1">
+                            <ArrowRight className="w-3 h-3" /> Directions
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                    <Badge className={`text-xs ${statusColors[job.status] || "bg-gray-100 text-gray-600"}`}>{job.status?.replace("_", " ")}</Badge>
+                  </Link>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
