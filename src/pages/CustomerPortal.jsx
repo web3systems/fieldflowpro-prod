@@ -2,10 +2,10 @@ import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import {
   Home, FileText, DollarSign, Calendar, User,
-  CheckCircle, Clock, AlertCircle, ChevronRight,
-  Phone, Mail, MapPin, LogOut, Briefcase
+  CheckCircle, AlertCircle, Phone, Mail, MapPin,
+  LogOut, Briefcase, ChevronDown, Building2
 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
@@ -21,51 +21,80 @@ const STATUS_STYLES = {
 const INVOICE_STATUS = {
   draft: { label: "Draft", color: "bg-gray-100 text-gray-600" },
   sent: { label: "Sent", color: "bg-blue-100 text-blue-700" },
+  viewed: { label: "Viewed", color: "bg-blue-100 text-blue-700" },
   paid: { label: "Paid", color: "bg-green-100 text-green-700" },
+  partial: { label: "Partial", color: "bg-amber-100 text-amber-700" },
   overdue: { label: "Overdue", color: "bg-red-100 text-red-700" },
 };
 
 export default function CustomerPortal() {
   const [user, setUser] = useState(null);
-  const [customer, setCustomer] = useState(null);
-  const [company, setCompany] = useState(null);
+  // All customer records for this user (one per company they belong to)
+  const [allAccounts, setAllAccounts] = useState([]); // [{customer, company}]
+  const [activeIndex, setActiveIndex] = useState(0);
   const [jobs, setJobs] = useState([]);
   const [invoices, setInvoices] = useState([]);
   const [estimates, setEstimates] = useState([]);
   const [activeTab, setActiveTab] = useState("home");
   const [loading, setLoading] = useState(true);
-  const [selectedJob, setSelectedJob] = useState(null);
-  const [selectedInvoice, setSelectedInvoice] = useState(null);
+  const [switcherOpen, setSwitcherOpen] = useState(false);
 
+  useEffect(() => { init(); }, []);
+
+  // Reload data when switching companies
   useEffect(() => {
-    init();
-  }, []);
+    if (allAccounts.length > 0) {
+      loadAccountData(allAccounts[activeIndex].customer);
+    }
+  }, [activeIndex, allAccounts]);
 
   async function init() {
     try {
       const u = await base44.auth.me();
       setUser(u);
-      // Find customer by portal_user_id or email
-      const customers = await base44.entities.Customer.list();
-      const found = customers.find(c => c.portal_user_id === u.id || c.email === u.email);
-      if (found) {
-        setCustomer(found);
-        const [j, inv, est, companies] = await Promise.all([
-          base44.entities.Job.filter({ customer_id: found.id }),
-          base44.entities.Invoice.filter({ customer_id: found.id }),
-          base44.entities.Estimate.filter({ customer_id: found.id }),
-          base44.entities.Company.filter({ id: found.company_id }),
-        ]);
-        setJobs(j);
-        setInvoices(inv);
-        setEstimates(est);
-        setCompany(companies[0] || null);
+
+      // Find ALL customer records matching this user's email or portal_user_id
+      const allCustomers = await base44.entities.Customer.list();
+      const matched = allCustomers.filter(
+        c => c.portal_user_id === u.id || c.email === u.email
+      );
+
+      if (matched.length === 0) {
+        setLoading(false);
+        return;
       }
+
+      // Load all companies for matched customers
+      const allCompanies = await base44.entities.Company.list();
+      const companyMap = Object.fromEntries(allCompanies.map(c => [c.id, c]));
+
+      const accounts = matched.map(customer => ({
+        customer,
+        company: companyMap[customer.company_id] || null,
+      }));
+
+      setAllAccounts(accounts);
+      // loadAccountData is called via useEffect when allAccounts is set
     } catch (e) {
       base44.auth.redirectToLogin();
     }
     setLoading(false);
   }
+
+  async function loadAccountData(customer) {
+    const [j, inv, est] = await Promise.all([
+      base44.entities.Job.filter({ customer_id: customer.id }),
+      base44.entities.Invoice.filter({ customer_id: customer.id }),
+      base44.entities.Estimate.filter({ customer_id: customer.id }),
+    ]);
+    setJobs(j);
+    setInvoices(inv);
+    setEstimates(est);
+  }
+
+  const activeAccount = allAccounts[activeIndex] || null;
+  const customer = activeAccount?.customer || null;
+  const company = activeAccount?.company || null;
 
   if (loading) {
     return (
@@ -102,6 +131,7 @@ export default function CustomerPortal() {
   const upcomingJobs = jobs.filter(j => ["scheduled", "new"].includes(j.status));
   const pendingInvoices = invoices.filter(i => ["sent", "viewed", "overdue"].includes(i.status));
   const totalOwed = pendingInvoices.reduce((s, i) => s + ((i.total || 0) - (i.amount_paid || 0)), 0);
+  const headerColor = company?.primary_color || "#1e40af";
 
   const tabs = [
     { id: "home", label: "Home", icon: Home },
@@ -114,16 +144,51 @@ export default function CustomerPortal() {
   return (
     <div className="min-h-screen bg-slate-50 pb-20">
       {/* Header */}
-      <div
-        className="px-4 pt-safe-top pb-4 text-white"
-        style={{ backgroundColor: company?.primary_color || "#1e40af" }}
-      >
+      <div className="px-4 pt-3 pb-4 text-white" style={{ backgroundColor: headerColor }}>
         <div className="max-w-lg mx-auto">
-          <div className="flex items-center justify-between pt-3 pb-1">
-            <div>
-              <p className="text-white/70 text-sm">{company?.name || "Customer Portal"}</p>
-              <h1 className="text-xl font-bold">Hi, {customer.first_name}!</h1>
-            </div>
+          <div className="flex items-center justify-between pb-1">
+            {/* Company switcher (or static name if only one) */}
+            {allAccounts.length > 1 ? (
+              <div className="relative">
+                <button
+                  onClick={() => setSwitcherOpen(o => !o)}
+                  className="flex items-center gap-1.5 bg-white/20 hover:bg-white/30 rounded-xl px-3 py-1.5 transition-colors"
+                >
+                  <Building2 className="w-3.5 h-3.5 text-white/80" />
+                  <span className="text-sm font-semibold text-white">{company?.name || "Select Company"}</span>
+                  <ChevronDown className="w-3.5 h-3.5 text-white/80" />
+                </button>
+                {switcherOpen && (
+                  <div className="absolute top-10 left-0 z-50 bg-white rounded-2xl shadow-xl border border-slate-100 min-w-[220px] overflow-hidden">
+                    <p className="text-xs font-semibold text-slate-400 px-4 pt-3 pb-1">Your Accounts</p>
+                    {allAccounts.map(({ customer: c, company: co }, idx) => (
+                      <button
+                        key={c.id}
+                        onClick={() => { setActiveIndex(idx); setSwitcherOpen(false); setActiveTab("home"); }}
+                        className={`w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-50 transition-colors ${idx === activeIndex ? "bg-slate-50" : ""}`}
+                      >
+                        <div
+                          className="w-8 h-8 rounded-lg flex items-center justify-center text-white text-sm font-bold flex-shrink-0"
+                          style={{ backgroundColor: co?.primary_color || "#3b82f6" }}
+                        >
+                          {co?.name?.[0] || "?"}
+                        </div>
+                        <div className="text-left">
+                          <p className="text-sm font-semibold text-slate-800">{co?.name || "Unknown Company"}</p>
+                          <p className="text-xs text-slate-400 capitalize">{co?.industry || ""}</p>
+                        </div>
+                        {idx === activeIndex && (
+                          <CheckCircle className="w-4 h-4 text-green-500 ml-auto flex-shrink-0" />
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <p className="text-white/80 text-sm font-medium">{company?.name || "Customer Portal"}</p>
+            )}
+
             <button
               onClick={() => base44.auth.logout()}
               className="p-2 rounded-full bg-white/20 hover:bg-white/30 transition-colors"
@@ -131,6 +196,8 @@ export default function CustomerPortal() {
               <LogOut className="w-4 h-4 text-white" />
             </button>
           </div>
+
+          <h1 className="text-xl font-bold mt-1">Hi, {customer.first_name}!</h1>
 
           {/* Quick stats */}
           <div className="flex gap-3 mt-3">
@@ -151,6 +218,11 @@ export default function CustomerPortal() {
           </div>
         </div>
       </div>
+
+      {/* Dismiss switcher on outside click */}
+      {switcherOpen && (
+        <div className="fixed inset-0 z-40" onClick={() => setSwitcherOpen(false)} />
+      )}
 
       {/* Content */}
       <div className="max-w-lg mx-auto px-4 py-4 space-y-4">
@@ -176,8 +248,7 @@ export default function CustomerPortal() {
                               )}
                               {job.address && (
                                 <p className="text-xs text-slate-400 mt-0.5 flex items-center gap-1">
-                                  <MapPin className="w-3 h-3" />
-                                  {job.address}
+                                  <MapPin className="w-3 h-3" />{job.address}
                                 </p>
                               )}
                             </div>
@@ -196,7 +267,7 @@ export default function CustomerPortal() {
                 <h2 className="text-sm font-semibold text-slate-700 mb-2">Invoices Due</h2>
                 <div className="space-y-2">
                   {pendingInvoices.slice(0, 3).map(inv => (
-                    <Card key={inv.id} className="border-0 shadow-sm cursor-pointer" onClick={() => { setSelectedInvoice(inv); setActiveTab("invoices"); }}>
+                    <Card key={inv.id} className="border-0 shadow-sm cursor-pointer" onClick={() => setActiveTab("invoices")}>
                       <CardContent className="p-4">
                         <div className="flex items-center justify-between">
                           <div>
@@ -374,6 +445,8 @@ export default function CustomerPortal() {
         {activeTab === "account" && (
           <div className="space-y-4">
             <h2 className="text-lg font-bold text-slate-900">My Account</h2>
+
+            {/* Profile card */}
             <Card className="border-0 shadow-sm">
               <CardContent className="p-5 space-y-3">
                 <div className="flex items-center gap-3 pb-3 border-b border-slate-100">
@@ -382,19 +455,12 @@ export default function CustomerPortal() {
                   </div>
                   <div>
                     <p className="font-bold text-slate-800 text-lg">{customer.first_name} {customer.last_name}</p>
-                    <p className="text-slate-500 text-sm">Customer</p>
+                    <p className="text-slate-500 text-sm">{user?.email}</p>
                   </div>
                 </div>
-                {customer.email && (
-                  <div className="flex items-center gap-2 text-sm text-slate-600">
-                    <Mail className="w-4 h-4 text-slate-400" />
-                    {customer.email}
-                  </div>
-                )}
                 {customer.phone && (
                   <div className="flex items-center gap-2 text-sm text-slate-600">
-                    <Phone className="w-4 h-4 text-slate-400" />
-                    {customer.phone}
+                    <Phone className="w-4 h-4 text-slate-400" />{customer.phone}
                   </div>
                 )}
                 {customer.address && (
@@ -406,37 +472,37 @@ export default function CustomerPortal() {
               </CardContent>
             </Card>
 
-            {company && (
-              <Card className="border-0 shadow-sm">
-                <CardContent className="p-5">
-                  <h3 className="font-semibold text-slate-700 mb-3 text-sm">Your Service Provider</h3>
-                  <div className="flex items-center gap-3 mb-3">
-                    <div
-                      className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold"
-                      style={{ backgroundColor: company.primary_color || "#3b82f6" }}
+            {/* All linked companies */}
+            <Card className="border-0 shadow-sm">
+              <CardContent className="p-5">
+                <h3 className="font-semibold text-slate-700 mb-3 text-sm">
+                  {allAccounts.length > 1 ? "Your Service Providers" : "Your Service Provider"}
+                </h3>
+                <div className="space-y-3">
+                  {allAccounts.map(({ company: co }, idx) => co && (
+                    <button
+                      key={co.id}
+                      onClick={() => { setActiveIndex(idx); setActiveTab("home"); }}
+                      className={`w-full flex items-center gap-3 p-3 rounded-xl transition-colors ${idx === activeIndex ? "bg-slate-100" : "hover:bg-slate-50"}`}
                     >
-                      {company.name[0]}
-                    </div>
-                    <div>
-                      <p className="font-semibold text-slate-800">{company.name}</p>
-                      <p className="text-xs text-slate-500 capitalize">{company.industry}</p>
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    {company.phone && (
-                      <a href={`tel:${company.phone}`} className="flex items-center gap-2 text-sm text-blue-600">
-                        <Phone className="w-4 h-4" />{company.phone}
-                      </a>
-                    )}
-                    {company.email && (
-                      <a href={`mailto:${company.email}`} className="flex items-center gap-2 text-sm text-blue-600">
-                        <Mail className="w-4 h-4" />{company.email}
-                      </a>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
+                      <div
+                        className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold flex-shrink-0"
+                        style={{ backgroundColor: co.primary_color || "#3b82f6" }}
+                      >
+                        {co.name[0]}
+                      </div>
+                      <div className="text-left flex-1">
+                        <p className="font-semibold text-slate-800 text-sm">{co.name}</p>
+                        <p className="text-xs text-slate-500 capitalize">{co.industry}</p>
+                      </div>
+                      {idx === activeIndex && (
+                        <Badge className="bg-green-100 text-green-700 text-xs">Active</Badge>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
 
             <Button onClick={() => base44.auth.logout()} variant="outline" className="w-full gap-2 text-red-600 border-red-200 hover:bg-red-50">
               <LogOut className="w-4 h-4" /> Sign Out
@@ -446,7 +512,7 @@ export default function CustomerPortal() {
       </div>
 
       {/* Bottom Navigation */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 safe-area-bottom">
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200">
         <div className="flex max-w-lg mx-auto">
           {tabs.map(({ id, label, icon: Icon }) => (
             <button
@@ -455,6 +521,7 @@ export default function CustomerPortal() {
               className={`flex-1 flex flex-col items-center gap-1 py-3 transition-colors ${
                 activeTab === id ? "text-blue-600" : "text-slate-400"
               }`}
+              style={activeTab === id ? { color: headerColor } : {}}
             >
               <Icon className="w-5 h-5" />
               <span className="text-xs">{label}</span>
