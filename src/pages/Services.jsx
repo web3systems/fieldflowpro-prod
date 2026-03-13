@@ -120,11 +120,18 @@ export default function Services() {
           </div>
         )}
         {filtered.map(svc => (
-          <div key={svc.id} className="bg-white border border-slate-200 rounded-lg px-4 py-3 flex items-center gap-4">
+          <div key={svc.id} className={`bg-white border rounded-lg px-4 py-3 flex items-center gap-4 ${svc.is_active ? "border-slate-200" : "border-slate-100 opacity-60"}`}>
+            <div className="flex items-center gap-3 flex-shrink-0">
+              <Checkbox
+                checked={!!svc.is_active}
+                onCheckedChange={() => toggleActive(svc)}
+                title={svc.is_active ? "Click to deactivate" : "Click to activate"}
+              />
+            </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
-                <span className="font-medium text-slate-800">{svc.name}</span>
-                {!svc.is_active && <Badge variant="secondary">Inactive</Badge>}
+                <span className={`font-medium ${svc.is_active ? "text-slate-800" : "text-slate-400"}`}>{svc.name}</span>
+                {!svc.is_active && <Badge variant="secondary" className="text-xs">Inactive</Badge>}
                 {svc.category && <Badge variant="outline" className="text-xs">{svc.category}</Badge>}
               </div>
               {svc.description && <p className="text-slate-500 text-sm mt-0.5 truncate">{svc.description}</p>}
