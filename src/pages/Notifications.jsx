@@ -35,6 +35,12 @@ export default function Notifications() {
         </TabsContent>
 
         {isAdmin && (
+          <TabsContent value="customer" className="mt-4">
+            <CustomerNotificationSettings company={activeCompany} />
+          </TabsContent>
+        )}
+
+        {isAdmin && (
           <TabsContent value="team" className="mt-4">
             <AdminNotificationManager company={activeCompany} currentUser={user} />
           </TabsContent>
