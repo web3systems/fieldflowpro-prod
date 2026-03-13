@@ -105,6 +105,14 @@ export default function Services() {
         />
       </div>
 
+      {activeCompany && (
+        <StandardServicesCatalog
+          company={activeCompany}
+          existingServices={services}
+          onServicesAdded={loadServices}
+        />
+      )}
+
       <div className="space-y-2">
         {filtered.length === 0 && (
           <div className="text-center py-16 text-slate-400">
