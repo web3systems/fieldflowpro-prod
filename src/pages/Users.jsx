@@ -126,6 +126,27 @@ export default function Users() {
     await loadData();
   }
 
+  function isInTeam(email, companyId) {
+    return !!technicians.find(t => t.email === email && t.company_id === companyId);
+  }
+
+  async function handleToggleTeam(email, userName, companyId, checked) {
+    if (checked) {
+      const nameParts = userName.trim().split(" ");
+      await base44.entities.Technician.create({
+        company_id: companyId,
+        email,
+        first_name: nameParts[0] || userName,
+        last_name: nameParts.slice(1).join(" ") || "",
+        status: "active",
+      });
+    } else {
+      const tech = technicians.find(t => t.email === email && t.company_id === companyId);
+      if (tech) await base44.entities.Technician.delete(tech.id);
+    }
+    await loadData();
+  }
+
   const toggleCompany = (cid) => {
     setForm(f => ({
       ...f,
