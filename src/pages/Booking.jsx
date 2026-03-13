@@ -232,18 +232,56 @@ export default function Booking() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <Label>Preferred Date *</Label>
-                  <Input required type="date" min={today} value={form.preferred_date} onChange={e => setForm({ ...form, preferred_date: e.target.value })} />
+                  <Input required type="date" min={today} value={form.preferred_date} onChange={e => handleDateChange(e.target.value)} />
                 </div>
                 <div>
                   <Label>Preferred Time</Label>
-                  <Select value={form.preferred_time} onValueChange={v => setForm({ ...form, preferred_time: v })}>
+                  <Select value={form.preferred_time} onValueChange={handleTimeChange}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      {SERVICE_TIMES.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                      {SERVICE_TIMES.map(t => {
+                        const taken = form.preferred_date && isSlotTaken(form.preferred_date, t);
+                        return (
+                          <SelectItem key={t} value={t} disabled={taken}>
+                            {t}{taken ? " — Unavailable" : ""}
+                          </SelectItem>
+                        );
+                      })}
                     </SelectContent>
                   </Select>
                 </div>
               </div>
+
+              {/* Conflict Banner */}
+              {conflictInfo && (
+                <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
+                  <div className="flex items-start gap-3">
+                    <CalendarX className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                    <div className="flex-1">
+                      {conflictInfo.full ? (
+                        <>
+                          <p className="text-sm font-semibold text-amber-800">That time slot is already booked</p>
+                          <p className="text-xs text-amber-600 mt-0.5">Unfortunately no availability was found in the next 2 weeks. Please call us to arrange a time.</p>
+                        </>
+                      ) : (
+                        <>
+                          <p className="text-sm font-semibold text-amber-800">That time slot is already booked</p>
+                          <p className="text-xs text-amber-600 mt-0.5">
+                            Next available: <span className="font-semibold">{conflictInfo.suggestedDate}</span> at <span className="font-semibold">{conflictInfo.suggestedTime}</span>
+                          </p>
+                          <button
+                            type="button"
+                            onClick={acceptSuggestion}
+                            className="mt-2 text-xs font-semibold text-amber-700 underline hover:text-amber-900"
+                          >
+                            Use this time instead →
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
               <div>
                 <Label>Additional Notes</Label>
                 <Textarea value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} placeholder="Any special instructions or details..." rows={3} />
