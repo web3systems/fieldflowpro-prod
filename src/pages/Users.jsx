@@ -339,6 +339,16 @@ export default function Users() {
                 </label>
               ))}
             </div>
+            <label className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 cursor-pointer border border-slate-200">
+              <Checkbox
+                checked={form.add_to_team}
+                onCheckedChange={(checked) => setForm(f => ({ ...f, add_to_team: !!checked }))}
+              />
+              <div>
+                <p className="text-sm font-medium text-slate-700">Add to Team</p>
+                <p className="text-xs text-slate-400">Creates a Technician record for this employee</p>
+              </div>
+            </label>
             <p className="text-xs text-slate-400">The user will receive an invitation email. They will only see the companies assigned above and will not have admin access.</p>
             <div className="flex gap-3 pt-2">
               <Button variant="outline" onClick={() => setSheetOpen(false)} className="flex-1">Cancel</Button>
