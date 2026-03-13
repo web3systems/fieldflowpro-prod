@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { CheckCircle, AlertCircle } from "lucide-react";
+import { CheckCircle, AlertCircle, Clock, CalendarX } from "lucide-react";
 
 const SERVICE_TIMES = [
   "8:00 AM", "9:00 AM", "10:00 AM", "11:00 AM", "12:00 PM",
@@ -21,6 +21,8 @@ export default function Booking() {
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [existingBookings, setExistingBookings] = useState([]);
+  const [conflictInfo, setConflictInfo] = useState(null); // { suggestedTime, suggestedDate }
   const [form, setForm] = useState({
     first_name: "", last_name: "", email: "", phone: "",
     address: "", service_type: "", preferred_date: "",
