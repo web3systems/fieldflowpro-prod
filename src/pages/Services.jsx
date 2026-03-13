@@ -67,6 +67,11 @@ export default function Services() {
     setLoading(false);
   }
 
+  async function toggleActive(svc) {
+    await base44.entities.Service.update(svc.id, { is_active: !svc.is_active });
+    await loadServices();
+  }
+
   async function handleDelete(id) {
     if (!confirm("Delete this service?")) return;
     await base44.entities.Service.delete(id);
