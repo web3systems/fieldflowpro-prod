@@ -27,12 +27,13 @@ export default function Users() {
   const { companies } = useApp();
   const [users, setUsers] = useState([]);
   const [accessRecords, setAccessRecords] = useState([]);
+  const [technicians, setTechnicians] = useState([]);
   const [search, setSearch] = useState("");
   const [sheetOpen, setSheetOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [saving, setSaving] = useState(false);
   const [inviting, setInviting] = useState(false);
-  const [form, setForm] = useState({ email: "", name: "", role: "standard", company_ids: [] });
+  const [form, setForm] = useState({ email: "", name: "", role: "standard", company_ids: [], add_to_team: false });
 
   useEffect(() => { loadData(); }, []);
 
