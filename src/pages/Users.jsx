@@ -77,8 +77,25 @@ export default function Users() {
         }
       }
 
+      // Add to team if checked
+      if (form.add_to_team && form.company_ids.length > 0) {
+        for (const cid of form.company_ids) {
+          const alreadyTech = technicians.find(t => t.email === form.email && t.company_id === cid);
+          if (!alreadyTech) {
+            const nameParts = form.name.trim().split(" ");
+            await base44.entities.Technician.create({
+              company_id: cid,
+              email: form.email,
+              first_name: nameParts[0] || form.name,
+              last_name: nameParts.slice(1).join(" ") || "",
+              status: "active",
+            });
+          }
+        }
+      }
+
       setSheetOpen(false);
-      setForm({ email: "", name: "", role: "standard", company_ids: [] });
+      setForm({ email: "", name: "", role: "standard", company_ids: [], add_to_team: false });
       await loadData();
     } finally {
       setSaving(false);
