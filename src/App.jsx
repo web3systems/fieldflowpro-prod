@@ -10,6 +10,7 @@ import SuperAdminDashboard from './pages/SuperAdminDashboard';
 import Services from './pages/Services';
 import LeadCapture from './pages/LeadCapture';
 import Payments from './pages/Payments';
+import Notifications from './pages/Notifications';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 
