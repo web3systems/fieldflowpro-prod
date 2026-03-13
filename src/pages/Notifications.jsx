@@ -22,6 +22,7 @@ export default function Notifications() {
         <TabsList>
           <TabsTrigger value="my-settings">My Preferences</TabsTrigger>
           <TabsTrigger value="log">Activity Log</TabsTrigger>
+          {isAdmin && <TabsTrigger value="customer">Customer Notifications</TabsTrigger>}
           {isAdmin && <TabsTrigger value="team">Team Settings</TabsTrigger>}
         </TabsList>
 
