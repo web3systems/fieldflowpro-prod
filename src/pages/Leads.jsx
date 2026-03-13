@@ -207,7 +207,7 @@ export default function Leads() {
                         )}
                       </div>
                       <div className="flex flex-wrap gap-3 mt-1">
-                        {lead.phone && <span className="flex items-center gap-1 text-xs text-slate-500"><Phone className="w-3 h-3" />{lead.phone}</span>}
+                        {lead.phone && <a href={`tel:${lead.phone}`} onClick={e => e.stopPropagation()} className="flex items-center gap-1 text-xs text-blue-500 hover:text-blue-700"><Phone className="w-3 h-3" />{lead.phone}</a>}
                         {lead.email && <span className="flex items-center gap-1 text-xs text-slate-500"><Mail className="w-3 h-3" />{lead.email}</span>}
                         {lead.service_interest && <span className="text-xs text-slate-500">· {lead.service_interest}</span>}
                       </div>

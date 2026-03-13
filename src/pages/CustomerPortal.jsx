@@ -551,9 +551,9 @@ export default function CustomerPortal() {
                   </div>
                 </div>
                 {customer.phone && (
-                  <div className="flex items-center gap-2 text-sm text-slate-600">
-                    <Phone className="w-4 h-4 text-slate-400" />{customer.phone}
-                  </div>
+                  <a href={`tel:${customer.phone}`} className="flex items-center gap-2 text-sm text-blue-500 hover:text-blue-700">
+                    <Phone className="w-4 h-4" />{customer.phone}
+                  </a>
                 )}
                 {customer.address && (
                   <div className="flex items-start gap-2 text-sm text-slate-600">
