@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Switch } from "@/components/ui/switch";
 import { Plus, Pencil, Trash2, Search } from "lucide-react";
+import StandardServicesCatalog from "@/components/services/StandardServicesCatalog";
 
 const defaultForm = {
   name: "",
