@@ -29,14 +29,20 @@ Deno.serve(async (req) => {
         .filter(s => s.is_enabled !== false && s.events?.new_customer !== false && s.user_email)
         .map(s => ({ email: s.user_email, inApp: s.channels?.in_app !== false, sendEmail: s.channels?.email !== false }));
     } else {
-      // Fallback: notify all users with access to this company
+      // Fallback: notify all registered app users who have access to this company
+      const allUsers = await base44.asServiceRole.entities.User.list();
+      const registeredEmails = new Set(allUsers.map(u => u.email));
+
       const accesses = await base44.asServiceRole.entities.UserCompanyAccess.filter({ company_id: customer.company_id });
-      recipients = accesses.filter(a => a.user_email).map(a => ({ email: a.user_email, inApp: true, sendEmail: true }));
+      const accessEmails = accesses.filter(a => a.user_email && registeredEmails.has(a.user_email)).map(a => a.user_email);
       
-      // Also include the company creator (admin)
-      if (company.created_by && !recipients.find(r => r.email === company.created_by)) {
-        recipients.push({ email: company.created_by, inApp: true, sendEmail: true });
+      // Include company creator if registered
+      const allEmails = new Set(accessEmails);
+      if (company.created_by && registeredEmails.has(company.created_by)) {
+        allEmails.add(company.created_by);
       }
+
+      recipients = [...allEmails].map(email => ({ email, inApp: true, sendEmail: true }));
     }
 
     console.log(`New customer "${customerName}" — notifying ${recipients.length} recipient(s): ${recipients.map(r => r.email).join(", ")}`);
