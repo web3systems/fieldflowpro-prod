@@ -252,17 +252,17 @@ export default function Layout({ children, currentPageName }) {
             </button>
             <div className="flex-1" />
             <div className="flex items-center gap-2">
-              <Link
-                to={isSuperAdminUser ? createPageUrl("SuperAdminDashboard") : "#"}
-                className="relative p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg"
-              >
-                <Bell className="w-4 h-4" />
-                {pendingRequestCount > 0 && (
-                  <span className="absolute top-1 right-1 w-4 h-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold leading-none">
+              {isSuperAdminUser && pendingRequestCount > 0 && (
+                <Link
+                  to={createPageUrl("SuperAdminDashboard")}
+                  className="relative p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg"
+                >
+                  <span className="w-4 h-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold leading-none">
                     {pendingRequestCount}
                   </span>
-                )}
-              </Link>
+                </Link>
+              )}
+              <NotificationBell user={user} company={activeCompany} />
               <Link
                 to={createPageUrl("Settings")}
                 className="p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg"
