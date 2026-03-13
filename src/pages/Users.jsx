@@ -264,6 +264,22 @@ export default function Users() {
                         </div>
                       </div>
                     )}
+                    {userCompanies.length > 0 && (
+                      <div className="flex items-center gap-3 pt-1">
+                        <p className="text-xs font-medium text-slate-500 uppercase tracking-wide w-20">Team</p>
+                        <div className="flex flex-wrap gap-3">
+                          {userCompanies.map(c => (
+                            <label key={c.id} className="flex items-center gap-2 cursor-pointer">
+                              <Checkbox
+                                checked={isInTeam(email, c.id)}
+                                onCheckedChange={(checked) => handleToggleTeam(email, userName, c.id, checked)}
+                              />
+                              <span className="text-sm text-slate-700">Add to {c.name} team</span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>
