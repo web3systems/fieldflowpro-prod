@@ -64,9 +64,73 @@ export default function Booking() {
     init();
   }, [companyId]);
 
+  function findNextAvailable(date, time) {
+    // Check all slots on same date first, then next days
+    const timeIdx = SERVICE_TIMES.indexOf(time);
+    const bookedSlots = new Set(
+      existingBookings.filter(b => b.preferred_date === date).map(b => b.preferred_time)
+    );
+
+    // Try later times same day
+    for (let i = timeIdx + 1; i < SERVICE_TIMES.length; i++) {
+      if (!bookedSlots.has(SERVICE_TIMES[i])) {
+        return { suggestedDate: date, suggestedTime: SERVICE_TIMES[i] };
+      }
+    }
+
+    // Try next 14 days
+    const base = new Date(date + "T12:00:00");
+    for (let d = 1; d <= 14; d++) {
+      base.setDate(base.getDate() + 1);
+      const nextDate = base.toISOString().split("T")[0];
+      const dayBooked = new Set(
+        existingBookings.filter(b => b.preferred_date === nextDate).map(b => b.preferred_time)
+      );
+      for (const slot of SERVICE_TIMES) {
+        if (!dayBooked.has(slot)) {
+          return { suggestedDate: nextDate, suggestedTime: slot };
+        }
+      }
+    }
+    return null;
+  }
+
+  function isSlotTaken(date, time) {
+    if (!date || !time) return false;
+    return existingBookings.some(b => b.preferred_date === date && b.preferred_time === time);
+  }
+
+  function handleDateChange(date) {
+    setConflictInfo(null);
+    setForm(f => ({ ...f, preferred_date: date }));
+  }
+
+  function handleTimeChange(time) {
+    setConflictInfo(null);
+    setForm(f => {
+      if (f.preferred_date && isSlotTaken(f.preferred_date, time)) {
+        const next = findNextAvailable(f.preferred_date, time);
+        setConflictInfo(next ? { suggestedDate: next.suggestedDate, suggestedTime: next.suggestedTime } : { full: true });
+      }
+      return { ...f, preferred_time: time };
+    });
+  }
+
+  function acceptSuggestion() {
+    if (!conflictInfo || conflictInfo.full) return;
+    setForm(f => ({ ...f, preferred_date: conflictInfo.suggestedDate, preferred_time: conflictInfo.suggestedTime }));
+    setConflictInfo(null);
+  }
+
   async function handleSubmit(e) {
     e.preventDefault();
     if (!companyId) return;
+    // Final guard: re-check conflict before submitting
+    if (isSlotTaken(form.preferred_date, form.preferred_time)) {
+      const next = findNextAvailable(form.preferred_date, form.preferred_time);
+      setConflictInfo(next ? { suggestedDate: next.suggestedDate, suggestedTime: next.suggestedTime } : { full: true });
+      return;
+    }
     setSubmitting(true);
     await base44.functions.invoke('submitBooking', { ...form, company_id: companyId });
     setSubmitted(true);
