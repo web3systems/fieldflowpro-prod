@@ -57,6 +57,7 @@ export default function Jobs() {
   const [form, setForm] = useState(defaultJob);
   const [saving, setSaving] = useState(false);
   const [invoicePromptJob, setInvoicePromptJob] = useState(null); // job that just completed
+  const [invoiceActionLoading, setInvoiceActionLoading] = useState(false);
 
   useEffect(() => {
     if (activeCompany) loadData();
@@ -125,7 +126,8 @@ export default function Jobs() {
     }
   }
 
-  async function generateInvoiceFromJob(job) {
+  async function generateInvoiceFromJob(job, collectPayment = false) {
+    setInvoiceActionLoading(true);
     // If job came from an estimate, pull its line items
     let line_items = [];
     let subtotal = job.total_amount || 0;
@@ -142,19 +144,40 @@ export default function Jobs() {
     }
     const invoiceCount = await base44.entities.Invoice.list();
     const invoice_number = `INV-${String((invoiceCount.length || 0) + 1).padStart(4, "0")}`;
-    await base44.entities.Invoice.create({
+    const invoice = await base44.entities.Invoice.create({
       company_id: job.company_id,
       customer_id: job.customer_id,
       job_id: job.id,
       estimate_id: job.estimate_id || "",
       invoice_number,
-      status: "draft",
+      status: "sent",
       line_items,
       subtotal,
       total: job.total_amount || subtotal,
       amount_paid: 0,
     });
     setInvoicePromptJob(null);
+    setInvoiceActionLoading(false);
+
+    if (collectPayment && invoice?.id) {
+      const isInIframe = window.self !== window.top;
+      if (isInIframe) {
+        alert("Payment checkout only works from the published app, not from the preview.");
+        window.location.href = createPageUrl("Invoices");
+        return;
+      }
+      const response = await base44.functions.invoke("createStripeCheckout", {
+        invoice_id: invoice.id,
+        success_url: window.location.origin + createPageUrl("Payments"),
+        cancel_url: window.location.origin + createPageUrl("Invoices"),
+      });
+      if (response.data?.url) {
+        window.location.href = response.data.url;
+        return;
+      } else {
+        alert(response.data?.error || "Failed to create payment session. Invoice was created.");
+      }
+    }
     window.location.href = createPageUrl("Invoices");
   }
 
