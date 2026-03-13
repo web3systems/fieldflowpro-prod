@@ -38,13 +38,15 @@ export default function Users() {
   useEffect(() => { loadData(); }, []);
 
   async function loadData() {
-    const [allUsers, allAccess] = await Promise.all([
+    const [allUsers, allAccess, allTechs] = await Promise.all([
       base44.entities.User.list(),
       base44.entities.UserCompanyAccess.list(),
+      base44.entities.Technician.list(),
     ]);
     // Filter out admin/super_admin
     setUsers(allUsers.filter(u => u.role !== "admin" && u.role !== "super_admin"));
     setAccessRecords(allAccess);
+    setTechnicians(allTechs);
   }
 
   function getCompaniesForUser(userEmail) {
