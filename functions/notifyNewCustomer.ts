@@ -31,7 +31,7 @@ Deno.serve(async (req) => {
     // Also create in-app notifications
     const notificationPromises = recipients.map(async (r) => {
       // In-app notification
-      if (s.channels?.in_app !== false) {
+      if (r.channels?.in_app !== false) {
         await base44.asServiceRole.entities.Notification.create({
           company_id: customer.company_id,
           user_email: r.user_email,
