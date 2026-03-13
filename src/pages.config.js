@@ -47,6 +47,7 @@
  *
  * The mainPage value must match a key in the PAGES object exactly.
  */
+import Booking from './pages/Booking';
 import Companies from './pages/Companies';
 import CustomerPortal from './pages/CustomerPortal';
 import Customers from './pages/Customers';
@@ -54,15 +55,22 @@ import Dashboard from './pages/Dashboard';
 import Estimates from './pages/Estimates';
 import Invoices from './pages/Invoices';
 import Jobs from './pages/Jobs';
+import LeadCapture from './pages/LeadCapture';
 import Leads from './pages/Leads';
+import Notifications from './pages/Notifications';
+import Payments from './pages/Payments';
 import Reports from './pages/Reports';
+import Schedule from './pages/Schedule';
+import Services from './pages/Services';
 import Settings from './pages/Settings';
+import SuperAdminDashboard from './pages/SuperAdminDashboard';
 import Team from './pages/Team';
 import Users from './pages/Users';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
+    "Booking": Booking,
     "Companies": Companies,
     "CustomerPortal": CustomerPortal,
     "Customers": Customers,
@@ -70,9 +78,15 @@ export const PAGES = {
     "Estimates": Estimates,
     "Invoices": Invoices,
     "Jobs": Jobs,
+    "LeadCapture": LeadCapture,
     "Leads": Leads,
+    "Notifications": Notifications,
+    "Payments": Payments,
     "Reports": Reports,
+    "Schedule": Schedule,
+    "Services": Services,
     "Settings": Settings,
+    "SuperAdminDashboard": SuperAdminDashboard,
     "Team": Team,
     "Users": Users,
 }

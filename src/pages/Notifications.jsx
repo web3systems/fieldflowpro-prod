@@ -5,6 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import NotificationSettings from "@/components/notifications/NotificationSettings";
 import AdminNotificationManager from "@/components/notifications/AdminNotificationManager";
 import NotificationLog from "@/components/notifications/NotificationLog";
+import CustomerNotificationSettings from "@/components/notifications/CustomerNotificationSettings";
 
 export default function Notifications() {
   const { user, activeCompany } = useApp();
