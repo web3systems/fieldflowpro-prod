@@ -362,9 +362,12 @@ export default function Invoices() {
             <div>
               <div className="flex items-center justify-between mb-2">
                 <Label>Line Items</Label>
-                <Button variant="outline" size="sm" onClick={addItem} className="gap-1">
-                  <Plus className="w-3 h-3" /> Add Line
-                </Button>
+                <div className="flex items-center gap-2">
+                  <ServicePicker companyId={activeCompany?.id} onSelect={addServiceAsItem} />
+                  <Button variant="outline" size="sm" onClick={addItem} className="gap-1">
+                    <Plus className="w-3 h-3" /> Add Line
+                  </Button>
+                </div>
               </div>
               <div className="space-y-2">
                 {form.line_items.map((item, idx) => (
