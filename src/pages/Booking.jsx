@@ -33,9 +33,13 @@ export default function Booking() {
     async function init() {
       if (!companyId) { setLoading(false); return; }
       try {
-        const companies = await base44.entities.Company.list();
+        const [companies, bookings] = await Promise.all([
+          base44.entities.Company.list(),
+          base44.entities.ServiceBooking.filter({ company_id: companyId }),
+        ]);
         const found = companies.find(c => c.id === companyId);
         setCompany(found || null);
+        setExistingBookings(bookings.filter(b => b.status !== "cancelled"));
         // Try to prefill from logged-in user
         try {
           const u = await base44.auth.me();
