@@ -98,6 +98,21 @@ export default function Estimates() {
     setForm({ ...form, line_items: [...form.line_items, { ...defaultItem }] });
   }
 
+  function addServiceAsItem(service) {
+    const items = [...form.line_items];
+    // If last item is empty, replace it; otherwise append
+    const last = items[items.length - 1];
+    if (last && !last.description && !last.unit_price) {
+      items[items.length - 1] = service;
+    } else {
+      items.push(service);
+    }
+    const subtotal = items.reduce((s, i) => s + (i.total || 0), 0);
+    const tax_amount = subtotal * ((form.tax_rate || 0) / 100);
+    const total = subtotal + tax_amount - (form.discount || 0);
+    setForm({ ...form, line_items: items, subtotal, tax_amount, total });
+  }
+
   function removeItem(index) {
     const items = form.line_items.filter((_, i) => i !== index);
     const subtotal = items.reduce((s, i) => s + (i.total || 0), 0);
