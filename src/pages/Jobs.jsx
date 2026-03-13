@@ -4,7 +4,7 @@ import { useApp } from "../Layout";
 import { createPageUrl } from "@/utils";
 import {
   Plus, Search, Filter, MapPin, User, ChevronRight,
-  Briefcase, Calendar, X, FileText, DollarSign, CheckCircle
+  Briefcase, Calendar, X, FileText, DollarSign, CheckCircle, CreditCard
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
