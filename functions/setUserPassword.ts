@@ -19,9 +19,7 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Password must be at least 8 characters' }, { status: 400 });
     }
 
-    // Update user record with a hashed-ready password via service role
-    // Base44 supports updating user password via the users service role API
-    await base44.asServiceRole.users.setPassword(userId, password);
+    await base44.asServiceRole.auth.adminSetPassword({ userId, password });
 
     return Response.json({ success: true });
   } catch (error) {
