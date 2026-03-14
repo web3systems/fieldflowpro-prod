@@ -35,6 +35,9 @@ export default function Users() {
   const [saving, setSaving] = useState(false);
   const [inviting, setInviting] = useState(false);
   const [form, setForm] = useState({ email: "", name: "", role: "standard", company_ids: [], add_to_team: false });
+  const [editUser, setEditUser] = useState(null);
+  const [editForm, setEditForm] = useState({});
+  const [editSaving, setEditSaving] = useState(false);
 
   useEffect(() => { loadData(); }, []);
 
