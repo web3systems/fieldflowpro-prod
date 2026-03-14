@@ -38,6 +38,20 @@ export default function SettingsPage() {
   async function loadUser() {
     const u = await base44.auth.me();
     setUser(u);
+    setUserPrefs({
+      sms_consent: u?.sms_consent ?? false,
+      marketing_consent: u?.marketing_consent ?? false,
+      notifications_enabled: u?.notifications_enabled ?? true,
+      phone: u?.phone || "",
+    });
+  }
+
+  async function saveUserPrefs() {
+    setSavingPrefs(true);
+    await base44.auth.updateMe(userPrefs);
+    setSavingPrefs(false);
+    setSavedPrefs(true);
+    setTimeout(() => setSavedPrefs(false), 2500);
   }
 
   async function saveCompany() {
