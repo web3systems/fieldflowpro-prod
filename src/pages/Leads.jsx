@@ -202,7 +202,7 @@ export default function Leads() {
       <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
         <SheetContent className="w-full sm:max-w-lg overflow-y-auto">
           <SheetHeader>
-            <SheetTitle>{editing ? `${editing.first_name} ${editing.last_name}` : "New Lead"}</SheetTitle>
+            <SheetTitle>New Lead</SheetTitle>
           </SheetHeader>
           <div className="space-y-4 mt-4 pb-6">
             <div className="grid grid-cols-2 gap-3">
@@ -265,24 +265,10 @@ export default function Leads() {
               <Label>Notes</Label>
               <Textarea value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} rows={3} />
             </div>
-
-            {editing && editing.status !== "won" && (
-              <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
-                <p className="text-sm text-green-700 font-medium mb-2">Ready to convert this lead?</p>
-                <Button
-                  onClick={() => convertToCustomer(editing)}
-                  className="w-full bg-green-600 hover:bg-green-700 gap-2"
-                  size="sm"
-                >
-                  <ArrowRight className="w-4 h-4" /> Convert to Customer
-                </Button>
-              </div>
-            )}
-
             <div className="flex gap-3 pt-2">
               <Button variant="outline" onClick={() => setSheetOpen(false)} className="flex-1">Cancel</Button>
               <Button onClick={handleSave} disabled={saving || !form.first_name} className="flex-1 bg-blue-600 hover:bg-blue-700">
-                {saving ? "Saving..." : editing ? "Save Changes" : "Add Lead"}
+                {saving ? "Creating..." : "Add Lead"}
               </Button>
             </div>
           </div>
