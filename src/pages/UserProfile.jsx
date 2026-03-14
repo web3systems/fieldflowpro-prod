@@ -32,6 +32,8 @@ export default function UserProfile() {
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState({});
   const [saving, setSaving] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [resetStatus, setResetStatus] = useState(null); // null | 'sending' | 'sent' | 'error'
 
   useEffect(() => { loadData(); }, [id]);
 
