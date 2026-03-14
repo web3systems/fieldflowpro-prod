@@ -395,6 +395,110 @@ export default function Users() {
         </SheetContent>
       </Sheet>
 
+      {/* Edit User Sheet */}
+      <Sheet open={!!editUser} onOpenChange={(o) => !o && setEditUser(null)}>
+        <SheetContent className="w-full sm:max-w-lg overflow-y-auto">
+          <SheetHeader>
+            <SheetTitle>Edit User Profile</SheetTitle>
+            <SheetDescription>{editUser?.full_name} — {editUser?.email}</SheetDescription>
+          </SheetHeader>
+          <div className="space-y-5 mt-6 pb-6">
+            {/* Status */}
+            <div className="flex items-center justify-between p-3 rounded-lg border border-slate-200 bg-slate-50">
+              <div className="flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 text-slate-500" />
+                <span className="text-sm font-medium text-slate-700">Account Active</span>
+              </div>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={editForm.is_active}
+                  onChange={e => setEditForm(f => ({ ...f, is_active: e.target.checked }))}
+                  className="w-4 h-4 accent-blue-600"
+                />
+                <span className="text-sm text-slate-600">{editForm.is_active ? "Active" : "Inactive"}</span>
+              </label>
+            </div>
+
+            {/* Work Info */}
+            <div>
+              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Work Information</p>
+              <div className="space-y-3">
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <Label>Job Title</Label>
+                    <Input value={editForm.job_title} onChange={e => setEditForm(f => ({ ...f, job_title: e.target.value }))} placeholder="e.g. Field Technician" />
+                  </div>
+                  <div className="space-y-1">
+                    <Label>Department</Label>
+                    <Input value={editForm.department} onChange={e => setEditForm(f => ({ ...f, department: e.target.value }))} placeholder="e.g. Operations" />
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <Label className="flex items-center gap-1"><Calendar className="w-3 h-3" /> Start Date</Label>
+                  <Input type="date" value={editForm.start_date} onChange={e => setEditForm(f => ({ ...f, start_date: e.target.value }))} />
+                </div>
+                <div className="space-y-1">
+                  <Label>Bio / Notes</Label>
+                  <Textarea value={editForm.bio} onChange={e => setEditForm(f => ({ ...f, bio: e.target.value }))} rows={2} placeholder="Short bio or internal notes..." />
+                </div>
+              </div>
+            </div>
+
+            {/* Contact */}
+            <div>
+              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Contact Information</p>
+              <div className="space-y-3">
+                <div className="space-y-1">
+                  <Label className="flex items-center gap-1"><Phone className="w-3 h-3" /> Phone</Label>
+                  <Input type="tel" value={editForm.phone} onChange={e => setEditForm(f => ({ ...f, phone: e.target.value }))} placeholder="(555) 000-0000" />
+                </div>
+                <div className="space-y-1">
+                  <Label className="flex items-center gap-1"><MapPin className="w-3 h-3" /> Address</Label>
+                  <Input value={editForm.address} onChange={e => setEditForm(f => ({ ...f, address: e.target.value }))} placeholder="Street address" />
+                </div>
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="space-y-1 col-span-1">
+                    <Label>City</Label>
+                    <Input value={editForm.city} onChange={e => setEditForm(f => ({ ...f, city: e.target.value }))} />
+                  </div>
+                  <div className="space-y-1 col-span-1">
+                    <Label>State</Label>
+                    <Input value={editForm.state} onChange={e => setEditForm(f => ({ ...f, state: e.target.value }))} />
+                  </div>
+                  <div className="space-y-1 col-span-1">
+                    <Label>ZIP</Label>
+                    <Input value={editForm.zip} onChange={e => setEditForm(f => ({ ...f, zip: e.target.value }))} />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Emergency Contact */}
+            <div>
+              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Emergency Contact</p>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label>Name</Label>
+                  <Input value={editForm.emergency_contact_name} onChange={e => setEditForm(f => ({ ...f, emergency_contact_name: e.target.value }))} placeholder="Contact name" />
+                </div>
+                <div className="space-y-1">
+                  <Label>Phone</Label>
+                  <Input type="tel" value={editForm.emergency_contact_phone} onChange={e => setEditForm(f => ({ ...f, emergency_contact_phone: e.target.value }))} placeholder="(555) 000-0000" />
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-3 pt-2">
+              <Button variant="outline" onClick={() => setEditUser(null)} className="flex-1">Cancel</Button>
+              <Button onClick={handleEditSave} disabled={editSaving} className="flex-1 bg-blue-600 hover:bg-blue-700">
+                {editSaving ? "Saving..." : "Save Changes"}
+              </Button>
+            </div>
+          </div>
+        </SheetContent>
+      </Sheet>
+
       {/* Delete Confirm */}
       <AlertDialog open={!!deleteTarget} onOpenChange={() => setDeleteTarget(null)}>
         <AlertDialogContent>
