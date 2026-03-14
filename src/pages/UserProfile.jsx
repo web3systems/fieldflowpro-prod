@@ -11,8 +11,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   ArrowLeft, Mail, Phone, Calendar, Briefcase,
-  Building2, AlertCircle, Save, Pencil, Lock, KeyRound, CheckCircle
+  Building2, AlertCircle, Save, Pencil, Lock, KeyRound, CheckCircle, Bell
 } from "lucide-react";
+import NotificationSettings from "@/components/notifications/NotificationSettings";
 
 const ROLE_LABELS = {
   standard: { label: "Standard", color: "bg-slate-100 text-slate-700" },
