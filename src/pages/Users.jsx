@@ -245,6 +245,11 @@ export default function Users() {
                         return <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${ri.color}`}>{ri.label}</span>;
                       })()}
                       <Badge variant="secondary" className="gap-1"><Building2 className="w-3 h-3" />{userCompanies.length} {userCompanies.length === 1 ? "company" : "companies"}</Badge>
+                      {user && (
+                        <Button variant="ghost" size="icon" className="text-slate-400 hover:text-slate-700 hover:bg-slate-100" onClick={() => openEditUser(user)}>
+                          <Pencil className="w-4 h-4" />
+                        </Button>
+                      )}
                       <Button variant="ghost" size="icon" className="text-red-400 hover:text-red-600 hover:bg-red-50" onClick={() => setDeleteTarget(email)}>
                         <Trash2 className="w-4 h-4" />
                       </Button>
