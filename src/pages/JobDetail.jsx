@@ -16,6 +16,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { format } from "date-fns";
 import CustomerNotesSection from "../components/jobs/CustomerNotesSection";
+import InternalNotesSection from "../components/jobs/InternalNotesSection";
 
 const STATUS_OPTIONS = [
   { value: "new", label: "New", color: "bg-blue-100 text-blue-700 border-blue-200" },
