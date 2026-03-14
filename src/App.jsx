@@ -14,6 +14,9 @@ import Notifications from './pages/Notifications';
 import CustomerDetail from './pages/CustomerDetail';
 import LeadDetail from './pages/LeadDetail';
 import UserProfile from './pages/UserProfile';
+import EstimateDetail from './pages/EstimateDetail';
+import JobDetail from './pages/JobDetail';
+import InvoiceDetail from './pages/InvoiceDetail';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 
@@ -77,6 +80,9 @@ const AuthenticatedApp = () => {
       <Route path="/CustomerDetail/:id" element={<LayoutWrapper currentPageName="Customers"><CustomerDetail /></LayoutWrapper>} />
       <Route path="/LeadDetail/:id" element={<LayoutWrapper currentPageName="Leads"><LeadDetail /></LayoutWrapper>} />
       <Route path="/UserProfile/:id" element={<LayoutWrapper currentPageName="Users"><UserProfile /></LayoutWrapper>} />
+      <Route path="/EstimateDetail/:id" element={<LayoutWrapper currentPageName="Estimates"><EstimateDetail /></LayoutWrapper>} />
+      <Route path="/JobDetail/:id" element={<LayoutWrapper currentPageName="Jobs"><JobDetail /></LayoutWrapper>} />
+      <Route path="/InvoiceDetail/:id" element={<LayoutWrapper currentPageName="Invoices"><InvoiceDetail /></LayoutWrapper>} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
