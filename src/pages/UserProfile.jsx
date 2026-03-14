@@ -421,6 +421,37 @@ export default function UserProfile() {
               )}
             </CardContent>
           </Card>
+
+          {/* Notification Settings - Super Admin Only */}
+          {isSuperAdmin && userCompanies.length > 0 && (
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm flex items-center gap-2"><Bell className="w-4 h-4" /> Notification Settings</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {userCompanies.length > 1 && (
+                  <div className="space-y-1">
+                    <Label className="text-xs text-slate-500">Select Company</Label>
+                    <Select
+                      value={notifCompanyId || userCompanies[0]?.id}
+                      onValueChange={setNotifCompanyId}
+                    >
+                      <SelectTrigger className="h-8 text-sm"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {userCompanies.map(c => (
+                          <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+                <NotificationSettings
+                  user={profileUser}
+                  company={userCompanies.find(c => c.id === (notifCompanyId || userCompanies[0]?.id))}
+                />
+              </CardContent>
+            </Card>
+          )}
         </div>
       </div>
     </div>
