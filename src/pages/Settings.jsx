@@ -191,6 +191,71 @@ export default function SettingsPage() {
               </div>
             </CardContent>
           </Card>
+
+          <Card className="border-0 shadow-sm mt-4">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base flex items-center gap-2"><Bell className="w-4 h-4" />Communication Preferences</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label className="mb-1 block">Phone number (for SMS)</Label>
+                <Input
+                  value={userPrefs.phone}
+                  onChange={e => setUserPrefs(p => ({ ...p, phone: e.target.value }))}
+                  placeholder="(555) 555-5555"
+                  type="tel"
+                />
+              </div>
+
+              <div className="space-y-3 divide-y divide-slate-100">
+                {[
+                  {
+                    key: "notifications_enabled",
+                    label: "Notifications enabled",
+                    description: "Receive in-app and email notifications from this platform",
+                    icon: Bell,
+                  },
+                  {
+                    key: "sms_consent",
+                    label: "SMS notifications",
+                    description: "Receive job updates and reminders via text message",
+                    icon: MessageSquare,
+                  },
+                  {
+                    key: "marketing_consent",
+                    label: "Marketing communications",
+                    description: "Receive product updates, tips, and promotional content",
+                    icon: MessageSquare,
+                  },
+                ].map(({ key, label, description, icon: Icon }) => (
+                  <div key={key} className="flex items-center justify-between py-3 first:pt-0">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center flex-shrink-0">
+                        <Icon className="w-4 h-4 text-slate-600" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-slate-800">{label}</p>
+                        <p className="text-xs text-slate-400">{description}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className={`text-xs font-medium px-2 py-0.5 rounded-full border ${userPrefs[key] ? "bg-green-50 text-green-700 border-green-200" : "bg-red-50 text-red-600 border-red-200"}`}>
+                        {userPrefs[key] ? "Opted-in" : "Opted-out"}
+                      </span>
+                      <Switch
+                        checked={!!userPrefs[key]}
+                        onCheckedChange={v => setUserPrefs(p => ({ ...p, [key]: v }))}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <Button onClick={saveUserPrefs} disabled={savingPrefs} className="gap-2 bg-blue-600 hover:bg-blue-700">
+                {savedPrefs ? <><CheckCircle className="w-4 h-4" />Saved!</> : savingPrefs ? "Saving..." : <><Save className="w-4 h-4" />Save Preferences</>}
+              </Button>
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
     </div>
