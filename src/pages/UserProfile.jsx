@@ -92,6 +92,29 @@ export default function UserProfile() {
     }
   }
 
+  async function handleSetPassword() {
+    if (newPassword.length < 8) {
+      setSetPasswordError("Password must be at least 8 characters.");
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setSetPasswordError("Passwords do not match.");
+      return;
+    }
+    setSetPasswordError("");
+    setSetPasswordStatus('saving');
+    try {
+      await base44.functions.invoke('setUserPassword', { userId: profileUser.id, password: newPassword });
+      setSetPasswordStatus('success');
+      setNewPassword("");
+      setConfirmPassword("");
+      setTimeout(() => { setSetPasswordStatus(null); setShowSetPassword(false); }, 3000);
+    } catch (e) {
+      setSetPasswordError(e.message || "Failed to set password.");
+      setSetPasswordStatus('error');
+    }
+  }
+
   async function handleSave() {
     setSaving(true);
     await base44.entities.User.update(id, form);
