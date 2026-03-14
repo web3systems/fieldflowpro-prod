@@ -139,9 +139,7 @@ export default function Invoices() {
   }
 
   function openEdit(inv) {
-    setEditing(inv);
-    setForm({ ...defaultForm, ...inv });
-    setSheetOpen(true);
+    navigate(`/InvoiceDetail/${inv.id}`);
   }
 
   async function handleSave() {

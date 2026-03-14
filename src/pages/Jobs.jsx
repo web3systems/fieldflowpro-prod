@@ -98,9 +98,7 @@ export default function Jobs() {
   }
 
   function openEdit(job) {
-    setEditing(job);
-    setForm({ ...defaultJob, ...job });
-    setSheetOpen(true);
+    navigate(`/JobDetail/${job.id}`);
   }
 
   async function handleSave() {

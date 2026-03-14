@@ -132,9 +132,7 @@ export default function Estimates() {
   }
 
   function openEdit(est) {
-    setEditing(est);
-    setForm({ ...defaultForm, ...est });
-    setSheetOpen(true);
+    navigate(`/EstimateDetail/${est.id}`);
   }
 
   async function handleSave() {
