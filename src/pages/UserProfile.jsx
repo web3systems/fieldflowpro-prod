@@ -335,23 +335,61 @@ export default function UserProfile() {
                 <CardTitle className="text-sm flex items-center gap-2"><Lock className="w-4 h-4" /> Security</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <p className="text-sm text-slate-500">Send a password reset email to this user, prompting them to set a new password via the login page.</p>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleSendPasswordReset}
-                  disabled={resetStatus === 'sending' || resetStatus === 'sent'}
-                  className="gap-2"
-                >
-                  {resetStatus === 'sent'
-                    ? <><CheckCircle className="w-4 h-4 text-green-600" /> Reset Email Sent</>
-                    : resetStatus === 'sending'
-                    ? <><KeyRound className="w-4 h-4 animate-pulse" /> Sending...</>
-                    : <><KeyRound className="w-4 h-4" /> Send Password Reset Email</>}
-                </Button>
-                {resetStatus === 'error' && (
-                  <p className="text-xs text-red-500">Failed to send email. Please try again.</p>
-                )}
+                <div className="space-y-3">
+                  <div>
+                    <p className="text-sm font-medium text-slate-700 mb-1">Send Password Reset Email</p>
+                    <p className="text-xs text-slate-500 mb-2">Email the user with instructions to reset their password via the login page.</p>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleSendPasswordReset}
+                      disabled={resetStatus === 'sending' || resetStatus === 'sent'}
+                      className="gap-2"
+                    >
+                      {resetStatus === 'sent'
+                        ? <><CheckCircle className="w-4 h-4 text-green-600" /> Reset Email Sent</>
+                        : resetStatus === 'sending'
+                        ? <><KeyRound className="w-4 h-4 animate-pulse" /> Sending...</>
+                        : <><KeyRound className="w-4 h-4" /> Send Password Reset Email</>}
+                    </Button>
+                    {resetStatus === 'error' && <p className="text-xs text-red-500 mt-1">Failed to send email. Please try again.</p>}
+                  </div>
+
+                  <div className="border-t pt-3">
+                    <p className="text-sm font-medium text-slate-700 mb-1">Set Password Manually</p>
+                    <p className="text-xs text-slate-500 mb-2">Directly set a new password for this user.</p>
+                    {!showSetPassword ? (
+                      <Button variant="outline" size="sm" onClick={() => setShowSetPassword(true)} className="gap-2">
+                        <Lock className="w-4 h-4" /> Set New Password
+                      </Button>
+                    ) : (
+                      <div className="space-y-2">
+                        <Input
+                          type="password"
+                          placeholder="New password (min 8 chars)"
+                          value={newPassword}
+                          onChange={e => setNewPassword(e.target.value)}
+                        />
+                        <Input
+                          type="password"
+                          placeholder="Confirm password"
+                          value={confirmPassword}
+                          onChange={e => setConfirmPassword(e.target.value)}
+                        />
+                        {setPasswordError && <p className="text-xs text-red-500">{setPasswordError}</p>}
+                        {setPasswordStatus === 'success' && <p className="text-xs text-green-600">Password updated successfully!</p>}
+                        <div className="flex gap-2">
+                          <Button size="sm" onClick={handleSetPassword} disabled={setPasswordStatus === 'saving'} className="gap-2 bg-blue-600 hover:bg-blue-700">
+                            <Save className="w-3 h-3" />{setPasswordStatus === 'saving' ? "Saving..." : "Set Password"}
+                          </Button>
+                          <Button size="sm" variant="outline" onClick={() => { setShowSetPassword(false); setNewPassword(""); setConfirmPassword(""); setSetPasswordError(""); }}>
+                            Cancel
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
               </CardContent>
             </Card>
           )}
