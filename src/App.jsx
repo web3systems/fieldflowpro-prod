@@ -11,6 +11,7 @@ import Services from './pages/Services';
 import LeadCapture from './pages/LeadCapture';
 import Payments from './pages/Payments';
 import Notifications from './pages/Notifications';
+import CustomerDetail from './pages/CustomerDetail';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 
@@ -71,6 +72,7 @@ const AuthenticatedApp = () => {
       <Route path="/LeadCapture" element={<LeadCapture />} />
       <Route path="/Payments" element={<LayoutWrapper currentPageName="Payments"><Payments /></LayoutWrapper>} />
       <Route path="/Notifications" element={<LayoutWrapper currentPageName="Notifications"><Notifications /></LayoutWrapper>} />
+      <Route path="/CustomerDetail/:id" element={<LayoutWrapper currentPageName="Customers"><CustomerDetail /></LayoutWrapper>} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
