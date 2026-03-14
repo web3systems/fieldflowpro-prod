@@ -276,16 +276,24 @@ export default function JobDetail() {
 
           {/* Description */}
           <Card className="border-0 shadow-sm">
-            <CardHeader className="pb-3"><CardTitle className="text-base">Description</CardTitle></CardHeader>
+            <CardHeader className="pb-3"><CardTitle className="text-base">Job Description</CardTitle></CardHeader>
             <CardContent className="space-y-3">
-              <div>
-                <Label className="text-sm text-slate-600">Job Description</Label>
-                <Textarea value={form.description || ""} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} rows={3} placeholder="Job details..." className="mt-1" />
+              <Textarea value={form.description || ""} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} rows={3} placeholder="Job details..." />
+              <div className="flex justify-end">
+                <Button onClick={handleSave} disabled={saving} size="sm" className="gap-2 bg-blue-600 hover:bg-blue-700">
+                  <Save className="w-3.5 h-3.5" />{saving ? "Saving..." : "Save Description"}
+                </Button>
               </div>
-              <div>
-                <Label className="text-sm text-slate-600">Internal Notes</Label>
-                <Textarea value={form.internal_notes || ""} onChange={e => setForm(f => ({ ...f, internal_notes: e.target.value }))} rows={2} placeholder="Notes for your team..." className="mt-1" />
-              </div>
+            </CardContent>
+          </Card>
+
+          {/* Internal Notes */}
+          <Card className="border-0 shadow-sm">
+            <CardContent className="p-4">
+              <InternalNotesSection
+                job={job}
+                onNoteAdded={(updatedLog) => setJob(j => j ? { ...j, internal_notes_log: updatedLog } : j)}
+              />
             </CardContent>
           </Card>
 
@@ -299,12 +307,6 @@ export default function JobDetail() {
               />
             </CardContent>
           </Card>
-
-          <div className="flex justify-end">
-            <Button onClick={handleSave} disabled={saving} className="gap-2 bg-blue-600 hover:bg-blue-700">
-              <Save className="w-4 h-4" />{saving ? "Saving..." : "Save Changes"}
-            </Button>
-          </div>
         </div>
       </div>
     </div>
