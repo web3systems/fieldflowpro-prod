@@ -34,6 +34,11 @@ export default function UserProfile() {
   const [saving, setSaving] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
   const [resetStatus, setResetStatus] = useState(null); // null | 'sending' | 'sent' | 'error'
+  const [showSetPassword, setShowSetPassword] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [setPasswordStatus, setSetPasswordStatus] = useState(null); // null | 'saving' | 'success' | 'error'
+  const [setPasswordError, setSetPasswordError] = useState("");
 
   useEffect(() => { loadData(); }, [id]);
 
