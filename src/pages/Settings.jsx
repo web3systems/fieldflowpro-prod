@@ -21,6 +21,9 @@ export default function SettingsPage() {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [embedOpen, setEmbedOpen] = useState(false);
+  const [userPrefs, setUserPrefs] = useState({ sms_consent: false, marketing_consent: false, notifications_enabled: true, phone: "" });
+  const [savingPrefs, setSavingPrefs] = useState(false);
+  const [savedPrefs, setSavedPrefs] = useState(false);
 
   useEffect(() => {
     loadUser();
