@@ -16,7 +16,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { UserPlus, Trash2, Mail, Building2, Users as UsersIcon, Search, ShieldCheck, User } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { UserPlus, Trash2, Mail, Building2, Users as UsersIcon, Search, ShieldCheck, User, Pencil, Phone, MapPin, Calendar, AlertCircle } from "lucide-react";
 
 const ROLE_LABELS = {
   standard: { label: "Standard", desc: "Can use all non-admin features", color: "bg-slate-100 text-slate-700" },
