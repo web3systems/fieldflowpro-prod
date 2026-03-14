@@ -39,11 +39,13 @@ export default function UserProfile() {
 
   async function loadData() {
     setLoading(true);
-    const [allUsers, allAccess, allTechs] = await Promise.all([
+    const [allUsers, allAccess, allTechs, me] = await Promise.all([
       base44.entities.User.list(),
       base44.entities.UserCompanyAccess.list(),
       base44.entities.Technician.list(),
+      base44.auth.me(),
     ]);
+    setCurrentUser(me);
     const found = allUsers.find(u => u.id === id);
     setProfileUser(found || null);
     setAccessRecords(allAccess.filter(a => a.user_email === found?.email));
