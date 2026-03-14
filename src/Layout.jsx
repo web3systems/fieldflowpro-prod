@@ -46,7 +46,7 @@ const navItems = [
 const adminItems = [
   { label: "Admin Dashboard", icon: ShieldCheck, page: "SuperAdminDashboard" },
   { label: "Companies", icon: Building2, page: "Companies" },
-  { label: "Users", icon: UsersRound, page: "Users" },
+  { label: "Employees", icon: UsersRound, page: "Users" },
   { label: "Reports", icon: BarChart3, page: "Reports" },
 ];
 
