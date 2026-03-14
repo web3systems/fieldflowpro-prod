@@ -170,7 +170,7 @@ export default function Customers() {
       ) : (
         <div className="space-y-3">
           {filtered.map(customer => (
-            <Card key={customer.id} className="border-0 shadow-sm hover:shadow-md transition-all cursor-pointer" onClick={() => openEdit(customer)}>
+            <Card key={customer.id} className="border-0 shadow-sm hover:shadow-md transition-all cursor-pointer" onClick={() => navigate(`/CustomerDetail/${customer.id}`)}>
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-semibold flex-shrink-0">
