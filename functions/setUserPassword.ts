@@ -19,7 +19,10 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Password must be at least 8 characters' }, { status: 400 });
     }
 
-    await base44.asServiceRole.auth.adminSetPassword({ userId, password });
+    // Log available methods
+    console.log('asServiceRole keys:', Object.keys(base44.asServiceRole));
+    console.log('auth keys:', base44.auth ? Object.keys(base44.auth) : 'no auth');
+    return Response.json({ debug: true });
 
     return Response.json({ success: true });
   } catch (error) {
