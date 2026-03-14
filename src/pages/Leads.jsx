@@ -68,14 +68,7 @@ export default function Leads() {
   }
 
   function openCreate() {
-    setEditing(null);
     setForm(defaultForm);
-    setSheetOpen(true);
-  }
-
-  function openEdit(lead) {
-    setEditing(lead);
-    setForm({ ...defaultForm, ...lead });
     setSheetOpen(true);
   }
 
@@ -86,35 +79,10 @@ export default function Leads() {
       company_id: activeCompany.id,
       estimated_value: parseFloat(form.estimated_value) || 0
     };
-    if (editing) {
-      await base44.entities.Lead.update(editing.id, data);
-    } else {
-      await base44.entities.Lead.create(data);
-    }
+    const created = await base44.entities.Lead.create(data);
     setSaving(false);
     setSheetOpen(false);
-    await loadLeads();
-  }
-
-  async function updateStage(lead, status) {
-    await base44.entities.Lead.update(lead.id, { status });
-    setLeads(leads.map(l => l.id === lead.id ? { ...l, status } : l));
-  }
-
-  async function convertToCustomer(lead) {
-    await base44.entities.Customer.create({
-      company_id: activeCompany.id,
-      first_name: lead.first_name,
-      last_name: lead.last_name,
-      email: lead.email,
-      phone: lead.phone,
-      address: lead.address,
-      source: lead.source,
-      status: "active"
-    });
-    await base44.entities.Lead.update(lead.id, { status: "won" });
-    await loadLeads();
-    setSheetOpen(false);
+    navigate(createPageUrl(`LeadDetail/${created.id}`));
   }
 
   async function handleDelete() {
