@@ -127,7 +127,11 @@ export default function Users() {
 
   async function handleDelete(userEmail) {
     const recs = accessRecords.filter(a => a.user_email === userEmail);
-    await Promise.all(recs.map(r => base44.entities.UserCompanyAccess.delete(r.id)));
+    const user = users.find(u => u.email === userEmail);
+    await Promise.all([
+      ...recs.map(r => base44.entities.UserCompanyAccess.delete(r.id)),
+      ...(user ? [base44.entities.User.delete(user.id)] : []),
+    ]);
     setDeleteTarget(null);
     await loadData();
   }
