@@ -41,7 +41,6 @@ const navItems = [
   { label: "Notifications", icon: Bell, page: "Notifications" },
   { label: "Team", icon: Wrench, page: "Team" },
   { label: "Services", icon: Wrench, page: "Services" },
-  { label: "Reports", icon: BarChart3, page: "Reports" },
 ];
 
 const adminItems = [
