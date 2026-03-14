@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { useApp } from "../Layout";
+import { createPageUrl } from "@/utils";
 import {
-  Plus, Search, UserPlus, Phone, Mail, TrendingUp,
-  ChevronRight, ArrowRight, Trash2, DollarSign, Code2
+  Plus, Search, UserPlus, Phone, Mail,
+  ChevronRight, Trash2, Code2
 } from "lucide-react";
 import EmbedCodeModal from "../components/leads/EmbedCodeModal";
 import { Button } from "@/components/ui/button";
@@ -11,11 +13,11 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue
-} from "@/components/ui/select";
-import {
   Sheet, SheetContent, SheetHeader, SheetTitle
 } from "@/components/ui/sheet";
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue
+} from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
