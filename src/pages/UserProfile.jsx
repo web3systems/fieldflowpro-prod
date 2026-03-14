@@ -71,6 +71,22 @@ export default function UserProfile() {
     };
   }
 
+  async function handleSendPasswordReset() {
+    setResetStatus('sending');
+    try {
+      await base44.integrations.Core.SendEmail({
+        to: profileUser.email,
+        subject: "Password Reset Request",
+        body: `Hi ${profileUser.full_name || profileUser.email},\n\nAn administrator has requested a password reset for your account.\n\nPlease visit the app login page and use the "Forgot Password" option to set a new password for your account (${profileUser.email}).\n\nIf you did not request this, please contact your administrator.\n\nThank you`
+      });
+      setResetStatus('sent');
+      setTimeout(() => setResetStatus(null), 4000);
+    } catch {
+      setResetStatus('error');
+      setTimeout(() => setResetStatus(null), 4000);
+    }
+  }
+
   async function handleSave() {
     setSaving(true);
     await base44.entities.User.update(id, form);
