@@ -46,6 +46,7 @@ const defaultJob = {
 };
 
 export default function Jobs() {
+  const navigate = useNavigate();
   const { activeCompany } = useApp();
   const [jobs, setJobs] = useState([]);
   const [customers, setCustomers] = useState([]);

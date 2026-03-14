@@ -42,6 +42,7 @@ const defaultForm = {
 };
 
 export default function Invoices() {
+  const navigate = useNavigate();
   const { activeCompany } = useApp();
   const [invoices, setInvoices] = useState([]);
   const [customers, setCustomers] = useState([]);

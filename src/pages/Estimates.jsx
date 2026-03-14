@@ -41,6 +41,7 @@ const defaultForm = {
 };
 
 export default function Estimates() {
+  const navigate = useNavigate();
   const { activeCompany } = useApp();
   const [estimates, setEstimates] = useState([]);
   const [customers, setCustomers] = useState([]);
