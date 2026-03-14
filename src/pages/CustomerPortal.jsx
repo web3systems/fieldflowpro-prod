@@ -64,6 +64,18 @@ export default function CustomerPortal() {
       );
 
       if (matched.length === 0) {
+        // If user has a staff role (not a customer), redirect to main app
+        if (u?.role && u.role !== 'user') {
+          window.location.href = '/Dashboard';
+          return;
+        }
+        // Check if they might be a staff user with default 'user' role too
+        // by seeing if they have UserCompanyAccess records
+        const accessRecords = await base44.entities.UserCompanyAccess.filter({ user_email: u.email });
+        if (accessRecords.length > 0) {
+          window.location.href = '/Dashboard';
+          return;
+        }
         setLoading(false);
         return;
       }
