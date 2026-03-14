@@ -1,0 +1,146 @@
+import { useState, useEffect, useCallback } from "react";
+import { useParams, useNavigate, Link } from "react-router-dom";
+import { base44 } from "@/api/base44Client";
+import { useApp } from "../Layout";
+import { createPageUrl } from "@/utils";
+import { ArrowLeft, FileText, Briefcase, DollarSign, ExternalLink } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+
+import CustomerSidebar from "@/components/customers/CustomerSidebar";
+import CustomerAddresses from "@/components/customers/CustomerAddresses";
+import CustomerTasks from "@/components/customers/CustomerTasks";
+import CustomerNotes from "@/components/customers/CustomerNotes";
+import UpcomingAppointments from "@/components/customers/UpcomingAppointments";
+
+const statusStyle = {
+  active: "bg-green-100 text-green-700",
+  inactive: "bg-gray-100 text-gray-600",
+  lead: "bg-blue-100 text-blue-700",
+};
+
+export default function CustomerDetail() {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const { activeCompany } = useApp();
+  const [customer, setCustomer] = useState(null);
+  const [jobs, setJobs] = useState([]);
+  const [invoices, setInvoices] = useState([]);
+  const [activities, setActivities] = useState([]);
+  const [technicians, setTechnicians] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [sendingInvite, setSendingInvite] = useState(false);
+
+  const loadData = useCallback(async () => {
+    if (!id) return;
+    const [cust, j, inv, acts, techs] = await Promise.all([
+      base44.entities.Customer.filter({ id }),
+      base44.entities.Job.filter({ customer_id: id }),
+      base44.entities.Invoice.filter({ customer_id: id }),
+      base44.entities.Activity.filter({ related_to_id: id }),
+      activeCompany ? base44.entities.Technician.filter({ company_id: activeCompany.id }) : Promise.resolve([]),
+    ]);
+    if (cust.length > 0) setCustomer(cust[0]);
+    setJobs(j);
+    setInvoices(inv);
+    setActivities(acts.sort((a, b) => new Date(b.created_date) - new Date(a.created_date)));
+    setTechnicians(techs);
+    setLoading(false);
+  }, [id, activeCompany]);
+
+  useEffect(() => { loadData(); }, [loadData]);
+
+  async function handleUpdate(data) {
+    const updated = await base44.entities.Customer.update(id, data);
+    setCustomer(prev => ({ ...prev, ...data }));
+  }
+
+  async function handlePortalInvite() {
+    if (!customer?.email) return;
+    setSendingInvite(true);
+    const portalUrl = window.location.origin + "/CustomerPortal";
+    await base44.functions.invoke("sendPortalInvite", { customer_id: id, portal_url: portalUrl });
+    setSendingInvite(false);
+    alert("Portal invite sent to " + customer.email);
+  }
+
+  if (loading) return (
+    <div className="p-6 space-y-4">
+      {[1,2,3].map(i => <div key={i} className="h-32 bg-slate-100 rounded-xl animate-pulse" />)}
+    </div>
+  );
+
+  if (!customer) return (
+    <div className="p-6 text-center text-slate-500">Customer not found.</div>
+  );
+
+  return (
+    <div className="p-4 md:p-6 pb-24 lg:pb-6 max-w-7xl mx-auto">
+      {/* Header */}
+      <div className="flex items-center gap-3 mb-5">
+        <Button variant="ghost" size="sm" onClick={() => navigate(createPageUrl("Customers"))} className="gap-1 text-slate-500">
+          <ArrowLeft className="w-4 h-4" /> Customers
+        </Button>
+        <div className="h-4 w-px bg-slate-200" />
+        <div className="flex items-center gap-2 flex-1 min-w-0">
+          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-bold flex-shrink-0 text-sm">
+            {customer.first_name?.[0]}{customer.last_name?.[0]}
+          </div>
+          <div>
+            <h1 className="text-xl font-bold text-slate-900 leading-tight">{customer.first_name} {customer.last_name}</h1>
+            <Badge className={`text-xs mt-0.5 ${statusStyle[customer.status] || "bg-gray-100 text-gray-600"}`}>{customer.status}</Badge>
+          </div>
+        </div>
+        <div className="flex gap-2 flex-shrink-0">
+          <Button size="sm" variant="outline" onClick={() => navigate(createPageUrl(`Estimates?customer_id=${id}`))} className="gap-1 text-xs hidden sm:flex">
+            <FileText className="w-3.5 h-3.5" /> New Estimate
+          </Button>
+          <Button size="sm" variant="outline" onClick={() => navigate(createPageUrl(`Jobs?customer_id=${id}`))} className="gap-1 text-xs hidden sm:flex">
+            <Briefcase className="w-3.5 h-3.5" /> New Job
+          </Button>
+          <Button size="sm" className="bg-blue-600 hover:bg-blue-700 gap-1 text-xs" onClick={() => navigate(createPageUrl(`Invoices?customer_id=${id}`))}>
+            <DollarSign className="w-3.5 h-3.5" /> New Invoice
+          </Button>
+        </div>
+      </div>
+
+      {/* Split Layout */}
+      <div className="flex gap-5">
+        {/* Left sidebar */}
+        <div className="w-64 flex-shrink-0 space-y-4 hidden lg:block">
+          <CustomerSidebar
+            customer={customer}
+            invoices={invoices}
+            onUpdate={handleUpdate}
+            onPortalInvite={handlePortalInvite}
+            sendingInvite={sendingInvite}
+          />
+        </div>
+
+        {/* Main content */}
+        <div className="flex-1 min-w-0 space-y-4">
+          {/* Mobile sidebar summary */}
+          <div className="lg:hidden">
+            <CustomerSidebar
+              customer={customer}
+              invoices={invoices}
+              onUpdate={handleUpdate}
+              onPortalInvite={handlePortalInvite}
+              sendingInvite={sendingInvite}
+            />
+          </div>
+
+          <UpcomingAppointments jobs={jobs} technicians={technicians} />
+          <CustomerTasks customer={customer} onUpdate={handleUpdate} />
+          <CustomerAddresses customer={customer} onUpdate={handleUpdate} />
+          <CustomerNotes
+            customerId={id}
+            companyId={customer.company_id}
+            activities={activities}
+            onActivityAdded={loadData}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
