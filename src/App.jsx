@@ -12,6 +12,7 @@ import LeadCapture from './pages/LeadCapture';
 import Payments from './pages/Payments';
 import Notifications from './pages/Notifications';
 import CustomerDetail from './pages/CustomerDetail';
+import LeadDetail from './pages/LeadDetail';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 
