@@ -164,7 +164,7 @@ export default function Leads() {
           {filtered.map(lead => {
             const stage = getStage(lead.status);
             return (
-              <Card key={lead.id} className="border-0 shadow-sm hover:shadow-md transition-all cursor-pointer" onClick={() => openEdit(lead)}>
+              <Card key={lead.id} className="border-0 shadow-sm hover:shadow-md transition-all cursor-pointer" onClick={() => navigate(createPageUrl(`LeadDetail/${lead.id}`))}>
                 <CardContent className="p-4">
                   <div className="flex items-center gap-3">
                     <div className={`w-2 h-10 rounded-full flex-shrink-0 ${stage.dot}`} />
