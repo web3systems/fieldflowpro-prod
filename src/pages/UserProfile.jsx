@@ -40,6 +40,7 @@ export default function UserProfile() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [setPasswordStatus, setSetPasswordStatus] = useState(null); // null | 'saving' | 'success' | 'error'
   const [setPasswordError, setSetPasswordError] = useState("");
+  const [notifCompanyId, setNotifCompanyId] = useState(null);
 
   useEffect(() => { loadData(); }, [id]);
 
