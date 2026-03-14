@@ -17,6 +17,8 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { Link } from "react-router-dom";
+import { createPageUrl } from "@/utils";
 import { UserPlus, Trash2, Mail, Building2, Users as UsersIcon, Search, ShieldCheck, User, Pencil, Phone, MapPin, Calendar, AlertCircle } from "lucide-react";
 
 const ROLE_LABELS = {
