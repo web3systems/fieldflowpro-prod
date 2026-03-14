@@ -130,6 +130,32 @@ export default function Users() {
     await loadData();
   }
 
+  function openEditUser(user) {
+    setEditUser(user);
+    setEditForm({
+      job_title: user.job_title || "",
+      department: user.department || "",
+      phone: user.phone || "",
+      bio: user.bio || "",
+      address: user.address || "",
+      city: user.city || "",
+      state: user.state || "",
+      zip: user.zip || "",
+      emergency_contact_name: user.emergency_contact_name || "",
+      emergency_contact_phone: user.emergency_contact_phone || "",
+      start_date: user.start_date || "",
+      is_active: user.is_active !== false,
+    });
+  }
+
+  async function handleEditSave() {
+    setEditSaving(true);
+    await base44.entities.User.update(editUser.id, editForm);
+    setEditSaving(false);
+    setEditUser(null);
+    await loadData();
+  }
+
   function isInTeam(email, companyId) {
     return !!technicians.find(t => t.email === email && t.company_id === companyId);
   }
