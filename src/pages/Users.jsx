@@ -236,7 +236,11 @@ export default function Users() {
                         {(userName || email)[0]?.toUpperCase()}
                       </div>
                       <div className="min-w-0">
-                        {userName && <p className="font-medium text-slate-900 truncate">{userName}</p>}
+                        {userName && (
+                          user
+                            ? <Link to={`/UserProfile/${user.id}`} className="font-medium text-slate-900 truncate hover:text-blue-600 hover:underline">{userName}</Link>
+                            : <p className="font-medium text-slate-900 truncate">{userName}</p>
+                        )}
                         <p className="text-sm text-slate-500 flex items-center gap-1 truncate"><Mail className="w-3 h-3" />{email}</p>
                         {(user?.job_title || user?.phone) && (
                           <div className="flex items-center gap-3 mt-0.5">
