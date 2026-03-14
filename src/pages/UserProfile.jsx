@@ -300,6 +300,34 @@ export default function UserProfile() {
             </CardContent>
           </Card>
 
+          {/* Security - Super Admin Only */}
+          {isSuperAdmin && (
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm flex items-center gap-2"><Lock className="w-4 h-4" /> Security</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <p className="text-sm text-slate-500">Send a password reset email to this user, prompting them to set a new password via the login page.</p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleSendPasswordReset}
+                  disabled={resetStatus === 'sending' || resetStatus === 'sent'}
+                  className="gap-2"
+                >
+                  {resetStatus === 'sent'
+                    ? <><CheckCircle className="w-4 h-4 text-green-600" /> Reset Email Sent</>
+                    : resetStatus === 'sending'
+                    ? <><KeyRound className="w-4 h-4 animate-pulse" /> Sending...</>
+                    : <><KeyRound className="w-4 h-4" /> Send Password Reset Email</>}
+                </Button>
+                {resetStatus === 'error' && (
+                  <p className="text-xs text-red-500">Failed to send email. Please try again.</p>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
           {/* Emergency Contact */}
           <Card>
             <CardHeader className="pb-3">
