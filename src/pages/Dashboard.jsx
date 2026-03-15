@@ -216,6 +216,8 @@ export default function Dashboard() {
         ))}
       </div>
 
+      <RevenueChart invoices={invoices} />
+
       <div className="grid lg:grid-cols-2 gap-6">
         {/* Today's Jobs */}
         <Card className="border-0 shadow-sm">

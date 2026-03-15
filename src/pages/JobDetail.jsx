@@ -268,12 +268,15 @@ export default function JobDetail() {
           {form.status === "completed" && (
             <Card className="border-0 shadow-sm">
               <CardContent className="p-4 space-y-2">
-                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">Collect Payment</p>
+                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">Actions</p>
                 <Button onClick={() => generateInvoice(true)} disabled={invoiceActionLoading} className="w-full gap-2 bg-violet-600 hover:bg-violet-700">
                   <CreditCard className="w-4 h-4" />{invoiceActionLoading ? "Processing..." : "Collect via Stripe"}
                 </Button>
                 <Button onClick={() => generateInvoice(false)} disabled={invoiceActionLoading} variant="outline" className="w-full gap-2">
                   <FileText className="w-4 h-4" /> Generate Invoice
+                </Button>
+                <Button onClick={sendReviewRequest} disabled={reviewLoading} variant="outline" className="w-full gap-2 text-amber-600 border-amber-200 hover:bg-amber-50">
+                  <Star className="w-4 h-4" />{reviewLoading ? "Sending..." : "Request Review"}
                 </Button>
               </CardContent>
             </Card>
