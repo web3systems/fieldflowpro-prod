@@ -415,7 +415,7 @@ export default function Users() {
       <Sheet open={!!editUser} onOpenChange={(o) => !o && setEditUser(null)}>
         <SheetContent className="w-full sm:max-w-lg overflow-y-auto">
           <SheetHeader>
-            <SheetTitle>Edit User Profile</SheetTitle>
+            <SheetTitle>Edit Employee Profile</SheetTitle>
             <SheetDescription>{editUser?.full_name} — {editUser?.email}</SheetDescription>
           </SheetHeader>
           <div className="space-y-5 mt-6 pb-6">
