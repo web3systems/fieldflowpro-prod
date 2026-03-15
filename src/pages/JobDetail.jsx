@@ -5,8 +5,10 @@ import { useApp } from "../Layout";
 import { createPageUrl } from "@/utils";
 import {
   ArrowLeft, MapPin, User, Calendar, DollarSign, Briefcase,
-  Save, Edit2, FileText, CreditCard, CheckCircle
+  Save, Edit2, FileText, CreditCard, CheckCircle, Star, RefreshCw
 } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

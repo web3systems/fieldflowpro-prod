@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import OnboardingBanner from "../components/dashboard/OnboardingBanner";
+import RevenueChart from "../components/dashboard/RevenueChart";
 
 const statusColors = {
   new: "bg-blue-100 text-blue-700",
