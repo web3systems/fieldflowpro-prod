@@ -38,7 +38,6 @@ const navItems = [
   { label: "Schedule", icon: CalendarDays, page: "Schedule" },
   { label: "Invoices", icon: DollarSign, page: "Invoices" },
   { label: "Payments", icon: CreditCard, page: "Payments" },
-  { label: "Marketing", icon: Megaphone, page: "Marketing" },
   { label: "Notifications", icon: Bell, page: "Notifications" },
   { label: "Team", icon: Wrench, page: "Team" },
   { label: "Services", icon: Wrench, page: "Services" },
