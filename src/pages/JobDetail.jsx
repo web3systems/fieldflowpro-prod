@@ -56,6 +56,8 @@ export default function JobDetail() {
   const [form, setForm] = useState(defaultJob);
   const [editingInfo, setEditingInfo] = useState(false);
   const [invoiceActionLoading, setInvoiceActionLoading] = useState(false);
+  const [reviewLoading, setReviewLoading] = useState(false);
+  const { toast } = useToast();
 
   const loadData = useCallback(async () => {
     const [jobs, c, t] = await Promise.all([
@@ -77,6 +79,13 @@ export default function JobDetail() {
     setJob(j => ({ ...j, ...form }));
     setSaving(false);
     setEditingInfo(false);
+  }
+
+  async function sendReviewRequest() {
+    setReviewLoading(true);
+    await base44.functions.invoke("sendReviewRequest", { job_id: id });
+    setReviewLoading(false);
+    toast({ title: "Review request sent!" });
   }
 
   async function generateInvoice(collectPayment = false) {
