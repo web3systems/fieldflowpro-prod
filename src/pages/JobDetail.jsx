@@ -274,6 +274,22 @@ export default function JobDetail() {
             </CardContent>
           </Card>
 
+          {/* Google Maps */}
+          {fullAddress && (
+            <Card className="border-0 shadow-sm">
+              <CardContent className="p-0 overflow-hidden rounded-xl">
+                <iframe
+                  width="100%"
+                  height="240"
+                  style={{ border: 0 }}
+                  loading="lazy"
+                  allowFullScreen
+                  src={`https://maps.google.com/maps?q=${encodeURIComponent(fullAddress)}&output=embed`}
+                />
+              </CardContent>
+            </Card>
+          )}
+
           {/* Description */}
           <Card className="border-0 shadow-sm">
             <CardHeader className="pb-3"><CardTitle className="text-base">Job Description</CardTitle></CardHeader>
