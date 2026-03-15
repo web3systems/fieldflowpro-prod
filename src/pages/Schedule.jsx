@@ -47,7 +47,7 @@ export default function Schedule() {
   const [customers, setCustomers] = useState([]);
   const [techs, setTechs] = useState([]);
   const [bookings, setBookings] = useState([]);
-  const [view, setView] = useState(Views.WEEK);
+  const [view, setView] = useState(Views.MONTH);
   const [date, setDate] = useState(new Date());
   const [sheetOpen, setSheetOpen] = useState(false);
   const [form, setForm] = useState(defaultJob);
