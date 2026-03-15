@@ -221,6 +221,24 @@ export default function JobDetail() {
                     <Label className="text-xs">Total Amount ($)</Label>
                     <Input type="number" value={form.total_amount || ""} onChange={e => setForm(f => ({ ...f, total_amount: parseFloat(e.target.value) || 0 }))} className="h-8 text-sm" />
                   </div>
+                  <div className="flex items-center gap-2">
+                    <input type="checkbox" id="is_recurring" checked={form.is_recurring || false} onChange={e => setForm(f => ({ ...f, is_recurring: e.target.checked }))} className="rounded" />
+                    <Label htmlFor="is_recurring" className="text-xs cursor-pointer">Recurring Job</Label>
+                  </div>
+                  {form.is_recurring && (
+                    <div>
+                      <Label className="text-xs">Repeat Every</Label>
+                      <Select value={form.recurrence_interval || "monthly"} onValueChange={v => setForm(f => ({ ...f, recurrence_interval: v }))}>
+                        <SelectTrigger className="h-8 text-sm"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="weekly">Weekly</SelectItem>
+                          <SelectItem value="biweekly">Bi-Weekly</SelectItem>
+                          <SelectItem value="monthly">Monthly</SelectItem>
+                          <SelectItem value="quarterly">Quarterly</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
                   <Button size="sm" onClick={handleSave} disabled={saving} className="w-full gap-1 bg-blue-600 hover:bg-blue-700">
                     <Save className="w-3 h-3" />{saving ? "Saving..." : "Save"}
                   </Button>
@@ -238,6 +256,9 @@ export default function JobDetail() {
                   )}
                   {form.total_amount > 0 && (
                     <div className="flex items-center gap-2 text-sm"><DollarSign className="w-3.5 h-3.5 text-slate-400" /><span className="font-semibold text-slate-900">${form.total_amount.toLocaleString()}</span></div>
+                  )}
+                  {form.is_recurring && (
+                    <div className="flex items-center gap-2 text-sm"><RefreshCw className="w-3.5 h-3.5 text-blue-400" /><span className="text-slate-500 capitalize">{form.recurrence_interval || "monthly"}</span></div>
                   )}
                 </>
               )}
