@@ -38,11 +38,14 @@ export default function Dashboard() {
   }, [activeCompany]);
 
   useEffect(() => {
-    base44.auth.me().then(u => {
+    base44.auth.me().then(async u => {
       setUser(u);
-      // If this user is a customer (role = "user"), redirect to the customer portal
+      // Only redirect to customer portal if they're role "user" AND have no staff access records
       if (u?.role === "user") {
-        navigate("/CustomerPortal", { replace: true });
+        const accessRecords = await base44.entities.UserCompanyAccess.filter({ user_email: u.email });
+        if (accessRecords.length === 0) {
+          navigate("/CustomerPortal", { replace: true });
+        }
       }
     }).catch(() => {});
   }, []);
