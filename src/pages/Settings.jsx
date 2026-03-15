@@ -117,8 +117,13 @@ export default function SettingsPage() {
                     <Input value={companyForm.zip || ""} onChange={e => setCompanyForm({ ...companyForm, zip: e.target.value })} />
                   </div>
                   <div>
-                    <Label>Website</Label>
-                    <Input value={companyForm.website || ""} onChange={e => setCompanyForm({ ...companyForm, website: e.target.value })} />
+                   <Label>Website</Label>
+                   <Input value={companyForm.website || ""} onChange={e => setCompanyForm({ ...companyForm, website: e.target.value })} />
+                  </div>
+                  <div className="col-span-2">
+                   <Label>Google / Yelp Review URL</Label>
+                   <Input value={companyForm.google_review_url || ""} onChange={e => setCompanyForm({ ...companyForm, google_review_url: e.target.value })} placeholder="https://g.page/r/..." />
+                   <p className="text-xs text-slate-400 mt-1">Used when sending review requests to customers after completed jobs.</p>
                   </div>
                   <div>
                     <Label>Default Tax Rate (%)</Label>
