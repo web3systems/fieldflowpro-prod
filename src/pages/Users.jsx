@@ -222,7 +222,7 @@ export default function Users() {
       {filtered.length === 0 ? (
         <div className="text-center py-20 text-slate-400">
           <UsersIcon className="w-10 h-10 mx-auto mb-3 opacity-40" />
-          <p className="font-medium">No users yet</p>
+          <p className="font-medium">No employees yet</p>
           <p className="text-sm mt-1">Invite employees to get started</p>
         </div>
       ) : (
