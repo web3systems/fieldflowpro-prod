@@ -56,12 +56,14 @@ export default function CustomerNotificationSettings({ company }) {
     const list = await base44.entities.CustomerNotificationSetting.filter({ company_id: company.id });
     if (list.length > 0) {
       setSettingId(list[0].id);
+      const saved = list[0];
       setSettings({
         ...DEFAULT_SETTINGS,
-        ...list[0],
-        channels: { ...DEFAULT_SETTINGS.channels, ...list[0].channels },
-        events: { ...DEFAULT_SETTINGS.events, ...list[0].events },
-        custom_messages: { ...DEFAULT_SETTINGS.custom_messages, ...list[0].custom_messages },
+        ...saved,
+        is_enabled: saved.is_enabled !== undefined && saved.is_enabled !== null ? saved.is_enabled : DEFAULT_SETTINGS.is_enabled,
+        channels: { ...DEFAULT_SETTINGS.channels, ...saved.channels },
+        events: { ...DEFAULT_SETTINGS.events, ...saved.events },
+        custom_messages: { ...DEFAULT_SETTINGS.custom_messages, ...saved.custom_messages },
       });
     } else {
       setSettings({ ...DEFAULT_SETTINGS });
