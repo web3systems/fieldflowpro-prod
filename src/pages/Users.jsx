@@ -519,7 +519,7 @@ export default function Users() {
       <AlertDialog open={!!deleteTarget} onOpenChange={() => setDeleteTarget(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Remove User Access</AlertDialogTitle>
+            <AlertDialogTitle>Remove Employee Access</AlertDialogTitle>
             <AlertDialogDescription>
               This will remove <strong>{deleteTarget}</strong> from all companies. They will no longer be able to access any company data.
             </AlertDialogDescription>
