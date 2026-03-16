@@ -95,6 +95,12 @@ export const PAGES = {
     "SuperAdminDashboard": SuperAdminDashboard,
     "Team": Team,
     "Users": Users,
+    "Accounting": Accounting,
+    "AccountingTransactions": AccountingTransactions,
+    "AccountingAccounts": AccountingAccounts,
+    "AccountingReports": AccountingReports,
+    "AccountingBanks": AccountingBanks,
+    "AccountingAdmin": AccountingAdmin,
 }
 
 export const pagesConfig = {
