@@ -39,6 +39,7 @@ const navItems = [
   { label: "Invoices", icon: DollarSign, page: "Invoices" },
   { label: "Payments", icon: CreditCard, page: "Payments" },
   { label: "Notifications", icon: Bell, page: "Notifications" },
+  { label: "Accounting", icon: Calculator, page: "Accounting" },
   { label: "Team", icon: Wrench, page: "Team" },
   { label: "Services", icon: Wrench, page: "Services" },
 ];
