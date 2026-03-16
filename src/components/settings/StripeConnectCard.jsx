@@ -142,6 +142,18 @@ export default function StripeConnectCard({ company }) {
           </Button>
         </div>
 
+        {connectError && (
+          <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+            <p className="text-sm font-medium text-red-700">Could not connect Stripe</p>
+            <p className="text-xs text-red-600 mt-0.5">{connectError}</p>
+            {connectError.includes("signed up for Connect") && (
+              <a href="https://dashboard.stripe.com/connect" target="_blank" rel="noreferrer" className="text-xs text-blue-600 underline mt-1 inline-block">
+                Enable Stripe Connect →
+              </a>
+            )}
+          </div>
+        )}
+
         <p className="text-xs text-slate-400">
           Each company has its own Stripe account. Customer payments go directly to that account.
         </p>
