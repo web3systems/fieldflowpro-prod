@@ -66,6 +66,12 @@ import Settings from './pages/Settings';
 import SuperAdminDashboard from './pages/SuperAdminDashboard';
 import Team from './pages/Team';
 import Users from './pages/Users';
+import Accounting from './pages/Accounting';
+import AccountingTransactions from './pages/AccountingTransactions';
+import AccountingAccounts from './pages/AccountingAccounts';
+import AccountingReports from './pages/AccountingReports';
+import AccountingBanks from './pages/AccountingBanks';
+import AccountingAdmin from './pages/AccountingAdmin';
 import __Layout from './Layout.jsx';
 
 
