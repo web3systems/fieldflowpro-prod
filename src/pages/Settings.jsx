@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useApp } from "../Layout";
-import { Settings, Save, Building2, User, Link, Copy, Code2, Bell, MessageSquare, CheckCircle } from "lucide-react";
+import { Settings, Save, Building2, User, Link, Copy, Code2, Bell, MessageSquare, CheckCircle, CreditCard } from "lucide-react";
+import StripeConnectCard from "../components/settings/StripeConnectCard";
 import { Switch } from "@/components/ui/switch";
 import BookingEmbedModal from "../components/booking/BookingEmbedModal";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
