@@ -28,7 +28,19 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Invoice is already fully paid' }, { status: 400 });
     }
 
-    // Always use a single line item for the exact amount due (handles tax, discounts, partial payments)
+    // Look up the company's connected Stripe account
+    let stripeOptions = {};
+    if (invoice.company_id) {
+      const companies = await base44.asServiceRole.entities.Company.filter({ id: invoice.company_id });
+      const company = companies[0];
+      if (company?.stripe_account_id && company?.stripe_onboarding_complete) {
+        stripeOptions = { stripeAccount: company.stripe_account_id };
+        console.log(`Routing payment to connected account: ${company.stripe_account_id}`);
+      } else {
+        console.log(`Company ${invoice.company_id} has no connected Stripe account — using platform account`);
+      }
+    }
+
     const lineItems = [{
       price_data: {
         currency: 'usd',
@@ -38,7 +50,7 @@ Deno.serve(async (req) => {
       quantity: 1,
     }];
 
-    const session = await stripe.checkout.sessions.create({
+    const sessionParams = {
       payment_method_types: ['card'],
       line_items: lineItems,
       mode: 'payment',
@@ -48,7 +60,9 @@ Deno.serve(async (req) => {
         base44_app_id: Deno.env.get("BASE44_APP_ID"),
         invoice_id: invoice_id,
       },
-    });
+    };
+
+    const session = await stripe.checkout.sessions.create(sessionParams, stripeOptions);
 
     console.log(`Stripe checkout session created: ${session.id} for invoice ${invoice_id}`);
     return Response.json({ url: session.url, session_id: session.id });
