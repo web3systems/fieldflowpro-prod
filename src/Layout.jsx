@@ -46,6 +46,7 @@ const navItems = [
 const adminItems = [
   { label: "Admin Dashboard", icon: ShieldCheck, page: "SuperAdminDashboard" },
   { label: "Marketing", icon: Megaphone, page: "Marketing" },
+  { label: "Accounting", icon: Calculator, page: "AccountingAdmin" },
   { label: "Companies", icon: Building2, page: "Companies" },
   { label: "Employees", icon: UsersRound, page: "Users" },
   { label: "Reports", icon: BarChart3, page: "Reports" },
