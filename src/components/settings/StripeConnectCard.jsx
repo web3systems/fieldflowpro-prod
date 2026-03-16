@@ -9,6 +9,7 @@ export default function StripeConnectCard({ company }) {
   const [status, setStatus] = useState(null);
   const [loading, setLoading] = useState(true);
   const [connecting, setConnecting] = useState(false);
+  const [connectError, setConnectError] = useState(null);
 
   useEffect(() => {
     if (company?.id) checkStatus();
@@ -43,10 +44,12 @@ export default function StripeConnectCard({ company }) {
       return_url: returnUrl,
       refresh_url: `${window.location.origin}/Settings?stripe_refresh=true`
     });
+    setConnecting(false);
     if (res.data?.url) {
       window.location.href = res.data.url;
+    } else if (res.data?.error) {
+      setConnectError(res.data.error);
     }
-    setConnecting(false);
   }
 
   async function openDashboard() {
