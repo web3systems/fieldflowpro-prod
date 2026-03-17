@@ -11,6 +11,9 @@ Deno.serve(async (req) => {
     if (old_data?.status === "scheduled") return Response.json({ skipped: true });
     if (!data.scheduled_start) return Response.json({ skipped: true });
 
+    // Verify company_id exists (automation calls don't have user context, so we verify data integrity)
+    if (!data.company_id) return Response.json({ skipped: true, reason: "no company_id" });
+
     const customers = await base44.asServiceRole.entities.Customer.filter({ id: data.customer_id });
     const customer = customers[0];
     if (!customer?.email) return Response.json({ skipped: true, reason: "no customer email" });
