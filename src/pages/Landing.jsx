@@ -243,7 +243,7 @@ export default function Landing() {
       </section>
 
       {/* LOGOS / SOCIAL PROOF */}
-      <section className="bg-slate-50 pt-24 pb-12 border-b border-slate-100">
+      <section className="bg-slate-50 pt-12 pb-12 border-b border-slate-100">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center">
           <p className="text-slate-400 text-sm mb-8 uppercase tracking-widest font-medium">Trusted by field service businesses across industries</p>
           <div className="flex flex-wrap justify-center gap-6 text-slate-400 font-semibold text-sm">
