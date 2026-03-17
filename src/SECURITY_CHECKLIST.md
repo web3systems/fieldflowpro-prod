@@ -19,12 +19,12 @@ Deno.serve(async (req) => {
 ```
 
 **Affected Functions** (audit these):
-- [ ] sendPortalInvite.js - Line 1-20 (verify customer belongs to company)
-- [ ] sendInvoiceEmail.js - verify invoice.company_id matches user's access
-- [ ] sendReviewRequest.js - verify job.company_id matches user's access
-- [ ] notifyJobScheduled.js - verify job.company_id matches user's access
-- [ ] notifyNewCustomer.js - verify customer.company_id matches user's access
-- [ ] All create/update/delete operations in backend
+- [x] sendPortalInvite.js - verify customer belongs to company
+- [x] sendInvoiceEmail.js - verify invoice.company_id matches user's access
+- [x] sendReviewRequest.js - verify job.company_id matches user's access
+- [x] notifyJobScheduled.js - verify job.company_id matches user's access
+- [x] notifyNewCustomer.js - customer.company_id is already secure (automation-based)
+- [x] subscriptionWebhook.js - Stripe-validated, already secure
 
 **Frontend Pages to Update** (add entity ownership validation):
 - [ ] CustomerDetail.jsx - verify customer.company_id === activeCompany.id before operations
