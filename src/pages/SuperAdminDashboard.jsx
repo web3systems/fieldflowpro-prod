@@ -6,7 +6,7 @@ import { createPageUrl } from "@/utils";
 import {
   Building2, Users, CheckCircle, XCircle, Clock, Briefcase,
   DollarSign, UserPlus, Bell, RefreshCw, ChevronRight,
-  ShieldCheck, TrendingUp, AlertTriangle, Search, Mail, CreditCard
+  ShieldCheck, TrendingUp, AlertTriangle, Search, Mail, CreditCard, Zap
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -200,6 +200,9 @@ export default function SuperAdminDashboard() {
           <TabsTrigger value="companies">Companies</TabsTrigger>
           <TabsTrigger value="stripe" className="gap-2">
             <CreditCard className="w-4 h-4" /> Stripe Connect
+          </TabsTrigger>
+          <TabsTrigger value="subscriptions" className="gap-2">
+            <Zap className="w-4 h-4" /> Subscriptions
           </TabsTrigger>
         </TabsList>
 
