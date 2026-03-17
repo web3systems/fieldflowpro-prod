@@ -18,6 +18,7 @@ import EstimateDetail from './pages/EstimateDetail';
 import JobDetail from './pages/JobDetail';
 import InvoiceDetail from './pages/InvoiceDetail';
 import Marketing from './pages/Marketing';
+import Register from './pages/Register';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 
