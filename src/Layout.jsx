@@ -130,7 +130,7 @@ export default function Layout({ children, currentPageName }) {
               </div>
               <div>
                 <p className="text-white font-bold text-sm leading-tight">FieldFlow</p>
-                <p className="text-slate-400 text-xs">Pro</p>
+                <p className="text-blue-400 text-xs font-medium">Pro</p>
               </div>
             </div>
             <button onClick={() => setSidebarOpen(false)} className="lg:hidden text-slate-400 hover:text-white">
