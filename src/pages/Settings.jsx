@@ -83,6 +83,9 @@ export default function SettingsPage() {
           <TabsTrigger value="payments" className="gap-2">
             <CreditCard className="w-4 h-4" /> Payments
           </TabsTrigger>
+          <TabsTrigger value="billing" className="gap-2">
+            <CreditCard className="w-4 h-4" /> Billing
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="company">
