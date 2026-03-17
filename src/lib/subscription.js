@@ -6,7 +6,7 @@ export const PLANS = {
     price: 0,
     color: 'text-slate-600',
     bg: 'bg-slate-100',
-    limits: { users: 2, jobs_per_month: 50 },
+    limits: { users: 2, jobs_per_month: 50, subsidiaries: 1 },
     features: ['Core CRM', 'Jobs & Scheduling', 'Invoicing', 'Customer Portal'],
   },
   starter: {
@@ -15,8 +15,8 @@ export const PLANS = {
     priceId: 'price_1TBz4DPEbOjnaqMMQADp0xuA',
     color: 'text-blue-600',
     bg: 'bg-blue-50',
-    limits: { users: 3, jobs_per_month: 100 },
-    features: ['Core CRM', 'Jobs & Scheduling', 'Invoicing', 'Customer Portal', 'Lead Capture', 'Estimates'],
+    limits: { users: 3, jobs_per_month: 100, subsidiaries: 1 },
+    features: ['Core CRM', 'Jobs & Scheduling', 'Invoicing', 'Customer Portal', 'Lead Capture', 'Estimates', '1 Subsidiary'],
   },
   professional: {
     name: 'Professional',
@@ -24,8 +24,8 @@ export const PLANS = {
     priceId: 'price_1TBz4DPEbOjnaqMMf2JHm3yW',
     color: 'text-violet-600',
     bg: 'bg-violet-50',
-    limits: { users: 10, jobs_per_month: null },
-    features: ['Everything in Starter', 'Accounting Module', 'Marketing Campaigns', 'Reports & Analytics', 'Stripe Payments', 'Recurring Jobs'],
+    limits: { users: 10, jobs_per_month: null, subsidiaries: 5 },
+    features: ['Everything in Starter', 'Up to 5 Subsidiaries', 'Accounting Module', 'Marketing Campaigns', 'Reports & Analytics', 'Stripe Payments', 'Recurring Jobs'],
     popular: true,
   },
   enterprise: {
@@ -34,8 +34,8 @@ export const PLANS = {
     priceId: 'price_1TBz4DPEbOjnaqMM6KLChSbK',
     color: 'text-amber-600',
     bg: 'bg-amber-50',
-    limits: { users: null, jobs_per_month: null },
-    features: ['Everything in Professional', 'Unlimited Users', 'Priority Support', 'Custom Onboarding', 'SLA Guarantee'],
+    limits: { users: null, jobs_per_month: null, subsidiaries: null },
+    features: ['Everything in Professional', 'Unlimited Subsidiaries', 'Unlimited Users', 'Priority Support', 'Custom Onboarding', 'SLA Guarantee'],
   },
 };
 
