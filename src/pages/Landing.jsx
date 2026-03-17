@@ -3,8 +3,7 @@ import { useState, useEffect } from "react";
 import {
   Globe, CheckCircle, ArrowRight, Menu, X, Star,
   Briefcase, Users, DollarSign, Calendar, BarChart3,
-  MessageSquare, Zap, Shield, Smartphone, ChevronDown,
-  ChevronLeft, ChevronRight
+  MessageSquare, Zap, Shield, Smartphone, ChevronDown
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -157,107 +156,6 @@ function FAQItem({ q, a }) {
       </button>
       {open && <p className="mt-3 text-slate-500 text-sm leading-relaxed">{a}</p>}
     </div>
-  );
-}
-
-const HERO_SLIDES = [
-  {
-    image: "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=1600&auto=format&fit=crop&q=80",
-    badge: "🔨 Built for Handyman Businesses",
-    headline: "Fix more jobs, chase fewer invoices.",
-    sub: "FieldFlow Pro handles your scheduling, estimates, and payments so you can focus on the work — not the paperwork.",
-    cta: "Start Free Trial",
-  },
-  {
-    image: "https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?w=1600&auto=format&fit=crop&q=80",
-    badge: "📅 Smart Scheduling",
-    headline: "Book more. Drive less. Stay organized.",
-    sub: "Drag-and-drop job scheduling with automatic technician dispatching and real-time customer notifications.",
-    cta: "See How It Works",
-  },
-  {
-    image: "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=1600&auto=format&fit=crop&q=80",
-    badge: "💰 Get Paid Faster",
-    headline: "Send the invoice before you leave the driveway.",
-    sub: "Create estimates on-site, convert to invoices instantly, and collect payment online — all from your phone.",
-    cta: "Get Started Free",
-  },
-];
-
-function HeroCarousel() {
-  const [current, setCurrent] = useState(0);
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrent(prev => (prev + 1) % HERO_SLIDES.length);
-    }, 5000);
-    return () => clearInterval(timer);
-  }, []);
-
-  const slide = HERO_SLIDES[current];
-
-  return (
-    <section className="relative overflow-hidden text-white" style={{ minHeight: "560px" }}>
-      {HERO_SLIDES.map((s, i) => (
-        <div
-          key={i}
-          className={`absolute inset-0 transition-opacity duration-700 ${i === current ? "opacity-100" : "opacity-0"}`}
-        >
-          <img src={s.image} alt="" className="w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-slate-900/50" />
-        </div>
-      ))}
-
-      <div className="relative max-w-6xl mx-auto px-4 sm:px-6 py-24 md:py-36 text-center flex flex-col items-center">
-        <Badge className="bg-blue-600/30 text-blue-200 border-blue-400/40 mb-6 text-xs px-3 py-1">
-          {slide.badge}
-        </Badge>
-        <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold leading-tight mb-6 tracking-tight max-w-3xl">
-          {slide.headline}
-        </h1>
-        <p className="text-lg sm:text-xl text-slate-200 max-w-2xl mx-auto mb-10 leading-relaxed">
-          {slide.sub}
-        </p>
-        <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Link to="/Register">
-            <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white gap-2 px-8 w-full sm:w-auto">
-              {slide.cta} <ArrowRight className="w-4 h-4" />
-            </Button>
-          </Link>
-          <a href="#features">
-            <Button size="lg" variant="outline" className="border-slate-400 text-slate-200 hover:bg-white/10 hover:text-white w-full sm:w-auto">
-              See How It Works
-            </Button>
-          </a>
-        </div>
-        <p className="text-slate-400 text-sm mt-6">No credit card required · Cancel anytime</p>
-
-        {/* Controls */}
-        <div className="flex items-center gap-4 mt-10">
-          <button
-            onClick={() => setCurrent(prev => (prev - 1 + HERO_SLIDES.length) % HERO_SLIDES.length)}
-            className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition"
-          >
-            <ChevronLeft className="w-4 h-4" />
-          </button>
-          <div className="flex gap-2">
-            {HERO_SLIDES.map((_, i) => (
-              <button
-                key={i}
-                onClick={() => setCurrent(i)}
-                className={`w-2 h-2 rounded-full transition-all ${i === current ? "bg-white w-6" : "bg-white/40"}`}
-              />
-            ))}
-          </div>
-          <button
-            onClick={() => setCurrent(prev => (prev + 1) % HERO_SLIDES.length)}
-            className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition"
-          >
-            <ChevronRight className="w-4 h-4" />
-          </button>
-        </div>
-      </div>
-    </section>
   );
 }
 
