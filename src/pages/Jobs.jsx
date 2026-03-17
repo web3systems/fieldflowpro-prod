@@ -257,7 +257,7 @@ export default function Jobs() {
                 <div className="flex items-start gap-3">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <h3 className="font-semibold text-slate-800">{job.title}</h3>
+                      <h3 className="font-bold text-slate-900">{getCustomerName(job.customer_id)}</h3>
                       <Badge className={`text-xs border ${getStatusStyle(job.status)}`}>
                         {job.status?.replace("_", " ")}
                       </Badge>
@@ -265,13 +265,11 @@ export default function Jobs() {
                         <Badge className="text-xs bg-red-100 text-red-700 border-red-200 border">Urgent</Badge>
                       )}
                     </div>
-                    <div className="flex items-center gap-4 mt-2 flex-wrap">
-                      {job.customer_id && (
-                        <span className="flex items-center gap-1 text-xs text-slate-500">
-                          <User className="w-3 h-3" />
-                          {getCustomerName(job.customer_id)}
-                        </span>
-                      )}
+                    {job.title && (
+                      <p className="text-sm text-slate-500 mt-0.5">{job.title}</p>
+                    )}
+                    <div className="flex items-center gap-4 mt-1.5 flex-wrap">
+                      {false && (
                       {job.scheduled_start && (
                         <span className="flex items-center gap-1 text-xs text-slate-500">
                           <Calendar className="w-3 h-3" />
