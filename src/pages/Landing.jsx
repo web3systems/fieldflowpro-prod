@@ -252,7 +252,6 @@ export default function Landing() {
           </div>
           {/* Mockup */}
           <div className="bg-slate-800 rounded-t-2xl border border-slate-700 overflow-hidden shadow-2xl">
-            <div className="bg-slate-800 rounded-t-2xl border border-slate-700 overflow-hidden shadow-2xl">
             <div className="flex items-center gap-2 px-4 py-3 border-b border-slate-700">
               <div className="w-3 h-3 rounded-full bg-red-500/70" />
               <div className="w-3 h-3 rounded-full bg-yellow-500/70" />
@@ -274,7 +273,6 @@ export default function Landing() {
               ))}
             </div>
           </div>
-        </div>
         </div>
       </section>
 
