@@ -100,7 +100,18 @@ export default function Customers() {
   }
 
   async function handleDelete() {
-    await base44.entities.Customer.delete(deleteTarget.id);
+    const customerId = deleteTarget.id;
+    const [jobs, invoices, estimates] = await Promise.all([
+      base44.entities.Job.filter({ customer_id: customerId }),
+      base44.entities.Invoice.filter({ customer_id: customerId }),
+      base44.entities.Estimate.filter({ customer_id: customerId }),
+    ]);
+    await Promise.all([
+      ...jobs.map(j => base44.entities.Job.delete(j.id)),
+      ...invoices.map(i => base44.entities.Invoice.delete(i.id)),
+      ...estimates.map(e => base44.entities.Estimate.delete(e.id)),
+      base44.entities.Customer.delete(customerId),
+    ]);
     setDeleteTarget(null);
     await loadCustomers();
   }
