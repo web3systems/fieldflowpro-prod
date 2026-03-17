@@ -42,6 +42,7 @@ const navItems = [
   { label: "Accounting", icon: Calculator, page: "Accounting" },
   { label: "Team", icon: Wrench, page: "Team" },
   { label: "Services", icon: Wrench, page: "Services" },
+  { label: "Settings", icon: Settings, page: "CompanySettings" },
 ];
 
 const adminItems = [
