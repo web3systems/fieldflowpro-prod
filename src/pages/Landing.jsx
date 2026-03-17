@@ -213,6 +213,13 @@ export default function Landing() {
 
       {/* HERO */}
       <section className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 text-white">
+        <div className="absolute inset-0">
+          <img
+            src="https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=1600&auto=format&fit=crop&q=80"
+            alt=""
+            className="w-full h-full object-cover opacity-10"
+          />
+        </div>
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-blue-600/20 via-transparent to-transparent" />
         <div className="relative max-w-6xl mx-auto px-4 sm:px-6 py-24 md:py-32 text-center">
           <Badge className="bg-blue-600/20 text-blue-300 border-blue-500/30 mb-6 text-xs px-3 py-1">
