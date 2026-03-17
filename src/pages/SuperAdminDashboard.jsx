@@ -437,6 +437,25 @@ export default function SuperAdminDashboard() {
             })}
           </div>
         </TabsContent>
+        {/* STRIPE CONNECT */}
+        <TabsContent value="stripe" className="mt-4">
+          <Card className="border-0 shadow-sm">
+            <CardHeader className="px-4 py-4 border-b border-slate-100">
+              <CardTitle className="text-sm font-semibold text-slate-700 flex items-center gap-2">
+                <CreditCard className="w-4 h-4 text-violet-500" />
+                Stripe Connect — Per Company
+              </CardTitle>
+              <p className="text-xs text-slate-400 mt-1">Each company can have its own Stripe account. Customer payments route directly to that account.</p>
+            </CardHeader>
+            <CardContent className="p-0">
+              {companies.length === 0 ? (
+                <p className="p-6 text-center text-slate-400 text-sm">No companies yet.</p>
+              ) : (
+                companies.map(co => <CompanyStripeRow key={co.id} company={co} />)
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
       </Tabs>
 
       {/* Approve Dialog */}
