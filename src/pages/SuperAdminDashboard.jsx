@@ -19,6 +19,7 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter
 } from "@/components/ui/dialog";
 import { format } from "date-fns";
+import CompanyStripeRow from "@/components/settings/CompanyStripeRow";
 
 export default function SuperAdminDashboard() {
   const [user, setUser] = useState(null);
