@@ -48,9 +48,13 @@ const AuthenticatedApp = () => {
     if (authError.type === 'user_not_registered') {
       return <UserNotRegisteredError />;
     } else if (authError.type === 'auth_required') {
-      // Redirect to login automatically
-      navigateToLogin();
-      return null;
+      // Only redirect to login for protected routes
+      const publicPaths = ['/', '/Landing', '/Register', '/Booking', '/LeadCapture'];
+      const isPublicPath = publicPaths.some(p => window.location.pathname === p || window.location.pathname.startsWith(p + '/'));
+      if (!isPublicPath) {
+        navigateToLogin();
+        return null;
+      }
     }
   }
 
