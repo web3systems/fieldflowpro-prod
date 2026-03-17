@@ -97,14 +97,14 @@ export default function Companies() {
     }
     setSaving(false);
     setDialogOpen(false);
-    await loadCompanies();
+    await loadData();
     refreshCompanies();
   }
 
   async function handleDelete() {
     await base44.entities.Company.delete(deleteTarget.id);
     setDeleteTarget(null);
-    await loadCompanies();
+    await loadData();
     refreshCompanies();
   }
 
