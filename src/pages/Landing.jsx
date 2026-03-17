@@ -143,6 +143,108 @@ const FAQS = [
   },
 ];
 
+const HERO_SLIDES = [
+  {
+    image: "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=1600&auto=format&fit=crop&q=80",
+    badge: "🚀 Built for Field Service Businesses",
+    title: "Run your field service",
+    titleHighlight: "business smarter.",
+    subtitle: "FieldFlow Pro gives cleaning, landscaping, plumbing, and electrical businesses the tools to schedule jobs, manage customers, send invoices, and grow — all in one place.",
+  },
+  {
+    image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1600&auto=format&fit=crop&q=80",
+    badge: "🔧 Handyman & Repair Services",
+    title: "From the first call to",
+    titleHighlight: "the final invoice.",
+    subtitle: "Manage every handyman job with ease — dispatch techs, track time on-site, and collect payment the moment the work is done.",
+  },
+  {
+    image: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1600&auto=format&fit=crop&q=80",
+    badge: "📈 Grow Your Revenue",
+    title: "Stop juggling tools.",
+    titleHighlight: "Start growing faster.",
+    subtitle: "Replace spreadsheets, paper invoices, and disconnected apps with one platform built specifically for field service businesses.",
+  },
+];
+
+function HeroCarousel() {
+  const [current, setCurrent] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrent(prev => (prev + 1) % HERO_SLIDES.length);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const slide = HERO_SLIDES[current];
+
+  return (
+    <section className="relative overflow-hidden bg-slate-900 text-white">
+      {HERO_SLIDES.map((s, i) => (
+        <div
+          key={i}
+          className={`absolute inset-0 transition-opacity duration-1000 ${i === current ? "opacity-100" : "opacity-0"}`}
+        >
+          <img src={s.image} alt="" className="w-full h-full object-cover opacity-25" />
+        </div>
+      ))}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-blue-600/20 via-transparent to-transparent" />
+
+      <div className="relative max-w-6xl mx-auto px-4 sm:px-6 py-24 md:py-32 text-center">
+        <Badge className="bg-blue-600/20 text-blue-300 border-blue-500/30 mb-6 text-xs px-3 py-1">
+          {slide.badge}
+        </Badge>
+        <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold leading-tight mb-6 tracking-tight">
+          {slide.title}<br className="hidden sm:block" />
+          <span className="text-blue-400"> {slide.titleHighlight}</span>
+        </h1>
+        <p className="text-lg sm:text-xl text-slate-300 max-w-2xl mx-auto mb-10 leading-relaxed">
+          {slide.subtitle}
+        </p>
+        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <Link to="/Register">
+            <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white gap-2 px-8 w-full sm:w-auto">
+              Start Free Trial <ArrowRight className="w-4 h-4" />
+            </Button>
+          </Link>
+          <a href="#features">
+            <Button size="lg" variant="outline" className="border-slate-600 text-slate-300 hover:bg-slate-800 hover:text-white w-full sm:w-auto">
+              See How It Works
+            </Button>
+          </a>
+        </div>
+        <p className="text-slate-500 text-sm mt-6">No credit card required · Cancel anytime</p>
+
+        {/* Carousel Controls */}
+        <div className="flex items-center justify-center gap-4 mt-10">
+          <button
+            onClick={() => setCurrent((current - 1 + HERO_SLIDES.length) % HERO_SLIDES.length)}
+            className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+          <div className="flex gap-2">
+            {HERO_SLIDES.map((_, i) => (
+              <button
+                key={i}
+                onClick={() => setCurrent(i)}
+                className={`w-2 h-2 rounded-full transition-all ${i === current ? "bg-blue-400 w-6" : "bg-white/30"}`}
+              />
+            ))}
+          </div>
+          <button
+            onClick={() => setCurrent((current + 1) % HERO_SLIDES.length)}
+            className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function FAQItem({ q, a }) {
   const [open, setOpen] = useState(false);
   return (
