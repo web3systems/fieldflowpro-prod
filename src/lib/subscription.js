@@ -21,7 +21,7 @@ export const PLANS = {
   professional: {
     name: 'Professional',
     price: 99,
-    priceId: 'price_1TBz4DPEbOjnaqMMf2JHm3yW',
+    priceId: 'price_1TC3qE1h2Mdv0bDi8fyZ8r78',
     color: 'text-violet-600',
     bg: 'bg-violet-50',
     limits: { users: 10, jobs_per_month: null, subsidiaries: 5 },
