@@ -470,6 +470,70 @@ export default function SuperAdminDashboard() {
         </TabsContent>
       </Tabs>
 
+        {/* SUBSCRIPTIONS */}
+        <TabsContent value="subscriptions" className="mt-4">
+          <Card className="border-0 shadow-sm">
+            <CardHeader className="px-4 py-4 border-b border-slate-100">
+              <CardTitle className="text-sm font-semibold text-slate-700 flex items-center gap-2">
+                <Zap className="w-4 h-4 text-amber-500" />
+                All Company Subscriptions
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
+              {companies.length === 0 ? (
+                <p className="p-6 text-center text-slate-400 text-sm">No companies yet.</p>
+              ) : (
+                companies.map(co => {
+                  const sub = subscriptions.find(s => s.company_id === co.id);
+                  const plan = PLANS[sub?.plan || "trial"];
+                  const statusColors = {
+                    active: "bg-green-100 text-green-700",
+                    trialing: "bg-blue-100 text-blue-700",
+                    past_due: "bg-amber-100 text-amber-700",
+                    cancelled: "bg-red-100 text-red-700",
+                  };
+                  return (
+                    <div key={co.id} className="flex items-center gap-4 px-4 py-3 border-b border-slate-50 last:border-0">
+                      <div className="w-9 h-9 rounded-xl flex items-center justify-center text-white text-sm font-bold flex-shrink-0" style={{ backgroundColor: co.primary_color || "#3b82f6" }}>
+                        {co.name[0]}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-slate-800 truncate">{co.name}</p>
+                        <p className="text-xs text-slate-400">{sub?.owner_email || "No owner"}</p>
+                      </div>
+                      <div className="text-right flex-shrink-0">
+                        <p className="text-sm font-semibold text-slate-700">{plan?.name}</p>
+                        <p className="text-xs text-slate-400">${plan?.price || 0}/mo</p>
+                      </div>
+                      <Badge className={statusColors[sub?.status] || "bg-slate-100 text-slate-500"}>
+                        {sub?.status || "no sub"}
+                      </Badge>
+                    </div>
+                  );
+                })
+              )}
+            </CardContent>
+          </Card>
+
+          {/* MRR summary */}
+          <div className="mt-4 grid grid-cols-3 gap-4">
+            {["starter","professional","enterprise"].map(planKey => {
+              const count = subscriptions.filter(s => s.plan === planKey && ["active","trialing"].includes(s.status)).length;
+              const mrr = count * PLANS[planKey].price;
+              return (
+                <Card key={planKey} className="border-0 shadow-sm">
+                  <CardContent className="p-4">
+                    <p className="text-xs text-slate-500 uppercase tracking-wide font-semibold">{PLANS[planKey].name}</p>
+                    <p className="text-2xl font-bold text-slate-900 mt-1">{count}</p>
+                    <p className="text-sm text-green-600 font-medium">${mrr.toLocaleString()}/mo</p>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        </TabsContent>
+      </Tabs>
+
       {/* Approve Dialog */}
       <Dialog open={!!approveDialog} onOpenChange={() => setApproveDialog(null)}>
         <DialogContent className="sm:max-w-md">
