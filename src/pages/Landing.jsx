@@ -310,43 +310,7 @@ export default function Landing() {
         )}
       </header>
 
-      {/* HERO */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 text-white">
-        <div className="absolute inset-0">
-          <img
-            src="https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=1600&auto=format&fit=crop&q=80"
-            alt=""
-            className="w-full h-full object-cover opacity-10"
-          />
-        </div>
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-blue-600/20 via-transparent to-transparent" />
-        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 py-24 md:py-32 text-center">
-          <Badge className="bg-blue-600/20 text-blue-300 border-blue-500/30 mb-6 text-xs px-3 py-1">
-            🚀 Built for Field Service Businesses
-          </Badge>
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold leading-tight mb-6 tracking-tight">
-            Run your field service<br className="hidden sm:block" />
-            <span className="text-blue-400"> business smarter.</span>
-          </h1>
-          <p className="text-lg sm:text-xl text-slate-300 max-w-2xl mx-auto mb-10 leading-relaxed">
-            FieldFlow Pro gives cleaning, landscaping, plumbing, and electrical businesses the tools to schedule jobs, manage customers, send invoices, and grow — all in one place.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to="/Register">
-              <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white gap-2 px-8 w-full sm:w-auto">
-                Start Free Trial <ArrowRight className="w-4 h-4" />
-              </Button>
-            </Link>
-            <a href="#features">
-              <Button size="lg" variant="outline" className="border-slate-600 text-slate-300 hover:bg-slate-800 hover:text-white w-full sm:w-auto">
-                See How It Works
-              </Button>
-            </a>
-          </div>
-          <p className="text-slate-500 text-sm mt-6">No credit card required · Cancel anytime</p>
-        </div>
-
-      </section>
+      <HeroCarousel />
 
       {/* LOGOS / SOCIAL PROOF */}
       <section className="bg-slate-50 pt-12 pb-12 border-b border-slate-100">
