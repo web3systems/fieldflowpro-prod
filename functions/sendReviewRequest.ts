@@ -12,6 +12,15 @@ Deno.serve(async (req) => {
     if (!jobs[0]) return Response.json({ error: 'Job not found' }, { status: 404 });
     const job = jobs[0];
 
+    // Verify user has access to this job's company
+    if (user.role !== 'admin') {
+      const access = await base44.asServiceRole.entities.UserCompanyAccess.filter({
+        user_email: user.email,
+        company_id: job.company_id
+      });
+      if (access.length === 0) return Response.json({ error: 'Forbidden: No access to this company' }, { status: 403 });
+    }
+
     const customers = await base44.entities.Customer.filter({ id: job.customer_id });
     if (!customers[0] || !customers[0].email) {
       return Response.json({ error: 'Customer email not found' }, { status: 400 });
