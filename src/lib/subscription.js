@@ -12,7 +12,7 @@ export const PLANS = {
   starter: {
     name: 'Starter',
     price: 49,
-    priceId: 'price_1TBz4DPEbOjnaqMMQADp0xuA',
+    priceId: 'price_1TC3qE1h2Mdv0bDiUHlkJa2h',
     color: 'text-blue-600',
     bg: 'bg-blue-50',
     limits: { users: 3, jobs_per_month: 100, subsidiaries: 1 },
