@@ -1,9 +1,10 @@
 import { Link } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Globe, CheckCircle, ArrowRight, Menu, X, Star,
   Briefcase, Users, DollarSign, Calendar, BarChart3,
-  MessageSquare, Zap, Shield, Smartphone, ChevronDown
+  MessageSquare, Zap, Shield, Smartphone, ChevronDown,
+  ChevronLeft, ChevronRight
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
