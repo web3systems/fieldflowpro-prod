@@ -280,6 +280,16 @@ export default function SettingsPage() {
             </Card>
           )}
         </TabsContent>
+
+        <TabsContent value="billing">
+          {activeCompany ? (
+            <BillingCard company={activeCompany} />
+          ) : (
+            <Card className="border-0 shadow-sm">
+              <CardContent className="p-8 text-center text-slate-400">No company selected.</CardContent>
+            </Card>
+          )}
+        </TabsContent>
       </Tabs>
     </div>
   );
