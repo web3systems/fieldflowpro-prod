@@ -62,7 +62,9 @@ Deno.serve(async (req) => {
       },
     };
 
-    const session = await stripe.checkout.sessions.create(sessionParams, stripeOptions);
+    const session = Object.keys(stripeOptions).length > 0
+      ? await stripe.checkout.sessions.create(sessionParams, stripeOptions)
+      : await stripe.checkout.sessions.create(sessionParams);
 
     console.log(`Stripe checkout session created: ${session.id} for invoice ${invoice_id}`);
     return Response.json({ url: session.url, session_id: session.id });
