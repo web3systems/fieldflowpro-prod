@@ -45,22 +45,38 @@ const defaultForm = {
 export default function Companies() {
   const { refreshCompanies } = useApp();
   const [companies, setCompanies] = useState([]);
+  const [subscription, setSubscription] = useState(null);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [limitDialogOpen, setLimitDialogOpen] = useState(false);
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState(defaultForm);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => { loadCompanies(); }, []);
+  useEffect(() => { loadData(); }, []);
 
-  async function loadCompanies() {
-    const list = await base44.entities.Company.list();
+  async function loadData() {
+    const [list, subs] = await Promise.all([
+      base44.entities.Company.list(),
+      base44.entities.Subscription.list(),
+    ]);
     setCompanies(list);
+    setSubscription(subs[0] || null);
     setLoading(false);
   }
 
+  function getSubsidiaryLimit() {
+    const plan = subscription?.plan || 'trial';
+    return PLANS[plan]?.limits?.subsidiaries ?? 1;
+  }
+
   function openCreate() {
+    const limit = getSubsidiaryLimit();
+    if (limit !== null && companies.length >= limit) {
+      setLimitDialogOpen(true);
+      return;
+    }
     setEditing(null);
     setForm(defaultForm);
     setDialogOpen(true);
