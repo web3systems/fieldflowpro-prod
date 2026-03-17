@@ -308,6 +308,43 @@ export default function Companies() {
         </DialogContent>
       </Dialog>
 
+      {/* Subsidiary Limit Dialog */}
+      <Dialog open={limitDialogOpen} onOpenChange={setLimitDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Lock className="w-5 h-5 text-amber-500" /> Subsidiary Limit Reached
+            </DialogTitle>
+          </DialogHeader>
+          <div className="py-2 space-y-3">
+            <p className="text-sm text-slate-600">
+              Your current <strong>{PLANS[subscription?.plan || 'trial']?.name}</strong> plan allows <strong>{limit} subsidiary</strong>.
+            </p>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between p-3 rounded-lg border border-violet-200 bg-violet-50">
+                <div>
+                  <p className="font-semibold text-violet-700">Professional — $99/mo</p>
+                  <p className="text-xs text-violet-500">Up to 5 subsidiaries</p>
+                </div>
+                <Badge className="bg-violet-100 text-violet-700">Recommended</Badge>
+              </div>
+              <div className="flex items-center justify-between p-3 rounded-lg border border-amber-200 bg-amber-50">
+                <div>
+                  <p className="font-semibold text-amber-700">Enterprise — $199/mo</p>
+                  <p className="text-xs text-amber-500">Unlimited subsidiaries</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setLimitDialogOpen(false)}>Cancel</Button>
+            <Button className="bg-violet-600 hover:bg-violet-700" onClick={() => { setLimitDialogOpen(false); window.location.href = '/Settings?tab=billing'; }}>
+              View Billing & Upgrade
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Delete Confirm */}
       <AlertDialog open={!!deleteTarget} onOpenChange={() => setDeleteTarget(null)}>
         <AlertDialogContent>
