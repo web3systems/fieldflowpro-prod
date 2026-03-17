@@ -50,13 +50,14 @@ export default function SuperAdminDashboard() {
 
   async function loadAll() {
     setLoading(true);
-    const [cos, reqs, allUsers, access, allJobs, allInvoices] = await Promise.all([
+    const [cos, reqs, allUsers, access, allJobs, allInvoices, subs] = await Promise.all([
       base44.entities.Company.list(),
       base44.entities.AccessRequest.filter({ status: "pending" }),
       base44.entities.User.list(),
       base44.entities.UserCompanyAccess.list(),
       base44.entities.Job.list(),
       base44.entities.Invoice.list(),
+      base44.entities.Subscription.list(),
     ]);
     setCompanies(cos);
     setAccessRequests(reqs);
@@ -64,6 +65,7 @@ export default function SuperAdminDashboard() {
     setAccessRecords(access);
     setJobs(allJobs);
     setInvoices(allInvoices);
+    setSubscriptions(subs);
     setLoading(false);
   }
 
