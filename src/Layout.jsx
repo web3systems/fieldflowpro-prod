@@ -124,14 +124,8 @@ export default function Layout({ children, currentPageName }) {
         `}>
           {/* Logo */}
           <div className="flex items-center justify-between px-5 py-5 border-b border-slate-700/50">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-blue-500 flex items-center justify-center">
-                <Globe className="w-4 h-4 text-white" />
-              </div>
-              <div>
-                <p className="text-white font-bold text-sm leading-tight">FieldFlow</p>
-                <p className="text-blue-400 text-xs font-medium">Pro</p>
-              </div>
+            <div className="flex items-center">
+              <img src="https://media.base44.com/images/public/69b20e4261ce8a3e5bf093b0/408bce6f6_LGipynfh-removebg-preview.png" alt="FieldFlow Pro" className="h-9 w-auto brightness-0 invert" />
             </div>
             <button onClick={() => setSidebarOpen(false)} className="lg:hidden text-slate-400 hover:text-white">
               <X className="w-5 h-5" />
