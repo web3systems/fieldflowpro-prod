@@ -269,7 +269,6 @@ export default function Jobs() {
                       <p className="text-sm text-slate-500 mt-0.5">{job.title}</p>
                     )}
                     <div className="flex items-center gap-4 mt-1.5 flex-wrap">
-                      {false && (
                       {job.scheduled_start && (
                         <span className="flex items-center gap-1 text-xs text-slate-500">
                           <Calendar className="w-3 h-3" />
