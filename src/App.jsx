@@ -20,6 +20,8 @@ import InvoiceDetail from './pages/InvoiceDetail';
 import Marketing from './pages/Marketing';
 import Register from './pages/Register';
 import Landing from './pages/Landing';
+import CompanySettings from './pages/CompanySettings';
+import SaaSAdminDashboard from './pages/SaaSAdminDashboard';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 
