@@ -108,17 +108,36 @@ export default function Companies() {
     refreshCompanies();
   }
 
+  const limit = getSubsidiaryLimit();
+  const atLimit = limit !== null && companies.length >= limit;
+
   return (
     <div className="p-4 md:p-6 pb-20 lg:pb-6 space-y-6 max-w-5xl mx-auto">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Companies</h1>
-          <p className="text-slate-500 text-sm mt-0.5">Manage all Parrow Enterprises subsidiaries</p>
+          <p className="text-slate-500 text-sm mt-0.5">
+            Subsidiaries: {companies.length} / {limit === null ? "Unlimited" : limit}
+          </p>
         </div>
         <Button onClick={openCreate} className="gap-2 bg-blue-600 hover:bg-blue-700">
-          <Plus className="w-4 h-4" /> Add Company
+          {atLimit ? <Lock className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+          Add Company
         </Button>
       </div>
+
+      {atLimit && (
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-center gap-3">
+          <Lock className="w-5 h-5 text-amber-600 flex-shrink-0" />
+          <div className="flex-1">
+            <p className="font-semibold text-amber-800 text-sm">Subsidiary limit reached</p>
+            <p className="text-xs text-amber-600">Your <strong>{PLANS[subscription?.plan || 'trial']?.name}</strong> plan includes {limit} subsidiary. Upgrade to add more.</p>
+          </div>
+          <Button size="sm" className="bg-amber-600 hover:bg-amber-700 text-white flex-shrink-0" onClick={() => setLimitDialogOpen(true)}>
+            Upgrade
+          </Button>
+        </div>
+      )}
 
       {loading ? (
         <div className="grid md:grid-cols-2 gap-4">
