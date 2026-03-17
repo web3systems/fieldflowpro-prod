@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { PLANS } from "@/lib/subscription";
 import { base44 } from "@/api/base44Client";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
@@ -29,6 +30,7 @@ export default function SuperAdminDashboard() {
   const [accessRecords, setAccessRecords] = useState([]);
   const [jobs, setJobs] = useState([]);
   const [invoices, setInvoices] = useState([]);
+  const [subscriptions, setSubscriptions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [approvingId, setApprovingId] = useState(null);
   const [approveDialog, setApproveDialog] = useState(null); // { request }
