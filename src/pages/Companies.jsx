@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useApp } from "../Layout";
-import { Plus, Pencil, Trash2, Building2, CheckCircle, XCircle } from "lucide-react";
+import { Plus, Pencil, Trash2, Building2, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { PLANS } from "@/lib/subscription";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter
 } from "@/components/ui/dialog";
