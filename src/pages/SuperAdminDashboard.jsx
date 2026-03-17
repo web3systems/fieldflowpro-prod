@@ -39,6 +39,11 @@ export default function SuperAdminDashboard() {
   useEffect(() => {
     base44.auth.me().then(u => setUser(u));
     loadAll();
+    // Handle return from Stripe onboarding
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("stripe_return") === "true" || params.get("stripe_refresh") === "true") {
+      window.history.replaceState({}, "", window.location.pathname);
+    }
   }, []);
 
   async function loadAll() {
