@@ -12,6 +12,15 @@ Deno.serve(async (req) => {
     const customer = customers[0];
     if (!customer?.email) return Response.json({ error: 'Customer has no email' }, { status: 400 });
 
+    // Verify user has access to this customer's company
+    if (user.role !== 'admin') {
+      const access = await base44.asServiceRole.entities.UserCompanyAccess.filter({
+        user_email: user.email,
+        company_id: customer.company_id
+      });
+      if (access.length === 0) return Response.json({ error: 'Forbidden: No access to this company' }, { status: 403 });
+    }
+
     const companies = await base44.asServiceRole.entities.Company.filter({ id: customer.company_id });
     const company = companies[0];
 
