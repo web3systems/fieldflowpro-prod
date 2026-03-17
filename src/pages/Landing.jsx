@@ -240,8 +240,18 @@ export default function Landing() {
           <p className="text-slate-500 text-sm mt-6">No credit card required · Cancel anytime</p>
         </div>
 
-        {/* Mockup bar */}
-        <div className="relative max-w-5xl mx-auto px-4 sm:px-6 pb-0 -mb-16">
+        {/* Hero image + mockup */}
+        <div className="relative max-w-5xl mx-auto px-4 sm:px-6 pb-0 -mb-16 grid md:grid-cols-2 gap-6 items-end">
+          {/* Photo */}
+          <div className="hidden md:block rounded-t-2xl overflow-hidden shadow-2xl border border-slate-700 h-64 lg:h-72">
+            <img
+              src="https://media.base44.com/images/public/69b20e4261ce8a3e5bf093b0/268fc9114_generated_image.png"
+              alt="Field service technician using FieldFlow Pro on a tablet"
+              className="w-full h-full object-cover object-top"
+            />
+          </div>
+          {/* Mockup */}
+          <div className="bg-slate-800 rounded-t-2xl border border-slate-700 overflow-hidden shadow-2xl">
           <div className="bg-slate-800 rounded-t-2xl border border-slate-700 overflow-hidden shadow-2xl">
             <div className="flex items-center gap-2 px-4 py-3 border-b border-slate-700">
               <div className="w-3 h-3 rounded-full bg-red-500/70" />
