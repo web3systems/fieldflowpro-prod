@@ -468,7 +468,6 @@ export default function SuperAdminDashboard() {
             </CardContent>
           </Card>
         </TabsContent>
-      </Tabs>
 
         {/* SUBSCRIPTIONS */}
         <TabsContent value="subscriptions" className="mt-4">
