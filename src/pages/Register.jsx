@@ -60,14 +60,8 @@ export default function Register() {
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 flex flex-col">
       {/* Header */}
       <div className="flex items-center justify-between px-6 py-4">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-blue-500 flex items-center justify-center">
-            <Globe className="w-4 h-4 text-white" />
-          </div>
-          <div>
-            <p className="text-white font-bold text-sm">FieldFlow</p>
-            <p className="text-blue-300 text-xs">Pro</p>
-          </div>
+        <div className="flex items-center">
+          <img src="https://media.base44.com/images/public/69b20e4261ce8a3e5bf093b0/408bce6f6_LGipynfh-removebg-preview.png" alt="FieldFlow Pro" className="h-10 w-auto brightness-0 invert" />
         </div>
         <a href="/Dashboard" className="text-blue-300 text-sm hover:text-white transition-colors">
           Already have an account? Sign in →

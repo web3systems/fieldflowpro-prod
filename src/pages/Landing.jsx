@@ -167,11 +167,8 @@ export default function Landing() {
       {/* NAV */}
       <header className="sticky top-0 z-50 bg-white/90 backdrop-blur border-b border-slate-100">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 flex items-center justify-between h-16">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center">
-              <Globe className="w-4 h-4 text-white" />
-            </div>
-            <span className="font-bold text-slate-900">FieldFlow <span className="text-blue-600">Pro</span></span>
+          <div className="flex items-center">
+            <img src="https://media.base44.com/images/public/69b20e4261ce8a3e5bf093b0/408bce6f6_LGipynfh-removebg-preview.png" alt="FieldFlow Pro" className="h-10 w-auto" />
           </div>
 
           {/* Desktop Nav */}
@@ -402,10 +399,7 @@ export default function Landing() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded-lg bg-blue-600 flex items-center justify-center">
-                <Globe className="w-3.5 h-3.5 text-white" />
-              </div>
-              <span className="text-white font-bold text-sm">FieldFlow Pro</span>
+              <img src="https://media.base44.com/images/public/69b20e4261ce8a3e5bf093b0/408bce6f6_LGipynfh-removebg-preview.png" alt="FieldFlow Pro" className="h-8 w-auto brightness-0 invert" />
             </div>
             <div className="flex gap-6 text-sm">
               <a href="#features" className="hover:text-white transition-colors">Features</a>
