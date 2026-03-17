@@ -13,6 +13,15 @@ Deno.serve(async (req) => {
     const invoice = invoices[0];
     if (!invoice) return Response.json({ error: 'Invoice not found' }, { status: 404 });
 
+    // Verify user has access to this invoice's company
+    if (user.role !== 'admin') {
+      const access = await base44.asServiceRole.entities.UserCompanyAccess.filter({
+        user_email: user.email,
+        company_id: invoice.company_id
+      });
+      if (access.length === 0) return Response.json({ error: 'Forbidden: No access to this company' }, { status: 403 });
+    }
+
     const customers = await base44.asServiceRole.entities.Customer.filter({ id: invoice.customer_id });
     const customer = customers[0];
     if (!customer?.email) return Response.json({ error: 'Customer has no email' }, { status: 400 });
