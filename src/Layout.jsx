@@ -129,8 +129,8 @@ export default function Layout({ children, currentPageName }) {
                 <Globe className="w-4 h-4 text-white" />
               </div>
               <div>
-                <p className="text-white font-bold text-sm leading-tight">Parrow</p>
-                <p className="text-slate-400 text-xs">Enterprises</p>
+                <p className="text-white font-bold text-sm leading-tight">FieldFlow</p>
+                <p className="text-slate-400 text-xs">Pro</p>
               </div>
             </div>
             <button onClick={() => setSidebarOpen(false)} className="lg:hidden text-slate-400 hover:text-white">
