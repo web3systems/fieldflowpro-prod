@@ -31,7 +31,7 @@ export const PLANS = {
   enterprise: {
     name: 'Enterprise',
     price: 199,
-    priceId: 'price_1TBz4DPEbOjnaqMM6KLChSbK',
+    priceId: 'price_1TC3qE1h2Mdv0bDimkom51mZ',
     color: 'text-amber-600',
     bg: 'bg-amber-50',
     limits: { users: null, jobs_per_month: null, subsidiaries: null },
