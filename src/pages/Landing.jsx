@@ -275,6 +275,7 @@ export default function Landing() {
             </div>
           </div>
         </div>
+        </div>
       </section>
 
       {/* LOGOS / SOCIAL PROOF */}
