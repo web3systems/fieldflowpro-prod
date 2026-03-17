@@ -344,7 +344,7 @@ export default function Customers() {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete {deleteTarget?.first_name} {deleteTarget?.last_name}?</AlertDialogTitle>
-            <AlertDialogDescription>This will permanently delete this customer and cannot be undone.</AlertDialogDescription>
+            <AlertDialogDescription>This will permanently delete this customer along with all their jobs, invoices, and estimates. This cannot be undone.</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
