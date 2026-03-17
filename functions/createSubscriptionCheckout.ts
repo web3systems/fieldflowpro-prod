@@ -51,8 +51,8 @@ Deno.serve(async (req) => {
         owner_name: owner_name || '',
         base44_app_id: Deno.env.get('BASE44_APP_ID')
       },
-      success_url: success_url || `${req.headers.get('origin')}/Dashboard?subscribed=true`,
-      cancel_url: cancel_url || `${req.headers.get('origin')}/Signup`,
+      success_url: success_url || `https://fieldflowpro.com/Dashboard?subscribed=true`,
+      cancel_url: cancel_url || `https://fieldflowpro.com/Register`,
       allow_promotion_codes: true,
     });
 
