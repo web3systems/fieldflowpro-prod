@@ -124,8 +124,13 @@ export const AuthProvider = ({ children }) => {
   };
 
   const navigateToLogin = () => {
-    // Use the SDK's redirectToLogin method
-    base44.auth.redirectToLogin(window.location.href);
+    // After login, redirect to /Dashboard instead of the current page (which may be the landing page)
+    const currentPath = window.location.pathname;
+    const isPublicPath = ['/', '/Landing', '/Register', '/Booking', '/LeadCapture'].includes(currentPath);
+    const nextUrl = isPublicPath
+      ? `${window.location.origin}/Dashboard`
+      : window.location.href;
+    base44.auth.redirectToLogin(nextUrl);
   };
 
   return (
