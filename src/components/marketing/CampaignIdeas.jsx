@@ -64,7 +64,26 @@ export default function CampaignIdeas({ activeCompany }) {
   async function handleSave() {
     if (!form.name.trim()) { toast({ title: "Name is required", variant: "destructive" }); return; }
     setSaving(true);
-    const data = { ...form, company_id: activeCompany.id };
+
+    let html_content_url = editing?.html_content_url || "";
+
+    // If there's HTML content, upload it as a file
+    if (form.html_content.trim()) {
+      const blob = new Blob([form.html_content], { type: "text/html" });
+      const file = new File([blob], "campaign-landing.html", { type: "text/html" });
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      html_content_url = file_url;
+    }
+
+    const data = {
+      name: form.name,
+      description: form.description,
+      status: form.status,
+      is_confidential: form.is_confidential,
+      html_content_url,
+      company_id: activeCompany.id,
+    };
+
     if (editing?.id) {
       await base44.entities.CampaignIdea.update(editing.id, data);
     } else {
