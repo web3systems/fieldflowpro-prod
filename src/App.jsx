@@ -18,6 +18,7 @@ import EstimateDetail from './pages/EstimateDetail';
 import JobDetail from './pages/JobDetail';
 import InvoiceDetail from './pages/InvoiceDetail';
 import Marketing from './pages/Marketing';
+import CampaignIdeaPreview from './pages/CampaignIdeaPreview';
 import Register from './pages/Register';
 import Landing from './pages/Landing';
 import CompanySettings from './pages/CompanySettings';

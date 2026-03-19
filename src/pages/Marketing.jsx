@@ -247,6 +247,8 @@ export default function Marketing() {
         </div>
       )}
 
+      </>}
+
       {/* Sheet */}
       <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
         <SheetContent className="w-full sm:max-w-lg overflow-y-auto">
