@@ -153,7 +153,7 @@ export default function CampaignIdeas({ activeCompany }) {
                     </div>
                   </div>
                   <div className="flex items-center gap-2 flex-shrink-0">
-                    {idea.html_content && (
+                    {idea.html_content_url && (
                       <Button size="sm" variant="outline" onClick={() => openPreview(idea)} className="gap-1.5">
                         <ExternalLink className="w-3.5 h-3.5" /> Preview
                       </Button>
