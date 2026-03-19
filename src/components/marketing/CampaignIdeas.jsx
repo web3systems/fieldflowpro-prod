@@ -147,7 +147,7 @@ export default function CampaignIdeas({ activeCompany }) {
                         )}
                       </div>
                       {idea.description && <p className="text-sm text-slate-500 mt-1">{idea.description}</p>}
-                      {idea.html_content && (
+                      {idea.html_content_url && (
                         <p className="text-xs text-slate-400 mt-1">HTML landing page attached</p>
                       )}
                     </div>
