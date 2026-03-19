@@ -535,6 +535,10 @@ export default function SuperAdminDashboard() {
             })}
           </div>
         </TabsContent>
+        {/* IMPORT DATA */}
+        <TabsContent value="import" className="mt-4">
+          <HouseCallProImport companies={companies} />
+        </TabsContent>
       </Tabs>
 
       {/* Approve Dialog */}
