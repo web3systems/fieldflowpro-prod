@@ -14,6 +14,7 @@ import { format } from "date-fns";
 import { useToast } from "@/components/ui/use-toast";
 import CampaignForm from "@/components/marketing/CampaignForm";
 import CampaignStats from "@/components/marketing/CampaignStats";
+import CampaignIdeas from "@/components/marketing/CampaignIdeas";
 
 const STATUS_STYLES = {
   draft: "bg-slate-100 text-slate-600",
@@ -40,6 +41,7 @@ export default function Marketing() {
   const [sending, setSending] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [tab, setTab] = useState("all");
+  const [mainTab, setMainTab] = useState("campaigns");
 
   useEffect(() => {
     if (activeCompany) load();
@@ -94,20 +96,37 @@ export default function Marketing() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Marketing</h1>
-          <p className="text-slate-500 text-sm mt-0.5">Create and send email & SMS campaigns to your customers</p>
+          <p className="text-slate-500 text-sm mt-0.5">Create and send campaigns, and manage internal campaign ideas</p>
         </div>
-        <Button
-          onClick={() => { setEditing(null); setSheetOpen(true); }}
-          className="gap-2 bg-blue-600 hover:bg-blue-700"
-        >
-          <Plus className="w-4 h-4" /> New Campaign
-        </Button>
+        {mainTab === "campaigns" && (
+          <Button onClick={() => { setEditing(null); setSheetOpen(true); }} className="gap-2 bg-blue-600 hover:bg-blue-700">
+            <Plus className="w-4 h-4" /> New Campaign
+          </Button>
+        )}
       </div>
 
+      {/* Main Tabs */}
+      <div className="flex gap-1 border-b border-slate-200">
+        {[{ key: "campaigns", label: "Campaigns" }, { key: "ideas", label: "💡 Campaign Ideas" }].map(({ key, label }) => (
+          <button
+            key={key}
+            onClick={() => setMainTab(key)}
+            className={`px-4 py-2 text-sm font-medium transition-colors border-b-2 -mb-px ${
+              mainTab === key ? "border-blue-600 text-blue-600" : "border-transparent text-slate-500 hover:text-slate-800"
+            }`}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {mainTab === "ideas" && <CampaignIdeas activeCompany={activeCompany} />}
+
+      {mainTab === "campaigns" && <>
       {/* Stats */}
       <CampaignStats campaigns={campaigns} />
 
-      {/* Tabs */}
+      {/* Sub-Tabs */}
       <div className="flex gap-1 border-b border-slate-200">
         {["all", "draft", "sent", "scheduled", "cancelled"].map(t => (
           <button
