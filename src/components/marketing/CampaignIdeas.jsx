@@ -223,7 +223,7 @@ export default function CampaignIdeas({ activeCompany }) {
             </div>
             <div>
               <label className="text-sm font-medium text-slate-700">HTML Landing Page Content</label>
-              <p className="text-xs text-slate-400 mb-1">Paste your full HTML here. Click "Preview" on the card to open it as a live page.</p>
+               <p className="text-xs text-slate-400 mb-1">Paste your full HTML here. Click "Preview" on the card to open it as a live page.{editing?.html_content_url ? " Leave blank to keep existing HTML." : ""}</p>
               <textarea
                 className="mt-1 w-full border border-slate-200 rounded-md px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500 h-64 resize-y"
                 value={form.html_content}
