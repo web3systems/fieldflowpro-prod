@@ -55,7 +55,7 @@ export default function CampaignIdeas({ activeCompany }) {
       name: idea.name || "",
       description: idea.description || "",
       status: idea.status || "idea",
-      html_content: idea.html_content || "",
+      html_content: "",
       is_confidential: idea.is_confidential ?? true,
     });
     setSheetOpen(true);
