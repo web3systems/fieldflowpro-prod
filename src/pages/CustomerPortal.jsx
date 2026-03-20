@@ -147,7 +147,9 @@ export default function CustomerPortal() {
   const upcomingJobs = jobs.filter(j => ["scheduled", "new"].includes(j.status));
   const pendingInvoices = invoices.filter(i => ["sent", "viewed", "overdue"].includes(i.status));
   const totalOwed = pendingInvoices.reduce((s, i) => s + ((i.total || 0) - (i.amount_paid || 0)), 0);
-  const headerColor = company?.primary_color || "#1e40af";
+  const accentColor = company?.primary_color || "#2563eb";
+  // Always use a clean dark header regardless of company brand color
+  const headerColor = "#1e293b";
 
   async function approveEstimate(est) {
     await base44.entities.Estimate.update(est.id, { status: "approved" });
