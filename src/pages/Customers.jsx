@@ -336,7 +336,7 @@ export default function Customers() {
             </div>
             <div className="flex gap-3 pt-2">
               <Button variant="outline" onClick={() => setSheetOpen(false)} className="flex-1">Cancel</Button>
-              <Button onClick={handleSave} disabled={saving || !form.first_name || !form.last_name} className="flex-1 bg-blue-600 hover:bg-blue-700">
+              <Button onClick={handleSave} disabled={saving || !form.first_name || !form.last_name || !form.email || !form.phone || !form.address || !form.zip} className="flex-1 bg-blue-600 hover:bg-blue-700">
                 {saving ? "Saving..." : editing ? "Save Changes" : "Add Customer"}
               </Button>
             </div>
