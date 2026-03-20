@@ -42,7 +42,8 @@ function mapCustomer(row, companyId) {
     zip: row["zip"] || row["zip code"] || row["postal code"] || row["billing zip"] || "",
     notes: row["notes"] || row["customer notes"] || row["internal notes"] || "",
     status: "active",
-    source: "other",
+    source: "manual",
+    imported: true,
   };
 }
 

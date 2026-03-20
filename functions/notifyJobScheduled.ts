@@ -11,6 +11,12 @@ Deno.serve(async (req) => {
     if (old_data?.status === "scheduled") return Response.json({ skipped: true });
     if (!data.scheduled_start) return Response.json({ skipped: true });
 
+    // Skip notifications for bulk-imported records
+    if (data.imported === true) {
+      console.log("Skipping notification for imported job:", event?.entity_id);
+      return Response.json({ skipped: true, reason: "imported record" });
+    }
+
     // Verify company_id exists (automation calls don't have user context, so we verify data integrity)
     if (!data.company_id) return Response.json({ skipped: true, reason: "no company_id" });
 

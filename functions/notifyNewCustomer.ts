@@ -10,6 +10,12 @@ Deno.serve(async (req) => {
       return Response.json({ skipped: true, reason: "no customer data" });
     }
 
+    // Skip notifications for bulk-imported records
+    if (data.imported === true) {
+      console.log("Skipping notification for imported customer:", data.id);
+      return Response.json({ skipped: true, reason: "imported record" });
+    }
+
     const customer = data;
     const customerName = `${customer.first_name} ${customer.last_name}`;
 
