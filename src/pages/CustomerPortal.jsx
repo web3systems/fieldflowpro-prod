@@ -684,7 +684,7 @@ export default function CustomerPortal() {
               className={`flex-1 flex flex-col items-center gap-1 py-3 transition-colors ${
                 activeTab === id ? "text-blue-600" : "text-slate-400"
               }`}
-              style={activeTab === id ? { color: headerColor } : {}}
+              style={activeTab === id ? { color: accentColor } : {}}
             >
               <Icon className="w-5 h-5" />
               <span className="text-xs">{label}</span>
