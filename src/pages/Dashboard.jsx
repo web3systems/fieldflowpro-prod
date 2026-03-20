@@ -219,6 +219,44 @@ export default function Dashboard() {
         ))}
       </div>
 
+      {/* Pending Bookings */}
+      {bookings.length > 0 && (
+        <Card className="border-0 shadow-sm border-l-4 border-l-green-500">
+          <CardHeader className="px-4 py-3 border-b border-slate-100">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-base font-semibold text-slate-800 flex items-center gap-2">
+                <CalendarCheck className="w-4 h-4 text-green-500" />
+                New Service Bookings
+                <span className="ml-1 bg-green-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">{bookings.length}</span>
+              </CardTitle>
+              <Link to={createPageUrl("Schedule")} className="text-xs text-blue-600 hover:underline flex items-center gap-1">
+                View in Schedule <ArrowRight className="w-3 h-3" />
+              </Link>
+            </div>
+          </CardHeader>
+          <CardContent className="p-0">
+            <div className="divide-y divide-slate-100">
+              {bookings.slice(0, 5).map(booking => (
+                <div key={booking.id} className="flex items-center gap-3 px-4 py-3">
+                  <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+                    <CalendarCheck className="w-4 h-4 text-green-600" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-slate-800">{booking.first_name} {booking.last_name}</p>
+                    <div className="flex flex-wrap gap-2 mt-0.5">
+                      <span className="text-xs text-slate-500">{booking.service_type}</span>
+                      {booking.preferred_date && <span className="text-xs text-slate-400">📅 {booking.preferred_date}{booking.preferred_time ? ` at ${booking.preferred_time}` : ""}</span>}
+                      {booking.phone && <span className="text-xs text-slate-400">📞 {booking.phone}</span>}
+                    </div>
+                  </div>
+                  <Badge className="bg-amber-100 text-amber-700 text-xs flex-shrink-0">Pending</Badge>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       <RevenueChart invoices={invoices} />
 
       <div className="grid lg:grid-cols-2 gap-6">
