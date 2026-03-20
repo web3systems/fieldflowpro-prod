@@ -540,7 +540,7 @@ export default function CustomerPortal() {
                       <label className="text-sm font-medium text-slate-700 block mb-1">Notes</label>
                       <textarea className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" rows={3} value={bookingForm.notes} onChange={e => setBookingForm({ ...bookingForm, notes: e.target.value })} placeholder="Any special instructions..." />
                     </div>
-                    <button type="submit" disabled={bookingLoading} className="w-full py-3 rounded-xl font-semibold text-white transition-opacity disabled:opacity-60" style={{ backgroundColor: headerColor }}>
+                    <button type="submit" disabled={bookingLoading} className="w-full py-3 rounded-xl font-semibold text-white transition-opacity disabled:opacity-60" style={{ backgroundColor: accentColor }}>
                       {bookingLoading ? "Sending..." : "Send Request"}
                     </button>
                   </form>
