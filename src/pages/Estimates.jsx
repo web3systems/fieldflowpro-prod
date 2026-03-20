@@ -256,15 +256,15 @@ export default function Estimates() {
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
                   <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap mb-0.5">
+                      <span className="font-bold text-slate-900">{getCustomerName(est.customer_id)}</span>
+                    </div>
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="text-xs font-mono text-slate-400">{est.estimate_number}</span>
-                      <h3 className="font-semibold text-slate-800">{est.title}</h3>
+                      <span className="text-sm text-slate-600">{est.title}</span>
                       <Badge className={`text-xs capitalize ${STATUS_STYLES[est.status] || "bg-gray-100 text-gray-600"}`}>
                         {est.status}
                       </Badge>
-                    </div>
-                    <div className="flex items-center gap-3 mt-1">
-                      <span className="text-xs text-slate-500">{getCustomerName(est.customer_id)}</span>
                       {est.valid_until && (
                         <span className="text-xs text-slate-400">Valid until {format(new Date(est.valid_until), "MMM d, yyyy")}</span>
                       )}
