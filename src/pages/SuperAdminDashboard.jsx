@@ -209,6 +209,9 @@ export default function SuperAdminDashboard() {
           <TabsTrigger value="import" className="gap-2">
             <Upload className="w-4 h-4" /> Import Data
           </TabsTrigger>
+          <TabsTrigger value="announcements" className="gap-2">
+            <Megaphone className="w-4 h-4" /> Announcements
+          </TabsTrigger>
         </TabsList>
 
         {/* ACCESS REQUESTS */}
