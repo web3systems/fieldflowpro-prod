@@ -293,12 +293,10 @@ export default function Invoices() {
                 <CardContent className="p-4">
                   <div className="flex items-center gap-3">
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-xs font-mono text-slate-400">{inv.invoice_number}</span>
+                      <p className="text-sm font-bold text-slate-900">{getCustomerName(inv.customer_id)}</p>
+                      <div className="flex items-center gap-2 flex-wrap mt-0.5">
+                        <span className="text-xs font-mono text-slate-400">#{inv.invoice_number}</span>
                         <Badge className={`text-xs ${statusInfo.style}`}>{statusInfo.label}</Badge>
-                      </div>
-                      <div className="flex items-center gap-3 mt-1">
-                        <span className="text-sm font-medium text-slate-700">{getCustomerName(inv.customer_id)}</span>
                         {inv.due_date && (
                           <span className="text-xs text-slate-400">Due {format(new Date(inv.due_date), "MMM d, yyyy")}</span>
                         )}
