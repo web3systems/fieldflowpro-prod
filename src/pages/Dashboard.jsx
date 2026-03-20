@@ -54,16 +54,18 @@ export default function Dashboard() {
 
   async function loadData() {
     setLoading(true);
-    const [j, c, inv, l] = await Promise.all([
+    const [j, c, inv, l, b] = await Promise.all([
       base44.entities.Job.filter({ company_id: activeCompany.id }),
       base44.entities.Customer.filter({ company_id: activeCompany.id }),
       base44.entities.Invoice.filter({ company_id: activeCompany.id }),
       base44.entities.Lead.filter({ company_id: activeCompany.id }),
+      base44.entities.ServiceBooking.filter({ company_id: activeCompany.id, status: "pending" }, "-created_date"),
     ]);
     setJobs(j);
     setCustomers(c);
     setInvoices(inv);
     setLeads(l);
+    setBookings(b);
     // Find if current user is a technician
     const techs = await base44.entities.Technician.filter({ company_id: activeCompany.id });
     const me = await base44.auth.me();
