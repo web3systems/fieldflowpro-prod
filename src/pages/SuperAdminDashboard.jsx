@@ -543,6 +543,9 @@ export default function SuperAdminDashboard() {
         <TabsContent value="import" className="mt-4">
           <HouseCallProImport companies={companies} />
         </TabsContent>
+        <TabsContent value="announcements" className="mt-4">
+          <AnnouncementSender companies={companies} />
+        </TabsContent>
       </Tabs>
 
       {/* Approve Dialog */}
