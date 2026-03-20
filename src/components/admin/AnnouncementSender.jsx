@@ -34,12 +34,6 @@ export default function AnnouncementSender({ companies }) {
     setSending(true);
     setResult(null);
 
-    // Fetch all customers from selected companies
-    const allCustomers = await base44.entities.Customer.list();
-    const targets = allCustomers.filter(c =>
-      selectedCompanyIds.includes(c.company_id) && c.email
-    );
-
     const response = await base44.functions.invoke('sendAnnouncement', {
       subject,
       message,
