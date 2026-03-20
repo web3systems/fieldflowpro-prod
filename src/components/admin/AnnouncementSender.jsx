@@ -40,20 +40,13 @@ export default function AnnouncementSender({ companies }) {
       selectedCompanyIds.includes(c.company_id) && c.email
     );
 
-    let sent = 0;
-    let skipped = 0;
-    for (const customer of targets) {
-      const name = `${customer.first_name || ""} ${customer.last_name || ""}`.trim() || "Valued Customer";
-      await base44.integrations.Core.SendEmail({
-        to: customer.email,
-        subject,
-        body: `<p>Hi ${name},</p><br/>${message.replace(/\n/g, "<br/>")}`,
-      });
-      sent++;
-    }
-    skipped = allCustomers.filter(c => selectedCompanyIds.includes(c.company_id) && !c.email).length;
+    const response = await base44.functions.invoke('sendAnnouncement', {
+      subject,
+      message,
+      company_ids: selectedCompanyIds,
+    });
 
-    setResult({ sent, skipped });
+    setResult({ sent: response.data.sent, skipped: response.data.skipped });
     setSending(false);
   }
 
