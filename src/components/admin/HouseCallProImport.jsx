@@ -136,6 +136,8 @@ function mapJob(row, companyId) {
 const DATA_TYPES = [
   { value: "customers", label: "Customers", icon: Users, mapper: mapCustomer, entity: "Customer" },
   { value: "jobs", label: "Jobs", icon: Briefcase, mapper: mapJob, entity: "Job" },
+  { value: "estimates", label: "Estimates", icon: FileText, mapper: mapEstimate, entity: "Estimate" },
+  { value: "invoices", label: "Invoices", icon: FileText, mapper: mapInvoice, entity: "Invoice" },
 ];
 
 export default function HouseCallProImport({ companies }) {
