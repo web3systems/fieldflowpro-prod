@@ -99,14 +99,17 @@ export default function CustomerPortal() {
   }
 
   async function loadAccountData(customer) {
-    const [j, inv, est] = await Promise.all([
+    const companyId = customer.company_id;
+    const [j, inv, est, svcs] = await Promise.all([
       base44.entities.Job.filter({ customer_id: customer.id }),
       base44.entities.Invoice.filter({ customer_id: customer.id }),
       base44.entities.Estimate.filter({ customer_id: customer.id }),
+      base44.entities.Service.filter({ company_id: companyId, is_active: true }),
     ]);
     setJobs(j);
     setInvoices(inv);
     setEstimates(est);
+    setCompanyServices(svcs);
   }
 
   const activeAccount = allAccounts[activeIndex] || null;
