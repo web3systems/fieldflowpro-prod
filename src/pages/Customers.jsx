@@ -284,15 +284,15 @@ export default function Customers() {
               </div>
             </div>
             <div>
-              <Label>Email</Label>
+              <Label>Email *</Label>
               <Input type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} />
             </div>
             <div>
-              <Label>Phone</Label>
+              <Label>Phone *</Label>
               <Input type="tel" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} />
             </div>
             <div>
-              <Label>Address</Label>
+              <Label>Address *</Label>
               <Input value={form.address} onChange={e => setForm({ ...form, address: e.target.value })} />
             </div>
             <div className="grid grid-cols-3 gap-3">
@@ -304,6 +304,10 @@ export default function Customers() {
                 <Label>State</Label>
                 <Input value={form.state} onChange={e => setForm({ ...form, state: e.target.value })} maxLength={2} />
               </div>
+            </div>
+            <div>
+              <Label>Zip Code *</Label>
+              <Input value={form.zip} onChange={e => setForm({ ...form, zip: e.target.value })} placeholder="12345" />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
