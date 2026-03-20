@@ -40,6 +40,7 @@ export default function CustomerPortal() {
   const [bookingForm, setBookingForm] = useState({ service_type: "", preferred_date: "", preferred_time: "9:00 AM", notes: "" });
   const [bookingSubmitted, setBookingSubmitted] = useState(false);
   const [bookingLoading, setBookingLoading] = useState(false);
+  const [companyServices, setCompanyServices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [switcherOpen, setSwitcherOpen] = useState(false);
 
