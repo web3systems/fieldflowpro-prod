@@ -192,19 +192,19 @@ export default function CustomerPortal() {
   return (
     <div className="min-h-screen bg-slate-50 pb-20">
       {/* Header */}
-      <div className="px-4 pt-3 pb-4 text-white" style={{ backgroundColor: headerColor }}>
+      <div className="px-4 pt-4 pb-5 text-white bg-slate-900">
         <div className="max-w-lg mx-auto">
-          <div className="flex items-center justify-between pb-1">
+          <div className="flex items-center justify-between mb-3">
             {/* Company switcher (or static name if only one) */}
             {allAccounts.length > 1 ? (
               <div className="relative">
                 <button
                   onClick={() => setSwitcherOpen(o => !o)}
-                  className="flex items-center gap-1.5 bg-white/20 hover:bg-white/30 rounded-xl px-3 py-1.5 transition-colors"
+                  className="flex items-center gap-1.5 bg-white/10 hover:bg-white/20 rounded-xl px-3 py-1.5 transition-colors"
                 >
-                  <Building2 className="w-3.5 h-3.5 text-white/80" />
+                  <Building2 className="w-3.5 h-3.5 text-white/70" />
                   <span className="text-sm font-semibold text-white">{company?.name || "Select Company"}</span>
-                  <ChevronDown className="w-3.5 h-3.5 text-white/80" />
+                  <ChevronDown className="w-3.5 h-3.5 text-white/70" />
                 </button>
                 {switcherOpen && (
                   <div className="absolute top-10 left-0 z-50 bg-white rounded-2xl shadow-xl border border-slate-100 min-w-[220px] overflow-hidden">
@@ -234,34 +234,59 @@ export default function CustomerPortal() {
                 )}
               </div>
             ) : (
-              <p className="text-white/80 text-sm font-medium">{company?.name || "Customer Portal"}</p>
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-lg flex items-center justify-center text-white text-xs font-bold flex-shrink-0" style={{ backgroundColor: accentColor }}>
+                  {company?.name?.[0] || "?"}
+                </div>
+                <p className="text-white/80 text-sm font-medium">{company?.name || "Customer Portal"}</p>
+              </div>
             )}
 
             <button
               onClick={() => base44.auth.logout()}
-              className="p-2 rounded-full bg-white/20 hover:bg-white/30 transition-colors"
+              className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
             >
-              <LogOut className="w-4 h-4 text-white" />
+              <LogOut className="w-4 h-4 text-white/70" />
             </button>
           </div>
 
-          <h1 className="text-xl font-bold mt-1">Hi, {customer.first_name}!</h1>
+          <div>
+            <p className="text-slate-400 text-sm">Welcome back</p>
+            <h1 className="text-2xl font-bold text-white">{customer.first_name} {customer.last_name}</h1>
+          </div>
 
           {/* Quick stats */}
-          <div className="flex gap-3 mt-3">
-            <div className="flex-1 bg-white/20 rounded-xl p-3 text-center">
+          <div className="flex gap-3 mt-4">
+            <button
+              onClick={() => setActiveTab("jobs")}
+              className="flex-1 bg-white/10 hover:bg-white/15 rounded-2xl p-3 text-center transition-colors"
+            >
               <p className="text-2xl font-bold text-white">{upcomingJobs.length}</p>
-              <p className="text-xs text-white/70">Upcoming Jobs</p>
-            </div>
-            <div className="flex-1 bg-white/20 rounded-xl p-3 text-center">
-              <p className="text-2xl font-bold text-white">{pendingInvoices.length}</p>
-              <p className="text-xs text-white/70">Pending Invoices</p>
-            </div>
-            {totalOwed > 0 && (
-              <div className="flex-1 bg-white/20 rounded-xl p-3 text-center">
-                <p className="text-xl font-bold text-white">${totalOwed.toFixed(0)}</p>
-                <p className="text-xs text-white/70">Balance Due</p>
-              </div>
+              <p className="text-xs text-slate-400 mt-0.5">Upcoming Jobs</p>
+            </button>
+            <button
+              onClick={() => setActiveTab("invoices")}
+              className={`flex-1 rounded-2xl p-3 text-center transition-colors ${pendingInvoices.length > 0 ? "bg-amber-500/20 hover:bg-amber-500/30" : "bg-white/10 hover:bg-white/15"}`}
+            >
+              <p className={`text-2xl font-bold ${pendingInvoices.length > 0 ? "text-amber-300" : "text-white"}`}>{pendingInvoices.length}</p>
+              <p className="text-xs text-slate-400 mt-0.5">Pending Invoices</p>
+            </button>
+            {totalOwed > 0 ? (
+              <button
+                onClick={() => setActiveTab("invoices")}
+                className="flex-1 bg-red-500/20 hover:bg-red-500/30 rounded-2xl p-3 text-center transition-colors"
+              >
+                <p className="text-xl font-bold text-red-300">${totalOwed.toFixed(0)}</p>
+                <p className="text-xs text-slate-400 mt-0.5">Balance Due</p>
+              </button>
+            ) : (
+              <button
+                onClick={() => setActiveTab("book")}
+                className="flex-1 bg-white/10 hover:bg-white/15 rounded-2xl p-3 text-center transition-colors"
+              >
+                <p className="text-2xl font-bold text-white">+</p>
+                <p className="text-xs text-slate-400 mt-0.5">Book Service</p>
+              </button>
             )}
           </div>
         </div>
