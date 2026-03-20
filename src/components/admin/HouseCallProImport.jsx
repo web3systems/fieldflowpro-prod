@@ -47,6 +47,68 @@ function mapCustomer(row, companyId) {
   };
 }
 
+// Map HouseCall Pro estimate fields to FieldFlow Pro Estimate entity
+function mapEstimate(row, companyId) {
+  const wonValue = parseFloat((row["won value"] || "0").replace(/[$,]/g, "")) || 0;
+  const lostValue = parseFloat((row["lost value"] || "0").replace(/[$,]/g, "")) || 0;
+  const openValue = parseFloat((row["open value"] || "0").replace(/[$,]/g, "")) || 0;
+  const total = wonValue || lostValue || openValue || 0;
+
+  const statusRaw = (row["estimate status"] || "").toLowerCase();
+  let status = "draft";
+  if (statusRaw.includes("approved") || statusRaw.includes("pro approved")) status = "approved";
+  else if (statusRaw.includes("declined") || statusRaw.includes("pro declined")) status = "declined";
+  else if (statusRaw.includes("expired")) status = "expired";
+  else if (statusRaw.includes("sent")) status = "sent";
+
+  return {
+    company_id: companyId,
+    customer_id: "",
+    estimate_number: row["estimate #"] || row["estimate#"] || "",
+    title: `Estimate #${row["estimate #"] || ""}${row["customer name"] ? " — " + row["customer name"] : ""}`,
+    status,
+    total,
+    subtotal: total,
+    notes: [
+      row["estimate tags"] ? `Tags: ${row["estimate tags"]}` : "",
+      row["employees"] ? `Assigned: ${row["employees"]}` : "",
+      row["outcome"] ? `Outcome: ${row["outcome"]}` : "",
+    ].filter(Boolean).join("\n") || "",
+    valid_until: row["scheduled date"] ? new Date(row["scheduled date"]).toISOString().split("T")[0] : "",
+    imported: true,
+  };
+}
+
+// Map HouseCall Pro invoice fields to FieldFlow Pro Invoice entity
+function mapInvoice(row, companyId) {
+  const amountDue = parseFloat((row["amount due"] || "0").replace(/[$,]/g, "")) || 0;
+  const statusRaw = (row["invoice status"] || "").toLowerCase();
+  let status = "draft";
+  if (statusRaw.includes("paid")) status = "paid";
+  else if (statusRaw.includes("open")) status = "sent";
+  else if (statusRaw.includes("overdue")) status = "overdue";
+  else if (statusRaw.includes("void")) status = "void";
+
+  const dueDateRaw = row["due date"] || row["latest send date"] || "";
+  let due_date = "";
+  if (dueDateRaw) {
+    try { due_date = new Date(dueDateRaw).toISOString().split("T")[0]; } catch {}
+  }
+
+  return {
+    company_id: companyId,
+    customer_id: "",
+    invoice_number: row["invoice #"] || row["invoice#"] || "",
+    status,
+    total: amountDue,
+    subtotal: amountDue,
+    amount_paid: status === "paid" ? amountDue : 0,
+    due_date,
+    notes: row["job #"] ? `HouseCall Pro Job #${row["job #"]}` : "",
+    imported: true,
+  };
+}
+
 // Map HouseCall Pro job fields to FieldFlow Pro Job entity
 function mapJob(row, companyId) {
   return {
