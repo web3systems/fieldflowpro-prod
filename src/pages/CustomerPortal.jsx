@@ -301,20 +301,46 @@ export default function CustomerPortal() {
       <div className="max-w-lg mx-auto px-4 py-4 space-y-4">
         {activeTab === "home" && (
           <>
+            {/* Quick action buttons */}
+            <div className="grid grid-cols-3 gap-3">
+              <button onClick={() => setActiveTab("book")} className="flex flex-col items-center gap-2 bg-white rounded-2xl p-4 shadow-sm hover:shadow-md transition-all border border-slate-100">
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${accentColor}18` }}>
+                  <PlusCircle className="w-5 h-5" style={{ color: accentColor }} />
+                </div>
+                <span className="text-xs font-semibold text-slate-700 text-center leading-tight">Book a Service</span>
+              </button>
+              <button onClick={() => setActiveTab("jobs")} className="flex flex-col items-center gap-2 bg-white rounded-2xl p-4 shadow-sm hover:shadow-md transition-all border border-slate-100">
+                <div className="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center">
+                  <Briefcase className="w-5 h-5 text-purple-600" />
+                </div>
+                <span className="text-xs font-semibold text-slate-700 text-center leading-tight">My Jobs</span>
+              </button>
+              <button onClick={() => setActiveTab("invoices")} className="flex flex-col items-center gap-2 bg-white rounded-2xl p-4 shadow-sm hover:shadow-md transition-all border border-slate-100">
+                <div className="w-10 h-10 rounded-xl bg-green-50 flex items-center justify-center">
+                  <DollarSign className="w-5 h-5 text-green-600" />
+                </div>
+                <span className="text-xs font-semibold text-slate-700 text-center leading-tight">Invoices</span>
+              </button>
+            </div>
+
             {upcomingJobs.length > 0 && (
               <div>
-                <h2 className="text-sm font-semibold text-slate-700 mb-2">Upcoming Services</h2>
+                <div className="flex items-center justify-between mb-2">
+                  <h2 className="text-sm font-bold text-slate-800">Upcoming Services</h2>
+                  <button onClick={() => setActiveTab("jobs")} className="text-xs font-medium" style={{ color: accentColor }}>View all →</button>
+                </div>
                 <div className="space-y-2">
                   {upcomingJobs.slice(0, 3).map(job => {
                     const statusInfo = STATUS_STYLES[job.status] || STATUS_STYLES.new;
                     return (
-                      <Card key={job.id} className="border-0 shadow-sm">
+                      <Card key={job.id} className="border-0 shadow-sm overflow-hidden">
+                        <div className="h-1 w-full" style={{ backgroundColor: accentColor }} />
                         <CardContent className="p-4">
-                          <div className="flex items-center justify-between">
-                            <div>
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex-1">
                               <p className="font-semibold text-slate-800">{job.title}</p>
                               {job.scheduled_start && (
-                                <p className="text-xs text-slate-500 mt-0.5 flex items-center gap-1">
+                                <p className="text-xs text-slate-500 mt-1 flex items-center gap-1">
                                   <Calendar className="w-3 h-3" />
                                   {format(new Date(job.scheduled_start), "EEE, MMM d · h:mm a")}
                                 </p>
@@ -337,10 +363,13 @@ export default function CustomerPortal() {
 
             {pendingInvoices.length > 0 && (
               <div>
-                <h2 className="text-sm font-semibold text-slate-700 mb-2">Invoices Due</h2>
+                <div className="flex items-center justify-between mb-2">
+                  <h2 className="text-sm font-bold text-slate-800">Invoices Due</h2>
+                  <button onClick={() => setActiveTab("invoices")} className="text-xs font-medium" style={{ color: accentColor }}>View all →</button>
+                </div>
                 <div className="space-y-2">
                   {pendingInvoices.slice(0, 3).map(inv => (
-                    <Card key={inv.id} className="border-0 shadow-sm cursor-pointer" onClick={() => setActiveTab("invoices")}>
+                    <Card key={inv.id} className="border-0 shadow-sm cursor-pointer hover:shadow-md transition-shadow" onClick={() => setActiveTab("invoices")}>
                       <CardContent className="p-4">
                         <div className="flex items-center justify-between">
                           <div>
@@ -369,6 +398,9 @@ export default function CustomerPortal() {
                   <CheckCircle className="w-12 h-12 text-green-400 mx-auto mb-3" />
                   <p className="font-semibold text-slate-700">You're all caught up!</p>
                   <p className="text-slate-400 text-sm mt-1">No upcoming jobs or pending invoices.</p>
+                  <button onClick={() => setActiveTab("book")} className="mt-4 px-5 py-2.5 rounded-xl text-sm font-semibold text-white transition-opacity" style={{ backgroundColor: accentColor }}>
+                    Book a Service
+                  </button>
                 </CardContent>
               </Card>
             )}
