@@ -22,6 +22,7 @@ import {
 import { format } from "date-fns";
 import CompanyStripeRow from "@/components/settings/CompanyStripeRow";
 import HouseCallProImport from "@/components/admin/HouseCallProImport";
+import AnnouncementSender from "@/components/admin/AnnouncementSender";
 
 export default function SuperAdminDashboard() {
   const [user, setUser] = useState(null);
