@@ -528,7 +528,22 @@ export default function CustomerPortal() {
                   <form onSubmit={submitBookingRequest} className="space-y-4">
                     <div>
                       <label className="text-sm font-medium text-slate-700 block mb-1">What service do you need? *</label>
-                      <input required className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" value={bookingForm.service_type} onChange={e => setBookingForm({ ...bookingForm, service_type: e.target.value })} placeholder="e.g. Lawn mowing, Deep clean..." />
+                      {companyServices.length > 0 ? (
+                        <select
+                          required
+                          className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                          value={bookingForm.service_type}
+                          onChange={e => setBookingForm({ ...bookingForm, service_type: e.target.value })}
+                        >
+                          <option value="">Select a service...</option>
+                          {companyServices.map(svc => (
+                            <option key={svc.id} value={svc.name}>{svc.name}{svc.unit_price > 0 ? ` — $${svc.unit_price}` : ""}</option>
+                          ))}
+                          <option value="Other">Other / Not listed</option>
+                        </select>
+                      ) : (
+                        <input required className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" value={bookingForm.service_type} onChange={e => setBookingForm({ ...bookingForm, service_type: e.target.value })} placeholder="e.g. Lawn mowing, Deep clean..." />
+                      )}
                     </div>
                     <div>
                       <label className="text-sm font-medium text-slate-700 block mb-1">Preferred Date *</label>
