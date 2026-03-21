@@ -134,7 +134,74 @@ export default function CustomerDetail() {
             />
           </div>
 
-          <UpcomingAppointments jobs={jobs} technicians={technicians} />
+          {/* Jobs */}
+          <div className="bg-white rounded-xl shadow-sm border p-4">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-semibold text-slate-700 flex items-center gap-1.5">
+                <Briefcase className="w-4 h-4 text-slate-500" /> Jobs ({jobs.length})
+              </h3>
+              <Button size="sm" variant="outline" className="text-xs gap-1" onClick={() => navigate(createPageUrl(`Jobs?customer_id=${id}`))}>
+                <Briefcase className="w-3 h-3" /> New Job
+              </Button>
+            </div>
+            {jobs.length === 0 ? (
+              <p className="text-sm text-slate-400 py-4 text-center">No jobs yet.</p>
+            ) : (
+              <div className="space-y-2">
+                {jobs.sort((a, b) => new Date(b.created_date) - new Date(a.created_date)).map(job => (
+                  <div key={job.id} onClick={() => navigate(`/JobDetail/${job.id}`)} className="flex items-center justify-between p-2.5 rounded-lg border border-slate-100 hover:bg-slate-50 cursor-pointer">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-slate-800 truncate">{job.title}</p>
+                      <p className="text-xs text-slate-400">
+                        {job.scheduled_start ? format(new Date(job.scheduled_start), "MMM d, yyyy") : format(new Date(job.created_date), "MMM d, yyyy")}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2 ml-2">
+                      <Badge className={`text-xs ${job.status === "completed" ? "bg-green-100 text-green-700" : job.status === "in_progress" ? "bg-amber-100 text-amber-700" : job.status === "cancelled" ? "bg-red-100 text-red-700" : "bg-blue-100 text-blue-700"}`}>
+                        {job.status?.replace("_", " ")}
+                      </Badge>
+                      {job.total_amount > 0 && <span className="text-xs font-semibold text-slate-700">${job.total_amount.toLocaleString()}</span>}
+                      <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Estimates */}
+          <div className="bg-white rounded-xl shadow-sm border p-4">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-semibold text-slate-700 flex items-center gap-1.5">
+                <FileText className="w-4 h-4 text-slate-500" /> Estimates ({estimates.length})
+              </h3>
+              <Button size="sm" variant="outline" className="text-xs gap-1" onClick={() => navigate(createPageUrl(`Estimates?customer_id=${id}`))}>
+                <FileText className="w-3 h-3" /> New Estimate
+              </Button>
+            </div>
+            {estimates.length === 0 ? (
+              <p className="text-sm text-slate-400 py-4 text-center">No estimates yet.</p>
+            ) : (
+              <div className="space-y-2">
+                {estimates.sort((a, b) => new Date(b.created_date) - new Date(a.created_date)).map(est => (
+                  <div key={est.id} onClick={() => navigate(`/EstimateDetail/${est.id}`)} className="flex items-center justify-between p-2.5 rounded-lg border border-slate-100 hover:bg-slate-50 cursor-pointer">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-slate-800 truncate">{est.title || est.estimate_number || "Estimate"}</p>
+                      <p className="text-xs text-slate-400">{format(new Date(est.created_date), "MMM d, yyyy")}</p>
+                    </div>
+                    <div className="flex items-center gap-2 ml-2">
+                      <Badge className={`text-xs ${est.status === "approved" ? "bg-green-100 text-green-700" : est.status === "declined" ? "bg-red-100 text-red-700" : est.status === "sent" ? "bg-blue-100 text-blue-700" : "bg-gray-100 text-gray-600"}`}>
+                        {est.status}
+                      </Badge>
+                      {est.total > 0 && <span className="text-xs font-semibold text-slate-700">${est.total.toLocaleString()}</span>}
+                      <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
           <CustomerTasks customer={customer} onUpdate={handleUpdate} />
           <CustomerAddresses customer={customer} onUpdate={handleUpdate} />
           <CustomerNotes
