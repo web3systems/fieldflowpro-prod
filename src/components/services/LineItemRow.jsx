@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectGroup, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Trash2 } from "lucide-react";
 
-export default function LineItemRow({ item, idx, companyId, onUpdate, onRemove }) {
+export default function LineItemRow({ item, idx, companyId, onUpdate, onRemove, categoryFilter }) {
   const [services, setServices] = useState([]);
 
   useEffect(() => {
@@ -29,9 +29,10 @@ export default function LineItemRow({ item, idx, companyId, onUpdate, onRemove }
   const matchedService = services.find(s => s.name === item.description);
   const selectValue = matchedService ? matchedService.id : "__custom__";
 
-  const laborServices = services.filter(s => s.category === "Labor");
-  const materialServices = services.filter(s => s.category === "Materials");
-  const otherServices = services.filter(s => !["Labor", "Materials"].includes(s.category));
+  const filteredServices = categoryFilter ? services.filter(s => s.category === categoryFilter) : services;
+  const laborServices = categoryFilter ? filteredServices : services.filter(s => s.category === "Labor");
+  const materialServices = categoryFilter ? [] : services.filter(s => s.category === "Materials");
+  const otherServices = categoryFilter ? [] : services.filter(s => !["Labor", "Materials"].includes(s.category));
 
   return (
     <div className="grid grid-cols-12 gap-2 items-start p-3 bg-slate-50 rounded-lg">
