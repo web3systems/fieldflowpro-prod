@@ -81,7 +81,7 @@ Deno.serve(async (req) => {
       });
     } else {
       await base44.asServiceRole.entities.Subscription.create({
-        company_id,
+        company_id: company_id_final,
         plan,
         status: 'trialing',
         stripe_customer_id: customerId,
