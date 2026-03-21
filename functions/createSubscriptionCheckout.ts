@@ -11,11 +11,27 @@ const PRICE_IDS = {
 
 Deno.serve(async (req) => {
   try {
-    const { plan, company_id, owner_email, owner_name, success_url, cancel_url } = await req.json();
+    const { plan, company_id, company_name, company_phone, owner_email, owner_name, success_url, cancel_url } = await req.json();
 
-    if (!plan || !company_id || !owner_email) {
-      return Response.json({ error: 'plan, company_id, and owner_email are required' }, { status: 400 });
+    if (!plan || !owner_email) {
+      return Response.json({ error: 'plan and owner_email are required' }, { status: 400 });
     }
+
+    const base44 = createClientFromRequest(req);
+
+    // Create company via service role if no company_id provided
+    let resolvedCompanyId = company_id;
+    if (!resolvedCompanyId) {
+      if (!company_name) return Response.json({ error: 'company_name is required' }, { status: 400 });
+      const company = await base44.asServiceRole.entities.Company.create({
+        name: company_name,
+        email: owner_email,
+        phone: company_phone || '',
+        is_active: true,
+      });
+      resolvedCompanyId = company.id;
+    }
+    const company_id_final = resolvedCompanyId;
 
     const price_id = PRICE_IDS[plan];
     if (!price_id) return Response.json({ error: 'Invalid plan' }, { status: 400 });
