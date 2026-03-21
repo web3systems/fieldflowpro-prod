@@ -26,6 +26,7 @@ export default function CustomerDetail() {
   const { activeCompany } = useApp();
   const [customer, setCustomer] = useState(null);
   const [jobs, setJobs] = useState([]);
+  const [estimates, setEstimates] = useState([]);
   const [invoices, setInvoices] = useState([]);
   const [activities, setActivities] = useState([]);
   const [technicians, setTechnicians] = useState([]);
@@ -34,15 +35,17 @@ export default function CustomerDetail() {
 
   const loadData = useCallback(async () => {
     if (!id) return;
-    const [cust, j, inv, acts, techs] = await Promise.all([
+    const [cust, j, est, inv, acts, techs] = await Promise.all([
       base44.entities.Customer.filter({ id }),
       base44.entities.Job.filter({ customer_id: id }),
+      base44.entities.Estimate.filter({ customer_id: id }),
       base44.entities.Invoice.filter({ customer_id: id }),
       base44.entities.Activity.filter({ related_to_id: id }),
       activeCompany ? base44.entities.Technician.filter({ company_id: activeCompany.id }) : Promise.resolve([]),
     ]);
     if (cust.length > 0) setCustomer(cust[0]);
     setJobs(j);
+    setEstimates(est);
     setInvoices(inv);
     setActivities(acts.sort((a, b) => new Date(b.created_date) - new Date(a.created_date)));
     setTechnicians(techs);
