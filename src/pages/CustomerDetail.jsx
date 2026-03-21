@@ -3,9 +3,10 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { useApp } from "../Layout";
 import { createPageUrl } from "@/utils";
-import { ArrowLeft, FileText, Briefcase, DollarSign, ExternalLink } from "lucide-react";
+import { ArrowLeft, FileText, Briefcase, DollarSign, ExternalLink, Calendar, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { format } from "date-fns";
 
 import CustomerSidebar from "@/components/customers/CustomerSidebar";
 import CustomerAddresses from "@/components/customers/CustomerAddresses";
