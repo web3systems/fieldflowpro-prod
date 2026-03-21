@@ -44,7 +44,8 @@ const defaultJob = {
   title: "", description: "", status: "new", priority: "medium",
   address: "", city: "", state: "", zip: "",
   scheduled_start: "", scheduled_end: "",
-  customer_id: "", service_type: "", notes: ""
+  customer_id: "", service_type: "", notes: "",
+  internal_notes: "", line_items: [], tax_rate: 0, subtotal: 0, total_amount: 0
 };
 
 export default function Jobs() {
