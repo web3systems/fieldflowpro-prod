@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/sheet";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel,
   AlertDialogContent, AlertDialogDescription, AlertDialogFooter,
@@ -26,11 +27,13 @@ import {
 } from "@/components/ui/alert-dialog";
 
 const SOURCE_OPTIONS = ["website", "referral", "google", "facebook", "instagram", "other", "manual"];
+const US_STATES = ["AL","AK","AZ","AR","CA","CO","CT","DE","FL","GA","HI","ID","IL","IN","IA","KS","KY","LA","ME","MD","MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ","NM","NY","NC","ND","OH","OK","OR","PA","RI","SC","SD","TN","TX","UT","VT","VA","WA","WV","WI","WY"];
 
 const defaultForm = {
   first_name: "", last_name: "", email: "", phone: "",
   address: "", city: "", state: "", zip: "",
-  source: "manual", status: "active", notes: ""
+  source: "manual", status: "active", notes: "",
+  customer_type: "homeowner", notifications_enabled: true, marketing_consent: false
 };
 
 export default function Customers() {
