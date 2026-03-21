@@ -45,7 +45,7 @@ export default function LineItemRow({ item, idx, companyId, onUpdate, onRemove, 
             <SelectItem value="__custom__">-- Custom --</SelectItem>
             {laborServices.length > 0 && (
               <SelectGroup>
-                <SelectLabel>Labor</SelectLabel>
+                {!categoryFilter && <SelectLabel>Labor</SelectLabel>}
                 {laborServices.map(svc => (
                   <SelectItem key={svc.id} value={svc.id}>{svc.name}</SelectItem>
                 ))}
