@@ -87,15 +87,56 @@ export default function Jobs() {
 
   async function loadData() {
     setLoading(true);
-    const [j, c, t] = await Promise.all([
+    const [j, c, t, s] = await Promise.all([
       base44.entities.Job.filter({ company_id: activeCompany.id }),
       base44.entities.Customer.filter({ company_id: activeCompany.id }),
       base44.entities.Technician.filter({ company_id: activeCompany.id }),
+      base44.entities.Service.filter({ company_id: activeCompany.id, is_active: true }),
     ]);
     setJobs(j);
     setCustomers(c);
     setTechs(t);
+    setServices(s);
     setLoading(false);
+  }
+
+  function addLineItem(type) {
+    const items = [...(form.line_items || []), { type, description: "", quantity: 1, unit_price: 0, total: 0 }];
+    recalcTotals(items);
+  }
+
+  function updateLineItem(idx, field, value) {
+    const items = (form.line_items || []).map((item, i) => {
+      if (i !== idx) return item;
+      const updated = { ...item, [field]: value };
+      if (field === "quantity" || field === "unit_price") {
+        updated.total = (parseFloat(updated.quantity) || 0) * (parseFloat(updated.unit_price) || 0);
+      }
+      return updated;
+    });
+    recalcTotals(items);
+  }
+
+  function removeLineItem(idx) {
+    const items = (form.line_items || []).filter((_, i) => i !== idx);
+    recalcTotals(items);
+  }
+
+  function recalcTotals(items) {
+    const subtotal = items.reduce((sum, i) => sum + (parseFloat(i.total) || 0), 0);
+    const tax = subtotal * ((parseFloat(form.tax_rate) || 0) / 100);
+    setForm(prev => ({ ...prev, line_items: items, subtotal, total_amount: subtotal + tax }));
+  }
+
+  function selectServiceForItem(idx, serviceId) {
+    const svc = services.find(s => s.id === serviceId);
+    if (!svc) return;
+    const items = (form.line_items || []).map((item, i) => {
+      if (i !== idx) return item;
+      const updated = { ...item, description: svc.name, unit_price: svc.unit_price || 0, total: (parseFloat(item.quantity) || 1) * (svc.unit_price || 0) };
+      return updated;
+    });
+    recalcTotals(items);
   }
 
   function openCreate() {
