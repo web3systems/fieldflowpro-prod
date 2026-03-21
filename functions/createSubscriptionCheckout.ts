@@ -36,10 +36,8 @@ Deno.serve(async (req) => {
     const price_id = PRICE_IDS[plan];
     if (!price_id) return Response.json({ error: 'Invalid plan' }, { status: 400 });
 
-    const base44 = createClientFromRequest(req);
-
     // Check for existing Stripe customer
-    const existing = await base44.asServiceRole.entities.Subscription.filter({ company_id });
+    const existing = await base44.asServiceRole.entities.Subscription.filter({ company_id: company_id_final });
     let customerId = existing[0]?.stripe_customer_id;
 
     if (!customerId) {
