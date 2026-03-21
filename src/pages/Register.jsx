@@ -29,16 +29,10 @@ export default function Register() {
     setError(null);
 
     try {
-      const company = await base44.entities.Company.create({
-        name: form.company_name,
-        email: form.email,
-        phone: form.phone,
-        is_active: true,
-      });
-
       const res = await base44.functions.invoke("createSubscriptionCheckout", {
         plan: selectedPlan,
-        company_id: company.id,
+        company_name: form.company_name,
+        company_phone: form.phone,
         owner_email: form.email,
         owner_name: form.name,
         success_url: `${window.location.origin}/Dashboard?subscribed=true`,
