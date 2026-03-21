@@ -38,9 +38,24 @@ export default function LineItemRow({ item, idx, companyId, onUpdate, onRemove }
             onChange={handleServiceSelect}
           >
             <option value="__custom__">-- Custom --</option>
-            {services.map(svc => (
-              <option key={svc.id} value={svc.name}>{svc.name}</option>
-            ))}
+            {["Labor", "Materials"].map(cat => {
+              const catServices = services.filter(s => s.category === cat);
+              if (catServices.length === 0) return null;
+              return (
+                <optgroup key={cat} label={cat}>
+                  {catServices.map(svc => (
+                    <option key={svc.id} value={svc.name}>{svc.name}</option>
+                  ))}
+                </optgroup>
+              );
+            })}
+            {services.filter(s => !["Labor", "Materials"].includes(s.category)).length > 0 && (
+              <optgroup label="Other">
+                {services.filter(s => !["Labor", "Materials"].includes(s.category)).map(svc => (
+                  <option key={svc.id} value={svc.name}>{svc.name}</option>
+                ))}
+              </optgroup>
+            )}
           </select>
         ) : (
           <Input
