@@ -16,6 +16,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { format } from "date-fns";
 import ServicePicker from "@/components/services/ServicePicker";
+import LineItemRow from "@/components/services/LineItemRow";
 import { downloadEstimatePdf } from "../components/documents/generatePdf";
 
 const STATUS_STYLES = {
@@ -306,22 +307,25 @@ export default function EstimateDetail() {
               </div>
             </CardHeader>
             <CardContent className="space-y-2">
-              {form.line_items?.map((item, idx) => (
-                <div key={idx} className="grid grid-cols-12 gap-2 items-center p-3 bg-slate-50 rounded-lg">
-                  <div className="col-span-5">
-                    <Input value={item.description} onChange={e => updateItem(idx, "description", e.target.value)} placeholder="Description" className="bg-white text-sm" />
-                  </div>
-                  <div className="col-span-2">
-                    <Input type="number" value={item.quantity} onChange={e => updateItem(idx, "quantity", parseFloat(e.target.value) || 0)} placeholder="Qty" className="bg-white text-sm text-center" />
-                  </div>
-                  <div className="col-span-2">
-                    <Input type="number" value={item.unit_price} onChange={e => updateItem(idx, "unit_price", parseFloat(e.target.value) || 0)} placeholder="Price" className="bg-white text-sm" />
-                  </div>
-                  <div className="col-span-2 text-right text-sm font-medium text-slate-700">${(item.total || 0).toFixed(2)}</div>
-                  <div className="col-span-1 flex justify-end">
-                    <button onClick={() => removeItem(idx)} className="text-red-400 hover:text-red-600"><Trash2 className="w-3.5 h-3.5" /></button>
-                  </div>
+                 {/* Header row */}
+              {form.line_items?.length > 0 && (
+                <div className="grid grid-cols-12 gap-2 px-3 text-xs font-medium text-slate-400 uppercase tracking-wide">
+                  <div className="col-span-5">Service / Description</div>
+                  <div className="col-span-2 text-center">Qty</div>
+                  <div className="col-span-2">Price</div>
+                  <div className="col-span-2 text-right">Total</div>
+                  <div className="col-span-1" />
                 </div>
+              )}
+              {form.line_items?.map((item, idx) => (
+                <LineItemRow
+                  key={idx}
+                  item={item}
+                  idx={idx}
+                  companyId={activeCompany?.id}
+                  onUpdate={updateItem}
+                  onRemove={removeItem}
+                />
               ))}
 
               <div className="mt-3 p-3 bg-slate-50 rounded-lg space-y-1.5">
