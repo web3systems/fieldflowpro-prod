@@ -24,7 +24,7 @@ const defaultForm = {
 };
 
 const unitLabels = { flat: "Flat Rate", hourly: "Per Hour", per_sqft: "Per Sq Ft", per_unit: "Per Unit" };
-const CATEGORIES = ["Labor", "Materials"];
+const CATEGORIES = ["Labor", "Materials", "Recurring"];
 
 export default function Services() {
   const { activeCompany } = useApp();
