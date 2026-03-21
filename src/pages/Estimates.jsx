@@ -282,31 +282,20 @@ export default function Estimates() {
       )}
 
       <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-        <SheetContent className="w-full sm:max-w-2xl overflow-y-auto">
-          <SheetHeader>
-            <SheetTitle>{editing ? "Edit Estimate" : "New Estimate"}</SheetTitle>
-          </SheetHeader>
-          <div className="space-y-4 mt-4 pb-6">
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <Label>Title *</Label>
-                <Input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} placeholder="e.g. Lawn Maintenance" />
+        <SheetContent className="w-full sm:max-w-5xl overflow-y-auto p-0">
+          <div className="flex h-full min-h-screen">
+            {/* Left sidebar */}
+            <div className="w-64 flex-shrink-0 bg-slate-50 border-r border-slate-200 p-4 space-y-5">
+              <div className="pt-2">
+                <h2 className="text-base font-semibold text-slate-800">{editing ? "Edit Estimate" : "New Estimate"}</h2>
+                {form.estimate_number && <p className="text-xs text-slate-400 font-mono mt-0.5">{form.estimate_number}</p>}
               </div>
-              <div>
-                <Label>Status</Label>
-                <Select value={form.status} onValueChange={v => setForm({ ...form, status: v })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {Object.keys(STATUS_STYLES).map(s => (
-                      <SelectItem key={s} value={s} className="capitalize">{s}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label>Customer</Label>
+
+              {/* Customer */}
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Customer</Label>
                 <Select value={form.customer_id} onValueChange={v => setForm({ ...form, customer_id: v })}>
-                  <SelectTrigger><SelectValue placeholder="Select customer" /></SelectTrigger>
+                  <SelectTrigger className="bg-white text-sm"><SelectValue placeholder="Select customer..." /></SelectTrigger>
                   <SelectContent>
                     {customers.map(c => (
                       <SelectItem key={c.id} value={c.id}>{c.first_name} {c.last_name}</SelectItem>
@@ -314,148 +303,177 @@ export default function Estimates() {
                   </SelectContent>
                 </Select>
               </div>
-              <div>
-                <Label>Valid Until</Label>
-                <Input type="date" value={form.valid_until} onChange={e => setForm({ ...form, valid_until: e.target.value })} />
-              </div>
-            </div>
 
-            {/* Line Items */}
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <Label>Line Items</Label>
-                <div className="flex items-center gap-2">
-                  <ServicePicker companyId={activeCompany?.id} onSelect={addServiceAsItem} />
-                  <Button variant="outline" size="sm" onClick={addItem} className="gap-1">
-                    <Plus className="w-3 h-3" /> Add Line
-                  </Button>
-                </div>
+              {/* Title */}
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Title</Label>
+                <Input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} placeholder="e.g. Lawn Maintenance" className="bg-white text-sm" />
               </div>
-              <div className="space-y-2">
-                {form.line_items.map((item, idx) => (
-                  <div key={idx} className="grid grid-cols-12 gap-2 items-center p-3 bg-slate-50 rounded-lg">
-                    <div className="col-span-5">
-                      <Input
-                        value={item.description}
-                        onChange={e => updateItem(idx, "description", e.target.value)}
-                        placeholder="Description"
-                        className="bg-white text-sm"
-                      />
-                    </div>
-                    <div className="col-span-2">
-                      <Input
-                        type="number"
-                        value={item.quantity}
-                        onChange={e => updateItem(idx, "quantity", parseFloat(e.target.value) || 0)}
-                        placeholder="Qty"
-                        className="bg-white text-sm text-center"
-                      />
-                    </div>
-                    <div className="col-span-2">
-                      <Input
-                        type="number"
-                        value={item.unit_price}
-                        onChange={e => updateItem(idx, "unit_price", parseFloat(e.target.value) || 0)}
-                        placeholder="Price"
-                        className="bg-white text-sm"
-                      />
-                    </div>
-                    <div className="col-span-2 text-right text-sm font-medium text-slate-700">
-                      ${(item.total || 0).toFixed(2)}
-                    </div>
-                    <div className="col-span-1 flex justify-end">
-                      <button onClick={() => removeItem(idx)} className="text-red-400 hover:text-red-600">
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
+
+              {/* Status */}
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Status</Label>
+                <Select value={form.status} onValueChange={v => setForm({ ...form, status: v })}>
+                  <SelectTrigger className="bg-white text-sm"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {Object.keys(STATUS_STYLES).map(s => (
+                      <SelectItem key={s} value={s} className="capitalize">{s}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Valid Until */}
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Valid Until</Label>
+                <Input type="date" value={form.valid_until} onChange={e => setForm({ ...form, valid_until: e.target.value })} className="bg-white text-sm" />
+              </div>
+
+              {/* Actions */}
+              <div className="pt-4 space-y-2 border-t border-slate-200">
+                {editing && !["approved", "declined"].includes(form.status) && (
+                  <>
+                    <Button onClick={handleDecline} variant="outline" className="w-full gap-2 border-red-200 text-red-600 hover:bg-red-50 text-sm">
+                      <XCircle className="w-4 h-4" /> Decline
+                    </Button>
+                    <Button onClick={handleApprove} disabled={approving} className="w-full gap-2 bg-green-600 hover:bg-green-700 text-sm">
+                      <CheckCircle className="w-4 h-4" />
+                      {approving ? "Creating Job..." : "Approve & Create Job"}
+                    </Button>
+                  </>
+                )}
+                {editing && form.status === "approved" && (
+                  <div className="flex items-center gap-2 p-2 bg-green-50 rounded-lg text-green-700 text-xs">
+                    <Briefcase className="w-3.5 h-3.5" /> Approved — job created.
                   </div>
-                ))}
-              </div>
-
-              <div className="mt-3 p-3 bg-slate-50 rounded-lg space-y-1.5">
-                <div className="flex justify-between text-sm">
-                  <span className="text-slate-600">Subtotal</span>
-                  <span className="font-medium">${(form.subtotal || 0).toFixed(2)}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-slate-600">Tax Rate (%)</span>
-                  <Input
-                    type="number"
-                    value={form.tax_rate}
-                    onChange={e => {
-                      const tax_rate = parseFloat(e.target.value) || 0;
-                      const tax_amount = form.subtotal * (tax_rate / 100);
-                      const total = form.subtotal + tax_amount - (form.discount || 0);
-                      setForm({ ...form, tax_rate, tax_amount, total });
-                    }}
-                    className="w-20 h-7 text-sm bg-white"
-                  />
-                  <span className="text-sm text-slate-500 ml-auto">${(form.tax_amount || 0).toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between text-base font-bold pt-1 border-t border-slate-200">
-                  <span>Total</span>
-                  <span>${(form.total || 0).toFixed(2)}</span>
+                )}
+                {editing && form.status === "declined" && (
+                  <div className="flex items-center gap-2 p-2 bg-red-50 rounded-lg text-red-600 text-xs">
+                    <XCircle className="w-3.5 h-3.5" /> Estimate declined.
+                  </div>
+                )}
+                {editing && (
+                  <div className="flex gap-2">
+                    <Button variant="outline" onClick={handleDownloadPdf} className="flex-1 gap-1 text-xs">
+                      <Download className="w-3.5 h-3.5" /> PDF
+                    </Button>
+                    <Button variant="outline" onClick={handleDuplicate} disabled={duplicating} className="flex-1 gap-1 text-xs">
+                      <Copy className="w-3.5 h-3.5" /> {duplicating ? "..." : "Dupe"}
+                    </Button>
+                  </div>
+                )}
+                <div className="flex gap-2 pt-1">
+                  <Button variant="outline" onClick={() => setSheetOpen(false)} className="flex-1 text-sm">Cancel</Button>
+                  <Button onClick={handleSave} disabled={saving || !form.title} className="flex-1 bg-blue-600 hover:bg-blue-700 text-sm">
+                    {saving ? "Saving..." : editing ? "Save" : "Create"}
+                  </Button>
                 </div>
               </div>
             </div>
 
-            <div>
-              <Label>Notes</Label>
-              <Textarea value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} rows={2} placeholder="Notes visible to customer..." />
-            </div>
+            {/* Right main area */}
+            <div className="flex-1 p-5 space-y-5 overflow-y-auto">
+              {/* Private notes */}
+              <div>
+                <Label className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5 block">Private Notes</Label>
+                <Textarea
+                  value={form.notes}
+                  onChange={e => setForm({ ...form, notes: e.target.value })}
+                  rows={2}
+                  placeholder="Add a private note here..."
+                  className="bg-white text-sm"
+                />
+              </div>
 
-            <div className="flex gap-3 pt-2 flex-col">
-              {editing && !["approved", "declined"].includes(form.status) && (
-                <div className="flex gap-2">
-                  <Button
-                    onClick={handleDecline}
-                    variant="outline"
-                    className="flex-1 gap-2 border-red-200 text-red-600 hover:bg-red-50"
-                  >
-                    <XCircle className="w-4 h-4" /> Decline
-                  </Button>
-                  <Button
-                    onClick={handleApprove}
-                    disabled={approving}
-                    className="flex-1 gap-2 bg-green-600 hover:bg-green-700"
-                  >
-                    <CheckCircle className="w-4 h-4" />
-                    {approving ? "Creating Job..." : "Approve & Create Job"}
-                  </Button>
+              {/* Line Items */}
+              <div>
+                <h3 className="text-base font-semibold text-slate-800 mb-3">Line Items</h3>
+
+                {/* Services section */}
+                <div className="mb-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium text-slate-600">Services</span>
+                    <button
+                      onClick={() => {
+                        const newItem = { description: "", quantity: 1, unit_price: 0, total: 0, _category: "Labor" };
+                        setForm(f => ({ ...f, line_items: [...f.line_items, newItem] }));
+                      }}
+                      className="flex items-center gap-1 text-blue-600 hover:text-blue-700 text-sm font-medium"
+                    >
+                      <Plus className="w-4 h-4" /> Add service
+                    </button>
+                  </div>
+                  <div className="space-y-2">
+                    {form.line_items.filter((_, idx) => {
+                      // services = Labor category or default
+                      const item = form.line_items[idx];
+                      return item._category !== "Materials";
+                    }).map((item, _) => {
+                      const idx = form.line_items.indexOf(item);
+                      return (
+                        <LineItemRow key={idx} item={item} idx={idx} companyId={activeCompany?.id} onUpdate={updateItem} onRemove={removeItem} categoryFilter="Labor" />
+                      );
+                    })}
+                  </div>
                 </div>
-              )}
-              {editing && form.status === "approved" && (
-                <div className="flex items-center gap-2 p-3 bg-green-50 rounded-lg text-green-700 text-sm">
-                  <Briefcase className="w-4 h-4" />
-                  This estimate has been approved — a job was created.
+
+                {/* Materials section */}
+                <div className="mb-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium text-slate-600">Materials</span>
+                    <button
+                      onClick={() => {
+                        const newItem = { description: "", quantity: 1, unit_price: 0, total: 0, _category: "Materials" };
+                        setForm(f => ({ ...f, line_items: [...f.line_items, newItem] }));
+                      }}
+                      className="flex items-center gap-1 text-blue-600 hover:text-blue-700 text-sm font-medium"
+                    >
+                      <Plus className="w-4 h-4" /> Add material
+                    </button>
+                  </div>
+                  <div className="space-y-2">
+                    {form.line_items.filter(item => item._category === "Materials").map((item) => {
+                      const idx = form.line_items.indexOf(item);
+                      return (
+                        <LineItemRow key={idx} item={item} idx={idx} companyId={activeCompany?.id} onUpdate={updateItem} onRemove={removeItem} categoryFilter="Materials" />
+                      );
+                    })}
+                  </div>
                 </div>
-              )}
-              {editing && form.status === "declined" && (
-                <div className="flex items-center gap-2 p-3 bg-red-50 rounded-lg text-red-600 text-sm">
-                  <XCircle className="w-4 h-4" />
-                  This estimate was declined.
+
+                {/* Totals */}
+                <div className="border-t border-slate-200 pt-3 space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-slate-600">Subtotal</span>
+                    <span className="font-medium">${(form.subtotal || 0).toFixed(2)}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-slate-600">Tax rate</span>
+                      <Input
+                        type="number"
+                        value={form.tax_rate}
+                        onChange={e => {
+                          const tax_rate = parseFloat(e.target.value) || 0;
+                          const tax_amount = form.subtotal * (tax_rate / 100);
+                          const total = form.subtotal + tax_amount - (form.discount || 0);
+                          setForm({ ...form, tax_rate, tax_amount, total });
+                        }}
+                        className="w-16 h-7 text-sm bg-white"
+                      />
+                      <span className="text-xs text-slate-400">%</span>
+                    </div>
+                    <span className="text-sm font-medium">${(form.tax_amount || 0).toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between text-base font-bold pt-1 border-t border-slate-200">
+                    <span>Total</span>
+                    <span>${(form.total || 0).toFixed(2)}</span>
+                  </div>
                 </div>
-              )}
-              {editing && (
-                <div className="flex gap-2">
-                  <Button variant="outline" onClick={handleDownloadPdf} className="flex-1 gap-1.5">
-                    <Download className="w-4 h-4" /> PDF
-                  </Button>
-                  <Button variant="outline" onClick={handleDuplicate} disabled={duplicating} className="flex-1 gap-1.5">
-                    <Copy className="w-4 h-4" /> {duplicating ? "Duplicating..." : "Duplicate"}
-                  </Button>
-                </div>
-              )}
-              <div className="flex gap-2">
-                <Button variant="outline" onClick={() => setSheetOpen(false)} className="flex-1">Cancel</Button>
-                <Button onClick={handleSave} disabled={saving || !form.title} className="flex-1 bg-blue-600 hover:bg-blue-700">
-                  {saving ? "Saving..." : editing ? "Save Changes" : "Create Estimate"}
-                </Button>
               </div>
             </div>
           </div>
         </SheetContent>
-
       </Sheet>
     </div>
   );
