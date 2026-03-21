@@ -12,7 +12,6 @@ import CustomerSidebar from "@/components/customers/CustomerSidebar";
 import CustomerAddresses from "@/components/customers/CustomerAddresses";
 import CustomerTasks from "@/components/customers/CustomerTasks";
 import CustomerNotes from "@/components/customers/CustomerNotes";
-import UpcomingAppointments from "@/components/customers/UpcomingAppointments";
 
 const statusStyle = {
   active: "bg-green-100 text-green-700",
