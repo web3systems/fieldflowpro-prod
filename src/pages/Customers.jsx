@@ -236,113 +236,162 @@ export default function Customers() {
 
       {/* Customer Sheet */}
       <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-        <SheetContent className="w-full sm:max-w-lg overflow-y-auto">
-          <SheetHeader>
-            <SheetTitle>{editing ? `${editing.first_name} ${editing.last_name}` : "New Customer"}</SheetTitle>
+        <SheetContent className="w-full sm:max-w-3xl overflow-y-auto">
+          <SheetHeader className="pb-4 border-b">
+            <SheetTitle className="text-xl font-semibold">{editing ? `${editing.first_name} ${editing.last_name}` : "Add new customer"}</SheetTitle>
           </SheetHeader>
-          <div className="space-y-4 mt-4 pb-6">
+          <div className="space-y-6 mt-5 pb-6">
+
+            {/* Quick actions for existing customers */}
             {editing && (
               <div className="flex gap-2 p-3 bg-slate-50 rounded-xl">
-                <button
-                  onClick={() => { setSheetOpen(false); navigate(createPageUrl(`Estimates?customer_id=${editing.id}`)); }}
-                  className="flex-1 flex flex-col items-center gap-1.5 py-2.5 rounded-lg bg-blue-500 hover:bg-blue-600 transition-colors text-white shadow-sm"
-                >
-                  <FileText className="w-4 h-4" />
-                  <span className="text-xs font-medium">New Estimate</span>
+                <button onClick={() => { setSheetOpen(false); navigate(createPageUrl(`Estimates?customer_id=${editing.id}`)); }} className="flex-1 flex flex-col items-center gap-1.5 py-2.5 rounded-lg bg-blue-500 hover:bg-blue-600 transition-colors text-white shadow-sm">
+                  <FileText className="w-4 h-4" /><span className="text-xs font-medium">New Estimate</span>
                 </button>
-                <button
-                  onClick={() => { setSheetOpen(false); navigate(createPageUrl(`Jobs?customer_id=${editing.id}`)); }}
-                  className="flex-1 flex flex-col items-center gap-1.5 py-2.5 rounded-lg bg-purple-500 hover:bg-purple-600 transition-colors text-white shadow-sm"
-                >
-                  <Briefcase className="w-4 h-4" />
-                  <span className="text-xs font-medium">New Job</span>
+                <button onClick={() => { setSheetOpen(false); navigate(createPageUrl(`Jobs?customer_id=${editing.id}`)); }} className="flex-1 flex flex-col items-center gap-1.5 py-2.5 rounded-lg bg-purple-500 hover:bg-purple-600 transition-colors text-white shadow-sm">
+                  <Briefcase className="w-4 h-4" /><span className="text-xs font-medium">New Job</span>
                 </button>
-                <button
-                  onClick={() => { setSheetOpen(false); navigate(createPageUrl(`Invoices?customer_id=${editing.id}`)); }}
-                  className="flex-1 flex flex-col items-center gap-1.5 py-2.5 rounded-lg bg-green-500 hover:bg-green-600 transition-colors text-white shadow-sm"
-                >
-                  <DollarSign className="w-4 h-4" />
-                  <span className="text-xs font-medium">New Invoice</span>
+                <button onClick={() => { setSheetOpen(false); navigate(createPageUrl(`Invoices?customer_id=${editing.id}`)); }} className="flex-1 flex flex-col items-center gap-1.5 py-2.5 rounded-lg bg-green-500 hover:bg-green-600 transition-colors text-white shadow-sm">
+                  <DollarSign className="w-4 h-4" /><span className="text-xs font-medium">New Invoice</span>
                 </button>
                 {editing?.email && (
-                  <button
-                    onClick={handleSendPortalInvite}
-                    disabled={sendingPortalInvite}
-                    className="flex-1 flex flex-col items-center gap-1.5 py-2.5 rounded-lg bg-violet-500 hover:bg-violet-600 transition-colors text-white shadow-sm disabled:opacity-60"
-                  >
-                    <ExternalLink className="w-4 h-4" />
-                    <span className="text-xs font-medium">{sendingPortalInvite ? "Sending..." : "Portal Invite"}</span>
+                  <button onClick={handleSendPortalInvite} disabled={sendingPortalInvite} className="flex-1 flex flex-col items-center gap-1.5 py-2.5 rounded-lg bg-violet-500 hover:bg-violet-600 transition-colors text-white shadow-sm disabled:opacity-60">
+                    <ExternalLink className="w-4 h-4" /><span className="text-xs font-medium">{sendingPortalInvite ? "Sending..." : "Portal Invite"}</span>
                   </button>
                 )}
               </div>
             )}
+
+            {/* Name row */}
             <div className="grid grid-cols-2 gap-3">
-              <div>
-                <Label>First Name *</Label>
-                <Input value={form.first_name} onChange={e => setForm({ ...form, first_name: e.target.value })} />
-              </div>
-              <div>
-                <Label>Last Name *</Label>
-                <Input value={form.last_name} onChange={e => setForm({ ...form, last_name: e.target.value })} />
-              </div>
+              <Input placeholder="First name" value={form.first_name} onChange={e => setForm({ ...form, first_name: e.target.value })} />
+              <Input placeholder="Last name" value={form.last_name} onChange={e => setForm({ ...form, last_name: e.target.value })} />
             </div>
-            <div>
-              <Label>Email *</Label>
-              <Input type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} />
-            </div>
-            <div>
-              <Label>Phone</Label>
-              <Input type="tel" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} />
-            </div>
-            <div>
-              <Label>Address</Label>
-              <Input value={form.address} onChange={e => setForm({ ...form, address: e.target.value })} />
-            </div>
+
+            {/* Display name / phone / role row */}
             <div className="grid grid-cols-3 gap-3">
-              <div className="col-span-2">
-                <Label>City</Label>
-                <Input value={form.city} onChange={e => setForm({ ...form, city: e.target.value })} />
+              <Input placeholder="Display name (shown on invoices)" value={form.display_name || `${form.first_name} ${form.last_name}`.trim()} onChange={e => setForm({ ...form, display_name: e.target.value })} />
+              <Input placeholder="Home phone" type="tel" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} />
+              <Input placeholder="Role" value={form.role || ""} onChange={e => setForm({ ...form, role: e.target.value })} />
+            </div>
+
+            {/* Email / work phone / type row */}
+            <div className="grid grid-cols-3 gap-3 items-start">
+              <div className="space-y-2">
+                <Input placeholder="Email" type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} />
+                <button type="button" onClick={() => {}} className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700 font-medium">
+                  <Plus className="w-3.5 h-3.5" /> Email
+                </button>
               </div>
-              <div>
-                <Label>State</Label>
-                <Input value={form.state} onChange={e => setForm({ ...form, state: e.target.value })} maxLength={2} />
+              <div className="space-y-2">
+                <Input placeholder="Work phone" type="tel" value={form.work_phone || ""} onChange={e => setForm({ ...form, work_phone: e.target.value })} />
+                <button type="button" onClick={() => {}} className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700 font-medium">
+                  <Phone className="w-3.5 h-3.5" /> Phone
+                </button>
+              </div>
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <input type="radio" id="homeowner" name="customer_type" checked={form.customer_type === "homeowner"} onChange={() => setForm({ ...form, customer_type: "homeowner" })} className="accent-blue-600" />
+                  <label htmlFor="homeowner" className="text-sm">Homeowner</label>
+                </div>
+                <div className="flex items-center gap-2">
+                  <input type="radio" id="business" name="customer_type" checked={form.customer_type === "business"} onChange={() => setForm({ ...form, customer_type: "business" })} className="accent-blue-600" />
+                  <label htmlFor="business" className="text-sm">Business</label>
+                </div>
+                <div className="flex items-center gap-2 pt-1">
+                  <Checkbox id="do_not_service" checked={form.status === "inactive"} onCheckedChange={v => setForm({ ...form, status: v ? "inactive" : "active" })} />
+                  <label htmlFor="do_not_service" className="text-sm">Mark as <span className="bg-red-100 text-red-600 px-1.5 py-0.5 rounded text-xs font-medium">Do not service</span></label>
+                </div>
+                <p className="text-xs text-slate-400">Notifications will be turned off and it won't be possible to schedule a job or estimate.</p>
               </div>
             </div>
-            <div>
-              <Label>Zip Code</Label>
-              <Input value={form.zip} onChange={e => setForm({ ...form, zip: e.target.value })} placeholder="12345" />
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <Label>Source</Label>
-                <Select value={form.source} onValueChange={v => setForm({ ...form, source: v })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {SOURCE_OPTIONS.map(s => <SelectItem key={s} value={s} className="capitalize">{s}</SelectItem>)}
-                  </SelectContent>
-                </Select>
+
+            {/* Address section */}
+            <div className="border-t pt-4">
+              <div className="flex items-center gap-2 mb-3">
+                <MapPin className="w-4 h-4 text-slate-500" />
+                <span className="font-semibold text-slate-700">Address</span>
               </div>
-              <div>
-                <Label>Status</Label>
-                <Select value={form.status} onValueChange={v => setForm({ ...form, status: v })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="active">Active</SelectItem>
-                    <SelectItem value="inactive">Inactive</SelectItem>
-                  </SelectContent>
-                </Select>
+              <div className="grid grid-cols-3 gap-3">
+                <div className="col-span-2 space-y-3">
+                  <div className="grid grid-cols-3 gap-3">
+                    <Input placeholder="Street" className="col-span-2" value={form.address} onChange={e => setForm({ ...form, address: e.target.value })} />
+                    <Input placeholder="Unit" value={form.unit || ""} onChange={e => setForm({ ...form, unit: e.target.value })} />
+                  </div>
+                  <div className="grid grid-cols-3 gap-3">
+                    <Input placeholder="City" value={form.city} onChange={e => setForm({ ...form, city: e.target.value })} />
+                    <Select value={form.state} onValueChange={v => setForm({ ...form, state: v })}>
+                      <SelectTrigger><SelectValue placeholder="State" /></SelectTrigger>
+                      <SelectContent>{US_STATES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+                    </Select>
+                    <Input placeholder="Zip" value={form.zip} onChange={e => setForm({ ...form, zip: e.target.value })} />
+                  </div>
+                  <Input placeholder="Address Notes" value={form.address_notes || ""} onChange={e => setForm({ ...form, address_notes: e.target.value })} />
+                  <button type="button" className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700 font-medium">
+                    <Plus className="w-3.5 h-3.5" /> Address
+                  </button>
+                </div>
+                <div className="rounded-lg overflow-hidden bg-slate-100 flex items-center justify-center h-36 border border-slate-200">
+                  {form.address && form.city ? (
+                    <iframe
+                      title="map"
+                      className="w-full h-full"
+                      loading="lazy"
+                      src={`https://maps.google.com/maps?q=${encodeURIComponent(`${form.address} ${form.city} ${form.state} ${form.zip}`)}&output=embed`}
+                    />
+                  ) : (
+                    <div className="text-center text-slate-400 text-xs p-3">
+                      <MapPin className="w-6 h-6 mx-auto mb-1 text-slate-300" />
+                      Enter address to see map
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
-            <div>
-              <Label>Notes</Label>
-              <Textarea value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} rows={3} placeholder="Customer notes..." />
+
+            {/* Notes section */}
+            <div className="border-t pt-4">
+              <div className="flex items-center gap-2 mb-3">
+                <FileText className="w-4 h-4 text-slate-500" />
+                <span className="font-semibold text-slate-700">Notes</span>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-3">
+                  <Input placeholder="Customer notes" value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} />
+                  <Input placeholder="Customer tags (press enter)" value={form.tags_input || ""} onChange={e => setForm({ ...form, tags_input: e.target.value })} />
+                </div>
+                <div className="space-y-3">
+                  <Input placeholder="This customer bills to" value={form.bills_to || ""} onChange={e => setForm({ ...form, bills_to: e.target.value })} />
+                  <Select value={form.source} onValueChange={v => setForm({ ...form, source: v })}>
+                    <SelectTrigger><SelectValue placeholder="Lead source" /></SelectTrigger>
+                    <SelectContent>
+                      {SOURCE_OPTIONS.map(s => <SelectItem key={s} value={s} className="capitalize">{s}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
             </div>
-            <div className="flex gap-3 pt-2">
-              <Button variant="outline" onClick={() => setSheetOpen(false)} className="flex-1">Cancel</Button>
-              <Button onClick={handleSave} disabled={saving || !form.first_name || !form.last_name} className="flex-1 bg-blue-600 hover:bg-blue-700">
-                {saving ? "Saving..." : editing ? "Save Changes" : "Add Customer"}
-              </Button>
+
+            {/* Footer */}
+            <div className="flex items-center justify-between border-t pt-4">
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <Checkbox id="notifications" checked={form.notifications_enabled} onCheckedChange={v => setForm({ ...form, notifications_enabled: !!v })} />
+                  <label htmlFor="notifications" className="text-sm text-slate-600">Send notifications</label>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Checkbox id="marketing" checked={form.marketing_consent} onCheckedChange={v => setForm({ ...form, marketing_consent: !!v })} />
+                  <label htmlFor="marketing" className="text-sm text-slate-600">Send marketing opt-in text</label>
+                </div>
+              </div>
+              <div className="flex gap-3">
+                <Button variant="outline" onClick={() => setSheetOpen(false)}>Cancel</Button>
+                <Button onClick={handleSave} disabled={saving || !form.first_name || !form.last_name} className="bg-blue-600 hover:bg-blue-700">
+                  {saving ? "Saving..." : editing ? "Save Changes" : "Create"}
+                </Button>
+              </div>
             </div>
+
           </div>
         </SheetContent>
       </Sheet>
