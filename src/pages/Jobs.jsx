@@ -390,104 +390,266 @@ export default function Jobs() {
 
       {/* Job Sheet */}
       <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-        <SheetContent className="w-full sm:max-w-xl overflow-y-auto">
-          <SheetHeader>
-            <SheetTitle>{editing ? "Edit Job" : "New Job"}</SheetTitle>
-          </SheetHeader>
-          <div className="space-y-4 mt-4 pb-6">
-            <div>
-              <Label>Job Title *</Label>
-              <Input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} placeholder="e.g. Weekly Lawn Service" />
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <Label>Status</Label>
+        <SheetContent className="w-full sm:max-w-5xl overflow-y-auto p-0">
+          <div className="flex flex-col h-full">
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b bg-white">
+              <div className="flex items-center gap-3">
+                <SheetTitle className="text-lg font-semibold">{editing ? "Edit Job" : "New Job"}</SheetTitle>
+                <Input
+                  value={form.title}
+                  onChange={e => setForm({ ...form, title: e.target.value })}
+                  placeholder="Job title..."
+                  className="w-64 h-8 text-sm"
+                />
                 <Select value={form.status} onValueChange={v => setForm({ ...form, status: v })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectTrigger className="w-32 h-8 text-xs"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     {STATUS_OPTIONS.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
-              <div>
-                <Label>Priority</Label>
-                <Select value={form.priority} onValueChange={v => setForm({ ...form, priority: v })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {PRIORITY_OPTIONS.map(p => <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>)}
-                  </SelectContent>
-                </Select>
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" onClick={() => setSheetOpen(false)}>Cancel</Button>
+                <Button size="sm" onClick={handleSave} disabled={saving || !form.title} className="bg-blue-600 hover:bg-blue-700">
+                  {saving ? "Saving..." : editing ? "Save Changes" : "Create Job"}
+                </Button>
               </div>
             </div>
-            <div>
-              <Label>Customer</Label>
-              <Select value={form.customer_id} onValueChange={v => setForm({ ...form, customer_id: v })}>
-                <SelectTrigger><SelectValue placeholder="Select customer" /></SelectTrigger>
-                <SelectContent>
-                  {customers.map(c => (
-                    <SelectItem key={c.id} value={c.id}>{c.first_name} {c.last_name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label>Service Type</Label>
-              <Input value={form.service_type} onChange={e => setForm({ ...form, service_type: e.target.value })} placeholder="e.g. Lawn Mowing, Deep Clean" />
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <Label>Start Date & Time</Label>
-                <Input type="datetime-local" value={form.scheduled_start} onChange={e => setForm({ ...form, scheduled_start: e.target.value })} />
+
+            {/* Body: two-column */}
+            <div className="flex flex-1 overflow-hidden">
+              {/* Left column */}
+              <div className="w-64 flex-shrink-0 border-r bg-slate-50 overflow-y-auto p-4 space-y-4">
+
+                {/* Customer */}
+                <div className="bg-white border rounded-lg p-3">
+                  <div className="flex items-center gap-2 mb-2">
+                    <UserCircle className="w-4 h-4 text-slate-500" />
+                    <span className="font-semibold text-sm text-slate-700">Customer</span>
+                  </div>
+                  <Input
+                    placeholder="Name, email, phone, or address"
+                    value={customerSearch}
+                    onChange={e => setCustomerSearch(e.target.value)}
+                    className="text-sm h-8 mb-2"
+                  />
+                  {customerSearch && (
+                    <div className="border rounded-md bg-white shadow-sm max-h-40 overflow-y-auto mb-2">
+                      {customers.filter(c =>
+                        `${c.first_name} ${c.last_name} ${c.email} ${c.phone}`.toLowerCase().includes(customerSearch.toLowerCase())
+                      ).map(c => (
+                        <button
+                          key={c.id}
+                          className="w-full text-left px-3 py-1.5 text-sm hover:bg-slate-50 border-b last:border-b-0"
+                          onClick={() => { setForm({ ...form, customer_id: c.id }); setCustomerSearch(`${c.first_name} ${c.last_name}`); }}
+                        >
+                          {c.first_name} {c.last_name}
+                          {c.phone && <span className="text-slate-400 text-xs ml-1">· {c.phone}</span>}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  {form.customer_id && !customerSearch.includes(" ") && (
+                    <div className="text-sm text-slate-600 font-medium">
+                      {getCustomerName(form.customer_id)}
+                    </div>
+                  )}
+                  <button className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700 mt-1">
+                    <Plus className="w-3.5 h-3.5" /> New customer
+                  </button>
+                </div>
+
+                {/* Schedule */}
+                <div className="bg-white border rounded-lg p-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <Calendar className="w-4 h-4 text-slate-500" />
+                      <span className="font-semibold text-sm text-slate-700">Schedule</span>
+                    </div>
+                    <Pencil className="w-3.5 h-3.5 text-slate-400 cursor-pointer" />
+                  </div>
+                  <div className="space-y-2 text-xs">
+                    <div className="flex items-center gap-2">
+                      <span className="w-8 text-slate-500">From</span>
+                      <Input type="date" value={form.scheduled_start?.split("T")[0] || ""} onChange={e => setForm({ ...form, scheduled_start: e.target.value })} className="h-7 text-xs flex-1" />
+                      <Input type="time" value={form.scheduled_start?.split("T")[1]?.slice(0,5) || ""} onChange={e => setForm({ ...form, scheduled_start: (form.scheduled_start?.split("T")[0] || "") + "T" + e.target.value })} className="h-7 text-xs w-20" />
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="w-8 text-slate-500">To</span>
+                      <Input type="date" value={form.scheduled_end?.split("T")[0] || ""} onChange={e => setForm({ ...form, scheduled_end: e.target.value })} className="h-7 text-xs flex-1" />
+                      <Input type="time" value={form.scheduled_end?.split("T")[1]?.slice(0,5) || ""} onChange={e => setForm({ ...form, scheduled_end: (form.scheduled_end?.split("T")[0] || "") + "T" + e.target.value })} className="h-7 text-xs w-20" />
+                    </div>
+                    <div className="flex items-center gap-2 pt-1">
+                      <Checkbox id="anytime" checked={anytime} onCheckedChange={setAnytime} />
+                      <label htmlFor="anytime" className="text-xs text-slate-600">Anytime</label>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Team */}
+                <div className="bg-white border rounded-lg p-3">
+                  <Select value={form.assigned_techs?.[0] || ""} onValueChange={v => setForm({ ...form, assigned_techs: [v] })}>
+                    <SelectTrigger className="h-8 text-sm"><SelectValue placeholder="Edit team" /></SelectTrigger>
+                    <SelectContent>
+                      {techs.map(t => <SelectItem key={t.id} value={t.id}>{t.first_name} {t.last_name}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                  <div className="mt-2">
+                    {form.assigned_techs?.length > 0 ? (
+                      form.assigned_techs.map(tid => {
+                        const t = techs.find(x => x.id === tid);
+                        return t ? (
+                          <Badge key={tid} variant="secondary" className="text-xs gap-1">
+                            <User className="w-3 h-3" />{t.first_name} {t.last_name}
+                          </Badge>
+                        ) : null;
+                      })
+                    ) : (
+                      <Badge variant="secondary" className="text-xs text-slate-400">Unassigned</Badge>
+                    )}
+                  </div>
+                </div>
+
+                {/* Collapsible sections */}
+                {[
+                  { icon: <List className="w-4 h-4" />, label: "Checklists" },
+                  { icon: <Paperclip className="w-4 h-4" />, label: "Attachments" },
+                  { icon: <FileText className="w-4 h-4" />, label: "Fields" },
+                  { icon: <Tag className="w-4 h-4" />, label: "Tags" },
+                  { icon: <User className="w-4 h-4" />, label: "Lead source" },
+                ].map(({ icon, label }) => (
+                  <div key={label} className="bg-white border rounded-lg px-3 py-2 flex items-center justify-between text-sm text-slate-600 cursor-pointer hover:bg-slate-50">
+                    <div className="flex items-center gap-2">{icon}{label}</div>
+                    <Plus className="w-4 h-4 text-slate-400" />
+                  </div>
+                ))}
               </div>
-              <div>
-                <Label>End Date & Time</Label>
-                <Input type="datetime-local" value={form.scheduled_end} onChange={e => setForm({ ...form, scheduled_end: e.target.value })} />
+
+              {/* Right column */}
+              <div className="flex-1 overflow-y-auto p-5 space-y-5 bg-slate-50">
+
+                {/* Private Notes */}
+                <div className="bg-white border rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <FileText className="w-4 h-4 text-slate-500" />
+                      <span className="font-semibold text-slate-700">Private notes</span>
+                    </div>
+                    <div className="flex rounded-full border overflow-hidden text-xs">
+                      <button
+                        className={`px-3 py-1 ${privateNoteTab === "job" ? "bg-slate-800 text-white" : "text-slate-500 hover:bg-slate-100"}`}
+                        onClick={() => setPrivateNoteTab("job")}
+                      >This job</button>
+                      <button
+                        className={`px-3 py-1 ${privateNoteTab === "customer" ? "bg-slate-800 text-white" : "text-slate-500 hover:bg-slate-100"}`}
+                        onClick={() => setPrivateNoteTab("customer")}
+                      >Customer</button>
+                    </div>
+                  </div>
+                  <Textarea
+                    value={privateNoteTab === "job" ? form.internal_notes || "" : form.notes || ""}
+                    onChange={e => setForm({ ...form, [privateNoteTab === "job" ? "internal_notes" : "notes"]: e.target.value })}
+                    placeholder="Add a private note here"
+                    rows={2}
+                    className="text-sm resize-none border-slate-200"
+                  />
+                </div>
+
+                {/* Line Items */}
+                <div className="bg-white border rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="font-semibold text-slate-700">Line items</span>
+                  </div>
+
+                  {/* Services */}
+                  <div className="mb-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-medium text-slate-600">Services</span>
+                      <span className="text-xs text-blue-600 cursor-pointer">Service Price Book</span>
+                    </div>
+                    {(form.line_items || []).filter(i => i.type === "service").map((item, idx) => {
+                      const realIdx = (form.line_items || []).indexOf(item);
+                      return (
+                        <div key={realIdx} className="flex items-center gap-2 mb-2">
+                          <Select value="" onValueChange={v => selectServiceForItem(realIdx, v)}>
+                            <SelectTrigger className="flex-1 h-8 text-xs"><SelectValue placeholder={item.description || "Select service"} /></SelectTrigger>
+                            <SelectContent>
+                              {services.filter(s => s.category !== "Materials").map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
+                            </SelectContent>
+                          </Select>
+                          <Input type="number" value={item.quantity} onChange={e => updateLineItem(realIdx, "quantity", e.target.value)} className="w-14 h-8 text-xs" placeholder="Qty" />
+                          <Input type="number" value={item.unit_price} onChange={e => updateLineItem(realIdx, "unit_price", e.target.value)} className="w-20 h-8 text-xs" placeholder="Price" />
+                          <span className="text-sm w-16 text-right text-slate-700">${(item.total || 0).toFixed(2)}</span>
+                          <button onClick={() => removeLineItem(realIdx)} className="text-slate-400 hover:text-red-500"><Trash2 className="w-3.5 h-3.5" /></button>
+                        </div>
+                      );
+                    })}
+                    <button onClick={() => addLineItem("service")} className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700 mt-1">
+                      <Plus className="w-3.5 h-3.5" /> Add service
+                    </button>
+                  </div>
+
+                  {/* Materials */}
+                  <div className="mb-4 border-t pt-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-medium text-slate-600">Materials</span>
+                      <span className="text-xs text-blue-600 cursor-pointer">Material Price Book</span>
+                    </div>
+                    {(form.line_items || []).filter(i => i.type === "material").map((item, idx) => {
+                      const realIdx = (form.line_items || []).indexOf(item);
+                      return (
+                        <div key={realIdx} className="flex items-center gap-2 mb-2">
+                          <Select value="" onValueChange={v => selectServiceForItem(realIdx, v)}>
+                            <SelectTrigger className="flex-1 h-8 text-xs"><SelectValue placeholder={item.description || "Select material"} /></SelectTrigger>
+                            <SelectContent>
+                              {services.filter(s => s.category === "Materials").map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
+                            </SelectContent>
+                          </Select>
+                          <Input type="number" value={item.quantity} onChange={e => updateLineItem(realIdx, "quantity", e.target.value)} className="w-14 h-8 text-xs" placeholder="Qty" />
+                          <Input type="number" value={item.unit_price} onChange={e => updateLineItem(realIdx, "unit_price", e.target.value)} className="w-20 h-8 text-xs" placeholder="Price" />
+                          <span className="text-sm w-16 text-right text-slate-700">${(item.total || 0).toFixed(2)}</span>
+                          <button onClick={() => removeLineItem(realIdx)} className="text-slate-400 hover:text-red-500"><Trash2 className="w-3.5 h-3.5" /></button>
+                        </div>
+                      );
+                    })}
+                    <button onClick={() => addLineItem("material")} className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700 mt-1">
+                      <Plus className="w-3.5 h-3.5" /> Add material
+                    </button>
+                  </div>
+
+                  {/* Totals */}
+                  <div className="border-t pt-3 space-y-2 text-sm">
+                    <div className="flex justify-between text-slate-600">
+                      <span>Subtotal</span>
+                      <span className="text-amber-600">${(form.subtotal || 0).toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-slate-600">
+                      <div>
+                        <span>Tax rate</span>
+                        <p className="text-xs text-slate-400">Tax ({form.tax_rate || 0}%)</p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-amber-600">${((form.subtotal || 0) * (form.tax_rate || 0) / 100).toFixed(2)}</span>
+                        <button onClick={() => {
+                          const rate = parseFloat(prompt("Enter tax rate %", form.tax_rate || 0));
+                          if (!isNaN(rate)) {
+                            const tax = (form.subtotal || 0) * rate / 100;
+                            setForm(prev => ({ ...prev, tax_rate: rate, total_amount: (prev.subtotal || 0) + tax }));
+                          }
+                        }}>
+                          <Pencil className="w-3.5 h-3.5 text-blue-500" />
+                        </button>
+                      </div>
+                    </div>
+                    <div className="flex justify-between font-bold text-slate-800 text-base pt-1 border-t">
+                      <span>Total</span>
+                      <span>${(form.total_amount || 0).toFixed(2)}</span>
+                    </div>
+                  </div>
+                </div>
+
               </div>
-            </div>
-            <div>
-              <Label>Service Address</Label>
-              <Input value={form.address} onChange={e => setForm({ ...form, address: e.target.value })} placeholder="123 Main St" />
-            </div>
-            <div className="grid grid-cols-3 gap-3">
-              <div>
-                <Label>City</Label>
-                <Input value={form.city} onChange={e => setForm({ ...form, city: e.target.value })} />
-              </div>
-              <div>
-                <Label>State</Label>
-                <Input value={form.state} onChange={e => setForm({ ...form, state: e.target.value })} maxLength={2} />
-              </div>
-              <div>
-                <Label>ZIP</Label>
-                <Input value={form.zip} onChange={e => setForm({ ...form, zip: e.target.value })} />
-              </div>
-            </div>
-            <div>
-              <Label>Total Amount ($)</Label>
-              <Input type="number" value={form.total_amount} onChange={e => setForm({ ...form, total_amount: parseFloat(e.target.value) || 0 })} placeholder="0.00" />
-            </div>
-            <div>
-              <Label>Description</Label>
-              <Textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} rows={3} placeholder="Job details..." />
-            </div>
-            <div>
-              <Label>Internal Notes</Label>
-              <Textarea value={form.internal_notes} onChange={e => setForm({ ...form, internal_notes: e.target.value })} rows={2} placeholder="Notes for your team..." />
-            </div>
-            <div className="border-t pt-4">
-              <CustomerNotesSection
-                job={editing}
-                customer={customers.find(c => c.id === (editing?.customer_id || form.customer_id))}
-                onNoteAdded={(updatedNotes) => {
-                  setEditing(prev => prev ? { ...prev, customer_notes: updatedNotes } : prev);
-                }}
-              />
-            </div>
-            <div className="flex gap-3 pt-2">
-              <Button variant="outline" onClick={() => setSheetOpen(false)} className="flex-1">Cancel</Button>
-              <Button onClick={handleSave} disabled={saving || !form.title} className="flex-1 bg-blue-600 hover:bg-blue-700">
-                {saving ? "Saving..." : editing ? "Save Changes" : "Create Job"}
-              </Button>
             </div>
           </div>
         </SheetContent>
