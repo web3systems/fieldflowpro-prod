@@ -21,7 +21,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue
 } from "@/components/ui/select";
 import { format } from "date-fns";
-import ServicePicker from "@/components/services/ServicePicker";
+import LineItemRow from "@/components/services/LineItemRow";
 
 const STATUS_STYLES = {
   draft: "bg-gray-100 text-gray-600",
