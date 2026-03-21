@@ -5,7 +5,8 @@ import { useApp } from "../Layout";
 import { createPageUrl } from "@/utils";
 import {
   Plus, Search, Filter, MapPin, User, ChevronRight,
-  Briefcase, Calendar, X, FileText, DollarSign, CheckCircle, CreditCard
+  Briefcase, Calendar, X, FileText, DollarSign, CheckCircle, CreditCard,
+  Pencil, Tag, List, Paperclip, UserCircle, Clock, Trash2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,6 +20,7 @@ import {
 } from "@/components/ui/sheet";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import { format } from "date-fns";
 import CustomerNotesSection from "../components/jobs/CustomerNotesSection";
 
