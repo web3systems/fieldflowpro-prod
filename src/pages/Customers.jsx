@@ -288,11 +288,11 @@ export default function Customers() {
               <Input type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} />
             </div>
             <div>
-              <Label>Phone *</Label>
+              <Label>Phone</Label>
               <Input type="tel" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} />
             </div>
             <div>
-              <Label>Address *</Label>
+              <Label>Address</Label>
               <Input value={form.address} onChange={e => setForm({ ...form, address: e.target.value })} />
             </div>
             <div className="grid grid-cols-3 gap-3">
@@ -306,7 +306,7 @@ export default function Customers() {
               </div>
             </div>
             <div>
-              <Label>Zip Code *</Label>
+              <Label>Zip Code</Label>
               <Input value={form.zip} onChange={e => setForm({ ...form, zip: e.target.value })} placeholder="12345" />
             </div>
             <div className="grid grid-cols-2 gap-3">
@@ -336,7 +336,7 @@ export default function Customers() {
             </div>
             <div className="flex gap-3 pt-2">
               <Button variant="outline" onClick={() => setSheetOpen(false)} className="flex-1">Cancel</Button>
-              <Button onClick={handleSave} disabled={saving || !form.first_name || !form.last_name || !form.email || !form.phone || !form.address || !form.zip} className="flex-1 bg-blue-600 hover:bg-blue-700">
+              <Button onClick={handleSave} disabled={saving || !form.first_name || !form.last_name} className="flex-1 bg-blue-600 hover:bg-blue-700">
                 {saving ? "Saving..." : editing ? "Save Changes" : "Add Customer"}
               </Button>
             </div>
