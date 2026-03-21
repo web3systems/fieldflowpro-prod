@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectGroup, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Trash2 } from "lucide-react";
 
 export default function LineItemRow({ item, idx, companyId, onUpdate, onRemove }) {
@@ -13,65 +14,67 @@ export default function LineItemRow({ item, idx, companyId, onUpdate, onRemove }
       .catch(() => {});
   }, [companyId]);
 
-  function handleServiceSelect(e) {
-    const name = e.target.value;
-    if (name === "__custom__") {
+  function handleServiceSelect(value) {
+    if (value === "__custom__") {
       onUpdate(idx, "description", "");
       return;
     }
-    const svc = services.find(s => s.name === name);
+    const svc = services.find(s => s.id === value);
     if (svc) {
       onUpdate(idx, "description", svc.name);
       onUpdate(idx, "unit_price", svc.unit_price || 0);
     }
   }
 
-  const isMatchedService = services.some(s => s.name === item.description);
+  const matchedService = services.find(s => s.name === item.description);
+  const selectValue = matchedService ? matchedService.id : "__custom__";
+
+  const laborServices = services.filter(s => s.category === "Labor");
+  const materialServices = services.filter(s => s.category === "Materials");
+  const otherServices = services.filter(s => !["Labor", "Materials"].includes(s.category));
 
   return (
-    <div className="grid grid-cols-12 gap-2 items-center p-3 bg-slate-50 rounded-lg">
-      <div className="col-span-5">
-        {services.length > 0 ? (
-          <select
-            className="w-full border border-input rounded-md px-3 py-1.5 text-sm bg-white focus:outline-none focus:ring-1 focus:ring-ring"
-            value={isMatchedService ? item.description : "__custom__"}
-            onChange={handleServiceSelect}
-          >
-            <option value="__custom__">-- Custom --</option>
-            {["Labor", "Materials"].map(cat => {
-              const catServices = services.filter(s => s.category === cat);
-              if (catServices.length === 0) return null;
-              return (
-                <optgroup key={cat} label={cat}>
-                  {catServices.map(svc => (
-                    <option key={svc.id} value={svc.name}>{svc.name}</option>
-                  ))}
-                </optgroup>
-              );
-            })}
-            {services.filter(s => !["Labor", "Materials"].includes(s.category)).length > 0 && (
-              <optgroup label="Other">
-                {services.filter(s => !["Labor", "Materials"].includes(s.category)).map(svc => (
-                  <option key={svc.id} value={svc.name}>{svc.name}</option>
+    <div className="grid grid-cols-12 gap-2 items-start p-3 bg-slate-50 rounded-lg">
+      <div className="col-span-5 space-y-1">
+        <Select value={selectValue} onValueChange={handleServiceSelect}>
+          <SelectTrigger className="bg-white text-sm h-9">
+            <SelectValue placeholder="Select a service..." />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="__custom__">-- Custom --</SelectItem>
+            {laborServices.length > 0 && (
+              <SelectGroup>
+                <SelectLabel>Labor</SelectLabel>
+                {laborServices.map(svc => (
+                  <SelectItem key={svc.id} value={svc.id}>{svc.name}</SelectItem>
                 ))}
-              </optgroup>
+              </SelectGroup>
             )}
-          </select>
-        ) : (
-          <Input
-            value={item.description}
-            onChange={e => onUpdate(idx, "description", e.target.value)}
-            placeholder="Description"
-            className="bg-white text-sm"
-          />
-        )}
-        {/* If custom selected, show a text input for description */}
-        {services.length > 0 && !isMatchedService && (
+            {materialServices.length > 0 && (
+              <SelectGroup>
+                <SelectLabel>Materials</SelectLabel>
+                {materialServices.map(svc => (
+                  <SelectItem key={svc.id} value={svc.id}>{svc.name}</SelectItem>
+                ))}
+              </SelectGroup>
+            )}
+            {otherServices.length > 0 && (
+              <SelectGroup>
+                <SelectLabel>Other</SelectLabel>
+                {otherServices.map(svc => (
+                  <SelectItem key={svc.id} value={svc.id}>{svc.name}</SelectItem>
+                ))}
+              </SelectGroup>
+            )}
+          </SelectContent>
+        </Select>
+        {/* Show text input for custom description */}
+        {!matchedService && (
           <Input
             value={item.description}
             onChange={e => onUpdate(idx, "description", e.target.value)}
             placeholder="Custom description..."
-            className="bg-white text-sm mt-1"
+            className="bg-white text-sm"
           />
         )}
       </div>
@@ -93,10 +96,10 @@ export default function LineItemRow({ item, idx, companyId, onUpdate, onRemove }
           className="bg-white text-sm"
         />
       </div>
-      <div className="col-span-2 text-right text-sm font-medium text-slate-700">
+      <div className="col-span-2 text-right text-sm font-medium text-slate-700 pt-2">
         ${(item.total || 0).toFixed(2)}
       </div>
-      <div className="col-span-1 flex justify-end">
+      <div className="col-span-1 flex justify-end pt-1">
         <button onClick={() => onRemove(idx)} className="text-red-400 hover:text-red-600">
           <Trash2 className="w-3.5 h-3.5" />
         </button>
