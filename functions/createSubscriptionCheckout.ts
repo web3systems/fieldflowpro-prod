@@ -55,12 +55,12 @@ Deno.serve(async (req) => {
       payment_method_types: ['card'],
       line_items: [{ price: price_id, quantity: 1 }],
       subscription_data: {
-        trial_period_days: 14,
-        metadata: { company_id, plan, base44_app_id: Deno.env.get('BASE44_APP_ID') }
+      trial_period_days: 14,
+      metadata: { company_id: company_id_final, plan, base44_app_id: Deno.env.get('BASE44_APP_ID') }
       },
       metadata: {
-        company_id,
-        plan,
+      company_id: company_id_final,
+      plan,
         owner_email,
         owner_name: owner_name || '',
         base44_app_id: Deno.env.get('BASE44_APP_ID')
