@@ -91,7 +91,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    console.log(`Checkout session created for company ${company_id}, plan ${plan}`);
+    console.log(`Checkout session created for company ${company_id_final}, plan ${plan}`);
     return Response.json({ url: session.url });
   } catch (error) {
     console.error('createSubscriptionCheckout error:', error.message);
