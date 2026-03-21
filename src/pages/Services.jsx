@@ -125,6 +125,7 @@ export default function Services() {
         const catServices = filtered.filter(s => s.category === cat);
         const otherServices = cat === "Labor" ? filtered.filter(s => !CATEGORIES.includes(s.category)) : [];
         const items = cat === "Labor" ? [...catServices, ...otherServices] : catServices;
+
         return (
           <div key={cat} className="mb-6">
             <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-500 mb-2 px-1">{cat}</h2>
