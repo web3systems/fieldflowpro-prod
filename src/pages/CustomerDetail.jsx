@@ -201,6 +201,39 @@ export default function CustomerDetail() {
             )}
           </div>
 
+          {/* Invoices */}
+          <div className="bg-white rounded-xl shadow-sm border p-4">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-semibold text-slate-700 flex items-center gap-1.5">
+                <DollarSign className="w-4 h-4 text-slate-500" /> Invoices ({invoices.length})
+              </h3>
+              <Button size="sm" variant="outline" className="text-xs gap-1" onClick={() => navigate(createPageUrl(`Invoices?customer_id=${id}`))}>
+                <DollarSign className="w-3 h-3" /> New Invoice
+              </Button>
+            </div>
+            {invoices.length === 0 ? (
+              <p className="text-sm text-slate-400 py-4 text-center">No invoices yet.</p>
+            ) : (
+              <div className="space-y-2">
+                {invoices.sort((a, b) => new Date(b.created_date) - new Date(a.created_date)).map(inv => (
+                  <div key={inv.id} onClick={() => navigate(`/InvoiceDetail/${inv.id}`)} className="flex items-center justify-between p-2.5 rounded-lg border border-slate-100 hover:bg-slate-50 cursor-pointer">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-slate-800 truncate">Invoice #{inv.invoice_number || inv.id.slice(-6)}</p>
+                      <p className="text-xs text-slate-400">{format(new Date(inv.created_date), "MMM d, yyyy")}</p>
+                    </div>
+                    <div className="flex items-center gap-2 ml-2">
+                      <Badge className={`text-xs ${inv.status === "paid" ? "bg-green-100 text-green-700" : inv.status === "overdue" ? "bg-red-100 text-red-700" : inv.status === "sent" ? "bg-blue-100 text-blue-700" : "bg-gray-100 text-gray-600"}`}>
+                        {inv.status}
+                      </Badge>
+                      {inv.total > 0 && <span className="text-xs font-semibold text-slate-700">${inv.total.toLocaleString()}</span>}
+                      <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
           <CustomerTasks customer={customer} onUpdate={handleUpdate} />
           <CustomerAddresses customer={customer} onUpdate={handleUpdate} />
           <CustomerNotes
