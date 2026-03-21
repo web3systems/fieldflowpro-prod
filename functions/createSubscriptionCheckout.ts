@@ -44,7 +44,7 @@ Deno.serve(async (req) => {
       const customer = await stripe.customers.create({
         email: owner_email,
         name: owner_name || owner_email,
-        metadata: { company_id, base44_app_id: Deno.env.get('BASE44_APP_ID') }
+        metadata: { company_id: company_id_final, base44_app_id: Deno.env.get('BASE44_APP_ID') }
       });
       customerId = customer.id;
     }
