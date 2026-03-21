@@ -63,6 +63,10 @@ export default function Jobs() {
   const [saving, setSaving] = useState(false);
   const [invoicePromptJob, setInvoicePromptJob] = useState(null); // job that just completed
   const [invoiceActionLoading, setInvoiceActionLoading] = useState(false);
+  const [services, setServices] = useState([]);
+  const [privateNoteTab, setPrivateNoteTab] = useState("job"); // "job" | "customer"
+  const [customerSearch, setCustomerSearch] = useState("");
+  const [anytime, setAnytime] = useState(false);
 
   useEffect(() => {
     if (activeCompany) loadData();
