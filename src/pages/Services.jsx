@@ -16,7 +16,7 @@ import StandardServicesCatalog from "@/components/services/StandardServicesCatal
 const defaultForm = {
   name: "",
   description: "",
-  category: "",
+  category: "Labor",
   unit_price: "",
   unit: "flat",
   is_active: true,
@@ -24,6 +24,7 @@ const defaultForm = {
 };
 
 const unitLabels = { flat: "Flat Rate", hourly: "Per Hour", per_sqft: "Per Sq Ft", per_unit: "Per Unit" };
+const CATEGORIES = ["Labor", "Materials"];
 
 export default function Services() {
   const { activeCompany } = useApp();
@@ -114,44 +115,58 @@ export default function Services() {
         />
       )}
 
-      <div className="space-y-2">
-        {filtered.length === 0 && (
-          <div className="text-center py-16 text-slate-400">
-            No services found. Add your first service to get started.
-          </div>
-        )}
-        {filtered.map(svc => (
-          <div key={svc.id} className={`bg-white border rounded-lg px-4 py-3 flex items-center gap-4 ${svc.is_active ? "border-slate-200" : "border-slate-100 opacity-60"}`}>
-            <div className="flex items-center gap-3 flex-shrink-0">
-              <Checkbox
-                checked={!!svc.is_active}
-                onCheckedChange={() => toggleActive(svc)}
-                title={svc.is_active ? "Click to deactivate" : "Click to activate"}
-              />
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2">
-                <span className={`font-medium ${svc.is_active ? "text-slate-800" : "text-slate-400"}`}>{svc.name}</span>
-                {!svc.is_active && <Badge variant="secondary" className="text-xs">Inactive</Badge>}
-                {svc.category && <Badge variant="outline" className="text-xs">{svc.category}</Badge>}
+      {filtered.length === 0 && (
+        <div className="text-center py-16 text-slate-400">
+          No services found. Add your first service to get started.
+        </div>
+      )}
+
+      {CATEGORIES.map(cat => {
+        const catServices = filtered.filter(s => s.category === cat);
+        const otherServices = cat === "Labor" ? filtered.filter(s => !CATEGORIES.includes(s.category)) : [];
+        const items = cat === "Labor" ? [...catServices, ...otherServices] : catServices;
+        return (
+          <div key={cat} className="mb-6">
+            <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-500 mb-2 px-1">{cat}</h2>
+            {items.length === 0 ? (
+              <div className="text-sm text-slate-400 px-1 py-3">No {cat.toLowerCase()} services yet.</div>
+            ) : (
+              <div className="space-y-2">
+                {items.map(svc => (
+                  <div key={svc.id} className={`bg-white border rounded-lg px-4 py-3 flex items-center gap-4 ${svc.is_active ? "border-slate-200" : "border-slate-100 opacity-60"}`}>
+                    <div className="flex items-center gap-3 flex-shrink-0">
+                      <Checkbox
+                        checked={!!svc.is_active}
+                        onCheckedChange={() => toggleActive(svc)}
+                        title={svc.is_active ? "Click to deactivate" : "Click to activate"}
+                      />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className={`font-medium ${svc.is_active ? "text-slate-800" : "text-slate-400"}`}>{svc.name}</span>
+                        {!svc.is_active && <Badge variant="secondary" className="text-xs">Inactive</Badge>}
+                      </div>
+                      {svc.description && <p className="text-slate-500 text-sm mt-0.5 truncate">{svc.description}</p>}
+                    </div>
+                    <div className="text-right flex-shrink-0">
+                      <p className="font-semibold text-slate-900">${(svc.unit_price || 0).toFixed(2)}</p>
+                      <p className="text-xs text-slate-400">{unitLabels[svc.unit] || svc.unit}</p>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Button variant="ghost" size="icon" onClick={() => openEdit(svc)}>
+                        <Pencil className="w-4 h-4" />
+                      </Button>
+                      <Button variant="ghost" size="icon" onClick={() => handleDelete(svc.id)} className="text-red-500 hover:text-red-700 hover:bg-red-50">
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
               </div>
-              {svc.description && <p className="text-slate-500 text-sm mt-0.5 truncate">{svc.description}</p>}
-            </div>
-            <div className="text-right flex-shrink-0">
-              <p className="font-semibold text-slate-900">${(svc.unit_price || 0).toFixed(2)}</p>
-              <p className="text-xs text-slate-400">{unitLabels[svc.unit] || svc.unit}</p>
-            </div>
-            <div className="flex items-center gap-1">
-              <Button variant="ghost" size="icon" onClick={() => openEdit(svc)}>
-                <Pencil className="w-4 h-4" />
-              </Button>
-              <Button variant="ghost" size="icon" onClick={() => handleDelete(svc.id)} className="text-red-500 hover:text-red-700 hover:bg-red-50">
-                <Trash2 className="w-4 h-4" />
-              </Button>
-            </div>
+            )}
           </div>
-        ))}
-      </div>
+        );
+      })}
 
       <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
         <SheetContent className="w-full sm:max-w-md overflow-y-auto">
@@ -165,7 +180,12 @@ export default function Services() {
             </div>
             <div>
               <Label>Category</Label>
-              <Input value={form.category} onChange={e => setForm({ ...form, category: e.target.value })} placeholder="e.g. Landscaping" />
+              <Select value={form.category} onValueChange={v => setForm({ ...form, category: v })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {CATEGORIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                </SelectContent>
+              </Select>
             </div>
             <div>
               <Label>Description</Label>
