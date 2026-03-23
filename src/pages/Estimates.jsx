@@ -82,14 +82,16 @@ export default function Estimates() {
 
   async function loadData() {
     setLoading(true);
-    const [e, c, t] = await Promise.all([
+    const [e, c, t, svcs] = await Promise.all([
       base44.entities.Estimate.filter({ company_id: activeCompany.id }),
       base44.entities.Customer.filter({ company_id: activeCompany.id }),
       base44.entities.Technician.filter({ company_id: activeCompany.id }),
+      base44.entities.Service.filter({ company_id: activeCompany.id, is_active: true }),
     ]);
     setEstimates(e);
     setCustomers(c);
     setTechnicians(t);
+    setServices(svcs);
     setLoading(false);
   }
 
