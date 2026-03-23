@@ -315,87 +315,89 @@ export default function Schedule() {
         </div>
       </div>
 
-      {/* Job Sheet */}
-      <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-        <SheetContent className="w-full sm:max-w-lg overflow-y-auto">
-          <SheetHeader>
-            <SheetTitle>{editing ? "Edit Job" : "New Job"}</SheetTitle>
-            <SheetDescription>{editing ? "Update job details and schedule." : "Create a new job and add it to the schedule."}</SheetDescription>
-          </SheetHeader>
-          <div className="space-y-4 mt-4 pb-6">
-            <div>
-              <Label>Job Title *</Label>
-              <Input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} placeholder="e.g. Weekly Lawn Service" />
+      {/* Job Modal */}
+      {sheetOpen && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+            <div className="px-6 py-4 border-b flex items-center justify-between sticky top-0 bg-white rounded-t-2xl">
+              <h2 className="text-lg font-semibold text-slate-800">{editing ? "Edit Job" : "New Job"}</h2>
+              <button onClick={() => setSheetOpen(false)} className="text-slate-400 hover:text-slate-600 text-xl leading-none">×</button>
             </div>
-            <div>
-              <Label>Customer</Label>
-              <Select value={form.customer_id} onValueChange={v => setForm({ ...form, customer_id: v })}>
-                <SelectTrigger><SelectValue placeholder="Select customer" /></SelectTrigger>
-                <SelectContent>
-                  {customers.map(c => (
-                    <SelectItem key={c.id} value={c.id}>{c.first_name} {c.last_name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="p-6 space-y-4">
               <div>
-                <Label>Status</Label>
-                <Select value={form.status} onValueChange={v => setForm({ ...form, status: v })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                <Label>Job Title *</Label>
+                <Input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} placeholder="e.g. Weekly Lawn Service" />
+              </div>
+              <div>
+                <Label>Customer</Label>
+                <Select value={form.customer_id} onValueChange={v => setForm({ ...form, customer_id: v })}>
+                  <SelectTrigger><SelectValue placeholder="Select customer" /></SelectTrigger>
                   <SelectContent>
-                    {STATUS_OPTIONS.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
+                    {customers.map(c => (
+                      <SelectItem key={c.id} value={c.id}>{c.first_name} {c.last_name}</SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
-              <div>
-                <Label>Service Type</Label>
-                <Input value={form.service_type} onChange={e => setForm({ ...form, service_type: e.target.value })} />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <Label>Start</Label>
-                <Input type="datetime-local" value={form.scheduled_start} onChange={e => setForm({ ...form, scheduled_start: e.target.value })} />
-              </div>
-              <div>
-                <Label>End</Label>
-                <Input type="datetime-local" value={form.scheduled_end} onChange={e => setForm({ ...form, scheduled_end: e.target.value })} />
-              </div>
-            </div>
-            <div>
-              <Label>Address</Label>
-              <Input value={form.address} onChange={e => setForm({ ...form, address: e.target.value })} placeholder="123 Main St" />
-            </div>
-            {techs.length > 0 && (
-              <div>
-                <Label>Assign Technicians</Label>
-                <div className="space-y-2 mt-1.5 p-3 bg-slate-50 rounded-lg">
-                  {techs.map(t => (
-                    <label key={t.id} className="flex items-center gap-2 cursor-pointer">
-                      <Checkbox
-                        checked={form.assigned_techs?.includes(t.id)}
-                        onCheckedChange={() => toggleTech(t.id)}
-                      />
-                      <span className="text-sm text-slate-700">{t.first_name} {t.last_name}</span>
-                    </label>
-                  ))}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label>Status</Label>
+                  <Select value={form.status} onValueChange={v => setForm({ ...form, status: v })}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {STATUS_OPTIONS.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Service Type</Label>
+                  <Input value={form.service_type} onChange={e => setForm({ ...form, service_type: e.target.value })} />
                 </div>
               </div>
-            )}
-            <div>
-              <Label>Notes</Label>
-              <Textarea value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} rows={3} placeholder="Job details..." />
-            </div>
-            <div className="flex gap-3 pt-2">
-              <Button variant="outline" onClick={() => setSheetOpen(false)} className="flex-1">Cancel</Button>
-              <Button onClick={handleSave} disabled={saving || !form.title} className="flex-1 bg-blue-600 hover:bg-blue-700">
-                {saving ? "Saving..." : editing ? "Save Changes" : "Create Job"}
-              </Button>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label>Start</Label>
+                  <Input type="datetime-local" value={form.scheduled_start} onChange={e => setForm({ ...form, scheduled_start: e.target.value })} />
+                </div>
+                <div>
+                  <Label>End</Label>
+                  <Input type="datetime-local" value={form.scheduled_end} onChange={e => setForm({ ...form, scheduled_end: e.target.value })} />
+                </div>
+              </div>
+              <div>
+                <Label>Address</Label>
+                <Input value={form.address} onChange={e => setForm({ ...form, address: e.target.value })} placeholder="123 Main St" />
+              </div>
+              {techs.length > 0 && (
+                <div>
+                  <Label>Assign Technicians</Label>
+                  <div className="space-y-2 mt-1.5 p-3 bg-slate-50 rounded-lg">
+                    {techs.map(t => (
+                      <label key={t.id} className="flex items-center gap-2 cursor-pointer">
+                        <Checkbox
+                          checked={form.assigned_techs?.includes(t.id)}
+                          onCheckedChange={() => toggleTech(t.id)}
+                        />
+                        <span className="text-sm text-slate-700">{t.first_name} {t.last_name}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
+              <div>
+                <Label>Notes</Label>
+                <Textarea value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} rows={3} placeholder="Job details..." />
+              </div>
+              <div className="flex gap-3 pt-2">
+                <Button variant="outline" onClick={() => setSheetOpen(false)} className="flex-1">Cancel</Button>
+                <Button onClick={handleSave} disabled={saving || !form.title} className="flex-1 bg-blue-600 hover:bg-blue-700">
+                  {saving ? "Saving..." : editing ? "Save Changes" : "Create Job"}
+                </Button>
+              </div>
             </div>
           </div>
-        </SheetContent>
-      </Sheet>
+        </div>
+      )}
     </div>
   );
 }
