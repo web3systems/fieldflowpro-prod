@@ -461,6 +461,7 @@ export default function Invoices() {
               </Button>
             </div>
           </div>
+          </div>
         </div>
       )}
     </div>
