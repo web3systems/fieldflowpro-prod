@@ -76,7 +76,7 @@ Deno.serve(async (req) => {
         'Authorization': `Bearer ${RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: `${company?.name || 'FieldFlow'} <onboarding@resend.dev>`,
+        from: 'noreply@resend.dev',
         to: customer.email,
         subject,
         html,
