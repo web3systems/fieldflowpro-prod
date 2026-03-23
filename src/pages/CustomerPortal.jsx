@@ -4,8 +4,10 @@ import {
   Home, FileText, DollarSign, Calendar, User,
   CheckCircle, AlertCircle, Phone, Mail, MapPin,
   LogOut, Briefcase, ChevronDown, Building2, PlusCircle,
-  ThumbsUp, ThumbsDown, ExternalLink
+  ThumbsUp, ThumbsDown, ExternalLink, MessageCircle
 } from "lucide-react";
+import AIChatBot from "@/components/chat/AIChatBot";
+import ChatWindow from "@/components/chat/ChatWindow";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
