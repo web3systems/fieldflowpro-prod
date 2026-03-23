@@ -70,8 +70,8 @@ Deno.serve(async (req) => {
     // Send email via Resend SMTP
     const transporter = nodemailer.createTransport({
       host: 'smtp.resend.com',
-      port: 465,
-      secure: true,
+      port: 587,
+      secure: false,
       auth: {
         user: 'resend',
         pass: Deno.env.get('RESEND_API_KEY'),
