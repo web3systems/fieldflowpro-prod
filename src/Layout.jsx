@@ -225,10 +225,10 @@ export default function Layout({ children, currentPageName }) {
                   {user?.full_name?.[0] || "U"}
                 </AvatarFallback>
               </Avatar>
-              <div className="flex-1 min-w-0">
+              <Link to={user?.id ? `/UserProfile/${user.id}` : "#"} className="flex-1 min-w-0 hover:opacity-80 transition-opacity" onClick={() => setSidebarOpen(false)}>
                 <p className="text-slate-200 text-sm font-medium truncate">{user?.full_name || "User"}</p>
                 <p className="text-slate-500 text-xs truncate">{user?.email}</p>
-              </div>
+              </Link>
               <button onClick={() => base44.auth.logout()} className="text-slate-500 hover:text-slate-300">
                 <LogOut className="w-4 h-4" />
               </button>
