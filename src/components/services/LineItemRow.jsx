@@ -33,9 +33,9 @@ export default function LineItemRow({ item, idx, companyId, services = [], onSer
     }
   }
 
-  const selectValue = item.service_id && services.find(s => s.id === item.service_id)
-    ? item.service_id
-    : "__custom__";
+  // If item has a service_id but it's not in the services list, keep it as the selected value
+  // This prevents snap-back when services are loading or changing
+  const selectValue = item.service_id ? item.service_id : "__custom__";
   const isCustom = selectValue === "__custom__";
 
   const laborServices = services.filter(s => s.category === "Labor" || s.category === "labor");
