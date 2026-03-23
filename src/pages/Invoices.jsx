@@ -316,12 +316,13 @@ export default function Invoices() {
       )}
 
       {sheetOpen && (
-        <div className="absolute inset-0 z-50 bg-white overflow-y-auto">
-          <div className="sticky top-0 bg-white border-b px-4 py-3 flex items-center justify-between z-10">
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-start justify-center overflow-y-auto p-2 sm:p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl my-4">
+          <div className="sticky top-0 bg-white border-b px-4 py-3 flex items-center justify-between z-10 rounded-t-2xl">
             <h2 className="text-xl font-semibold">{editing ? `Invoice ${editing.invoice_number}` : "New Invoice"}</h2>
             <button onClick={() => setSheetOpen(false)} className="p-2 rounded-full hover:bg-slate-100"><X className="w-5 h-5" /></button>
           </div>
-          <div className="space-y-4 p-4 pb-10 max-w-2xl mx-auto">
+          <div className="space-y-4 p-4 pb-10">
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label>Customer</Label>
