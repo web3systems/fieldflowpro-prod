@@ -79,29 +79,15 @@ Deno.serve(async (req) => {
       <p style="color:#94a3b8;font-size:12px;margin-top:24px;">Questions? Contact ${company?.email || company?.phone || 'support'}.</p>
     </div>`;
 
-    // Send email via Resend
-    const response = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${RESEND_API_KEY}`,
-      },
-      body: JSON.stringify({
-        from: 'noreply@resend.dev',
-        to: customer.email,
-        subject,
-        html,
-      }),
+    // Send email via Resend SMTP
+    const info = await transporter.sendMail({
+      from: `${company?.name || 'FieldFlow'} <onboarding@resend.dev>`,
+      to: customer.email,
+      subject,
+      html,
     });
 
-    const result = await response.json();
-
-    if (!response.ok) {
-      console.error('Resend error:', result);
-      return Response.json({ error: 'Failed to send email' }, { status: 500 });
-    }
-
-    console.log(`${docType} email sent to ${customer.email}`, result.id);
+    console.log(`${docType} email sent to ${customer.email}`, info.messageId);
     return Response.json({ success: true, message: `${docType} sent successfully` });
   } catch (error) {
     console.error('Error in sendEstimateOrInvoice:', error.message);
