@@ -684,7 +684,6 @@ export default function Estimates() {
               </div>
             </div>
           </div>
-          </div>
         </div>
       )}
     </div>
