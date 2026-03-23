@@ -619,7 +619,7 @@ export default function Estimates() {
                   </div>
                   <div className="space-y-2">
                     {form.line_items.map((item, idx) => item._category !== "Materials" ? (
-                      <LineItemRow key={idx} item={item} idx={idx} companyId={activeCompany?.id} onUpdate={updateItem} onRemove={removeItem} categoryFilter="Labor" />
+                      <LineItemRow key={idx} item={item} idx={idx} companyId={activeCompany?.id} services={services} onServicesUpdate={svc => setServices(prev => [...prev, svc])} onUpdate={updateItem} onRemove={removeItem} categoryFilter="Labor" />
                     ) : null)}
                   </div>
                 </div>
