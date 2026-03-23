@@ -290,6 +290,36 @@ export default function InvoiceDetail() {
 
         {/* Main */}
         <div className="flex-1 min-w-0 space-y-4">
+          {/* Preview / Edit toggle */}
+          <div className="flex gap-2">
+            <Button 
+              variant={showPreview ? "outline" : "default"} 
+              onClick={() => setShowPreview(false)}
+              className="text-sm"
+            >
+              Edit
+            </Button>
+            <Button 
+              variant={showPreview ? "default" : "outline"} 
+              onClick={() => setShowPreview(true)}
+              className="text-sm"
+            >
+              Preview
+            </Button>
+          </div>
+
+          {showPreview ? (
+            <div className="overflow-x-auto bg-slate-100 p-4 rounded-xl">
+              <InvoiceEstimatePreview 
+                document={form}
+                customer={customers.find(c => c.id === form.customer_id)}
+                company={activeCompany}
+                type="invoice"
+                template={null}
+              />
+            </div>
+          ) : (
+          <>
           {/* Mobile info */}
           <div className="lg:hidden">
             <Card className="border-0 shadow-sm">
