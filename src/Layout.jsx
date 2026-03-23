@@ -45,6 +45,7 @@ const navItems = [
   { label: "Team", icon: Wrench, page: "Team" },
   { label: "Services", icon: Wrench, page: "Services" },
   { label: "Settings", icon: Settings, page: "CompanySettings" },
+  { label: "Email Templates", icon: Mail, page: "EmailTemplateEditor" },
 ];
 
 const adminItems = [
