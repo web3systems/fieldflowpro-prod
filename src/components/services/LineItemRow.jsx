@@ -79,7 +79,7 @@ export default function LineItemRow({ item, idx, companyId, onUpdate, onRemove, 
           </SelectContent>
         </Select>
         {/* Show text input for custom description */}
-        {!matchedService && (
+        {isCustom && (
           <Input
             value={item.description}
             onChange={e => onUpdate(idx, "description", e.target.value)}
