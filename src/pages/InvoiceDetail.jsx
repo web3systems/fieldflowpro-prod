@@ -429,8 +429,9 @@ export default function InvoiceDetail() {
                   <span className="text-sm text-slate-500">${(form.tax_amount || 0).toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-base font-bold pt-1 border-t border-slate-200">
-                  <span>Total</span>
-                  <span>${(form.total || 0).toFixed(2)}</span>
+                   <span>Total</span>
+                   <span>${(form.total || 0).toFixed(2)}</span>
+                 </div>
                 </div>
                 </CardContent>
                 </Card>
