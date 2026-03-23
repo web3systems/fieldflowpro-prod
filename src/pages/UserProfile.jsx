@@ -140,7 +140,8 @@ export default function UserProfile() {
     <div className="p-6 text-center text-slate-500">User not found.</div>
   );
 
-  const isSuperAdmin = currentUser?.role === "super_admin" || currentUser?.role === "admin";
+  const isSuperAdmin = currentUser?.role === "super_admin" || currentUser?.role === "admin" || currentUser?.role === "manager";
+  const canManagePasswords = currentUser?.role === "super_admin" || currentUser?.role === "admin" || currentUser?.role === "manager";
   const roleInfo = ROLE_LABELS[profileUser.role] || ROLE_LABELS.standard;
   const userCompanies = getUserCompanies();
   const initials = profileUser.full_name?.split(" ").map(n => n[0]).join("").toUpperCase() || profileUser.email?.[0]?.toUpperCase();
