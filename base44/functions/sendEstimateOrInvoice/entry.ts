@@ -74,36 +74,57 @@ Deno.serve(async (req) => {
 <head>
   <meta charset="utf-8">
   <style>
-    body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; background: #f8fafc; }
-    .container { max-width: 600px; margin: 0 auto; background: white; }
-    .header { background: linear-gradient(135deg, ${company?.primary_color || '#1e293b'} 0%, ${company?.primary_color || '#1e293b'}dd 100%); padding: 40px 24px; text-align: center; }
-    .logo { font-size: 24px; font-weight: 700; color: white; margin: 0 0 20px; }
-    .header-title { font-size: 32px; font-weight: 700; color: white; margin: 0; }
+    body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; background: #f0f4f8; }
+    .container { max-width: 600px; margin: 0 auto; background: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+    .header { background: linear-gradient(135deg, #FFC107 0%, #FFD54F 100%); padding: 40px 24px; text-align: center; position: relative; }
+    .header::after { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(44, 62, 80, 0.05); }
+    .header-inner { position: relative; z-index: 1; }
+    .logo { margin: 0 0 20px; }
+    .logo img { max-height: 50px; width: auto; }
+    .header-title { font-size: 36px; font-weight: 800; color: #2C3E50; margin: 0; letter-spacing: -0.5px; }
+    .header-subtitle { font-size: 14px; color: #2C3E50; margin: 8px 0 0; font-weight: 500; opacity: 0.8; }
     .content { padding: 40px 24px; }
-    .greeting { font-size: 16px; color: #1e293b; margin: 0 0 20px; }
-    .document-number { font-size: 13px; color: #94a3b8; margin: 0 0 30px; }
+    .greeting { font-size: 18px; font-weight: 600; color: #2C3E50; margin: 0 0 12px; }
+    .intro-text { font-size: 14px; color: #555; margin: 0 0 20px; line-height: 1.6; }
+    .document-number { font-size: 12px; color: #FFC107; font-weight: 600; margin: 0 0 30px; text-transform: uppercase; letter-spacing: 1px; }
     .table { width: 100%; border-collapse: collapse; margin: 30px 0; }
-    .table-header { background: #f1f5f9; }
-    .table-header th { padding: 12px; text-align: left; font-weight: 600; color: #475569; font-size: 13px; text-transform: uppercase; border-bottom: 2px solid #e2e8f0; }
-    .summary { margin: 30px 0; padding: 20px; background: #f8fafc; border-radius: 8px; }
-    .summary-row { display: flex; justify-content: space-between; padding: 8px 0; font-size: 14px; color: #475569; }
-    .summary-row.total { border-top: 2px solid #e2e8f0; padding-top: 15px; margin-top: 15px; font-weight: 700; font-size: 16px; color: #1e293b; }
-    .cta-button { display: inline-block; background: ${company?.primary_color || '#1e293b'}; color: white; padding: 12px 32px; text-decoration: none; border-radius: 6px; font-weight: 600; margin: 30px 0; }
-    .footer { padding: 24px; background: #f8fafc; border-top: 1px solid #e2e8f0; font-size: 12px; color: #94a3b8; text-align: center; }
-    .divider { height: 1px; background: #e2e8f0; margin: 30px 0; }
+    .table-header { background: linear-gradient(90deg, #2C3E50 0%, #34495E 100%); }
+    .table-header th { padding: 14px 12px; text-align: left; font-weight: 700; color: #FFC107; font-size: 12px; text-transform: uppercase; border: none; }
+    .table tbody tr { border-bottom: 1px solid #e8ecf1; }
+    .table tbody tr:hover { background: #f8fafb; }
+    .table td { padding: 14px 12px; font-size: 13px; color: #2C3E50; }
+    .summary { margin: 30px 0; padding: 24px; background: linear-gradient(135deg, #f8fafb 0%, #f0f4f8 100%); border-radius: 8px; border-left: 4px solid #FFC107; }
+    .summary-row { display: flex; justify-content: space-between; padding: 10px 0; font-size: 14px; color: #555; }
+    .summary-row.total { border-top: 2px solid #FFC107; padding-top: 16px; margin-top: 16px; font-weight: 700; font-size: 18px; color: #2C3E50; }
+    .total-amount { color: #FFC107; }
+    .action-buttons { text-align: center; margin: 35px 0; }
+    .action-buttons p { color: #2C3E50; font-size: 14px; font-weight: 600; margin: 0 0 20px; }
+    .btn-approve { display: inline-block; background: #27AE60; color: white; padding: 13px 28px; text-decoration: none; border-radius: 6px; font-weight: 600; margin-right: 12px; font-size: 13px; transition: background 0.2s; }
+    .btn-approve:hover { background: #229954; }
+    .btn-decline { display: inline-block; background: #E74C3C; color: white; padding: 13px 28px; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 13px; transition: background 0.2s; }
+    .btn-decline:hover { background: #C0392B; }
+    .notes-box { padding: 20px; background: #FFF9E6; border-radius: 6px; border-left: 4px solid #FFC107; margin: 30px 0; }
+    .notes-box p { margin: 0; font-size: 13px; color: #7D5E0F; }
+    .footer { padding: 30px 24px; background: #2C3E50; border-top: 4px solid #FFC107; font-size: 12px; color: #BDC3C7; text-align: center; }
+    .footer p { margin: 0; }
+    .divider { height: 1px; background: #e8ecf1; margin: 30px 0; }
+    .contact-info { font-size: 13px; color: #2C3E50; margin: 20px 0 0 0; }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="header">
-      ${company?.logo_url ? `<div class="logo"><img src="${company.logo_url}" style="max-height:40px;"></div>` : `<div class="logo">${company?.name || 'FieldFlow'}</div>`}
-      <div class="header-title">${docType.charAt(0).toUpperCase() + docType.slice(1)}</div>
+      <div class="header-inner">
+        ${company?.logo_url ? `<div class="logo"><img src="${company.logo_url}" alt="${company?.name}"></div>` : `<div style="font-size:32px;font-weight:800;color:#2C3E50;margin:0;">${company?.name || 'FieldFlow'}</div>`}
+        <div class="header-title">${docType.charAt(0).toUpperCase() + docType.slice(1)}</div>
+        <div class="header-subtitle">We've prepared an estimate for your project</div>
+      </div>
     </div>
     
     <div class="content">
       <p class="greeting">Hi ${customer.first_name || 'there'},</p>
-      <p style="color:#475569;margin:0 0 20px;">Thank you for your business. Please find the details of your ${docType} below.</p>
-      ${document.estimate_number ? `<p class="document-number">${docType.charAt(0).toUpperCase() + docType.slice(1)} #${document.estimate_number}</p>` : ''}
+      <p class="intro-text">Thank you for reaching out! We've put together a detailed estimate for your project. Review the details below and let us know what you think.</p>
+      ${document.estimate_number ? `<p class="document-number">Estimate #${document.estimate_number}</p>` : ''}
       
       <table class="table">
         <thead class="table-header">
@@ -134,31 +155,32 @@ Deno.serve(async (req) => {
         </div>` : ''}
         <div class="summary-row total">
           <span>Total</span>
-          <span>$${amount.toFixed(2)}</span>
+          <span class="total-amount">$${amount.toFixed(2)}</span>
         </div>
       </div>
       
-      ${document.notes ? `<div style="padding:20px;background:#fff9e6;border-radius:6px;border-left:4px solid #fbbf24;margin:30px 0;">
-        <p style="margin:0;font-size:13px;color:#92400e;"><strong>Notes:</strong> ${document.notes}</p>
+      ${document.notes ? `<div class="notes-box">
+        <p><strong>📝 Notes:</strong> ${document.notes}</p>
       </div>` : ''}
       
-      ${docType === 'estimate' ? `<div style="text-align:center;margin:30px 0;">
-        <p style="color:#475569;font-size:14px;margin:0 0 15px;">What do you think?</p>
-        <a href="https://honeydocrew.co/api/functions/approveEstimate?estimate_id=${document.id}&customer_id=${customer_id}" style="display:inline-block;background:#10b981;color:white;padding:12px 32px;text-decoration:none;border-radius:6px;font-weight:600;margin-right:10px;">✓ Approve</a>
-        <a href="https://honeydocrew.co/api/functions/rejectEstimate?estimate_id=${document.id}&customer_id=${customer_id}" style="display:inline-block;background:#ef4444;color:white;padding:12px 32px;text-decoration:none;border-radius:6px;font-weight:600;">✗ Decline</a>
+      ${docType === 'estimate' ? `<div class="action-buttons">
+        <p>Ready to move forward?</p>
+        <a href="https://honeydocrew.co/api/functions/approveEstimate?estimate_id=${document.id}&customer_id=${customer_id}" class="btn-approve">✓ Approve This Estimate</a>
+        <a href="https://honeydocrew.co/api/functions/rejectEstimate?estimate_id=${document.id}&customer_id=${customer_id}" class="btn-decline">✗ Not Interested</a>
       </div>` : ''}
       
       <div class="divider"></div>
       
-      <p style="color:#94a3b8;font-size:13px;margin:0;">Questions or need changes? Reply to this email or contact us:</p>
-      <p style="color:#1e293b;font-size:14px;margin:10px 0 0 0;">
-        ${company?.phone ? `📞 ${company.phone}<br>` : ''}
-        ${company?.email ? `📧 ${company.email}` : ''}
-      </p>
+      <p style="color:#555;font-size:13px;margin:0 0 12px;">Have questions? We're here to help!</p>
+      <div class="contact-info">
+        ${company?.phone ? `<div style="margin-bottom:6px;">📞 <strong>${company.phone}</strong></div>` : ''}
+        ${company?.email ? `<div>📧 <strong>${company.email}</strong></div>` : ''}
+      </div>
     </div>
     
     <div class="footer">
-      <p style="margin:0;">© ${new Date().getFullYear()} ${company?.name || 'FieldFlow'}. All rights reserved.</p>
+      <p style="margin-bottom:8px;"><strong>${company?.name || 'HoneyDo Crew'}</strong></p>
+      <p>© ${new Date().getFullYear()} ${company?.name || 'HoneyDo Crew'}. All rights reserved.</p>
     </div>
   </div>
 </body>
