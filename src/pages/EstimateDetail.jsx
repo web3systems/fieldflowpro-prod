@@ -28,7 +28,7 @@ const STATUS_STYLES = {
   expired: "bg-orange-100 text-orange-700",
 };
 
-const defaultItem = { description: "", quantity: 1, unit_price: 0, total: 0 };
+const defaultItem = { service_id: null, description: "", quantity: 1, unit_price: 0, total: 0 };
 
 function makeOption(index) {
   return {
