@@ -65,9 +65,24 @@ Deno.serve(async (req) => {
     const protocol = req.url.startsWith('https') ? 'https' : 'https';
     const baseUrl = `${protocol}://${appDomain}`;
     
-    // Get company branding
-    const primaryColor = company?.primary_color || '#FFC107';
-    const logoUrl = company?.logo_url;
+    // Get company email template
+    let template = null;
+    try {
+      const templates = await base44.asServiceRole.entities.EmailTemplate.filter({
+        company_id: company_id,
+        template_type: docType
+      });
+      template = templates[0];
+    } catch (e) {
+      // Template not found, use defaults
+    }
+
+    // Get branding from template or company
+    const primaryColor = template?.header_color || company?.primary_color || '#FFC107';
+    const accentColor = template?.accent_color || '#2C3E50';
+    const logoUrl = template?.logo_url || company?.logo_url;
+    const showLogo = template?.show_logo !== false;
+    const footerText = template?.footer_text;
     
     const lineItemsHtml = (document.line_items || document.options?.[0]?.line_items || []).map(item => `
       <tr>
