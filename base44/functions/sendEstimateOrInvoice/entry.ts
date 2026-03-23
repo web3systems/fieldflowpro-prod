@@ -196,14 +196,15 @@ Deno.serve(async (req) => {
       
       <p style="color:#555;font-size:13px;margin:0 0 12px;">Have questions? We're here to help!</p>
       <div class="contact-info">
-        ${company?.phone ? `<div style="margin-bottom:6px;">📞 <strong>${company.phone}</strong></div>` : ''}
-        ${company?.email ? `<div>📧 <strong>${company.email}</strong></div>` : ''}
+        ${template?.company_phone || company?.phone ? `<div style="margin-bottom:6px;">📞 <strong>${template?.company_phone || company.phone}</strong></div>` : ''}
+        ${template?.company_email || company?.email ? `<div>📧 <strong>${template?.company_email || company.email}</strong></div>` : ''}
       </div>
     </div>
     
     <div class="footer">
-      <p style="margin-bottom:8px;"><strong>${company?.name || 'HoneyDo Crew'}</strong></p>
-      <p>© ${new Date().getFullYear()} ${company?.name || 'HoneyDo Crew'}. All rights reserved.</p>
+      <p style="margin-bottom:8px;"><strong>${template?.company_name || company?.name || 'HoneyDo Crew'}</strong></p>
+      ${footerText ? `<p style="margin-bottom:8px;font-size:11px;">${footerText}</p>` : ''}
+      <p>© ${new Date().getFullYear()} ${template?.company_name || company?.name || 'HoneyDo Crew'}. All rights reserved.</p>
     </div>
   </div>
 </body>
