@@ -55,6 +55,16 @@ export default function CustomerPortal() {
     }
   }, [activeIndex, allAccounts]);
 
+  // Check URL params for estimate_id or invoice_id on mount
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.has('estimate_id')) {
+      setActiveTab('estimates');
+    } else if (params.has('invoice_id')) {
+      setActiveTab('invoices');
+    }
+  }, []);
+
   async function init() {
     try {
       const u = await base44.auth.me();
