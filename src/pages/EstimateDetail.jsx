@@ -19,6 +19,7 @@ import { format } from "date-fns";
 import LineItemRow from "@/components/services/LineItemRow";
 import ServicePicker from "@/components/services/ServicePicker";
 import { downloadEstimatePdf } from "../components/documents/generatePdf";
+import InvoiceEstimatePreview from "@/components/documents/InvoiceEstimatePreview";
 
 const STATUS_STYLES = {
   draft: "bg-gray-100 text-gray-600",
