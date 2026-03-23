@@ -7,6 +7,11 @@ import AddServiceModal from "./AddServiceModal";
 export default function LineItemRow({ item, idx, companyId, services = [], onServicesUpdate, onUpdate, onRemove, categoryFilter }) {
   const [showAddModal, setShowAddModal] = useState(false);
 
+  // Log whenever service_id changes to debug snap-back
+  useEffect(() => {
+    console.log(`[LineItemRow ${idx}] item.service_id = ${item.service_id}, selectValue will be = ${item.service_id || "__custom__"}`);
+  }, [item.service_id, idx]);
+
   function handleCreated(svc) {
     if (onServicesUpdate) onServicesUpdate(svc);
     onUpdate(idx, "service_id", svc.id);
@@ -16,6 +21,7 @@ export default function LineItemRow({ item, idx, companyId, services = [], onSer
   }
 
   function handleServiceSelect(value) {
+    console.log(`[LineItemRow ${idx}] handleServiceSelect called with value = ${value}`);
     if (value === "__add_new__") {
       setShowAddModal(true);
       return;
@@ -27,6 +33,7 @@ export default function LineItemRow({ item, idx, companyId, services = [], onSer
     }
     const svc = services.find(s => s.id === value);
     if (svc) {
+      console.log(`[LineItemRow ${idx}] Setting service to ${svc.id}`);
       onUpdate(idx, "service_id", svc.id);
       onUpdate(idx, "description", svc.name);
       onUpdate(idx, "unit_price", svc.unit_price || 0);
