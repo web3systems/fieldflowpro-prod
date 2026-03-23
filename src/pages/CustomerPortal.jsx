@@ -715,7 +715,7 @@ export default function CustomerPortal() {
       </div>
 
       {/* Bottom Navigation */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200">
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-30">
         <div className="flex max-w-lg mx-auto">
           {tabs.map(({ id, label, icon: Icon }) => (
             <button
@@ -732,6 +732,11 @@ export default function CustomerPortal() {
           ))}
         </div>
       </div>
+
+      {/* AI Chatbot (only on non-messages tabs) */}
+      {activeTab !== "messages" && customer && (
+        <AIChatBot customer={customer} company={company} />
+      )}
     </div>
   );
 }
