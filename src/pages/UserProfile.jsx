@@ -141,7 +141,7 @@ export default function UserProfile() {
   );
 
   const isSuperAdmin = currentUser?.role === "super_admin" || currentUser?.role === "admin" || currentUser?.role === "manager";
-  const canManagePasswords = currentUser?.role === "super_admin" || currentUser?.role === "admin" || currentUser?.role === "manager";
+  const canManagePasswords = currentUser?.role === "super_admin" || currentUser?.role === "admin";
   const roleInfo = ROLE_LABELS[profileUser.role] || ROLE_LABELS.standard;
   const userCompanies = getUserCompanies();
   const initials = profileUser.full_name?.split(" ").map(n => n[0]).join("").toUpperCase() || profileUser.email?.[0]?.toUpperCase();
@@ -331,8 +331,8 @@ export default function UserProfile() {
             </CardContent>
           </Card>
 
-          {/* Security - Super Admin Only */}
-          {isSuperAdmin && (
+          {/* Security - Admin Only */}
+          {canManagePasswords && (
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm flex items-center gap-2"><Lock className="w-4 h-4" /> Security</CardTitle>
