@@ -55,40 +55,40 @@ export default function LineItemRow({ item, idx, companyId, services = [], onSer
         />
       )}
       <div className="grid grid-cols-12 gap-2 items-start p-3 bg-slate-50 rounded-lg">
-        <div className="col-span-5 space-y-1">
-          <Select value={selectValue} onValueChange={handleServiceSelect}>
-            <SelectTrigger className="bg-white text-sm h-9">
-              <SelectValue placeholder="Select a service..." />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="__add_new__" className="text-blue-600 font-medium">+ Add New</SelectItem>
-              <SelectItem value="__custom__">-- Custom --</SelectItem>
-              {laborServices.length > 0 && (
-                <SelectGroup>
-                  <SelectLabel>Labor</SelectLabel>
-                  {laborServices.map(svc => (
-                    <SelectItem key={svc.id} value={svc.id}>{svc.name}</SelectItem>
-                  ))}
-                </SelectGroup>
-              )}
-              {materialServices.length > 0 && (
-                <SelectGroup>
-                  <SelectLabel>Materials</SelectLabel>
-                  {materialServices.map(svc => (
-                    <SelectItem key={svc.id} value={svc.id}>{svc.name}</SelectItem>
-                  ))}
-                </SelectGroup>
-              )}
-              {otherServices.length > 0 && (
-                <SelectGroup>
-                  <SelectLabel>Other</SelectLabel>
-                  {otherServices.map(svc => (
-                    <SelectItem key={svc.id} value={svc.id}>{svc.name}</SelectItem>
-                  ))}
-                </SelectGroup>
-              )}
-            </SelectContent>
-          </Select>
+         <div className="col-span-5 space-y-1">
+           <Select value={selectValue || "__custom__"} onValueChange={handleServiceSelect}>
+             <SelectTrigger className="bg-white text-sm h-9">
+               <SelectValue placeholder="Select a service..." />
+             </SelectTrigger>
+             <SelectContent>
+               <SelectItem value="__add_new__" className="text-blue-600 font-medium">+ Add New</SelectItem>
+               <SelectItem value="__custom__">-- Custom --</SelectItem>
+               {laborServices.length > 0 && (
+                 <SelectGroup>
+                   <SelectLabel>Labor</SelectLabel>
+                   {laborServices.map(svc => (
+                     <SelectItem key={svc.id} value={svc.id}>{svc.name}</SelectItem>
+                   ))}
+                 </SelectGroup>
+               )}
+               {materialServices.length > 0 && (
+                 <SelectGroup>
+                   <SelectLabel>Materials</SelectLabel>
+                   {materialServices.map(svc => (
+                     <SelectItem key={svc.id} value={svc.id}>{svc.name}</SelectItem>
+                   ))}
+                 </SelectGroup>
+               )}
+               {otherServices.length > 0 && (
+                 <SelectGroup>
+                   <SelectLabel>Other</SelectLabel>
+                   {otherServices.map(svc => (
+                     <SelectItem key={svc.id} value={svc.id}>{svc.name}</SelectItem>
+                   ))}
+                 </SelectGroup>
+               )}
+             </SelectContent>
+           </Select>
           {isCustom && (
             <Input
               value={item.description}
