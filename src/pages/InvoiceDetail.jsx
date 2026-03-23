@@ -5,7 +5,8 @@ import { useApp } from "../Layout";
 import { createPageUrl } from "@/utils";
 import {
   ArrowLeft, DollarSign, User, Calendar, CreditCard, Mail,
-  Download, Save, Edit2, Plus, Trash2, CheckCircle, AlertCircle, Clock, ExternalLink
+  Download, Save, Edit2, Plus, Trash2, CheckCircle, AlertCircle, Clock, ExternalLink,
+  MessageSquare
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -48,6 +49,7 @@ export default function InvoiceDetail() {
   const [sendingEmail, setSendingEmail] = useState(false);
   const [form, setForm] = useState(defaultForm);
   const [editingInfo, setEditingInfo] = useState(false);
+  const [sendingSms, setSendingSms] = useState(false);
 
   const loadData = useCallback(async () => {
     const [invs, c] = await Promise.all([
@@ -108,6 +110,19 @@ export default function InvoiceDetail() {
     await base44.functions.invoke("sendInvoiceEmail", { invoice_id: id, portal_url: portalUrl });
     setSendingEmail(false);
     await loadData();
+  }
+
+  async function handleSendSms() {
+    setSendingSms(true);
+    try {
+      await base44.functions.invoke("sendEstimateOrInvoice", {
+        invoice_id: id,
+        customer_id: form.customer_id,
+        contact_method: "sms",
+      });
+    } finally {
+      setSendingSms(false);
+    }
   }
 
   function handleDownloadPdf() {
@@ -259,6 +274,11 @@ export default function InvoiceDetail() {
                 {customer?.email && (
                   <Button variant="outline" onClick={handleSendEmail} disabled={sendingEmail} className="w-full gap-2 border-blue-200 text-blue-600 hover:bg-blue-50">
                     <Mail className="w-4 h-4" />{sendingEmail ? "Sending..." : "Email to Customer"}
+                  </Button>
+                )}
+                {customer?.phone && (
+                  <Button variant="outline" onClick={handleSendSms} disabled={sendingSms} className="w-full gap-2 border-green-200 text-green-600 hover:bg-green-50">
+                    <MessageSquare className="w-4 h-4" />{sendingSms ? "Sending..." : "SMS to Customer"}
                   </Button>
                 )}
               </CardContent>
