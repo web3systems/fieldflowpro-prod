@@ -51,6 +51,7 @@ export default function EstimateDetail() {
 
   const [estimate, setEstimate] = useState(null);
   const [customers, setCustomers] = useState([]);
+  const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [approving, setApproving] = useState(false);
