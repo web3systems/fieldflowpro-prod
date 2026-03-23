@@ -15,6 +15,10 @@ export default function LineItemRow({ item, idx, companyId, onUpdate, onRemove, 
   }, [companyId]);
 
   function handleServiceSelect(value) {
+    if (value === "__add_new__") {
+      window.open("/Services", "_blank");
+      return;
+    }
     if (value === "__custom__") {
       onUpdate(idx, "description", "");
       return;
@@ -29,10 +33,10 @@ export default function LineItemRow({ item, idx, companyId, onUpdate, onRemove, 
   const matchedService = services.find(s => s.name === item.description);
   const selectValue = matchedService ? matchedService.id : "__custom__";
 
-  const filteredServices = categoryFilter ? services.filter(s => s.category === categoryFilter) : services;
-  const laborServices = categoryFilter ? filteredServices : services.filter(s => s.category === "Labor");
-  const materialServices = categoryFilter ? [] : services.filter(s => s.category === "Materials");
-  const otherServices = categoryFilter ? [] : services.filter(s => !["Labor", "Materials"].includes(s.category));
+  // Show all services in dropdown regardless of categoryFilter (filter is just for display grouping)
+  const laborServices = services.filter(s => s.category === "Labor" || s.category === "labor");
+  const materialServices = services.filter(s => s.category === "Materials" || s.category === "materials");
+  const otherServices = services.filter(s => !["Labor", "labor", "Materials", "materials"].includes(s.category));
 
   return (
     <div className="grid grid-cols-12 gap-2 items-start p-3 bg-slate-50 rounded-lg">
