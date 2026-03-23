@@ -137,6 +137,13 @@ export default function Invoices() {
   }
 
   function openEdit(inv) {
+    setEditing(inv);
+    const tax_rate = activeCompany?.default_tax_rate || 0;
+    setForm({ ...defaultForm, ...inv, tax_rate: inv.tax_rate ?? tax_rate });
+    setSheetOpen(true);
+  }
+
+  function openDetail(inv) {
     navigate(`/InvoiceDetail/${inv.id}`);
   }
 
