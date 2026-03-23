@@ -437,7 +437,7 @@ export default function Estimates() {
                   </Button>
                 </div>
               </div>
-            </div>
+            </div> {/* end left sidebar */}
 
             {/* Right main area */}
             <div className="flex-1 p-5 space-y-5 overflow-y-auto">
