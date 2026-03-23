@@ -73,7 +73,7 @@ export default function EstimateDetail() {
         const migratedOption = {
           id: `opt_${Date.now()}_1`,
           name: "Option #1",
-          line_items: est.line_items || [{ ...defaultItem }],
+          line_items: (est.line_items || [{ ...defaultItem }]).map(item => ({ ...defaultItem, ...item })),
           subtotal: est.subtotal || 0,
           tax_rate: est.tax_rate || 0,
           tax_amount: est.tax_amount || 0,
@@ -82,6 +82,12 @@ export default function EstimateDetail() {
           notes: est.notes || "",
         };
         est.options = [migratedOption];
+      } else {
+        // Ensure all existing options have proper line item structure
+        est.options = est.options.map(opt => ({
+          ...opt,
+          line_items: (opt.line_items || []).map(item => ({ ...defaultItem, ...item }))
+        }));
       }
       setEstimate(est);
       setForm({ ...est });
