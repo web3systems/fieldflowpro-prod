@@ -340,26 +340,28 @@ export default function UserProfile() {
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="space-y-3">
-                  <div>
-                    <p className="text-sm font-medium text-slate-700 mb-1">Send Password Reset Email</p>
-                    <p className="text-xs text-slate-500 mb-2">Email the user with instructions to reset their password via the login page.</p>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleSendPasswordReset}
-                      disabled={resetStatus === 'sending' || resetStatus === 'sent'}
-                      className="gap-2"
-                    >
-                      {resetStatus === 'sent'
-                        ? <><CheckCircle className="w-4 h-4 text-green-600" /> Reset Email Sent</>
-                        : resetStatus === 'sending'
-                        ? <><KeyRound className="w-4 h-4 animate-pulse" /> Sending...</>
-                        : <><KeyRound className="w-4 h-4" /> Send Password Reset Email</>}
-                    </Button>
-                    {resetStatus === 'error' && <p className="text-xs text-red-500 mt-1">Failed to send email. Please try again.</p>}
-                  </div>
+                  {!isOwnProfile && (
+                    <div>
+                      <p className="text-sm font-medium text-slate-700 mb-1">Send Password Reset Email</p>
+                      <p className="text-xs text-slate-500 mb-2">Email the user with instructions to reset their password via the login page.</p>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleSendPasswordReset}
+                        disabled={resetStatus === 'sending' || resetStatus === 'sent'}
+                        className="gap-2"
+                      >
+                        {resetStatus === 'sent'
+                          ? <><CheckCircle className="w-4 h-4 text-green-600" /> Reset Email Sent</>
+                          : resetStatus === 'sending'
+                          ? <><KeyRound className="w-4 h-4 animate-pulse" /> Sending...</>
+                          : <><KeyRound className="w-4 h-4" /> Send Password Reset Email</>}
+                      </Button>
+                      {resetStatus === 'error' && <p className="text-xs text-red-500 mt-1">Failed to send email. Please try again.</p>}
+                    </div>
+                  )}
 
-                  <div className="border-t pt-3">
+                  <div className={!isOwnProfile ? "border-t pt-3" : ""}>
                     <p className="text-sm font-medium text-slate-700 mb-1">Set Password Manually</p>
                     <p className="text-xs text-slate-500 mb-2">Directly set a new password for this user.</p>
                     {!showSetPassword ? (
