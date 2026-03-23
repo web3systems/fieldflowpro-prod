@@ -169,60 +169,66 @@ export default function Services() {
         );
       })}
 
-      <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-        <SheetContent className="w-full sm:max-w-md overflow-y-auto">
-          <SheetHeader>
-            <SheetTitle>{editing ? "Edit Service" : "New Service"}</SheetTitle>
-          </SheetHeader>
-          <div className="space-y-4 mt-6">
-            <div>
-              <Label>Name *</Label>
-              <Input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="e.g. Lawn Mowing" />
+      {sheetOpen && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+            <div className="px-6 py-4 border-b flex items-center justify-between sticky top-0 bg-white rounded-t-2xl">
+              <h2 className="text-lg font-semibold text-slate-800">{editing ? "Edit Service" : "New Service"}</h2>
+              <button onClick={() => setSheetOpen(false)} className="text-slate-400 hover:text-slate-600 text-xl leading-none">×</button>
             </div>
-            <div>
-              <Label>Category</Label>
-              <Select value={form.category} onValueChange={v => setForm({ ...form, category: v })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {CATEGORIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label>Description</Label>
-              <Textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} rows={3} />
-            </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="p-6 space-y-4">
               <div>
-                <Label>Price ($)</Label>
-                <Input type="number" value={form.unit_price} onChange={e => setForm({ ...form, unit_price: e.target.value })} placeholder="0.00" />
+                <Label>Name *</Label>
+                <Input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="e.g. Lawn Mowing" />
               </div>
               <div>
-                <Label>Unit</Label>
-                <Select value={form.unit} onValueChange={v => setForm({ ...form, unit: v })}>
+                <Label>Category</Label>
+                <Select value={form.category} onValueChange={v => setForm({ ...form, category: v })}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    {Object.entries(unitLabels).map(([val, label]) => (
-                      <SelectItem key={val} value={val}>{label}</SelectItem>
-                    ))}
+                    {CATEGORIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
+              <div>
+                <Label>Description</Label>
+                <Textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} rows={3} />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label>Price ($)</Label>
+                  <Input type="number" value={form.unit_price} onChange={e => setForm({ ...form, unit_price: e.target.value })} placeholder="0.00" />
+                </div>
+                <div>
+                  <Label>Unit</Label>
+                  <Select value={form.unit} onValueChange={v => setForm({ ...form, unit: v })}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {Object.entries(unitLabels).map(([val, label]) => (
+                        <SelectItem key={val} value={val}>{label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="flex items-center justify-between">
+                <Label>Active</Label>
+                <Switch checked={form.is_active} onCheckedChange={v => setForm({ ...form, is_active: v })} />
+              </div>
+              <div className="flex items-center justify-between">
+                <Label>Taxable</Label>
+                <Switch checked={form.taxable} onCheckedChange={v => setForm({ ...form, taxable: v })} />
+              </div>
+              <div className="flex gap-3 pt-2">
+                <Button variant="outline" onClick={() => setSheetOpen(false)} className="flex-1">Cancel</Button>
+                <Button onClick={handleSave} disabled={loading || !form.name} className="flex-1 bg-blue-600 hover:bg-blue-700">
+                  {loading ? "Saving..." : editing ? "Save Changes" : "Create Service"}
+                </Button>
+              </div>
             </div>
-            <div className="flex items-center justify-between">
-              <Label>Active</Label>
-              <Switch checked={form.is_active} onCheckedChange={v => setForm({ ...form, is_active: v })} />
-            </div>
-            <div className="flex items-center justify-between">
-              <Label>Taxable</Label>
-              <Switch checked={form.taxable} onCheckedChange={v => setForm({ ...form, taxable: v })} />
-            </div>
-            <Button onClick={handleSave} disabled={loading || !form.name} className="w-full mt-2">
-              {loading ? "Saving..." : editing ? "Save Changes" : "Create Service"}
-            </Button>
           </div>
-        </SheetContent>
-      </Sheet>
+        </div>
+      )}
     </div>
   );
 }
