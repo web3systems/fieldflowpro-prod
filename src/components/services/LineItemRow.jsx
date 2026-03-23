@@ -53,6 +53,14 @@ export default function LineItemRow({ item, idx, companyId, onUpdate, onRemove, 
   const otherServices = services.filter(s => !["Labor", "labor", "Materials", "materials"].includes(s.category));
 
   return (
+    <>
+    {showAddModal && (
+      <AddServiceModal
+        companyId={companyId}
+        onCreated={handleCreated}
+        onClose={() => setShowAddModal(false)}
+      />
+    )}
     <div className="grid grid-cols-12 gap-2 items-start p-3 bg-slate-50 rounded-lg">
       <div className="col-span-5 space-y-1">
         <Select value={selectValue} onValueChange={handleServiceSelect}>
