@@ -396,6 +396,8 @@ export default function InvoiceDetail() {
               <Save className="w-4 h-4" />{saving ? "Saving..." : "Save Changes"}
             </Button>
           </div>
+          </>
+          )}
         </div>
       </div>
     </div>
