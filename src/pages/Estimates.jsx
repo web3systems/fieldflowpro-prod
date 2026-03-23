@@ -301,10 +301,10 @@ export default function Estimates() {
       )}
 
       {sheetOpen && (
-        <div className="absolute inset-0 z-50 bg-white overflow-y-auto">
-          <div className="flex min-h-screen flex-col md:flex-row">
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-start justify-center p-2 sm:p-4 overflow-y-auto">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl my-4 flex flex-col md:flex-row min-h-0">
             {/* Left sidebar */}
-            <div className="w-72 flex-shrink-0 bg-slate-50 border-r border-slate-200 flex flex-col overflow-y-auto">
+            <div className="w-full md:w-72 flex-shrink-0 bg-slate-50 border-b md:border-b-0 md:border-r border-slate-200 flex flex-col rounded-t-2xl md:rounded-l-2xl md:rounded-tr-none overflow-y-auto md:max-h-[90vh]">
 
               {/* Header */}
               <div className="p-4 border-b border-slate-200 flex items-center justify-between sticky top-0 bg-slate-50 z-10">
