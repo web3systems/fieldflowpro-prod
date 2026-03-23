@@ -583,7 +583,7 @@ export default function Estimates() {
             </div> {/* end left sidebar */}
 
             {/* Right main area */}
-            <div className="flex-1 p-4 sm:p-5 space-y-5 overflow-y-auto md:max-h-[90vh]">
+            <div className="flex-1 p-4 sm:p-5 space-y-5">
               {/* Private notes */}
               <div>
                 <Label className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5 block">Private Notes</Label>
