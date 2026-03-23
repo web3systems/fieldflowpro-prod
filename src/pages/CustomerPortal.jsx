@@ -191,7 +191,7 @@ export default function CustomerPortal() {
     { id: "book", label: "Book", icon: PlusCircle },
     { id: "jobs", label: "Jobs", icon: Briefcase },
     { id: "invoices", label: "Invoices", icon: DollarSign },
-    { id: "estimates", label: "Estimates", icon: FileText },
+    { id: "messages", label: "Messages", icon: MessageCircle },
     { id: "account", label: "Account", icon: User },
   ];
 
