@@ -233,9 +233,8 @@ export default function Customers() {
 
       {/* Customer Modal */}
       {sheetOpen && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-start justify-center overflow-y-auto p-2 sm:p-4">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl my-4">
-          <div className="sticky top-0 bg-white border-b px-4 py-3 flex items-center justify-between z-10 rounded-t-2xl">
+        <div className="absolute inset-0 z-50 bg-white overflow-y-auto">
+          <div className="sticky top-0 bg-white border-b px-4 py-3 flex items-center justify-between z-10">
             <h2 className="text-xl font-semibold">{editing ? `${editing.first_name} ${editing.last_name}` : "Add new customer"}</h2>
             <button onClick={() => setSheetOpen(false)} className="p-2 rounded-full hover:bg-slate-100"><X className="w-5 h-5" /></button>
           </div>
@@ -325,6 +324,16 @@ export default function Customers() {
                   <Input placeholder="Zip" value={form.zip} onChange={e => setForm({ ...form, zip: e.target.value })} />
                 </div>
                 <Input placeholder="Address Notes" value={form.address_notes || ""} onChange={e => setForm({ ...form, address_notes: e.target.value })} />
+                {form.address && form.city && (
+                  <div className="rounded-lg overflow-hidden bg-slate-100 flex items-center justify-center h-36 border border-slate-200">
+                    <iframe
+                      title="map"
+                      className="w-full h-full"
+                      loading="lazy"
+                      src={`https://maps.google.com/maps?q=${encodeURIComponent(`${form.address} ${form.city} ${form.state} ${form.zip}`)}&output=embed`}
+                    />
+                  </div>
+                )}
               </div>
             </div>
 
@@ -334,7 +343,7 @@ export default function Customers() {
                 <FileText className="w-4 h-4 text-slate-500" />
                 <span className="font-semibold text-slate-700">Notes</span>
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-3">
                   <Input placeholder="Customer notes" value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} />
                   <Input placeholder="Customer tags (press enter)" value={form.tags_input || ""} onChange={e => setForm({ ...form, tags_input: e.target.value })} />
@@ -352,8 +361,8 @@ export default function Customers() {
             </div>
 
             {/* Footer */}
-            <div className="flex flex-wrap items-center justify-between gap-3 border-t pt-4">
-              <div className="flex flex-wrap items-center gap-4">
+            <div className="flex items-center justify-between border-t pt-4">
+              <div className="flex items-center gap-4">
                 <div className="flex items-center gap-2">
                   <Checkbox id="notifications" checked={form.notifications_enabled} onCheckedChange={v => setForm({ ...form, notifications_enabled: !!v })} />
                   <label htmlFor="notifications" className="text-sm text-slate-600">Send notifications</label>
@@ -371,7 +380,6 @@ export default function Customers() {
               </div>
             </div>
 
-          </div>
           </div>
         </div>
       )}
