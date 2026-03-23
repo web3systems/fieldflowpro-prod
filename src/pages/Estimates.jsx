@@ -88,7 +88,12 @@ export default function Estimates() {
       base44.entities.Technician.filter({ company_id: activeCompany.id }),
       base44.entities.Service.filter({ company_id: activeCompany.id, is_active: true }),
     ]);
-    setEstimates(e);
+    // Normalize all loaded estimates to ensure line_items have service_id
+    const normalized = e.map(est => ({
+      ...est,
+      line_items: normalizeLineItems(est.line_items)
+    }));
+    setEstimates(normalized);
     setCustomers(c);
     setTechnicians(t);
     setServices(svcs);
