@@ -139,7 +139,14 @@ export default function Jobs() {
 
   function openCreate() {
     setEditing(null);
-    setForm(defaultJob);
+    const now = new Date();
+    now.setMinutes(0, 0, 0);
+    now.setHours(now.getHours() + 1);
+    const pad = n => String(n).padStart(2, "0");
+    const fmt = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    const start = fmt(now);
+    const end = fmt(new Date(now.getTime() + 60 * 60 * 1000));
+    setForm({ ...defaultJob, scheduled_start: start, scheduled_end: end });
     setSheetOpen(true);
   }
 
