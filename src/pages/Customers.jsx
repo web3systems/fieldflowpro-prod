@@ -361,15 +361,15 @@ export default function Customers() {
             </div>
 
             {/* Footer */}
-            <div className="flex items-center justify-between border-t pt-4">
-              <div className="flex items-center gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between border-t pt-4 gap-4">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3">
                 <div className="flex items-center gap-2">
                   <Checkbox id="notifications" checked={form.notifications_enabled} onCheckedChange={v => setForm({ ...form, notifications_enabled: !!v })} />
                   <label htmlFor="notifications" className="text-sm text-slate-600">Send notifications</label>
                 </div>
                 <div className="flex items-center gap-2">
                   <Checkbox id="marketing" checked={form.marketing_consent} onCheckedChange={v => setForm({ ...form, marketing_consent: !!v })} />
-                  <label htmlFor="marketing" className="text-sm text-slate-600">Send marketing opt-in text</label>
+                  <label htmlFor="marketing" className="text-sm text-slate-600">Marketing opt-in</label>
                 </div>
               </div>
               <div className="flex gap-3">
