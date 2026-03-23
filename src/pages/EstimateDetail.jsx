@@ -558,6 +558,7 @@ export default function EstimateDetail() {
               </CardContent>
             )}
           </Card>
+          )}
 
           <div className="flex justify-end gap-2">
             <Button onClick={handleSave} disabled={saving} className="gap-2 bg-blue-600 hover:bg-blue-700">
