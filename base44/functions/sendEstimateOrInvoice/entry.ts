@@ -60,10 +60,9 @@ Deno.serve(async (req) => {
     const taxAmount = document.tax_amount || 0;
     const discount = document.discount || 0;
     
-    // Get the app domain from request
+    // Get the app domain from request - use https by default for email links
     const appDomain = req.headers.get('host') || 'fieldflowpro.com';
-    const protocol = req.url.startsWith('https') ? 'https' : 'https';
-    const baseUrl = `${protocol}://${appDomain}`;
+    const baseUrl = `https://${appDomain.replace(/:\d+$/, '')}`;
     
     // Get company email template
     let template = null;
