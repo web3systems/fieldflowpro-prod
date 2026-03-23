@@ -105,7 +105,13 @@ export default function CustomerPortal() {
       setAllAccounts(accounts);
       // loadAccountData is called via useEffect when allAccounts is set
     } catch (e) {
-      base44.auth.redirectToLogin();
+      console.error('Init error:', e);
+      // If we get a header error, try redirecting to login
+      if (e?.message?.includes('App-Id') || e?.message?.includes('header')) {
+        base44.auth.redirectToLogin();
+      } else {
+        base44.auth.redirectToLogin();
+      }
     }
     setLoading(false);
   }
