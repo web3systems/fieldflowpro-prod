@@ -5,14 +5,21 @@ Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
 
-    if (!user || (user.role !== 'admin' && user.role !== 'super_admin')) {
-      return Response.json({ error: 'Forbidden: Super admin access required' }, { status: 403 });
+    if (!user) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const { userId, password } = await req.json();
 
     if (!userId || !password) {
       return Response.json({ error: 'userId and password are required' }, { status: 400 });
+    }
+
+    // Allow admins to change anyone's password, or users to change only their own
+    const isAdmin = user.role === 'admin' || user.role === 'super_admin';
+    const isSelf = user.id === userId;
+    if (!isAdmin && !isSelf) {
+      return Response.json({ error: 'Forbidden: You can only change your own password' }, { status: 403 });
     }
 
     if (password.length < 8) {

@@ -7,6 +7,7 @@ import {
   UserPlus, Settings, Building2, Menu, X, ChevronDown,
   Bell, LogOut, Wrench, BarChart3, Globe, Home, UsersRound, CalendarDays, ShieldCheck, CreditCard, Megaphone, Calculator, MessageCircle
 } from "lucide-react";
+import { Link } from "react-router-dom";
 import NotificationBell from "@/components/notifications/NotificationBell";
 import GlobalChatPanel from "@/components/chat/GlobalChatPanel";
 import { Button } from "@/components/ui/button";
