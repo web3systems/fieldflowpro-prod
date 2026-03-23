@@ -24,6 +24,7 @@ import Register from './pages/Register';
 import Landing from './pages/Landing';
 import CompanySettings from './pages/CompanySettings';
 import SaaSAdminDashboard from './pages/SaaSAdminDashboard';
+import EmailTemplateEditor from './pages/EmailTemplateEditor';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 
