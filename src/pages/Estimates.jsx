@@ -189,6 +189,17 @@ export default function Estimates() {
     downloadEstimatePdf({ ...form, id: editing?.id }, customer, activeCompany);
   }
 
+  async function handleCreateNewCustomer() {
+    if (!newCustomer.first_name || !newCustomer.last_name) return;
+    setSavingCustomer(true);
+    const created = await base44.entities.Customer.create({ ...newCustomer, company_id: activeCompany.id, status: "active" });
+    setCustomers(prev => [...prev, created]);
+    setForm(f => ({ ...f, customer_id: created.id }));
+    setShowNewCustomer(false);
+    setNewCustomer({ first_name: "", last_name: "", phone: "", email: "" });
+    setSavingCustomer(false);
+  }
+
   function handleExportCsv() {
     const rows = [["Estimate #", "Title", "Customer", "Status", "Total", "Valid Until"]];
     estimates.forEach(e => {
