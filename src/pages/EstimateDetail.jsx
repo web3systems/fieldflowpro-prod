@@ -5,7 +5,8 @@ import { useApp } from "../Layout";
 import { createPageUrl } from "@/utils";
 import {
   ArrowLeft, Download, Copy, CheckCircle, XCircle, Briefcase,
-  Plus, Save, User, Calendar, DollarSign, FileText, Edit2, X, Trash2
+  Plus, Save, User, Calendar, DollarSign, FileText, Edit2, X, Trash2,
+  Mail, MessageSquare
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -59,6 +60,8 @@ export default function EstimateDetail() {
   const [form, setForm] = useState(null);
   const [editingInfo, setEditingInfo] = useState(false);
   const [activeOptionIdx, setActiveOptionIdx] = useState(0);
+  const [sendingEmail, setSendingEmail] = useState(false);
+  const [sendingSms, setSendingSms] = useState(false);
 
   const normalizeLineItems = (items) => {
     return (items || []).map(item => ({ ...defaultItem, ...item }));
@@ -215,6 +218,32 @@ export default function EstimateDetail() {
     setForm(f => ({ ...f, status: "declined" }));
   }
 
+  async function handleSendEmail() {
+    setSendingEmail(true);
+    try {
+      await base44.functions.invoke("sendEstimateOrInvoice", {
+        estimate_id: id,
+        customer_id: form.customer_id,
+        contact_method: "email",
+      });
+    } finally {
+      setSendingEmail(false);
+    }
+  }
+
+  async function handleSendSms() {
+    setSendingSms(true);
+    try {
+      await base44.functions.invoke("sendEstimateOrInvoice", {
+        estimate_id: id,
+        customer_id: form.customer_id,
+        contact_method: "sms",
+      });
+    } finally {
+      setSendingSms(false);
+    }
+  }
+
   async function handleDuplicate() {
     setDuplicating(true);
     const allEsts = await base44.entities.Estimate.filter({ company_id: activeCompany.id });
@@ -351,6 +380,14 @@ export default function EstimateDetail() {
                     <CheckCircle className="w-4 h-4" />
                     {approving ? "Creating Job..." : "Approve & Create Job"}
                   </Button>
+                  <div className="space-y-2 pt-2 border-t border-slate-200">
+                    <Button onClick={handleSendEmail} disabled={sendingEmail} variant="outline" className="w-full gap-2 border-blue-200 text-blue-600 hover:bg-blue-50">
+                      <Mail className="w-4 h-4" /> {sendingEmail ? "Sending..." : "Send via Email"}
+                    </Button>
+                    <Button onClick={handleSendSms} disabled={sendingSms} variant="outline" className="w-full gap-2 border-green-200 text-green-600 hover:bg-green-50">
+                      <MessageSquare className="w-4 h-4" /> {sendingSms ? "Sending..." : "Send via SMS"}
+                    </Button>
+                  </div>
                 </>
               )}
               {form.status === "approved" && (
