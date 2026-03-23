@@ -267,14 +267,14 @@ export default function Customers() {
             </div>
 
             {/* Display name / phone / role row */}
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <Input placeholder="Display name (shown on invoices)" value={form.display_name || `${form.first_name} ${form.last_name}`.trim()} onChange={e => setForm({ ...form, display_name: e.target.value })} />
               <Input placeholder="Home phone" type="tel" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} />
               <Input placeholder="Role" value={form.role || ""} onChange={e => setForm({ ...form, role: e.target.value })} />
             </div>
 
             {/* Email / work phone / type row */}
-            <div className="grid grid-cols-3 gap-3 items-start">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 items-start">
               <div className="space-y-2">
                 <Input placeholder="Email" type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} />
                 <button type="button" onClick={() => {}} className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700 font-medium">
