@@ -39,7 +39,9 @@ const defaultForm = {
   title: "", customer_id: "", status: "draft",
   line_items: [{ ...defaultItem }], subtotal: 0, tax_rate: 0,
   tax_amount: 0, discount: 0, total: 0,
-  notes: "", valid_until: ""
+  notes: "", valid_until: "",
+  scheduled_start: "", scheduled_end: "",
+  assigned_techs: [], checklist: []
 };
 
 export default function Estimates() {
