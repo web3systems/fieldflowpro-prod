@@ -609,7 +609,7 @@ export default function Estimates() {
                     <span className="text-sm font-medium text-slate-600">Services</span>
                     <button
                       onClick={() => {
-                        const newItem = { description: "", quantity: 1, unit_price: 0, total: 0, _category: "Labor" };
+                        const newItem = { service_id: null, description: "", quantity: 1, unit_price: 0, total: 0, _category: "Labor" };
                         setForm(f => ({ ...f, line_items: [...f.line_items, newItem] }));
                       }}
                       className="flex items-center gap-1 text-blue-600 hover:text-blue-700 text-sm font-medium"
@@ -630,7 +630,7 @@ export default function Estimates() {
                     <span className="text-sm font-medium text-slate-600">Materials</span>
                     <button
                       onClick={() => {
-                        const newItem = { description: "", quantity: 1, unit_price: 0, total: 0, _category: "Materials" };
+                        const newItem = { service_id: null, description: "", quantity: 1, unit_price: 0, total: 0, _category: "Materials" };
                         setForm(f => ({ ...f, line_items: [...f.line_items, newItem] }));
                       }}
                       className="flex items-center gap-1 text-blue-600 hover:text-blue-700 text-sm font-medium"
