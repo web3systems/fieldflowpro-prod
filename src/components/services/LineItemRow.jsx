@@ -133,5 +133,6 @@ export default function LineItemRow({ item, idx, companyId, onUpdate, onRemove, 
         </button>
       </div>
     </div>
+    </>
   );
 }
