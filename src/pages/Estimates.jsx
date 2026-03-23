@@ -47,6 +47,7 @@ export default function Estimates() {
   const { activeCompany } = useApp();
   const [estimates, setEstimates] = useState([]);
   const [customers, setCustomers] = useState([]);
+  const [services, setServices] = useState([]);
   const [technicians, setTechnicians] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
