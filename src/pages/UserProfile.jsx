@@ -141,7 +141,8 @@ export default function UserProfile() {
   );
 
   const isSuperAdmin = currentUser?.role === "super_admin" || currentUser?.role === "admin" || currentUser?.role === "manager";
-  const canManagePasswords = currentUser?.role === "super_admin" || currentUser?.role === "admin";
+  const isOwnProfile = currentUser?.id === profileUser?.id;
+  const canManagePasswords = currentUser?.role === "super_admin" || currentUser?.role === "admin" || isOwnProfile;
   const roleInfo = ROLE_LABELS[profileUser.role] || ROLE_LABELS.standard;
   const userCompanies = getUserCompanies();
   const initials = profileUser.full_name?.split(" ").map(n => n[0]).join("").toUpperCase() || profileUser.email?.[0]?.toUpperCase();
