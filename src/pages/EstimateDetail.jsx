@@ -489,38 +489,86 @@ export default function EstimateDetail() {
 
             {/* Active option content */}
             {opt && (
-              <CardContent className="pt-4 space-y-3">
-                {/* Line items header */}
-                <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-semibold text-slate-700">Line Items</h3>
-                  <div className="flex items-center gap-2">
-                    <ServicePicker companyId={activeCompany?.id} onSelect={addServiceAsItem} />
-                    <Button variant="outline" size="sm" onClick={addItem} className="gap-1 text-xs"><Plus className="w-3 h-3" /> Add Line</Button>
+              <CardContent className="pt-4 space-y-4">
+                {/* Labor Section */}
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-sm font-semibold text-slate-700">Labor</h3>
+                    <div className="flex items-center gap-2">
+                      <ServicePicker companyId={activeCompany?.id} onSelect={addServiceAsItem} category="labor" />
+                      <Button variant="outline" size="sm" onClick={addItem} className="gap-1 text-xs"><Plus className="w-3 h-3" /> Add</Button>
+                    </div>
                   </div>
+
+                  {opt.line_items?.filter(item => !item.category || item.category === 'labor').length > 0 ? (
+                    <>
+                      <div className="grid grid-cols-12 gap-2 px-3 text-xs font-medium text-slate-400 uppercase tracking-wide mb-2">
+                        <div className="col-span-5">Service / Description</div>
+                        <div className="col-span-2 text-center">Qty</div>
+                        <div className="col-span-2">Price</div>
+                        <div className="col-span-2 text-right">Total</div>
+                        <div className="col-span-1" />
+                      </div>
+                      {opt.line_items?.filter(item => !item.category || item.category === 'labor').map((item, idx) => {
+                        const origIdx = opt.line_items.indexOf(item);
+                        return (
+                          <LineItemRow
+                            key={origIdx}
+                            item={item}
+                            idx={origIdx}
+                            companyId={activeCompany?.id}
+                            services={services}
+                            onServicesUpdate={svc => setServices(prev => [...prev, svc])}
+                            onUpdate={updateItem}
+                            onRemove={removeItem}
+                          />
+                        );
+                      })}
+                    </>
+                  ) : (
+                    <p className="text-xs text-slate-400 px-3 py-2">No labor items added</p>
+                  )}
                 </div>
 
-                {opt.line_items?.length > 0 && (
-                  <div className="grid grid-cols-12 gap-2 px-3 text-xs font-medium text-slate-400 uppercase tracking-wide">
-                    <div className="col-span-5">Service / Description</div>
-                    <div className="col-span-2 text-center">Qty</div>
-                    <div className="col-span-2">Price</div>
-                    <div className="col-span-2 text-right">Total</div>
-                    <div className="col-span-1" />
+                {/* Materials Section */}
+                <div className="border-t border-slate-200 pt-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-sm font-semibold text-slate-700">Materials</h3>
+                    <div className="flex items-center gap-2">
+                      <ServicePicker companyId={activeCompany?.id} onSelect={addServiceAsItem} category="materials" />
+                      <Button variant="outline" size="sm" onClick={addItem} className="gap-1 text-xs"><Plus className="w-3 h-3" /> Add</Button>
+                    </div>
                   </div>
-                )}
 
-                {opt.line_items?.map((item, idx) => (
-                  <LineItemRow
-                    key={idx}
-                    item={item}
-                    idx={idx}
-                    companyId={activeCompany?.id}
-                    services={services}
-                    onServicesUpdate={svc => setServices(prev => [...prev, svc])}
-                    onUpdate={updateItem}
-                    onRemove={removeItem}
-                  />
-                ))}
+                  {opt.line_items?.filter(item => item.category === 'materials').length > 0 ? (
+                    <>
+                      <div className="grid grid-cols-12 gap-2 px-3 text-xs font-medium text-slate-400 uppercase tracking-wide mb-2">
+                        <div className="col-span-5">Service / Description</div>
+                        <div className="col-span-2 text-center">Qty</div>
+                        <div className="col-span-2">Price</div>
+                        <div className="col-span-2 text-right">Total</div>
+                        <div className="col-span-1" />
+                      </div>
+                      {opt.line_items?.filter(item => item.category === 'materials').map((item, idx) => {
+                        const origIdx = opt.line_items.indexOf(item);
+                        return (
+                          <LineItemRow
+                            key={origIdx}
+                            item={item}
+                            idx={origIdx}
+                            companyId={activeCompany?.id}
+                            services={services}
+                            onServicesUpdate={svc => setServices(prev => [...prev, svc])}
+                            onUpdate={updateItem}
+                            onRemove={removeItem}
+                          />
+                        );
+                      })}
+                    </>
+                  ) : (
+                    <p className="text-xs text-slate-400 px-3 py-2">No material items added</p>
+                  )}
+                </div>
 
                 {/* Totals */}
                 <div className="mt-3 p-3 bg-slate-50 rounded-lg space-y-1.5">
