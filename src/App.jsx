@@ -18,6 +18,7 @@ import EstimateDetail from './pages/EstimateDetail';
 import JobDetail from './pages/JobDetail';
 import InvoiceDetail from './pages/InvoiceDetail';
 import Marketing from './pages/Marketing';
+import Messages from './pages/Messages';
 import CampaignIdeaPreview from './pages/CampaignIdeaPreview';
 import Register from './pages/Register';
 import Landing from './pages/Landing';
@@ -90,6 +91,7 @@ const AuthenticatedApp = () => {
       <Route path="/JobDetail/:id" element={<LayoutWrapper currentPageName="Jobs"><JobDetail /></LayoutWrapper>} />
       <Route path="/InvoiceDetail/:id" element={<LayoutWrapper currentPageName="Invoices"><InvoiceDetail /></LayoutWrapper>} />
       <Route path="/Marketing" element={<LayoutWrapper currentPageName="Marketing"><Marketing /></LayoutWrapper>} />
+      <Route path="/Messages" element={<LayoutWrapper currentPageName="Messages"><Messages /></LayoutWrapper>} />
       <Route path="/CompanySettings" element={<LayoutWrapper currentPageName="CompanySettings"><CompanySettings /></LayoutWrapper>} />
       <Route path="/SaaSAdminDashboard" element={<LayoutWrapper currentPageName="SaaSAdminDashboard"><SaaSAdminDashboard /></LayoutWrapper>} />
       <Route path="/CampaignIdeaPreview" element={<CampaignIdeaPreview />} />
