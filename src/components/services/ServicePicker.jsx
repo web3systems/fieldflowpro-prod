@@ -24,6 +24,7 @@ export default function ServicePicker({ companyId, onSelect }) {
 
   function handleSelect(service) {
     onSelect({
+      service_id: service.id,
       description: service.name,
       unit_price: service.unit_price || 0,
       quantity: 1,
