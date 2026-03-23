@@ -286,15 +286,24 @@ export default function Estimates() {
         <SheetContent className="w-full sm:max-w-5xl overflow-y-auto p-0">
           <div className="flex h-full min-h-screen">
             {/* Left sidebar */}
-            <div className="w-64 flex-shrink-0 bg-slate-50 border-r border-slate-200 p-4 space-y-5">
-              <div className="pt-2">
+            <div className="w-72 flex-shrink-0 bg-slate-50 border-r border-slate-200 flex flex-col overflow-y-auto">
+
+              {/* Header */}
+              <div className="p-4 border-b border-slate-200">
                 <h2 className="text-base font-semibold text-slate-800">{editing ? "Edit Estimate" : "New Estimate"}</h2>
                 {form.estimate_number && <p className="text-xs text-slate-400 font-mono mt-0.5">{form.estimate_number}</p>}
               </div>
 
-              {/* Customer */}
-              <div className="space-y-1.5">
-                <Label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Customer</Label>
+              {/* Customer selector */}
+              <div className="p-4 border-b border-slate-200">
+                <div className="flex items-center justify-between mb-1.5">
+                  <Label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Customer</Label>
+                  {form.customer_id && (
+                    <button onClick={() => setForm({ ...form, customer_id: "" })} className="text-xs text-red-400 hover:text-red-600 flex items-center gap-0.5">
+                      <X className="w-3 h-3" /> Clear
+                    </button>
+                  )}
+                </div>
                 <Select value={form.customer_id} onValueChange={v => setForm({ ...form, customer_id: v })}>
                   <SelectTrigger className="bg-white text-sm"><SelectValue placeholder="Select customer..." /></SelectTrigger>
                   <SelectContent>
@@ -305,33 +314,91 @@ export default function Estimates() {
                 </Select>
               </div>
 
+              {/* Customer card — shown when customer is selected */}
+              {form.customer_id && (() => {
+                const cust = customers.find(c => c.id === form.customer_id);
+                if (!cust) return null;
+                const address = [cust.address, cust.city, cust.state, cust.zip].filter(Boolean).join(", ");
+                const mapsQuery = encodeURIComponent(address);
+                const streetViewUrl = address
+                  ? `https://maps.googleapis.com/maps/api/streetview?size=280x140&location=${mapsQuery}&key=AIzaSyD-9tSrke72PouQMnMX-a7eZSW0jkFMBWY`
+                  : null;
+                const mapsLink = address ? `https://www.google.com/maps/search/?api=1&query=${mapsQuery}` : null;
+                return (
+                  <div className="border-b border-slate-200">
+                    {/* Street view map */}
+                    {address && (
+                      <div className="relative">
+                        <img
+                          src={`https://maps.googleapis.com/maps/api/staticmap?center=${mapsQuery}&zoom=17&size=560x240&maptype=satellite&key=AIzaSyD-9tSrke72PouQMnMX-a7eZSW0jkFMBWY`}
+                          alt="Property map"
+                          className="w-full h-32 object-cover"
+                          onError={e => { e.target.style.display = 'none'; }}
+                        />
+                        <a href={mapsLink} target="_blank" rel="noopener noreferrer"
+                          className="absolute top-2 right-2 bg-white/80 hover:bg-white rounded p-1 shadow text-slate-600">
+                          <ExternalLink className="w-3.5 h-3.5" />
+                        </a>
+                      </div>
+                    )}
+                    <div className="p-4 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <p className="font-semibold text-slate-800">{cust.first_name} {cust.last_name}</p>
+                        <a href={`/CustomerDetail/${cust.id}`} target="_blank" rel="noopener noreferrer"
+                          className="text-xs text-blue-600 hover:text-blue-700 font-medium flex items-center gap-0.5">
+                          View details <ExternalLink className="w-3 h-3" />
+                        </a>
+                      </div>
+                      {address && (
+                        <div className="flex items-start gap-1.5 text-xs text-slate-600">
+                          <MapPin className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-slate-400" />
+                          <a href={mapsLink} target="_blank" rel="noopener noreferrer" className="hover:text-blue-600 leading-snug">{address}</a>
+                        </div>
+                      )}
+                      {cust.phone && (
+                        <div className="flex items-center gap-1.5 text-xs text-slate-600">
+                          <Phone className="w-3.5 h-3.5 flex-shrink-0 text-slate-400" />
+                          <a href={`tel:${cust.phone}`} className="hover:text-blue-600">{cust.phone}</a>
+                        </div>
+                      )}
+                      {cust.email && (
+                        <div className="flex items-center gap-1.5 text-xs text-slate-600">
+                          <Mail className="w-3.5 h-3.5 flex-shrink-0 text-slate-400" />
+                          <a href={`mailto:${cust.email}`} className="hover:text-blue-600 truncate">{cust.email}</a>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })()}
+
               {/* Title */}
-              <div className="space-y-1.5">
+              <div className="p-4 space-y-1.5 border-b border-slate-200">
                 <Label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Title</Label>
                 <Input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} placeholder="e.g. Lawn Maintenance" className="bg-white text-sm" />
               </div>
 
-              {/* Status */}
-              <div className="space-y-1.5">
-                <Label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Status</Label>
-                <Select value={form.status} onValueChange={v => setForm({ ...form, status: v })}>
-                  <SelectTrigger className="bg-white text-sm"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {Object.keys(STATUS_STYLES).map(s => (
-                      <SelectItem key={s} value={s} className="capitalize">{s}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Valid Until */}
-              <div className="space-y-1.5">
-                <Label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Valid Until</Label>
-                <Input type="date" value={form.valid_until} onChange={e => setForm({ ...form, valid_until: e.target.value })} className="bg-white text-sm" />
+              {/* Status + Valid Until */}
+              <div className="p-4 space-y-3 border-b border-slate-200">
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Status</Label>
+                  <Select value={form.status} onValueChange={v => setForm({ ...form, status: v })}>
+                    <SelectTrigger className="bg-white text-sm"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {Object.keys(STATUS_STYLES).map(s => (
+                        <SelectItem key={s} value={s} className="capitalize">{s}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Valid Until</Label>
+                  <Input type="date" value={form.valid_until} onChange={e => setForm({ ...form, valid_until: e.target.value })} className="bg-white text-sm" />
+                </div>
               </div>
 
               {/* Actions */}
-              <div className="pt-4 space-y-2 border-t border-slate-200">
+              <div className="p-4 space-y-2 mt-auto">
                 {editing && !["approved", "declined"].includes(form.status) && (
                   <>
                     <Button onClick={handleDecline} variant="outline" className="w-full gap-2 border-red-200 text-red-600 hover:bg-red-50 text-sm">
