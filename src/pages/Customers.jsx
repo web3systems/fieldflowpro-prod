@@ -196,9 +196,9 @@ export default function Customers() {
                     </div>
                     <div className="flex flex-wrap gap-3 mt-1">
                       {customer.phone && (
-                        <a href={`tel:${customer.phone}`} onClick={e => e.stopPropagation()} className="flex items-center gap-1 text-xs text-blue-500 hover:text-blue-700">
+                        <span className="flex items-center gap-1 text-xs text-slate-500">
                           <Phone className="w-3 h-3" />{customer.phone}
-                        </a>
+                        </span>
                       )}
                       {customer.email && (
                         <span className="flex items-center gap-1 text-xs text-slate-500">
