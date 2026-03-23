@@ -60,6 +60,10 @@ export default function EstimateDetail() {
   const [editingInfo, setEditingInfo] = useState(false);
   const [activeOptionIdx, setActiveOptionIdx] = useState(0);
 
+  const normalizeLineItems = (items) => {
+    return (items || []).map(item => ({ ...defaultItem, ...item }));
+  };
+
   const loadData = useCallback(async () => {
     const [ests, c, svcs] = await Promise.all([
       base44.entities.Estimate.filter({ id }),
@@ -73,7 +77,7 @@ export default function EstimateDetail() {
         const migratedOption = {
           id: `opt_${Date.now()}_1`,
           name: "Option #1",
-          line_items: (est.line_items || [{ ...defaultItem }]).map(item => ({ ...defaultItem, ...item })),
+          line_items: normalizeLineItems(est.line_items || [{ ...defaultItem }]),
           subtotal: est.subtotal || 0,
           tax_rate: est.tax_rate || 0,
           tax_amount: est.tax_amount || 0,
@@ -86,7 +90,7 @@ export default function EstimateDetail() {
         // Ensure all existing options have proper line item structure
         est.options = est.options.map(opt => ({
           ...opt,
-          line_items: (opt.line_items || []).map(item => ({ ...defaultItem, ...item }))
+          line_items: normalizeLineItems(opt.line_items)
         }));
       }
       setEstimate(est);
