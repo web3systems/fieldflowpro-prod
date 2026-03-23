@@ -636,12 +636,9 @@ export default function Estimates() {
                     </button>
                   </div>
                   <div className="space-y-2">
-                    {form.line_items.filter(item => item._category === "Materials").map((item) => {
-                      const idx = form.line_items.indexOf(item);
-                      return (
-                        <LineItemRow key={idx} item={item} idx={idx} companyId={activeCompany?.id} onUpdate={updateItem} onRemove={removeItem} categoryFilter="Materials" />
-                      );
-                    })}
+                    {form.line_items.map((item, idx) => item._category === "Materials" ? (
+                      <LineItemRow key={idx} item={item} idx={idx} companyId={activeCompany?.id} onUpdate={updateItem} onRemove={removeItem} categoryFilter="Materials" />
+                    ) : null)}
                   </div>
                 </div>
 
