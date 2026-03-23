@@ -142,8 +142,10 @@ Deno.serve(async (req) => {
         <p style="margin:0;font-size:13px;color:#92400e;"><strong>Notes:</strong> ${document.notes}</p>
       </div>` : ''}
       
-      ${company?.website ? `<div style="text-align:center;">
-        <a href="${company.website}" class="cta-button">View Online</a>
+      ${docType === 'estimate' ? `<div style="text-align:center;margin:30px 0;">
+        <p style="color:#475569;font-size:14px;margin:0 0 15px;">What do you think?</p>
+        <a href="https://honeydocrew.co/api/functions/approveEstimate?estimate_id=${document.id}&customer_id=${customer_id}" style="display:inline-block;background:#10b981;color:white;padding:12px 32px;text-decoration:none;border-radius:6px;font-weight:600;margin-right:10px;">✓ Approve</a>
+        <a href="https://honeydocrew.co/api/functions/rejectEstimate?estimate_id=${document.id}&customer_id=${customer_id}" style="display:inline-block;background:#ef4444;color:white;padding:12px 32px;text-decoration:none;border-radius:6px;font-weight:600;">✗ Decline</a>
       </div>` : ''}
       
       <div class="divider"></div>
