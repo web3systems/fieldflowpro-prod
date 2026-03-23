@@ -301,13 +301,13 @@ export default function Estimates() {
       )}
 
       {sheetOpen && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-start justify-center overflow-y-auto p-2 sm:p-4">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl my-4 flex flex-col md:flex-row overflow-hidden">
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-start justify-center p-2 sm:p-4 overflow-y-auto">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl my-4 flex flex-col md:flex-row min-h-0">
             {/* Left sidebar */}
-            <div className="w-full md:w-72 flex-shrink-0 bg-slate-50 border-b md:border-b-0 md:border-r border-slate-200 flex flex-col">
+            <div className="w-full md:w-72 flex-shrink-0 bg-slate-50 border-b md:border-b-0 md:border-r border-slate-200 flex flex-col rounded-t-2xl md:rounded-l-2xl md:rounded-tr-none overflow-y-auto md:max-h-[90vh]">
 
               {/* Header */}
-              <div className="p-4 border-b border-slate-200 flex items-center justify-between sticky top-0 bg-slate-50 z-10">
+              <div className="p-4 border-b border-slate-200 flex items-center justify-between sticky top-0 bg-slate-50 z-10 rounded-t-2xl md:rounded-tl-2xl md:rounded-tr-none">
                 <div>
                   <h2 className="text-base font-semibold text-slate-800">{editing ? "Edit Estimate" : "New Estimate"}</h2>
                   {form.estimate_number && <p className="text-xs text-slate-400 font-mono mt-0.5">{form.estimate_number}</p>}
@@ -583,7 +583,7 @@ export default function Estimates() {
             </div> {/* end left sidebar */}
 
             {/* Right main area */}
-            <div className="flex-1 p-5 space-y-5 overflow-y-auto">
+            <div className="flex-1 p-4 sm:p-5 space-y-5 overflow-y-auto md:max-h-[90vh]">
               {/* Private notes */}
               <div>
                 <Label className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5 block">Private Notes</Label>
