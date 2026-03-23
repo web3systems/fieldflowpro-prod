@@ -233,9 +233,8 @@ export default function Customers() {
 
       {/* Customer Modal */}
       {sheetOpen && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-start justify-center overflow-y-auto p-2 sm:p-4">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl my-4">
-          <div className="sticky top-0 bg-white border-b px-4 py-3 flex items-center justify-between z-10 rounded-t-2xl">
+        <div className="absolute inset-0 z-50 bg-white overflow-y-auto">
+          <div className="sticky top-0 bg-white border-b px-4 py-3 flex items-center justify-between z-10">
             <h2 className="text-xl font-semibold">{editing ? `${editing.first_name} ${editing.last_name}` : "Add new customer"}</h2>
             <button onClick={() => setSheetOpen(false)} className="p-2 rounded-full hover:bg-slate-100"><X className="w-5 h-5" /></button>
           </div>
@@ -311,40 +310,30 @@ export default function Customers() {
                 <MapPin className="w-4 h-4 text-slate-500" />
                 <span className="font-semibold text-slate-700">Address</span>
               </div>
-              <div className="grid grid-cols-3 gap-3">
-                <div className="col-span-2 space-y-3">
-                  <div className="grid grid-cols-3 gap-3">
-                    <Input placeholder="Street" className="col-span-2" value={form.address} onChange={e => setForm({ ...form, address: e.target.value })} />
-                    <Input placeholder="Unit" value={form.unit || ""} onChange={e => setForm({ ...form, unit: e.target.value })} />
-                  </div>
-                  <div className="grid grid-cols-3 gap-3">
-                    <Input placeholder="City" value={form.city} onChange={e => setForm({ ...form, city: e.target.value })} />
-                    <Select value={form.state} onValueChange={v => setForm({ ...form, state: v })}>
-                      <SelectTrigger><SelectValue placeholder="State" /></SelectTrigger>
-                      <SelectContent>{US_STATES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
-                    </Select>
-                    <Input placeholder="Zip" value={form.zip} onChange={e => setForm({ ...form, zip: e.target.value })} />
-                  </div>
-                  <Input placeholder="Address Notes" value={form.address_notes || ""} onChange={e => setForm({ ...form, address_notes: e.target.value })} />
-                  <button type="button" className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700 font-medium">
-                    <Plus className="w-3.5 h-3.5" /> Address
-                  </button>
+              <div className="space-y-3">
+                <div className="grid grid-cols-3 gap-3">
+                  <Input placeholder="Street" className="col-span-2" value={form.address} onChange={e => setForm({ ...form, address: e.target.value })} />
+                  <Input placeholder="Unit" value={form.unit || ""} onChange={e => setForm({ ...form, unit: e.target.value })} />
                 </div>
-                <div className="rounded-lg overflow-hidden bg-slate-100 flex items-center justify-center h-36 border border-slate-200">
-                  {form.address && form.city ? (
+                <div className="grid grid-cols-3 gap-3">
+                  <Input placeholder="City" value={form.city} onChange={e => setForm({ ...form, city: e.target.value })} />
+                  <Select value={form.state} onValueChange={v => setForm({ ...form, state: v })}>
+                    <SelectTrigger><SelectValue placeholder="State" /></SelectTrigger>
+                    <SelectContent>{US_STATES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+                  </Select>
+                  <Input placeholder="Zip" value={form.zip} onChange={e => setForm({ ...form, zip: e.target.value })} />
+                </div>
+                <Input placeholder="Address Notes" value={form.address_notes || ""} onChange={e => setForm({ ...form, address_notes: e.target.value })} />
+                {form.address && form.city && (
+                  <div className="rounded-lg overflow-hidden bg-slate-100 flex items-center justify-center h-36 border border-slate-200">
                     <iframe
                       title="map"
                       className="w-full h-full"
                       loading="lazy"
                       src={`https://maps.google.com/maps?q=${encodeURIComponent(`${form.address} ${form.city} ${form.state} ${form.zip}`)}&output=embed`}
                     />
-                  ) : (
-                    <div className="text-center text-slate-400 text-xs p-3">
-                      <MapPin className="w-6 h-6 mx-auto mb-1 text-slate-300" />
-                      Enter address to see map
-                    </div>
-                  )}
-                </div>
+                  </div>
+                )}
               </div>
             </div>
 
