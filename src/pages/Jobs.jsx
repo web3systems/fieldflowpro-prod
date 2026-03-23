@@ -398,17 +398,17 @@ export default function Jobs() {
 
       {/* Job Modal */}
       {sheetOpen && (
-        <div className="absolute inset-0 z-50 bg-white overflow-y-auto">
-          <div className="flex flex-col min-h-full">
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-start justify-center p-2 sm:p-4 overflow-y-auto">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl my-4">
             {/* Header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b bg-white sticky top-0 z-10">
-              <div className="flex items-center gap-3">
-                <span className="text-lg font-semibold">{editing ? "Edit Job" : "New Job"}</span>
+            <div className="flex flex-wrap items-center justify-between px-4 sm:px-6 py-4 border-b gap-2">
+              <div className="flex flex-wrap items-center gap-2 flex-1 min-w-0">
+                <span className="text-lg font-semibold whitespace-nowrap">{editing ? "Edit Job" : "New Job"}</span>
                 <Input
                   value={form.title}
                   onChange={e => setForm({ ...form, title: e.target.value })}
                   placeholder="Job title..."
-                  className="w-64 h-8 text-sm"
+                  className="w-full sm:w-56 h-8 text-sm"
                 />
                 <Select value={form.status} onValueChange={v => setForm({ ...form, status: v })}>
                   <SelectTrigger className="w-32 h-8 text-xs"><SelectValue /></SelectTrigger>
@@ -417,7 +417,7 @@ export default function Jobs() {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-2 flex-shrink-0">
                 <Button variant="outline" size="sm" onClick={() => setSheetOpen(false)} className="gap-1"><ArrowLeft className="w-4 h-4" /> Back</Button>
                 <Button size="sm" onClick={handleSave} disabled={saving || !form.title} className="bg-blue-600 hover:bg-blue-700">
                   {saving ? "Saving..." : editing ? "Save Changes" : "Create Job"}
@@ -425,10 +425,10 @@ export default function Jobs() {
               </div>
             </div>
 
-            {/* Body: two-column */}
-            <div className="flex flex-1 overflow-hidden">
+            {/* Body: responsive columns */}
+            <div className="flex flex-col md:flex-row">
               {/* Left column */}
-              <div className="w-64 flex-shrink-0 border-r bg-slate-50 overflow-y-auto p-4 space-y-4">
+              <div className="w-full md:w-64 flex-shrink-0 border-b md:border-b-0 md:border-r bg-slate-50 p-4 space-y-4">
 
                 {/* Customer */}
                 <div className="bg-white border rounded-lg p-3">
