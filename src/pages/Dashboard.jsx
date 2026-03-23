@@ -91,7 +91,8 @@ export default function Dashboard() {
       icon: Briefcase,
       color: "text-blue-600",
       bg: "bg-blue-50",
-      sub: `${todayJobs.length} today`
+      sub: `${todayJobs.length} today`,
+      link: createPageUrl("Jobs")
     },
     {
       label: "Total Customers",
@@ -99,7 +100,8 @@ export default function Dashboard() {
       icon: Users,
       color: "text-emerald-600",
       bg: "bg-emerald-50",
-      sub: "All time"
+      sub: "All time",
+      link: createPageUrl("Customers")
     },
     {
       label: "Revenue Collected",
@@ -107,7 +109,8 @@ export default function Dashboard() {
       icon: DollarSign,
       color: "text-violet-600",
       bg: "bg-violet-50",
-      sub: `$${pendingRevenue.toLocaleString()} pending`
+      sub: `$${pendingRevenue.toLocaleString()} pending`,
+      link: createPageUrl("Invoices")
     },
     {
       label: "New Leads",
@@ -115,7 +118,8 @@ export default function Dashboard() {
       icon: TrendingUp,
       color: "text-orange-600",
       bg: "bg-orange-50",
-      sub: `${leads.length} total`
+      sub: `${leads.length} total`,
+      link: createPageUrl("Leads")
     },
   ];
 
