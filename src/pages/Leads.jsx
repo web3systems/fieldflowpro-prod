@@ -196,81 +196,84 @@ export default function Leads() {
         </div>
       )}
 
-      <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-        <SheetContent className="w-full sm:max-w-lg overflow-y-auto">
-          <SheetHeader>
-            <SheetTitle>New Lead</SheetTitle>
-          </SheetHeader>
-          <div className="space-y-4 mt-4 pb-6">
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <Label>First Name *</Label>
-                <Input value={form.first_name} onChange={e => setForm({ ...form, first_name: e.target.value })} />
+      {sheetOpen && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+            <div className="px-6 py-4 border-b flex items-center justify-between">
+              <h2 className="text-lg font-semibold text-slate-800">New Lead</h2>
+              <button onClick={() => setSheetOpen(false)} className="text-slate-400 hover:text-slate-600 text-xl leading-none">×</button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label>First Name *</Label>
+                  <Input value={form.first_name} onChange={e => setForm({ ...form, first_name: e.target.value })} />
+                </div>
+                <div>
+                  <Label>Last Name *</Label>
+                  <Input value={form.last_name} onChange={e => setForm({ ...form, last_name: e.target.value })} />
+                </div>
               </div>
               <div>
-                <Label>Last Name *</Label>
-                <Input value={form.last_name} onChange={e => setForm({ ...form, last_name: e.target.value })} />
-              </div>
-            </div>
-            <div>
-              <Label>Email</Label>
-              <Input type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} />
-            </div>
-            <div>
-              <Label>Phone</Label>
-              <Input type="tel" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} />
-            </div>
-            <div>
-              <Label>Address</Label>
-              <Input value={form.address} onChange={e => setForm({ ...form, address: e.target.value })} />
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <Label>Source</Label>
-                <Select value={form.source} onValueChange={v => setForm({ ...form, source: v })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {SOURCES.map(s => <SelectItem key={s} value={s} className="capitalize">{s.replace("_", " ")}</SelectItem>)}
-                  </SelectContent>
-                </Select>
+                <Label>Email</Label>
+                <Input type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} />
               </div>
               <div>
-                <Label>Stage</Label>
-                <Select value={form.status} onValueChange={v => setForm({ ...form, status: v })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {STAGES.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <Label>Service Interest</Label>
-                <Input value={form.service_interest} onChange={e => setForm({ ...form, service_interest: e.target.value })} placeholder="e.g. Lawn Care" />
+                <Label>Phone</Label>
+                <Input type="tel" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} />
               </div>
               <div>
-                <Label>Est. Value ($)</Label>
-                <Input type="number" value={form.estimated_value} onChange={e => setForm({ ...form, estimated_value: e.target.value })} placeholder="0" />
+                <Label>Address</Label>
+                <Input value={form.address} onChange={e => setForm({ ...form, address: e.target.value })} />
               </div>
-            </div>
-            <div>
-              <Label>Follow Up Date</Label>
-              <Input type="date" value={form.follow_up_date} onChange={e => setForm({ ...form, follow_up_date: e.target.value })} />
-            </div>
-            <div>
-              <Label>Notes</Label>
-              <Textarea value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} rows={3} />
-            </div>
-            <div className="flex gap-3 pt-2">
-              <Button variant="outline" onClick={() => setSheetOpen(false)} className="flex-1">Cancel</Button>
-              <Button onClick={handleSave} disabled={saving || !form.first_name} className="flex-1 bg-blue-600 hover:bg-blue-700">
-                {saving ? "Creating..." : "Add Lead"}
-              </Button>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label>Source</Label>
+                  <Select value={form.source} onValueChange={v => setForm({ ...form, source: v })}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {SOURCES.map(s => <SelectItem key={s} value={s} className="capitalize">{s.replace("_", " ")}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Stage</Label>
+                  <Select value={form.status} onValueChange={v => setForm({ ...form, status: v })}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {STAGES.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label>Service Interest</Label>
+                  <Input value={form.service_interest} onChange={e => setForm({ ...form, service_interest: e.target.value })} placeholder="e.g. Lawn Care" />
+                </div>
+                <div>
+                  <Label>Est. Value ($)</Label>
+                  <Input type="number" value={form.estimated_value} onChange={e => setForm({ ...form, estimated_value: e.target.value })} placeholder="0" />
+                </div>
+              </div>
+              <div>
+                <Label>Follow Up Date</Label>
+                <Input type="date" value={form.follow_up_date} onChange={e => setForm({ ...form, follow_up_date: e.target.value })} />
+              </div>
+              <div>
+                <Label>Notes</Label>
+                <Textarea value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} rows={3} />
+              </div>
+              <div className="flex gap-3 pt-2">
+                <Button variant="outline" onClick={() => setSheetOpen(false)} className="flex-1">Cancel</Button>
+                <Button onClick={handleSave} disabled={saving || !form.first_name} className="flex-1 bg-blue-600 hover:bg-blue-700">
+                  {saving ? "Creating..." : "Add Lead"}
+                </Button>
+              </div>
             </div>
           </div>
-        </SheetContent>
-      </Sheet>
+        </div>
+      )}
 
       <EmbedCodeModal open={embedOpen} onClose={() => setEmbedOpen(false)} company={activeCompany} />
 
