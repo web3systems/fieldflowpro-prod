@@ -69,15 +69,24 @@ Deno.serve(async (req) => {
     </div>`;
 
     // Send email via Resend
-    const result = await resend.emails.send({
-      from: `${company?.name || 'FieldFlow'} <noreply@resend.dev>`,
-      to: customer.email,
-      subject,
-      html,
+    const response = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${RESEND_API_KEY}`,
+      },
+      body: JSON.stringify({
+        from: `${company?.name || 'FieldFlow'} <onboarding@resend.dev>`,
+        to: customer.email,
+        subject,
+        html,
+      }),
     });
 
-    if (result.error) {
-      console.error('Resend error:', result.error);
+    const result = await response.json();
+
+    if (!response.ok) {
+      console.error('Resend error:', result);
       return Response.json({ error: 'Failed to send email' }, { status: 500 });
     }
 
