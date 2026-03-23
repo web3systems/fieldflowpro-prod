@@ -426,7 +426,35 @@ export default function EstimateDetail() {
             )}
           </div>
 
-          {/* Options tabs */}
+          {/* Preview / Options toggle */}
+          <div className="flex gap-2 mb-4">
+            <Button 
+              variant={showPreview ? "outline" : "default"} 
+              onClick={() => setShowPreview(false)}
+              className="text-sm"
+            >
+              Edit
+            </Button>
+            <Button 
+              variant={showPreview ? "default" : "outline"} 
+              onClick={() => setShowPreview(true)}
+              className="text-sm"
+            >
+              Preview
+            </Button>
+          </div>
+
+          {showPreview ? (
+            <div className="overflow-x-auto bg-slate-100 p-4 rounded-xl">
+              <InvoiceEstimatePreview 
+                document={form}
+                customer={customers.find(c => c.id === form.customer_id)}
+                company={activeCompany}
+                type="estimate"
+                template={null}
+              />
+            </div>
+          ) : (
           <Card className="border-0 shadow-sm">
             <div className="border-b border-slate-200 flex items-center px-4 overflow-x-auto">
               {(form.options || []).map((option, idx) => (
