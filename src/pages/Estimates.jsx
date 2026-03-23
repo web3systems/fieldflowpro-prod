@@ -54,6 +54,9 @@ export default function Estimates() {
   const [saving, setSaving] = useState(false);
   const [approving, setApproving] = useState(false);
   const [duplicating, setDuplicating] = useState(false);
+  const [showNewCustomer, setShowNewCustomer] = useState(false);
+  const [newCustomer, setNewCustomer] = useState({ first_name: "", last_name: "", phone: "", email: "" });
+  const [savingCustomer, setSavingCustomer] = useState(false);
 
   useEffect(() => {
     if (activeCompany) loadData();
