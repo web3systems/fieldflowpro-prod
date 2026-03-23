@@ -14,7 +14,7 @@ Deno.serve(async (req) => {
     const docType = estimate_id ? 'estimate' : 'invoice';
 
     // Get customer contact info
-    const customers = await base44.entities.Customer.filter({ id: customer_id });
+    const customers = await base44.asServiceRole.entities.Customer.filter({ id: customer_id });
     if (!customers.length) {
       return Response.json({ error: 'Customer not found' }, { status: 404 });
     }
@@ -30,7 +30,7 @@ Deno.serve(async (req) => {
       const subject = `Your ${docType.charAt(0).toUpperCase() + docType.slice(1)} - Action Required`;
       const body = `Hi ${customer.first_name},\n\nPlease review the attached ${docType}.\n\nThank you!`;
 
-      await base44.integrations.Core.SendEmail({
+      await base44.asServiceRole.integrations.Core.SendEmail({
         to: customer.email,
         subject,
         body,
@@ -49,7 +49,7 @@ Deno.serve(async (req) => {
 
     return Response.json({ error: 'Invalid contact method' }, { status: 400 });
   } catch (error) {
-    console.error('Error sending:', error);
+    console.error('Error sending:', error.message);
     return Response.json({ error: error.message }, { status: 500 });
   }
 });
