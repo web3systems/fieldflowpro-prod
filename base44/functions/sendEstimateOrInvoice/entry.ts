@@ -1,5 +1,4 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
-import nodemailer from 'npm:nodemailer@6.9.13';
 
 Deno.serve(async (req) => {
   try {
