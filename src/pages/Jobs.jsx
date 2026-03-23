@@ -426,9 +426,9 @@ export default function Jobs() {
             </div>
 
             {/* Body: responsive columns */}
-            <div className="flex flex-col md:flex-row">
+            <div className="flex flex-col md:flex-row min-h-0">
               {/* Left column */}
-              <div className="w-full md:w-64 flex-shrink-0 border-b md:border-b-0 md:border-r bg-slate-50 p-4 space-y-4">
+              <div className="w-full md:w-64 flex-shrink-0 border-b md:border-b-0 md:border-r bg-slate-50 p-4 space-y-4 md:overflow-y-auto">
 
                 {/* Customer */}
                 <div className="bg-white border rounded-lg p-3">
@@ -535,7 +535,7 @@ export default function Jobs() {
               </div>
 
               {/* Right column */}
-              <div className="flex-1 p-4 sm:p-5 space-y-5 bg-slate-50">
+              <div className="flex-1 p-4 md:p-5 space-y-5 bg-slate-50 md:overflow-y-auto">
 
                 {/* Private Notes */}
                 <div className="bg-white border rounded-lg p-4">
