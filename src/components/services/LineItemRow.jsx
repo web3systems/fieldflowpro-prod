@@ -7,6 +7,7 @@ import AddServiceModal from "./AddServiceModal";
 
 export default function LineItemRow({ item, idx, companyId, onUpdate, onRemove, categoryFilter }) {
   const [services, setServices] = useState([]);
+  const [showAddModal, setShowAddModal] = useState(false);
 
   useEffect(() => {
     if (!companyId) return;
