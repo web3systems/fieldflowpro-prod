@@ -386,10 +386,10 @@ export default function Jobs() {
         </div>
       )}
 
-      {/* Job Sheet */}
-      <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-        <SheetContent className="w-full sm:max-w-5xl overflow-y-auto p-0">
-          <div className="flex flex-col h-full">
+      {/* Job Modal */}
+      {sheetOpen && (
+        <div className="fixed inset-0 z-50 bg-white overflow-y-auto">
+          <div className="flex flex-col min-h-full">
             {/* Header */}
             <div className="flex items-center justify-between px-6 py-4 border-b bg-white">
               <div className="flex items-center gap-3">

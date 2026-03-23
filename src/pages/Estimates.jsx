@@ -300,9 +300,9 @@ export default function Estimates() {
         </div>
       )}
 
-      <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-        <SheetContent className="w-full sm:max-w-5xl overflow-y-auto p-0">
-          <div className="flex h-full min-h-screen">
+      {sheetOpen && (
+        <div className="fixed inset-0 z-50 bg-white overflow-y-auto">
+          <div className="flex min-h-screen flex-col md:flex-row">
             {/* Left sidebar */}
             <div className="w-72 flex-shrink-0 bg-slate-50 border-r border-slate-200 flex flex-col overflow-y-auto">
 

@@ -315,12 +315,13 @@ export default function Invoices() {
         </div>
       )}
 
-      <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-        <SheetContent className="w-full sm:max-w-2xl overflow-y-auto">
-          <SheetHeader>
-            <SheetTitle>{editing ? `Invoice ${editing.invoice_number}` : "New Invoice"}</SheetTitle>
-          </SheetHeader>
-          <div className="space-y-4 mt-4 pb-6">
+      {sheetOpen && (
+        <div className="fixed inset-0 z-50 bg-white overflow-y-auto">
+          <div className="sticky top-0 bg-white border-b px-4 py-3 flex items-center justify-between z-10">
+            <h2 className="text-xl font-semibold">{editing ? `Invoice ${editing.invoice_number}` : "New Invoice"}</h2>
+            <button onClick={() => setSheetOpen(false)} className="p-2 rounded-full hover:bg-slate-100"><X className="w-5 h-5" /></button>
+          </div>
+          <div className="space-y-4 p-4 pb-10 max-w-2xl mx-auto">
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label>Customer</Label>

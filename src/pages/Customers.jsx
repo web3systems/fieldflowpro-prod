@@ -232,13 +232,14 @@ export default function Customers() {
         </div>
       )}
 
-      {/* Customer Sheet */}
-      <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-        <SheetContent className="w-full sm:max-w-3xl overflow-y-auto">
-          <SheetHeader className="pb-4 border-b">
-            <SheetTitle className="text-xl font-semibold">{editing ? `${editing.first_name} ${editing.last_name}` : "Add new customer"}</SheetTitle>
-          </SheetHeader>
-          <div className="space-y-6 mt-5 pb-6">
+      {/* Customer Modal */}
+      {sheetOpen && (
+        <div className="fixed inset-0 z-50 bg-white overflow-y-auto">
+          <div className="sticky top-0 bg-white border-b px-4 py-3 flex items-center justify-between z-10">
+            <h2 className="text-xl font-semibold">{editing ? `${editing.first_name} ${editing.last_name}` : "Add new customer"}</h2>
+            <button onClick={() => setSheetOpen(false)} className="p-2 rounded-full hover:bg-slate-100"><X className="w-5 h-5" /></button>
+          </div>
+          <div className="space-y-6 p-4 pb-10">
 
             {/* Quick actions for existing customers */}
             {editing && (
