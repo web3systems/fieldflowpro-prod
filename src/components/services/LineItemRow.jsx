@@ -13,8 +13,8 @@ export default function LineItemRow({ item, idx, companyId, onUpdate, onRemove, 
   useEffect(() => {
     if (!companyId) return;
     base44.entities.Service.filter({ company_id: companyId, is_active: true })
-      .then(setServices)
-      .catch(() => {});
+      .then(data => { setServices(data); setServicesLoaded(true); })
+      .catch(() => setServicesLoaded(true));
   }, [companyId]);
 
   function handleCreated(svc) {
