@@ -1,18 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
 import nodemailer from 'npm:nodemailer@6.9.13';
 
-const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
-
-const transporter = nodemailer.createTransport({
-  host: 'smtp.resend.com',
-  port: 465,
-  secure: true,
-  auth: {
-    user: 'resend',
-    pass: RESEND_API_KEY,
-  },
-});
-
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
