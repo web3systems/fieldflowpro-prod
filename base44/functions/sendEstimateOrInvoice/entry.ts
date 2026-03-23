@@ -1,4 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
+import { Resend } from 'npm:resend@3.0.0';
+
+const resend = new Resend(Deno.env.get('RESEND_API_KEY'));
 
 Deno.serve(async (req) => {
   try {
@@ -54,28 +57,33 @@ Deno.serve(async (req) => {
       company = companies[0];
     }
 
-    const subject = `Your ${docType.charAt(0).toUpperCase() + docType.slice(1)} - ${document.title || ''}`;
+    const subject = `Your ${docType.charAt(0).toUpperCase() + docType.slice(1)}`;
     const amount = document.total || 0;
-    const body = `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;">
+    const html = `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;">
       <h2 style="color:#1e293b;margin:0 0 8px;">New ${docType.charAt(0).toUpperCase() + docType.slice(1)}</h2>
       <p style="color:#475569;">Hi ${customer.first_name || 'there'},</p>
-      <p style="color:#475569;">Please find attached your ${docType}.</p>
+      <p style="color:#475569;">Please review the attached ${docType}.</p>
       <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:20px;margin:20px 0;">
         <div style="font-size:28px;font-weight:700;color:#1e293b;">$${amount.toFixed(2)}</div>
       </div>
-      <p style="color:#94a3b8;font-size:12px;margin-top:24px;">Questions? Contact ${company?.email || company?.phone || 'us'}.</p>
+      <p style="color:#94a3b8;font-size:12px;margin-top:24px;">Questions? Contact ${company?.email || company?.phone || 'support'}.</p>
     </div>`;
 
-    // Use the user's email to send (since SendEmail only works with app users)
-    // This is a workaround - in production, you'd use a proper email service
-    await base44.asServiceRole.integrations.Core.SendEmail({
-      to: user.email,
-      subject: `[Test] ${subject}`,
-      body: `Email to send to ${customer.email}:\n\n${body}`,
+    // Send email via Resend
+    const result = await resend.emails.send({
+      from: `${company?.name || 'FieldFlow'} <noreply@resend.dev>`,
+      to: customer.email,
+      subject,
+      html,
     });
 
-    console.log(`Prepared ${docType} email for ${customer.email}`);
-    return Response.json({ success: true, message: `${docType} prepared for sending` });
+    if (result.error) {
+      console.error('Resend error:', result.error);
+      return Response.json({ error: 'Failed to send email' }, { status: 500 });
+    }
+
+    console.log(`${docType} email sent to ${customer.email}`, result.id);
+    return Response.json({ success: true, message: `${docType} sent successfully` });
   } catch (error) {
     console.error('Error in sendEstimateOrInvoice:', error.message);
     return Response.json({ error: error.message || 'Failed to send' }, { status: 500 });
