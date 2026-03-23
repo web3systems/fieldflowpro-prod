@@ -5,7 +5,7 @@ import { createPageUrl } from "@/utils";
 import { useNavigate } from "react-router-dom";
 import {
   Plus, Search, Users, Phone, Mail, MapPin,
-  ChevronRight, Trash2, FileText, Briefcase, DollarSign, Download, ExternalLink
+  ChevronRight, Trash2, FileText, Briefcase, DollarSign, Download, ExternalLink, X
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,7 +14,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue
 } from "@/components/ui/select";
-import { X } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
