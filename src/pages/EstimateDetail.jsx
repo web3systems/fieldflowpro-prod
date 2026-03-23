@@ -61,9 +61,10 @@ export default function EstimateDetail() {
   const [activeOptionIdx, setActiveOptionIdx] = useState(0);
 
   const loadData = useCallback(async () => {
-    const [ests, c] = await Promise.all([
+    const [ests, c, svcs] = await Promise.all([
       base44.entities.Estimate.filter({ id }),
       activeCompany ? base44.entities.Customer.filter({ company_id: activeCompany.id }) : Promise.resolve([]),
+      activeCompany ? base44.entities.Service.filter({ company_id: activeCompany.id, is_active: true }) : Promise.resolve([]),
     ]);
     if (ests.length > 0) {
       const est = ests[0];
