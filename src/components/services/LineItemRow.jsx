@@ -27,16 +27,20 @@ export default function LineItemRow({ item, idx, companyId, services = [], onSer
       return;
     }
     if (value === "__custom__") {
+      console.log(`[LineItemRow ${idx}] Setting to custom`);
       onUpdate(idx, "service_id", null);
       onUpdate(idx, "description", "");
       return;
     }
     const svc = services.find(s => s.id === value);
+    console.log(`[LineItemRow ${idx}] Found service:`, svc);
     if (svc) {
-      console.log(`[LineItemRow ${idx}] Setting service to ${svc.id}`);
+      console.log(`[LineItemRow ${idx}] Calling onUpdate with service_id=${svc.id}, name=${svc.name}, price=${svc.unit_price}`);
       onUpdate(idx, "service_id", svc.id);
       onUpdate(idx, "description", svc.name);
       onUpdate(idx, "unit_price", svc.unit_price || 0);
+    } else {
+      console.log(`[LineItemRow ${idx}] WARNING: Service not found in list`);
     }
   }
 
