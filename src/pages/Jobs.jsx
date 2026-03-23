@@ -408,7 +408,7 @@ export default function Jobs() {
                 </Select>
               </div>
               <div className="flex gap-2">
-                <Button variant="outline" size="sm" onClick={() => setSheetOpen(false)}>Cancel</Button>
+                <Button variant="outline" size="sm" onClick={() => setSheetOpen(false)} className="gap-1"><ArrowLeft className="w-4 h-4" /> Back</Button>
                 <Button size="sm" onClick={handleSave} disabled={saving || !form.title} className="bg-blue-600 hover:bg-blue-700">
                   {saving ? "Saving..." : editing ? "Save Changes" : "Create Job"}
                 </Button>

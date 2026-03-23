@@ -5,7 +5,7 @@ import { useApp } from "../Layout";
 import {
   Plus, DollarSign, Search, ChevronRight, CheckCircle,
   Clock, AlertCircle, Trash2, CreditCard, ExternalLink,
-  Download, Mail, Send
+  Download, Mail, Send, X
 } from "lucide-react";
 import { downloadInvoicePdf } from "../components/documents/generatePdf";
 import { Button } from "@/components/ui/button";

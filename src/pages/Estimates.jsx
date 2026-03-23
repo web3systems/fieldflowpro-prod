@@ -7,7 +7,7 @@ import {
   Plus, FileText, Search, Trash2, ChevronRight,
   CheckCircle, XCircle, Briefcase, Download, Copy,
   Phone, Mail, MapPin, ExternalLink, X, Calendar, Users, 
-  ListChecks, Paperclip, UserCircle2
+  ListChecks, Paperclip, UserCircle2, ArrowLeft
 } from "lucide-react";
 import { downloadEstimatePdf } from "../components/documents/generatePdf";
 import { Button } from "@/components/ui/button";
