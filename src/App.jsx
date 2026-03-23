@@ -98,6 +98,7 @@ const AuthenticatedApp = () => {
       <Route path="/CampaignIdeaPreview" element={<CampaignIdeaPreview />} />
       <Route path="/Register" element={<Register />} />
       <Route path="/Landing" element={<Landing />} />
+      <Route path="/EmailTemplateEditor" element={<LayoutWrapper currentPageName="EmailTemplateEditor"><EmailTemplateEditor /></LayoutWrapper>} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
