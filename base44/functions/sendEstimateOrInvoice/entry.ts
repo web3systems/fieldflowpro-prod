@@ -60,6 +60,15 @@ Deno.serve(async (req) => {
     const taxAmount = document.tax_amount || 0;
     const discount = document.discount || 0;
     
+    // Get the app domain from request
+    const appDomain = req.headers.get('host') || 'fieldflowpro.com';
+    const protocol = req.url.startsWith('https') ? 'https' : 'https';
+    const baseUrl = `${protocol}://${appDomain}`;
+    
+    // Get company branding
+    const primaryColor = company?.primary_color || '#FFC107';
+    const logoUrl = company?.logo_url;
+    
     const lineItemsHtml = (document.line_items || document.options?.[0]?.line_items || []).map(item => `
       <tr>
         <td style="padding:12px;border-bottom:1px solid #e2e8f0;text-align:left;color:#1e293b;">${item.description || 'Item'}</td>
