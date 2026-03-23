@@ -46,10 +46,11 @@ export default function LineItemRow({ item, idx, companyId, onUpdate, onRemove, 
             <SelectValue placeholder="Select a service..." />
           </SelectTrigger>
           <SelectContent>
+            <SelectItem value="__add_new__" className="text-blue-600 font-medium">+ Add New</SelectItem>
             <SelectItem value="__custom__">-- Custom --</SelectItem>
             {laborServices.length > 0 && (
               <SelectGroup>
-                {!categoryFilter && <SelectLabel>Labor</SelectLabel>}
+                <SelectLabel>Labor</SelectLabel>
                 {laborServices.map(svc => (
                   <SelectItem key={svc.id} value={svc.id}>{svc.name}</SelectItem>
                 ))}
