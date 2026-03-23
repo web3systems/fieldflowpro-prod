@@ -63,6 +63,7 @@ export default function EstimateDetail() {
   const [activeOptionIdx, setActiveOptionIdx] = useState(0);
   const [sendingEmail, setSendingEmail] = useState(false);
   const [sendingSms, setSendingSms] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
 
   const normalizeLineItems = (items) => {
     return (items || []).map(item => ({ ...defaultItem, ...item }));
