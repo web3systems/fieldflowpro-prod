@@ -207,19 +207,21 @@ export default function Dashboard() {
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {stats.map(({ label, value, icon: Icon, color, bg, sub }) => (
-          <Card key={label} className="border-0 shadow-sm">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between mb-3">
-                <div className={`w-9 h-9 rounded-xl ${bg} flex items-center justify-center`}>
-                  <Icon className={`w-5 h-5 ${color}`} />
+        {stats.map(({ label, value, icon: Icon, color, bg, sub, link }) => (
+          <Link key={label} to={link}>
+            <Card className="border-0 shadow-sm hover:shadow-md transition-shadow cursor-pointer">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <div className={`w-9 h-9 rounded-xl ${bg} flex items-center justify-center`}>
+                    <Icon className={`w-5 h-5 ${color}`} />
+                  </div>
                 </div>
-              </div>
-              <div className="text-2xl font-bold text-slate-900">{loading ? "—" : value}</div>
-              <div className="text-xs text-slate-500 mt-0.5">{label}</div>
-              <div className="text-xs text-slate-400 mt-1">{sub}</div>
-            </CardContent>
-          </Card>
+                <div className="text-2xl font-bold text-slate-900">{loading ? "—" : value}</div>
+                <div className="text-xs text-slate-500 mt-0.5">{label}</div>
+                <div className="text-xs text-slate-400 mt-1">{sub}</div>
+              </CardContent>
+            </Card>
+          </Link>
         ))}
       </div>
 
