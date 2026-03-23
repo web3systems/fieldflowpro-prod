@@ -68,6 +68,16 @@ Deno.serve(async (req) => {
     </div>`;
 
     // Send email via Resend SMTP
+    const transporter = nodemailer.createTransport({
+      host: 'smtp.resend.com',
+      port: 465,
+      secure: true,
+      auth: {
+        user: 'resend',
+        pass: Deno.env.get('RESEND_API_KEY'),
+      },
+    });
+
     const info = await transporter.sendMail({
       from: `${company?.name || 'FieldFlow'} <noreply@honeydocrew.co>`,
       to: customer.email,
