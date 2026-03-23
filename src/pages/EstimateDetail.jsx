@@ -224,6 +224,7 @@ export default function EstimateDetail() {
       await base44.functions.invoke("sendEstimateOrInvoice", {
         estimate_id: id,
         customer_id: form.customer_id,
+        company_id: activeCompany?.id,
         contact_method: "email",
       });
     } finally {
@@ -237,6 +238,7 @@ export default function EstimateDetail() {
       await base44.functions.invoke("sendEstimateOrInvoice", {
         estimate_id: id,
         customer_id: form.customer_id,
+        company_id: activeCompany?.id,
         contact_method: "sms",
       });
     } finally {
