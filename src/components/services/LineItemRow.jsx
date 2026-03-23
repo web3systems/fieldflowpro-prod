@@ -33,14 +33,17 @@ export default function LineItemRow({ item, idx, companyId, services = [], onSer
     }
   }
 
-  // If item has a service_id but it's not in the services list, keep it as the selected value
-  // This prevents snap-back when services are loading or changing
-  const selectValue = item.service_id ? item.service_id : "__custom__";
+  // Memoized selectValue — use service_id if it exists, otherwise "__custom__"
+  // This preserves the selection even if services array changes
+  const selectValue = useMemo(() => {
+    return item.service_id ? item.service_id : "__custom__";
+  }, [item.service_id]);
+  
   const isCustom = selectValue === "__custom__";
 
-  const laborServices = services.filter(s => s.category === "Labor" || s.category === "labor");
-  const materialServices = services.filter(s => s.category === "Materials" || s.category === "materials");
-  const otherServices = services.filter(s => !["Labor", "labor", "Materials", "materials"].includes(s.category));
+  const laborServices = useMemo(() => services.filter(s => s.category === "Labor" || s.category === "labor"), [services]);
+  const materialServices = useMemo(() => services.filter(s => s.category === "Materials" || s.category === "materials"), [services]);
+  const otherServices = useMemo(() => services.filter(s => !["Labor", "labor", "Materials", "materials"].includes(s.category)), [services]);
 
   return (
     <>
