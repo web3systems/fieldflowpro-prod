@@ -11,8 +11,7 @@ import { downloadInvoicePdf } from "../components/documents/generatePdf";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
-
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -20,7 +19,6 @@ import {
 } from "@/components/ui/select";
 import { format } from "date-fns";
 import ServicePicker from "@/components/services/ServicePicker";
-import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 
 const STATUS_STYLES = {
   draft: { label: "Draft", style: "bg-gray-100 text-gray-600", icon: Clock },
