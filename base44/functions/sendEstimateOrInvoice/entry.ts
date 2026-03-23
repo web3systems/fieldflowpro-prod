@@ -187,11 +187,10 @@ Deno.serve(async (req) => {
         <p><strong>📝 Notes:</strong> ${document.notes}</p>
       </div>` : ''}
       
-      ${docType === 'estimate' ? `<div class="action-buttons">
-        <p>Ready to move forward?</p>
-        <a href="https://honeydocrew.co/api/functions/approveEstimate?estimate_id=${document.id}&customer_id=${customer_id}" class="btn-approve">✓ Approve This Estimate</a>
-        <a href="https://honeydocrew.co/api/functions/rejectEstimate?estimate_id=${document.id}&customer_id=${customer_id}" class="btn-decline">✗ Not Interested</a>
-      </div>` : ''}
+      <div class="action-buttons">
+        <p>Next Steps</p>
+        <a href="${baseUrl}/CustomerPortal?estimate_id=${document.id}" class="btn-approve">📋 Review in Portal & Approve</a>
+      </div>
       
       <div class="divider"></div>
       
