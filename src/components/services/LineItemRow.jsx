@@ -55,7 +55,7 @@ export default function LineItemRow({ item, idx, companyId, services = [], onSer
       )}
       <div className="grid grid-cols-12 gap-2 items-start p-3 bg-slate-50 rounded-lg">
          <div className="col-span-5 space-y-1">
-           <Select value={selectValue || "__custom__"} onValueChange={handleServiceSelect}>
+           <Select value={selectValue} onValueChange={handleServiceSelect}>
              <SelectTrigger className="bg-white text-sm h-9">
                <SelectValue placeholder="Select a service..." />
              </SelectTrigger>
