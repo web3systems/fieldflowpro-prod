@@ -146,6 +146,10 @@ export default function Estimates() {
     navigate(`/EstimateDetail/${est.id}`);
   }
 
+  function normalizeLineItems(items) {
+    return (items || []).map(item => ({ ...defaultItem, ...item }));
+  }
+
   async function handleSave() {
     setSaving(true);
     const data = { ...form, company_id: activeCompany.id };
