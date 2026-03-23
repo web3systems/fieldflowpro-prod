@@ -318,7 +318,7 @@ export default function Estimates() {
                     </button>
                   )}
                 </div>
-                <Select value={form.customer_id} onValueChange={v => setForm({ ...form, customer_id: v })}>
+                <Select value={form.customer_id} onValueChange={v => { setForm({ ...form, customer_id: v }); setShowNewCustomer(false); }}>
                   <SelectTrigger className="bg-white text-sm"><SelectValue placeholder="Select customer..." /></SelectTrigger>
                   <SelectContent>
                     {customers.map(c => (
@@ -326,6 +326,28 @@ export default function Estimates() {
                     ))}
                   </SelectContent>
                 </Select>
+                {!showNewCustomer && (
+                  <button onClick={() => setShowNewCustomer(true)} className="mt-2 text-xs text-blue-600 hover:text-blue-700 font-medium flex items-center gap-0.5">
+                    <Plus className="w-3 h-3" /> New customer
+                  </button>
+                )}
+                {showNewCustomer && (
+                  <div className="mt-2 p-3 bg-white border border-slate-200 rounded-lg space-y-2">
+                    <p className="text-xs font-semibold text-slate-600">New Customer</p>
+                    <div className="flex gap-1.5">
+                      <Input value={newCustomer.first_name} onChange={e => setNewCustomer(n => ({ ...n, first_name: e.target.value }))} placeholder="First name" className="text-xs h-8" />
+                      <Input value={newCustomer.last_name} onChange={e => setNewCustomer(n => ({ ...n, last_name: e.target.value }))} placeholder="Last name" className="text-xs h-8" />
+                    </div>
+                    <Input value={newCustomer.phone} onChange={e => setNewCustomer(n => ({ ...n, phone: e.target.value }))} placeholder="Phone (optional)" className="text-xs h-8" />
+                    <Input value={newCustomer.email} onChange={e => setNewCustomer(n => ({ ...n, email: e.target.value }))} placeholder="Email (optional)" className="text-xs h-8" />
+                    <div className="flex gap-1.5 pt-1">
+                      <Button size="sm" variant="outline" onClick={() => setShowNewCustomer(false)} className="flex-1 text-xs h-7">Cancel</Button>
+                      <Button size="sm" onClick={handleCreateNewCustomer} disabled={savingCustomer || !newCustomer.first_name || !newCustomer.last_name} className="flex-1 text-xs h-7 bg-blue-600 hover:bg-blue-700">
+                        {savingCustomer ? "Saving..." : "Add"}
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Customer card — shown when customer is selected */}
