@@ -439,6 +439,106 @@ export default function Estimates() {
                 </div>
               </div>
 
+              {/* Schedule */}
+              <div className="p-4 border-b border-slate-200">
+                <div className="flex items-center gap-2 mb-3">
+                  <Calendar className="w-4 h-4 text-slate-400" />
+                  <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Schedule</span>
+                </div>
+                <div className="space-y-2">
+                  <div>
+                    <Label className="text-xs text-slate-400 mb-1 block">From</Label>
+                    <Input type="datetime-local" value={form.scheduled_start || ""} onChange={e => setForm({ ...form, scheduled_start: e.target.value })} className="bg-white text-xs h-8" />
+                  </div>
+                  <div>
+                    <Label className="text-xs text-slate-400 mb-1 block">To</Label>
+                    <Input type="datetime-local" value={form.scheduled_end || ""} onChange={e => setForm({ ...form, scheduled_end: e.target.value })} className="bg-white text-xs h-8" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Team */}
+              <div className="p-4 border-b border-slate-200">
+                <div className="flex items-center gap-2 mb-3">
+                  <Users className="w-4 h-4 text-slate-400" />
+                  <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Team</span>
+                </div>
+                <Select onValueChange={techId => {
+                  if (!form.assigned_techs?.includes(techId)) {
+                    setForm(f => ({ ...f, assigned_techs: [...(f.assigned_techs || []), techId] }));
+                  }
+                }}>
+                  <SelectTrigger className="bg-white text-xs h-8"><SelectValue placeholder="Assign technician..." /></SelectTrigger>
+                  <SelectContent>
+                    {technicians.filter(t => !form.assigned_techs?.includes(t.id)).map(t => (
+                      <SelectItem key={t.id} value={t.id}>{t.first_name} {t.last_name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <div className="flex flex-wrap gap-1.5 mt-2">
+                  {(form.assigned_techs || []).length === 0 && (
+                    <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-slate-100 text-slate-500 text-xs">
+                      <UserCircle2 className="w-3 h-3" /> Unassigned
+                    </span>
+                  )}
+                  {(form.assigned_techs || []).map(techId => {
+                    const t = technicians.find(t => t.id === techId);
+                    if (!t) return null;
+                    return (
+                      <span key={techId} className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-blue-100 text-blue-700 text-xs">
+                        {t.first_name} {t.last_name}
+                        <button onClick={() => setForm(f => ({ ...f, assigned_techs: f.assigned_techs.filter(id => id !== techId) }))} className="hover:text-blue-900 ml-0.5">
+                          <X className="w-2.5 h-2.5" />
+                        </button>
+                      </span>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Checklists */}
+              <div className="p-4 border-b border-slate-200">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <ListChecks className="w-4 h-4 text-slate-400" />
+                    <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Checklist</span>
+                  </div>
+                  <button
+                    onClick={() => setForm(f => ({ ...f, checklist: [...(f.checklist || []), { item: "", completed: false }] }))}
+                    className="text-blue-600 hover:text-blue-700"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </button>
+                </div>
+                {(form.checklist || []).length === 0 && (
+                  <p className="text-xs text-slate-400">No checklist items</p>
+                )}
+                <div className="space-y-1.5">
+                  {(form.checklist || []).map((item, idx) => (
+                    <div key={idx} className="flex items-center gap-2">
+                      <input type="checkbox" checked={item.completed} onChange={e => {
+                        const updated = [...form.checklist];
+                        updated[idx] = { ...updated[idx], completed: e.target.checked };
+                        setForm(f => ({ ...f, checklist: updated }));
+                      }} className="rounded" />
+                      <Input
+                        value={item.item}
+                        onChange={e => {
+                          const updated = [...form.checklist];
+                          updated[idx] = { ...updated[idx], item: e.target.value };
+                          setForm(f => ({ ...f, checklist: updated }));
+                        }}
+                        placeholder="Checklist item..."
+                        className="text-xs h-7 flex-1 bg-white"
+                      />
+                      <button onClick={() => setForm(f => ({ ...f, checklist: f.checklist.filter((_, i) => i !== idx) }))} className="text-slate-400 hover:text-red-500">
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
               {/* Actions */}
               <div className="p-4 space-y-2 mt-auto">
                 {editing && !["approved", "declined"].includes(form.status) && (
