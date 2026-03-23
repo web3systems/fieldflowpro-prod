@@ -302,9 +302,9 @@ export default function Estimates() {
 
       {sheetOpen && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-start justify-center p-2 sm:p-4 overflow-y-auto">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl my-4 flex flex-col md:flex-row min-h-0">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl my-4 flex flex-col md:flex-row">
             {/* Left sidebar */}
-            <div className="w-full md:w-72 flex-shrink-0 bg-slate-50 border-b md:border-b-0 md:border-r border-slate-200 flex flex-col rounded-t-2xl md:rounded-l-2xl md:rounded-tr-none overflow-y-auto md:max-h-[90vh]">
+            <div className="w-full md:w-72 flex-shrink-0 bg-slate-50 border-b md:border-b-0 md:border-r border-slate-200 flex flex-col rounded-t-2xl md:rounded-l-2xl md:rounded-tr-none">
 
               {/* Header */}
               <div className="p-4 border-b border-slate-200 flex items-center justify-between sticky top-0 bg-slate-50 z-10 rounded-t-2xl md:rounded-tl-2xl md:rounded-tr-none">
