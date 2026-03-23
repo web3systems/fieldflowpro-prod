@@ -51,6 +51,7 @@ export default function InvoiceDetail() {
   const [form, setForm] = useState(defaultForm);
   const [editingInfo, setEditingInfo] = useState(false);
   const [sendingSms, setSendingSms] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
 
   const loadData = useCallback(async () => {
     const [invs, c] = await Promise.all([
