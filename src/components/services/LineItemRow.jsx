@@ -3,6 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectGroup, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Trash2 } from "lucide-react";
+import AddServiceModal from "./AddServiceModal";
 
 export default function LineItemRow({ item, idx, companyId, onUpdate, onRemove, categoryFilter }) {
   const [services, setServices] = useState([]);
