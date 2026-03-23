@@ -681,8 +681,8 @@ export default function Estimates() {
               </div>
             </div>
           </div>
-        </SheetContent>
-      </Sheet>
+        </div>
+      )}
     </div>
   );
 }

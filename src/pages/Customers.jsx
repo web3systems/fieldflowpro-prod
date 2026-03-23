@@ -392,8 +392,8 @@ export default function Customers() {
             </div>
 
           </div>
-        </SheetContent>
-      </Sheet>
+        </div>
+      )}
 
       <AlertDialog open={!!deleteTarget} onOpenChange={() => setDeleteTarget(null)}>
         <AlertDialogContent>

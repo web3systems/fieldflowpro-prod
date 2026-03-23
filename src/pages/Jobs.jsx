@@ -391,9 +391,9 @@ export default function Jobs() {
         <div className="fixed inset-0 z-50 bg-white overflow-y-auto">
           <div className="flex flex-col min-h-full">
             {/* Header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b bg-white">
+            <div className="flex items-center justify-between px-6 py-4 border-b bg-white sticky top-0 z-10">
               <div className="flex items-center gap-3">
-                <SheetTitle className="text-lg font-semibold">{editing ? "Edit Job" : "New Job"}</SheetTitle>
+                <span className="text-lg font-semibold">{editing ? "Edit Job" : "New Job"}</span>
                 <Input
                   value={form.title}
                   onChange={e => setForm({ ...form, title: e.target.value })}

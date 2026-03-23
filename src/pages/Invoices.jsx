@@ -460,8 +460,8 @@ export default function Invoices() {
               </Button>
             </div>
           </div>
-        </SheetContent>
-      </Sheet>
+        </div>
+      )}
     </div>
   );
 }
