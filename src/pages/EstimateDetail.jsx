@@ -87,6 +87,7 @@ export default function EstimateDetail() {
       setForm({ ...est });
     }
     setCustomers(c);
+    setServices(svcs);
     setLoading(false);
   }, [id, activeCompany]);
 
