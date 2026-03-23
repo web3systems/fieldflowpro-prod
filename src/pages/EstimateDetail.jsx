@@ -1,11 +1,11 @@
 import { useState, useEffect, useCallback } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { useApp } from "../Layout";
 import { createPageUrl } from "@/utils";
 import {
   ArrowLeft, Download, Copy, CheckCircle, XCircle, Briefcase,
-  Trash2, Plus, Save, User, Calendar, DollarSign, FileText, Edit2
+  Plus, Save, User, Calendar, DollarSign, FileText, Edit2, X, Trash2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -15,8 +15,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { format } from "date-fns";
-import ServicePicker from "@/components/services/ServicePicker";
 import LineItemRow from "@/components/services/LineItemRow";
+import ServicePicker from "@/components/services/ServicePicker";
 import { downloadEstimatePdf } from "../components/documents/generatePdf";
 
 const STATUS_STYLES = {
@@ -29,6 +29,20 @@ const STATUS_STYLES = {
 };
 
 const defaultItem = { description: "", quantity: 1, unit_price: 0, total: 0 };
+
+function makeOption(index) {
+  return {
+    id: `opt_${Date.now()}_${index}`,
+    name: `Option #${index}`,
+    line_items: [{ ...defaultItem }],
+    subtotal: 0,
+    tax_rate: 0,
+    tax_amount: 0,
+    discount: 0,
+    total: 0,
+    notes: "",
+  };
+}
 
 export default function EstimateDetail() {
   const { id } = useParams();
@@ -43,6 +57,7 @@ export default function EstimateDetail() {
   const [duplicating, setDuplicating] = useState(false);
   const [form, setForm] = useState(null);
   const [editingInfo, setEditingInfo] = useState(false);
+  const [activeOptionIdx, setActiveOptionIdx] = useState(0);
 
   const loadData = useCallback(async () => {
     const [ests, c] = await Promise.all([
@@ -50,8 +65,24 @@ export default function EstimateDetail() {
       activeCompany ? base44.entities.Customer.filter({ company_id: activeCompany.id }) : Promise.resolve([]),
     ]);
     if (ests.length > 0) {
-      setEstimate(ests[0]);
-      setForm({ ...ests[0] });
+      const est = ests[0];
+      // Migrate old estimates without options
+      if (!est.options || est.options.length === 0) {
+        const migratedOption = {
+          id: `opt_${Date.now()}_1`,
+          name: "Option #1",
+          line_items: est.line_items || [{ ...defaultItem }],
+          subtotal: est.subtotal || 0,
+          tax_rate: est.tax_rate || 0,
+          tax_amount: est.tax_amount || 0,
+          discount: est.discount || 0,
+          total: est.total || 0,
+          notes: est.notes || "",
+        };
+        est.options = [migratedOption];
+      }
+      setEstimate(est);
+      setForm({ ...est });
     }
     setCustomers(c);
     setLoading(false);
@@ -59,39 +90,83 @@ export default function EstimateDetail() {
 
   useEffect(() => { loadData(); }, [loadData]);
 
+  // --- Option helpers ---
+  function getOption() {
+    return form?.options?.[activeOptionIdx] || null;
+  }
+
+  function updateOption(updatedOption) {
+    const options = [...form.options];
+    options[activeOptionIdx] = updatedOption;
+    // The top-level total reflects the first/active option for backward compat
+    const first = options[0];
+    setForm(f => ({
+      ...f,
+      options,
+      subtotal: first.subtotal,
+      tax_rate: first.tax_rate,
+      tax_amount: first.tax_amount,
+      discount: first.discount,
+      total: first.total,
+      notes: first.notes,
+      line_items: first.line_items,
+    }));
+  }
+
+  function recalcOption(items, opt) {
+    const subtotal = items.reduce((s, i) => s + (i.total || 0), 0);
+    const tax_amount = subtotal * ((opt.tax_rate || 0) / 100);
+    const total = subtotal + tax_amount - (opt.discount || 0);
+    updateOption({ ...opt, line_items: items, subtotal, tax_amount, total });
+  }
+
   function updateItem(index, field, value) {
-    const items = [...form.line_items];
+    const opt = getOption();
+    const items = [...opt.line_items];
     items[index] = { ...items[index], [field]: value };
     if (field === "quantity" || field === "unit_price") {
       items[index].total = (items[index].quantity || 0) * (items[index].unit_price || 0);
     }
-    recalc(items);
-  }
-
-  function recalc(items) {
-    const subtotal = items.reduce((s, i) => s + (i.total || 0), 0);
-    const tax_amount = subtotal * ((form.tax_rate || 0) / 100);
-    const total = subtotal + tax_amount - (form.discount || 0);
-    setForm(f => ({ ...f, line_items: items, subtotal, tax_amount, total }));
+    recalcOption(items, opt);
   }
 
   function addItem() {
-    setForm(f => ({ ...f, line_items: [...f.line_items, { ...defaultItem }] }));
+    const opt = getOption();
+    const items = [...opt.line_items, { ...defaultItem }];
+    updateOption({ ...opt, line_items: items });
   }
 
   function addServiceAsItem(service) {
-    const items = [...form.line_items];
+    const opt = getOption();
+    const items = [...opt.line_items];
     const last = items[items.length - 1];
     if (last && !last.description && !last.unit_price) items[items.length - 1] = service;
     else items.push(service);
-    recalc(items);
+    recalcOption(items, opt);
   }
 
   function removeItem(index) {
-    const items = form.line_items.filter((_, i) => i !== index);
-    recalc(items);
+    const opt = getOption();
+    const items = opt.line_items.filter((_, i) => i !== index);
+    recalcOption(items, opt);
   }
 
+  function addOption() {
+    const newIdx = form.options.length + 1;
+    const newOpt = makeOption(newIdx);
+    const options = [...form.options, newOpt];
+    setForm(f => ({ ...f, options }));
+    setActiveOptionIdx(options.length - 1);
+  }
+
+  function removeOption(idx) {
+    if (form.options.length <= 1) return;
+    const options = form.options.filter((_, i) => i !== idx);
+    setForm(f => ({ ...f, options }));
+    setActiveOptionIdx(Math.max(0, activeOptionIdx >= options.length ? options.length - 1 : activeOptionIdx));
+  }
+
+  // --- Save / actions ---
   async function handleSave() {
     setSaving(true);
     await base44.entities.Estimate.update(id, form);
@@ -102,15 +177,16 @@ export default function EstimateDetail() {
 
   async function handleApprove() {
     setApproving(true);
-    await base44.entities.Estimate.update(id, { status: "approved" });
+    const opt = getOption();
+    await base44.entities.Estimate.update(id, { ...form, status: "approved" });
     await base44.entities.Job.create({
       company_id: activeCompany.id,
       customer_id: form.customer_id,
       estimate_id: id,
       title: form.title,
-      description: form.notes || "",
+      description: opt?.notes || "",
       status: "new",
-      total_amount: form.total,
+      total_amount: opt?.total || form.total,
       service_type: "",
     });
     setApproving(false);
@@ -154,6 +230,7 @@ export default function EstimateDetail() {
   );
 
   const canAct = !["approved", "declined"].includes(form.status);
+  const opt = getOption();
 
   return (
     <div className="p-4 md:p-6 pb-24 lg:pb-6 max-w-7xl mx-auto">
@@ -238,7 +315,7 @@ export default function EstimateDetail() {
                   )}
                   <div className="flex items-center gap-2 text-sm">
                     <DollarSign className="w-3.5 h-3.5 text-slate-400" />
-                    <span className="text-slate-900 font-semibold">${(form.total || 0).toLocaleString()}</span>
+                    <span className="text-slate-900 font-semibold">${(opt?.total || form.total || 0).toLocaleString()}</span>
                   </div>
                 </>
               )}
@@ -270,21 +347,18 @@ export default function EstimateDetail() {
                   <XCircle className="w-4 h-4" /> Estimate declined.
                 </div>
               )}
-              <Button variant="outline" onClick={handleDownloadPdf} className="w-full gap-2 lg:hidden">
-                <Download className="w-4 h-4" /> Download PDF
-              </Button>
             </CardContent>
           </Card>
         </div>
 
         {/* Main content */}
         <div className="flex-1 min-w-0 space-y-4">
-          {/* Mobile sidebar */}
-          <div className="lg:hidden space-y-4">
+          {/* Mobile summary */}
+          <div className="lg:hidden space-y-3">
             <Card className="border-0 shadow-sm">
               <CardContent className="p-4 flex flex-wrap gap-4">
                 <div className="flex items-center gap-2 text-sm"><User className="w-3.5 h-3.5 text-slate-400" /><span>{getCustomerName(form.customer_id)}</span></div>
-                <div className="flex items-center gap-2 text-sm"><DollarSign className="w-3.5 h-3.5 text-slate-400" /><span className="font-semibold">${(form.total || 0).toLocaleString()}</span></div>
+                <div className="flex items-center gap-2 text-sm"><DollarSign className="w-3.5 h-3.5 text-slate-400" /><span className="font-semibold">${(opt?.total || 0).toLocaleString()}</span></div>
               </CardContent>
             </Card>
             {canAct && (
@@ -295,68 +369,107 @@ export default function EstimateDetail() {
             )}
           </div>
 
-          {/* Line Items */}
+          {/* Options tabs */}
           <Card className="border-0 shadow-sm">
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-base">Line Items</CardTitle>
-                <div className="flex items-center gap-2">
-                  <ServicePicker companyId={activeCompany?.id} onSelect={addServiceAsItem} />
-                  <Button variant="outline" size="sm" onClick={addItem} className="gap-1"><Plus className="w-3 h-3" /> Add Line</Button>
+            <div className="border-b border-slate-200 flex items-center px-4 overflow-x-auto">
+              {(form.options || []).map((option, idx) => (
+                <div key={option.id} className="flex items-center group flex-shrink-0">
+                  <button
+                    onClick={() => setActiveOptionIdx(idx)}
+                    className={`py-3 px-4 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
+                      activeOptionIdx === idx
+                        ? "border-blue-600 text-blue-600"
+                        : "border-transparent text-slate-500 hover:text-slate-800"
+                    }`}
+                  >
+                    {option.name}
+                  </button>
+                  {(form.options || []).length > 1 && (
+                    <button
+                      onClick={() => removeOption(idx)}
+                      className="opacity-0 group-hover:opacity-100 ml-1 p-0.5 rounded text-slate-400 hover:text-red-500 transition-opacity"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  )}
                 </div>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-2">
-                 {/* Header row */}
-              {form.line_items?.length > 0 && (
-                <div className="grid grid-cols-12 gap-2 px-3 text-xs font-medium text-slate-400 uppercase tracking-wide">
-                  <div className="col-span-5">Service / Description</div>
-                  <div className="col-span-2 text-center">Qty</div>
-                  <div className="col-span-2">Price</div>
-                  <div className="col-span-2 text-right">Total</div>
-                  <div className="col-span-1" />
-                </div>
-              )}
-              {form.line_items?.map((item, idx) => (
-                <LineItemRow
-                  key={idx}
-                  item={item}
-                  idx={idx}
-                  companyId={activeCompany?.id}
-                  onUpdate={updateItem}
-                  onRemove={removeItem}
-                />
               ))}
+              <button
+                onClick={addOption}
+                className="py-3 px-4 text-sm font-medium text-blue-600 hover:text-blue-700 border-b-2 border-transparent flex items-center gap-1 flex-shrink-0 whitespace-nowrap"
+              >
+                <Plus className="w-3.5 h-3.5" /> Add option
+              </button>
+            </div>
 
-              <div className="mt-3 p-3 bg-slate-50 rounded-lg space-y-1.5">
-                <div className="flex justify-between text-sm">
-                  <span className="text-slate-600">Subtotal</span>
-                  <span className="font-medium">${(form.subtotal || 0).toFixed(2)}</span>
+            {/* Active option content */}
+            {opt && (
+              <CardContent className="pt-4 space-y-3">
+                {/* Line items header */}
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-semibold text-slate-700">Line Items</h3>
+                  <div className="flex items-center gap-2">
+                    <ServicePicker companyId={activeCompany?.id} onSelect={addServiceAsItem} />
+                    <Button variant="outline" size="sm" onClick={addItem} className="gap-1 text-xs"><Plus className="w-3 h-3" /> Add Line</Button>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-slate-600">Tax Rate (%)</span>
-                  <Input type="number" value={form.tax_rate} onChange={e => {
-                    const tax_rate = parseFloat(e.target.value) || 0;
-                    const tax_amount = form.subtotal * (tax_rate / 100);
-                    const total = form.subtotal + tax_amount - (form.discount || 0);
-                    setForm(f => ({ ...f, tax_rate, tax_amount, total }));
-                  }} className="w-20 h-7 text-sm bg-white" />
-                  <span className="text-sm text-slate-500 ml-auto">${(form.tax_amount || 0).toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between text-base font-bold pt-1 border-t border-slate-200">
-                  <span>Total</span>
-                  <span>${(form.total || 0).toFixed(2)}</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
 
-          {/* Notes */}
-          <Card className="border-0 shadow-sm">
-            <CardHeader className="pb-3"><CardTitle className="text-base">Notes</CardTitle></CardHeader>
-            <CardContent>
-              <Textarea value={form.notes || ""} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} rows={3} placeholder="Notes visible to customer..." />
-            </CardContent>
+                {opt.line_items?.length > 0 && (
+                  <div className="grid grid-cols-12 gap-2 px-3 text-xs font-medium text-slate-400 uppercase tracking-wide">
+                    <div className="col-span-5">Service / Description</div>
+                    <div className="col-span-2 text-center">Qty</div>
+                    <div className="col-span-2">Price</div>
+                    <div className="col-span-2 text-right">Total</div>
+                    <div className="col-span-1" />
+                  </div>
+                )}
+
+                {opt.line_items?.map((item, idx) => (
+                  <LineItemRow
+                    key={idx}
+                    item={item}
+                    idx={idx}
+                    companyId={activeCompany?.id}
+                    onUpdate={updateItem}
+                    onRemove={removeItem}
+                  />
+                ))}
+
+                {/* Totals */}
+                <div className="mt-3 p-3 bg-slate-50 rounded-lg space-y-1.5">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-slate-600">Subtotal</span>
+                    <span className="font-medium">${(opt.subtotal || 0).toFixed(2)}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-slate-600">Tax Rate (%)</span>
+                    <Input type="number" value={opt.tax_rate || 0} onChange={e => {
+                      const tax_rate = parseFloat(e.target.value) || 0;
+                      const tax_amount = (opt.subtotal || 0) * (tax_rate / 100);
+                      const total = (opt.subtotal || 0) + tax_amount - (opt.discount || 0);
+                      updateOption({ ...opt, tax_rate, tax_amount, total });
+                    }} className="w-20 h-7 text-sm bg-white" />
+                    <span className="text-sm text-slate-500 ml-auto">${(opt.tax_amount || 0).toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between text-base font-bold pt-1 border-t border-slate-200">
+                    <span>Total</span>
+                    <span>${(opt.total || 0).toFixed(2)}</span>
+                  </div>
+                </div>
+
+                {/* Option notes */}
+                <div>
+                  <Label className="text-xs text-slate-500 mb-1 block">Notes for this option</Label>
+                  <Textarea
+                    value={opt.notes || ""}
+                    onChange={e => updateOption({ ...opt, notes: e.target.value })}
+                    rows={2}
+                    placeholder="Notes visible to customer for this option..."
+                    className="text-sm"
+                  />
+                </div>
+              </CardContent>
+            )}
           </Card>
 
           <div className="flex justify-end gap-2">
