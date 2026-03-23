@@ -138,11 +138,11 @@ Deno.serve(async (req) => {
 <body>
   <div class="container">
     <div class="header">
-      <div class="header-inner">
-        ${logoUrl ? `<div class="logo"><img src="${logoUrl}" alt="${company?.name}"></div>` : ''}
-        <div class="header-title">${docType.charAt(0).toUpperCase() + docType.slice(1)}</div>
-        <div class="header-subtitle">${docType === 'estimate' ? 'We\'ve prepared an estimate for your project' : 'Payment due on ' + (document.due_date ? new Date(document.due_date).toLocaleDateString() : 'receipt')}</div>
-      </div>
+    <div class="header-inner">
+      ${showLogo && logoUrl ? `<div class="logo"><img src="${logoUrl}" alt="${template?.company_name || company?.name}"></div>` : ''}
+      <div class="header-title">${docType.charAt(0).toUpperCase() + docType.slice(1)}</div>
+      <div class="header-subtitle">${docType === 'estimate' ? 'We\'ve prepared an estimate for your project' : 'Payment due on ' + (document.due_date ? new Date(document.due_date).toLocaleDateString() : 'receipt')}</div>
+    </div>
     </div>
     
     <div class="content">
