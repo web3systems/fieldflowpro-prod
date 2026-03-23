@@ -535,7 +535,7 @@ export default function Jobs() {
               </div>
 
               {/* Right column */}
-              <div className="flex-1 overflow-y-auto p-5 space-y-5 bg-slate-50">
+              <div className="flex-1 p-4 sm:p-5 space-y-5 bg-slate-50">
 
                 {/* Private Notes */}
                 <div className="bg-white border rounded-lg p-4">
