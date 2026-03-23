@@ -2,8 +2,6 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
 
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
 
-const resend = new Resend(Deno.env.get('RESEND_API_KEY'));
-
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
