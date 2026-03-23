@@ -81,7 +81,7 @@ Deno.serve(async (req) => {
 
     // Send email via Resend SMTP
     const info = await transporter.sendMail({
-      from: `${company?.name || 'FieldFlow'} <onboarding@resend.dev>`,
+      from: `${company?.name || 'FieldFlow'} <noreply@honeydocrew.co>`,
       to: customer.email,
       subject,
       html,
