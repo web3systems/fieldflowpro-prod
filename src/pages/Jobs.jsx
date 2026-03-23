@@ -6,7 +6,7 @@ import { createPageUrl } from "@/utils";
 import {
   Plus, Search, Filter, MapPin, User, ChevronRight,
   Briefcase, Calendar, X, FileText, DollarSign, CheckCircle, CreditCard,
-  Pencil, Tag, List, Paperclip, UserCircle, Clock, Trash2
+  Pencil, Tag, List, Paperclip, UserCircle, Clock, Trash2, ArrowLeft
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -650,8 +650,8 @@ export default function Jobs() {
               </div>
             </div>
           </div>
-        </SheetContent>
-      </Sheet>
+        </div>
+      )}
     </div>
   );
 }
