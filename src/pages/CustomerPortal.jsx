@@ -626,6 +626,25 @@ export default function CustomerPortal() {
           </div>
         )}
 
+        {activeTab === "messages" && (
+          <div className="space-y-3">
+            <h2 className="text-lg font-bold text-slate-900">Messages</h2>
+            <div className="bg-white rounded-2xl shadow-sm overflow-hidden" style={{ height: "60vh" }}>
+              {customer ? (
+                <ChatWindow
+                  companyId={customer.company_id}
+                  customerId={customer.id}
+                  senderType="customer"
+                  senderName={`${customer.first_name} ${customer.last_name}`}
+                  senderEmail={customer.email}
+                />
+              ) : (
+                <div className="p-8 text-center text-slate-400 text-sm">Loading...</div>
+              )}
+            </div>
+          </div>
+        )}
+
         {activeTab === "account" && (
           <div className="space-y-4">
             <h2 className="text-lg font-bold text-slate-900">My Account</h2>
