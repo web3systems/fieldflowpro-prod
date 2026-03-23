@@ -433,6 +433,8 @@ export default function EstimateDetail() {
                     item={item}
                     idx={idx}
                     companyId={activeCompany?.id}
+                    services={services}
+                    onServicesUpdate={svc => setServices(prev => [...prev, svc])}
                     onUpdate={updateItem}
                     onRemove={removeItem}
                   />
