@@ -240,7 +240,7 @@ export default function Jobs() {
   };
 
   return (
-    <div className="p-4 md:p-6 pb-24 lg:pb-6 space-y-5 max-w-7xl mx-auto">
+    <div className="relative min-h-full p-4 md:p-6 pb-24 lg:pb-6 space-y-5 max-w-7xl mx-auto">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Jobs</h1>
@@ -388,7 +388,7 @@ export default function Jobs() {
 
       {/* Job Modal */}
       {sheetOpen && (
-        <div className="fixed inset-0 z-50 bg-white overflow-y-auto">
+        <div className="absolute inset-0 z-50 bg-white overflow-y-auto">
           <div className="flex flex-col min-h-full">
             {/* Header */}
             <div className="flex items-center justify-between px-6 py-4 border-b bg-white sticky top-0 z-10">

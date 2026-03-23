@@ -237,7 +237,7 @@ export default function Estimates() {
   };
 
   return (
-    <div className="p-4 md:p-6 pb-24 lg:pb-6 space-y-5 max-w-7xl mx-auto">
+    <div className="relative min-h-full p-4 md:p-6 pb-24 lg:pb-6 space-y-5 max-w-7xl mx-auto">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Estimates</h1>
@@ -301,7 +301,7 @@ export default function Estimates() {
       )}
 
       {sheetOpen && (
-        <div className="fixed inset-0 z-50 bg-white overflow-y-auto">
+        <div className="absolute inset-0 z-50 bg-white overflow-y-auto">
           <div className="flex min-h-screen flex-col md:flex-row">
             {/* Left sidebar */}
             <div className="w-72 flex-shrink-0 bg-slate-50 border-r border-slate-200 flex flex-col overflow-y-auto">

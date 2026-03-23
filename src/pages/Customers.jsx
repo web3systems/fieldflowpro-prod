@@ -130,7 +130,7 @@ export default function Customers() {
   };
 
   return (
-    <div className="p-4 md:p-6 pb-24 lg:pb-6 space-y-5 max-w-7xl mx-auto">
+    <div className="relative min-h-full p-4 md:p-6 pb-24 lg:pb-6 space-y-5 max-w-7xl mx-auto">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Customers</h1>
@@ -233,7 +233,7 @@ export default function Customers() {
 
       {/* Customer Modal */}
       {sheetOpen && (
-        <div className="fixed inset-0 z-50 bg-white overflow-y-auto">
+        <div className="absolute inset-0 z-50 bg-white overflow-y-auto">
           <div className="sticky top-0 bg-white border-b px-4 py-3 flex items-center justify-between z-10">
             <h2 className="text-xl font-semibold">{editing ? `${editing.first_name} ${editing.last_name}` : "Add new customer"}</h2>
             <button onClick={() => setSheetOpen(false)} className="p-2 rounded-full hover:bg-slate-100"><X className="w-5 h-5" /></button>
