@@ -43,9 +43,11 @@ export default function LineItemRow({ item, idx, companyId, onUpdate, onRemove, 
     }
   }
 
-  const selectValue = item.service_id && services.find(s => s.id === item.service_id)
-    ? item.service_id
-    : "__custom__";
+  const selectValue = !servicesLoaded
+    ? (item.service_id || "__custom__")
+    : (item.service_id && services.find(s => s.id === item.service_id)
+        ? item.service_id
+        : "__custom__");
   const isCustom = selectValue === "__custom__";
 
   // Show all services in dropdown regardless of categoryFilter (filter is just for display grouping)
