@@ -85,36 +85,36 @@ Deno.serve(async (req) => {
   <style>
     body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; background: #f0f4f8; }
     .container { max-width: 600px; margin: 0 auto; background: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-    .header { background: linear-gradient(135deg, #FFC107 0%, #FFD54F 100%); padding: 40px 24px; text-align: center; position: relative; }
-    .header::after { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(44, 62, 80, 0.05); }
+    .header { background: linear-gradient(135deg, ${primaryColor} 0%, ${primaryColor}dd 100%); padding: 40px 24px; text-align: center; position: relative; }
+    .header::after { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.03); }
     .header-inner { position: relative; z-index: 1; }
-    .logo { margin: 0 0 20px; }
-    .logo img { max-height: 50px; width: auto; }
-    .header-title { font-size: 36px; font-weight: 800; color: #2C3E50; margin: 0; letter-spacing: -0.5px; }
-    .header-subtitle { font-size: 14px; color: #2C3E50; margin: 8px 0 0; font-weight: 500; opacity: 0.8; }
+    .logo { margin: 0 0 25px; }
+    .logo img { max-height: 60px; width: auto; }
+    .header-title { font-size: 36px; font-weight: 800; color: white; margin: 0; letter-spacing: -0.5px; text-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .header-subtitle { font-size: 14px; color: rgba(255,255,255,0.95); margin: 8px 0 0; font-weight: 500; }
     .content { padding: 40px 24px; }
     .greeting { font-size: 18px; font-weight: 600; color: #2C3E50; margin: 0 0 12px; }
     .intro-text { font-size: 14px; color: #555; margin: 0 0 20px; line-height: 1.6; }
-    .document-number { font-size: 12px; color: #FFC107; font-weight: 600; margin: 0 0 30px; text-transform: uppercase; letter-spacing: 1px; }
+    .document-number { font-size: 12px; color: ${primaryColor}; font-weight: 600; margin: 0 0 30px; text-transform: uppercase; letter-spacing: 1px; }
     .table { width: 100%; border-collapse: collapse; margin: 30px 0; }
-    .table-header { background: linear-gradient(90deg, #2C3E50 0%, #34495E 100%); }
-    .table-header th { padding: 14px 12px; text-align: left; font-weight: 700; color: #FFC107; font-size: 12px; text-transform: uppercase; border: none; }
+    .table-header { background: ${primaryColor}; }
+    .table-header th { padding: 14px 12px; text-align: left; font-weight: 700; color: white; font-size: 12px; text-transform: uppercase; border: none; }
     .table tbody tr { border-bottom: 1px solid #e8ecf1; }
     .table tbody tr:hover { background: #f8fafb; }
     .table td { padding: 14px 12px; font-size: 13px; color: #2C3E50; }
-    .summary { margin: 30px 0; padding: 24px; background: linear-gradient(135deg, #f8fafb 0%, #f0f4f8 100%); border-radius: 8px; border-left: 4px solid #FFC107; }
+    .summary { margin: 30px 0; padding: 24px; background: linear-gradient(135deg, #f8fafb 0%, #f0f4f8 100%); border-radius: 8px; border-left: 4px solid ${primaryColor}; }
     .summary-row { display: flex; justify-content: space-between; padding: 10px 0; font-size: 14px; color: #555; }
-    .summary-row.total { border-top: 2px solid #FFC107; padding-top: 16px; margin-top: 16px; font-weight: 700; font-size: 18px; color: #2C3E50; }
-    .total-amount { color: #FFC107; }
+    .summary-row.total { border-top: 2px solid ${primaryColor}; padding-top: 16px; margin-top: 16px; font-weight: 700; font-size: 18px; color: #2C3E50; }
+    .total-amount { color: ${primaryColor}; }
     .action-buttons { text-align: center; margin: 35px 0; }
     .action-buttons p { color: #2C3E50; font-size: 14px; font-weight: 600; margin: 0 0 20px; }
     .btn-approve { display: inline-block; background: #27AE60; color: white; padding: 13px 28px; text-decoration: none; border-radius: 6px; font-weight: 600; margin-right: 12px; font-size: 13px; transition: background 0.2s; }
     .btn-approve:hover { background: #229954; }
     .btn-decline { display: inline-block; background: #E74C3C; color: white; padding: 13px 28px; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 13px; transition: background 0.2s; }
     .btn-decline:hover { background: #C0392B; }
-    .notes-box { padding: 20px; background: #FFF9E6; border-radius: 6px; border-left: 4px solid #FFC107; margin: 30px 0; }
+    .notes-box { padding: 20px; background: #FFF9E6; border-radius: 6px; border-left: 4px solid ${primaryColor}; margin: 30px 0; }
     .notes-box p { margin: 0; font-size: 13px; color: #7D5E0F; }
-    .footer { padding: 30px 24px; background: #2C3E50; border-top: 4px solid #FFC107; font-size: 12px; color: #BDC3C7; text-align: center; }
+    .footer { padding: 30px 24px; background: #2C3E50; border-top: 4px solid ${primaryColor}; font-size: 12px; color: #BDC3C7; text-align: center; }
     .footer p { margin: 0; }
     .divider { height: 1px; background: #e8ecf1; margin: 30px 0; }
     .contact-info { font-size: 13px; color: #2C3E50; margin: 20px 0 0 0; }
@@ -124,9 +124,9 @@ Deno.serve(async (req) => {
   <div class="container">
     <div class="header">
       <div class="header-inner">
-        ${company?.logo_url ? `<div class="logo"><img src="${company.logo_url}" alt="${company?.name}"></div>` : `<div style="font-size:32px;font-weight:800;color:#2C3E50;margin:0;">${company?.name || 'FieldFlow'}</div>`}
+        ${logoUrl ? `<div class="logo"><img src="${logoUrl}" alt="${company?.name}"></div>` : ''}
         <div class="header-title">${docType.charAt(0).toUpperCase() + docType.slice(1)}</div>
-        <div class="header-subtitle">We've prepared an estimate for your project</div>
+        <div class="header-subtitle">${docType === 'estimate' ? 'We\'ve prepared an estimate for your project' : 'Payment due on ' + (document.due_date ? new Date(document.due_date).toLocaleDateString() : 'receipt')}</div>
       </div>
     </div>
     
