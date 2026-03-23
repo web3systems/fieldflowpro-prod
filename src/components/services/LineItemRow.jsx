@@ -20,18 +20,22 @@ export default function LineItemRow({ item, idx, companyId, onUpdate, onRemove, 
       return;
     }
     if (value === "__custom__") {
+      onUpdate(idx, "service_id", null);
       onUpdate(idx, "description", "");
       return;
     }
     const svc = services.find(s => s.id === value);
     if (svc) {
+      onUpdate(idx, "service_id", svc.id);
       onUpdate(idx, "description", svc.name);
       onUpdate(idx, "unit_price", svc.unit_price || 0);
     }
   }
 
-  const matchedService = services.find(s => s.name === item.description);
-  const selectValue = matchedService ? matchedService.id : "__custom__";
+  const selectValue = item.service_id && services.find(s => s.id === item.service_id)
+    ? item.service_id
+    : "__custom__";
+  const isCustom = selectValue === "__custom__";
 
   // Show all services in dropdown regardless of categoryFilter (filter is just for display grouping)
   const laborServices = services.filter(s => s.category === "Labor" || s.category === "labor");
