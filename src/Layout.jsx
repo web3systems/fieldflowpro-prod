@@ -279,6 +279,9 @@ export default function Layout({ children, currentPageName }) {
           </main>
         </div>
 
+        {/* Global Chat Panel */}
+        <GlobalChatPanel user={user} company={activeCompany} />
+
         {/* Mobile Bottom Nav */}
         <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-30 lg:hidden">
           <div className="flex items-center justify-around py-2">
