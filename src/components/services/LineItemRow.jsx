@@ -16,9 +16,17 @@ export default function LineItemRow({ item, idx, companyId, onUpdate, onRemove, 
       .catch(() => {});
   }, [companyId]);
 
+  function handleCreated(svc) {
+    setServices(prev => [...prev, svc]);
+    onUpdate(idx, "service_id", svc.id);
+    onUpdate(idx, "description", svc.name);
+    onUpdate(idx, "unit_price", svc.unit_price || 0);
+    setShowAddModal(false);
+  }
+
   function handleServiceSelect(value) {
     if (value === "__add_new__") {
-      window.open("/Services", "_blank");
+      setShowAddModal(true);
       return;
     }
     if (value === "__custom__") {
