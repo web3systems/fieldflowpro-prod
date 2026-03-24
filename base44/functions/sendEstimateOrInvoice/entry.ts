@@ -195,7 +195,10 @@ Deno.serve(async (req) => {
               <p style="margin:0 0 8px;font-size:20px;font-weight:700;color:#111827;">Hi ${customer.first_name || 'there'},</p>
               <p style="margin:0 0 32px;font-size:15px;color:#6b7280;line-height:1.7;">${introText}</p>
 
-              <!-- ITEMS TABLE -->
+              <!-- ITEMS / OPTIONS -->
+              ${estimateOptions
+                ? estimateOptions.map((opt, i) => buildOptionBlock(opt, i, primaryColor)).join('<tr><td style="padding:8px 0;"><hr style="border:none;border-top:2px dashed #e5e7eb;"></td></tr>')
+                : `
               <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="border-collapse:collapse;border-radius:8px;overflow:hidden;border:1px solid #e5e7eb;">
                 <thead>
                   <tr style="background-color:${primaryColor};">
@@ -235,7 +238,8 @@ Deno.serve(async (req) => {
                     </table>
                   </td>
                 </tr>
-              </table>
+              </table>`
+              }
 
               ${document.notes ? `
               <!-- NOTES -->
