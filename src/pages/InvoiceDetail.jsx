@@ -67,9 +67,13 @@ export default function InvoiceDetail() {
 
   function updateItem(index, field, value) {
     const items = [...form.line_items];
-    items[index] = { ...items[index], [field]: value };
-    if (field === "quantity" || field === "unit_price") {
-      items[index].total = (items[index].quantity || 0) * (items[index].unit_price || 0);
+    if (field === null && typeof value === "object") {
+      items[index] = value;
+    } else {
+      items[index] = { ...items[index], [field]: value };
+      if (field === "quantity" || field === "unit_price") {
+        items[index].total = (items[index].quantity || 0) * (items[index].unit_price || 0);
+      }
     }
     recalc(items);
   }
