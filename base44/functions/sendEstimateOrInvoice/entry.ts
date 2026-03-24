@@ -97,7 +97,7 @@ Deno.serve(async (req) => {
       ? `${baseUrl}/CustomerPortal?estimate_id=${document.id}`
       : `${baseUrl}/CustomerPortal?invoice_id=${document.id}`;
 
-    const ctaLabel = docType === 'estimate' ? 'Review &amp; Approve Estimate' : 'View Invoice &amp; Pay';
+    const ctaLabel = docType === 'estimate' ? 'View Estimate' : 'View Invoice &amp; Pay';
 
     const html = `<!DOCTYPE html>
 <html lang="en">
