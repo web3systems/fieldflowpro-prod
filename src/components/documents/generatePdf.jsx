@@ -233,8 +233,45 @@ export function downloadEstimatePdf(estimate, customer, company) {
   });
 
   y = Math.max(leftY + 4, y + details.length * 5.5 + 4) + 6;
-  y = buildLineItemsTable(doc, estimate.line_items, y);
-  y = buildTotals(doc, estimate, y, accent);
+
+  const options = estimate.options?.length > 0 ? estimate.options : null;
+
+  if (options) {
+    options.forEach((option, index) => {
+      if (index > 0) {
+        if (y > 250) { doc.addPage(); y = 20; }
+        doc.setDrawColor(226, 232, 240);
+        doc.setLineWidth(0.5);
+        doc.setLineDashPattern([2, 2], 0);
+        doc.line(16, y, 194, y);
+        doc.setLineDashPattern([], 0);
+        y += 6;
+      }
+
+      // Option header
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(10);
+      doc.setTextColor(30, 41, 59);
+      doc.text(`Option ${index + 1}: ${option.name || ''}`, 20, y);
+      y += 5;
+
+      if (option.notes) {
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(8);
+        doc.setTextColor(100, 116, 139);
+        doc.text(doc.splitTextToSize(option.notes, 170), 20, y);
+        y += 5;
+      }
+
+      y += 3;
+      y = buildLineItemsTable(doc, option.line_items, y);
+      y = buildTotals(doc, option, y, accent);
+      y += 4;
+    });
+  } else {
+    y = buildLineItemsTable(doc, estimate.line_items, y);
+    y = buildTotals(doc, estimate, y, accent);
+  }
 
   if (estimate.notes) {
     if (y > 260) { doc.addPage(); y = 20; }
