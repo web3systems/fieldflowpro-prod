@@ -65,14 +65,6 @@ Deno.serve(async (req) => {
     const companyPhone = template?.company_phone || company?.phone;
     const companyEmail = template?.company_email || company?.email;
 
-    const amount = document.total || 0;
-    const subtotal = document.subtotal || 0;
-    const taxAmount = document.tax_amount || 0;
-    const taxRate = document.tax_rate || 0;
-    const discount = document.discount || 0;
-
-    const lineItems = document.line_items || document.options?.[0]?.line_items || [];
-
     const docLabel = docType === 'estimate' ? 'Estimate' : 'Invoice';
     const docNumber = document.estimate_number || document.invoice_number || '';
 
@@ -81,17 +73,90 @@ Deno.serve(async (req) => {
       : `Invoice from ${companyName}${docNumber ? ' — ' + docNumber : ''}`;
 
     const introText = docType === 'estimate'
-      ? `Thank you for your interest! Please review the estimate below. You can approve or ask us any questions at any time.`
+      ? `Thank you for your interest! Please review the estimate options below and let us know which one you'd like to move forward with.`
       : `Please find your invoice details below. We appreciate your business and look forward to working with you.`;
 
-    const lineItemsHtml = lineItems.map(item => `
-      <tr>
-        <td style="padding:14px 16px;border-bottom:1px solid #e5e7eb;font-size:14px;color:#111827;line-height:1.5;">${item.description || 'Item'}</td>
-        <td style="padding:14px 16px;border-bottom:1px solid #e5e7eb;font-size:14px;color:#374151;text-align:center;white-space:nowrap;">${item.quantity || 1}</td>
-        <td style="padding:14px 16px;border-bottom:1px solid #e5e7eb;font-size:14px;color:#374151;text-align:right;white-space:nowrap;">$${(item.unit_price || 0).toFixed(2)}</td>
-        <td style="padding:14px 16px;border-bottom:1px solid #e5e7eb;font-size:14px;font-weight:600;color:#111827;text-align:right;white-space:nowrap;">$${(item.total || 0).toFixed(2)}</td>
-      </tr>
-    `).join('');
+    // For estimates with multiple options, render each option as its own section
+    const estimateOptions = (docType === 'estimate' && document.options?.length > 0) ? document.options : null;
+
+    function buildLineItemsHtml(lineItems) {
+      return (lineItems || []).map(item => `
+        <tr>
+          <td style="padding:14px 16px;border-bottom:1px solid #e5e7eb;font-size:14px;color:#111827;line-height:1.5;">${item.description || 'Item'}</td>
+          <td style="padding:14px 16px;border-bottom:1px solid #e5e7eb;font-size:14px;color:#374151;text-align:center;white-space:nowrap;">${item.quantity || 1}</td>
+          <td style="padding:14px 16px;border-bottom:1px solid #e5e7eb;font-size:14px;color:#374151;text-align:right;white-space:nowrap;">$${(item.unit_price || 0).toFixed(2)}</td>
+          <td style="padding:14px 16px;border-bottom:1px solid #e5e7eb;font-size:14px;font-weight:600;color:#111827;text-align:right;white-space:nowrap;">$${(item.total || 0).toFixed(2)}</td>
+        </tr>
+      `).join('');
+    }
+
+    function buildOptionBlock(option, index, color) {
+      const items = option.line_items || [];
+      const subtotal = option.subtotal || 0;
+      const taxAmount = option.tax_amount || 0;
+      const taxRate = option.tax_rate || 0;
+      const discount = option.discount || 0;
+      const total = option.total || 0;
+      return `
+        <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin-bottom:32px;">
+          <tr>
+            <td style="padding-bottom:12px;">
+              <span style="font-size:16px;font-weight:700;color:#111827;">Option ${index + 1}: ${option.name || ''}</span>
+              ${option.notes ? `<p style="margin:6px 0 0;font-size:13px;color:#6b7280;">${option.notes}</p>` : ''}
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="border-collapse:collapse;border-radius:8px;overflow:hidden;border:1px solid #e5e7eb;">
+                <thead>
+                  <tr style="background-color:${color};">
+                    <th style="padding:12px 16px;text-align:left;font-size:11px;font-weight:700;color:#ffffff;text-transform:uppercase;letter-spacing:0.8px;">Description</th>
+                    <th style="padding:12px 16px;text-align:center;font-size:11px;font-weight:700;color:#ffffff;text-transform:uppercase;letter-spacing:0.8px;white-space:nowrap;">Qty</th>
+                    <th style="padding:12px 16px;text-align:right;font-size:11px;font-weight:700;color:#ffffff;text-transform:uppercase;letter-spacing:0.8px;white-space:nowrap;">Unit Price</th>
+                    <th style="padding:12px 16px;text-align:right;font-size:11px;font-weight:700;color:#ffffff;text-transform:uppercase;letter-spacing:0.8px;white-space:nowrap;">Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${buildLineItemsHtml(items) || `<tr><td colspan="4" style="padding:20px 16px;text-align:center;color:#9ca3af;font-size:14px;">No items</td></tr>`}
+                </tbody>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin-top:12px;">
+                <tr>
+                  <td width="50%"></td>
+                  <td width="50%">
+                    <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background:#f9fafb;border-radius:8px;overflow:hidden;border:1px solid #e5e7eb;">
+                      <tr>
+                        <td style="padding:10px 16px;font-size:13px;color:#6b7280;">Subtotal</td>
+                        <td style="padding:10px 16px;font-size:13px;color:#374151;font-weight:500;text-align:right;">$${subtotal.toFixed(2)}</td>
+                      </tr>
+                      ${taxAmount > 0 ? `<tr><td style="padding:10px 16px;font-size:13px;color:#6b7280;border-top:1px solid #e5e7eb;">Tax (${taxRate}%)</td><td style="padding:10px 16px;font-size:13px;color:#374151;font-weight:500;text-align:right;border-top:1px solid #e5e7eb;">$${taxAmount.toFixed(2)}</td></tr>` : ''}
+                      ${discount > 0 ? `<tr><td style="padding:10px 16px;font-size:13px;color:#6b7280;border-top:1px solid #e5e7eb;">Discount</td><td style="padding:10px 16px;font-size:13px;color:#059669;font-weight:500;text-align:right;border-top:1px solid #e5e7eb;">-$${discount.toFixed(2)}</td></tr>` : ''}
+                      <tr style="background-color:${color};">
+                        <td style="padding:12px 16px;font-size:14px;font-weight:700;color:#ffffff;">Total</td>
+                        <td style="padding:12px 16px;font-size:16px;font-weight:800;color:#ffffff;text-align:right;">$${total.toFixed(2)}</td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      `;
+    }
+
+    // Build the main content block for line items
+    const amount = document.total || 0;
+    const subtotal = document.subtotal || 0;
+    const taxAmount = document.tax_amount || 0;
+    const taxRate = document.tax_rate || 0;
+    const discount = document.discount || 0;
+    const lineItems = document.line_items || [];
+    const lineItemsHtml = buildLineItemsHtml(lineItems);
 
     const portalLink = docType === 'estimate'
       ? `${baseUrl}/CustomerPortal?estimate_id=${document.id}`
