@@ -141,12 +141,14 @@ export default function EstimateDetail() {
   function updateItem(index, field, value) {
     const opt = getOption();
     const items = [...opt.line_items];
-    const before = items[index];
-    items[index] = { ...items[index], [field]: value };
-    const after = items[index];
-    console.log(`[updateItem ${index}] field=${field} value=${value}, service_id before=${before.service_id} after=${after.service_id}`);
-    if (field === "quantity" || field === "unit_price") {
-      items[index].total = (items[index].quantity || 0) * (items[index].unit_price || 0);
+    if (field === null && typeof value === "object") {
+      // Full item replacement (e.g. when selecting a service)
+      items[index] = value;
+    } else {
+      items[index] = { ...items[index], [field]: value };
+      if (field === "quantity" || field === "unit_price") {
+        items[index].total = (items[index].quantity || 0) * (items[index].unit_price || 0);
+      }
     }
     recalcOption(items, opt);
   }
