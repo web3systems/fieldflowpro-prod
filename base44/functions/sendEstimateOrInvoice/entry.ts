@@ -183,6 +183,7 @@ Deno.serve(async (req) => {
                 </tr>
               </table>` : ''}
 
+              ${docType === 'invoice' ? `
               <!-- CTA BUTTON -->
               <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin-top:36px;margin-bottom:8px;">
                 <tr>
@@ -195,7 +196,7 @@ Deno.serve(async (req) => {
                     <p style="margin:0;font-size:12px;color:#9ca3af;">Or copy this link: <a href="${portalLink}" style="color:${primaryColor};word-break:break-all;">${portalLink}</a></p>
                   </td>
                 </tr>
-              </table>
+              </table>` : ''}
 
             </td>
           </tr>
