@@ -45,6 +45,7 @@ export default function CompanySettings() {
           <TabsList>
             <TabsTrigger value="team">Team</TabsTrigger>
             <TabsTrigger value="billing">Billing & Plan</TabsTrigger>
+            <TabsTrigger value="portal">Customer Portal</TabsTrigger>
             {isOwner && <TabsTrigger value="general">General</TabsTrigger>}
           </TabsList>
 
