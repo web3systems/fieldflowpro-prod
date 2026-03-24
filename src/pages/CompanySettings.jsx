@@ -57,6 +57,10 @@ export default function CompanySettings() {
             <CompanyBillingTab company={company} />
           </TabsContent>
 
+          <TabsContent value="portal">
+            <CustomerPortalSettingsTab company={company} onSave={loadCompany} />
+          </TabsContent>
+
           {isOwner && (
             <TabsContent value="general">
               <Card>
