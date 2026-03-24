@@ -21,21 +21,14 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Only email is currently supported' }, { status: 400 });
     }
 
-    // Get customer
     const customers = await base44.asServiceRole.entities.Customer.filter({ id: customer_id });
-    if (!customers.length) {
-      return Response.json({ error: 'Customer not found' }, { status: 404 });
-    }
-
+    if (!customers.length) return Response.json({ error: 'Customer not found' }, { status: 404 });
     const customer = customers[0];
-    if (!customer.email) {
-      return Response.json({ error: 'Customer has no email address' }, { status: 400 });
-    }
+    if (!customer.email) return Response.json({ error: 'Customer has no email address' }, { status: 400 });
 
-    // Get the document (estimate or invoice)
     let document = null;
     let company = null;
-    
+
     if (estimate_id) {
       const estimates = await base44.asServiceRole.entities.Estimate.filter({ id: estimate_id });
       document = estimates[0];
@@ -44,172 +37,203 @@ Deno.serve(async (req) => {
       document = invoices[0];
     }
 
-    if (!document) {
-      return Response.json({ error: `${docType} not found` }, { status: 404 });
-    }
+    if (!document) return Response.json({ error: `${docType} not found` }, { status: 404 });
 
-    // Get company for email signature
     if (document.company_id) {
       const companies = await base44.asServiceRole.entities.Company.filter({ id: document.company_id });
       company = companies[0];
     }
 
-    const subject = `Your ${docType.charAt(0).toUpperCase() + docType.slice(1)}`;
-    const amount = document.total || 0;
-    const subtotal = document.subtotal || 0;
-    const taxAmount = document.tax_amount || 0;
-    const discount = document.discount || 0;
-    
-    // Get the app domain from request - use https by default for email links
-    const appDomain = req.headers.get('host') || 'fieldflowpro.com';
-    const baseUrl = `https://${appDomain.replace(/:\d+$/, '')}`;
-    
     // Get company email template
     let template = null;
     try {
       const templates = await base44.asServiceRole.entities.EmailTemplate.filter({
-        company_id: company_id,
+        company_id: company_id || document.company_id,
         template_type: docType
       });
       template = templates[0];
-    } catch (e) {
-      // Template not found, use defaults
-    }
+    } catch (e) {}
 
-    // Get branding from template or company
-    const primaryColor = template?.header_color || company?.primary_color || '#FFC107';
-    const accentColor = template?.accent_color || '#2C3E50';
+    const appDomain = req.headers.get('host') || 'app.base44.com';
+    const baseUrl = `https://${appDomain.replace(/:\d+$/, '')}`;
+
+    const primaryColor = template?.header_color || company?.primary_color || '#1a56db';
+    const companyName = template?.company_name || company?.name || 'Our Company';
     const logoUrl = template?.logo_url || company?.logo_url;
     const showLogo = template?.show_logo !== false;
     const footerText = template?.footer_text;
-    
-    const lineItemsHtml = (document.line_items || document.options?.[0]?.line_items || []).map(item => `
+    const companyPhone = template?.company_phone || company?.phone;
+    const companyEmail = template?.company_email || company?.email;
+
+    const amount = document.total || 0;
+    const subtotal = document.subtotal || 0;
+    const taxAmount = document.tax_amount || 0;
+    const taxRate = document.tax_rate || 0;
+    const discount = document.discount || 0;
+
+    const lineItems = document.line_items || document.options?.[0]?.line_items || [];
+
+    const docLabel = docType === 'estimate' ? 'Estimate' : 'Invoice';
+    const docNumber = document.estimate_number || document.invoice_number || '';
+
+    const subject = docType === 'estimate'
+      ? `Your Estimate from ${companyName}${docNumber ? ' — ' + docNumber : ''}`
+      : `Invoice from ${companyName}${docNumber ? ' — ' + docNumber : ''}`;
+
+    const introText = docType === 'estimate'
+      ? `Thank you for your interest! Please review the estimate below. You can approve or ask us any questions at any time.`
+      : `Please find your invoice details below. We appreciate your business and look forward to working with you.`;
+
+    const lineItemsHtml = lineItems.map(item => `
       <tr>
-        <td style="padding:12px;border-bottom:1px solid #e2e8f0;text-align:left;color:#1e293b;">${item.description || 'Item'}</td>
-        <td style="padding:12px;border-bottom:1px solid #e2e8f0;text-align:center;color:#1e293b;">${item.quantity || 1}</td>
-        <td style="padding:12px;border-bottom:1px solid #e2e8f0;text-align:right;color:#1e293b;">$${(item.unit_price || 0).toFixed(2)}</td>
-        <td style="padding:12px;border-bottom:1px solid #e2e8f0;text-align:right;color:#1e293b;font-weight:600;">$${(item.total || 0).toFixed(2)}</td>
+        <td style="padding:14px 16px;border-bottom:1px solid #e5e7eb;font-size:14px;color:#111827;line-height:1.5;">${item.description || 'Item'}</td>
+        <td style="padding:14px 16px;border-bottom:1px solid #e5e7eb;font-size:14px;color:#374151;text-align:center;white-space:nowrap;">${item.quantity || 1}</td>
+        <td style="padding:14px 16px;border-bottom:1px solid #e5e7eb;font-size:14px;color:#374151;text-align:right;white-space:nowrap;">$${(item.unit_price || 0).toFixed(2)}</td>
+        <td style="padding:14px 16px;border-bottom:1px solid #e5e7eb;font-size:14px;font-weight:600;color:#111827;text-align:right;white-space:nowrap;">$${(item.total || 0).toFixed(2)}</td>
       </tr>
     `).join('');
-    
+
+    const portalLink = docType === 'estimate'
+      ? `${baseUrl}/CustomerPortal?estimate_id=${document.id}`
+      : `${baseUrl}/CustomerPortal?invoice_id=${document.id}`;
+
+    const ctaLabel = docType === 'estimate' ? 'Review &amp; Approve Estimate' : 'View Invoice &amp; Pay';
+
     const html = `<!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="utf-8">
-  <style>
-    body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; background: #f0f4f8; }
-    .container { max-width: 600px; margin: 0 auto; background: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-    .header { background: linear-gradient(135deg, ${primaryColor} 0%, ${primaryColor}dd 100%); padding: 40px 24px; text-align: center; position: relative; }
-    .header::after { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.03); }
-    .header-inner { position: relative; z-index: 1; }
-    .logo { margin: 0 0 25px; }
-    .logo img { max-height: 60px; width: auto; }
-    .header-title { font-size: 36px; font-weight: 800; color: white; margin: 0; letter-spacing: -0.5px; text-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-    .header-subtitle { font-size: 14px; color: rgba(255,255,255,0.95); margin: 8px 0 0; font-weight: 500; }
-    .content { padding: 40px 24px; }
-    .greeting { font-size: 18px; font-weight: 600; color: #2C3E50; margin: 0 0 12px; }
-    .intro-text { font-size: 14px; color: #555; margin: 0 0 20px; line-height: 1.6; }
-    .document-number { font-size: 12px; color: ${primaryColor}; font-weight: 600; margin: 0 0 30px; text-transform: uppercase; letter-spacing: 1px; }
-    .table { width: 100%; border-collapse: collapse; margin: 30px 0; }
-    .table-header { background: ${primaryColor}; }
-    .table-header th { padding: 14px 12px; text-align: left; font-weight: 700; color: white; font-size: 12px; text-transform: uppercase; border: none; }
-    .table tbody tr { border-bottom: 1px solid #e8ecf1; }
-    .table tbody tr:hover { background: #f8fafb; }
-    .table td { padding: 14px 12px; font-size: 13px; color: #2C3E50; }
-    .summary { margin: 30px 0; padding: 24px; background: linear-gradient(135deg, #f8fafb 0%, #f0f4f8 100%); border-radius: 8px; border-left: 4px solid ${primaryColor}; }
-    .summary-row { display: flex; justify-content: space-between; padding: 10px 0; font-size: 14px; color: #555; }
-    .summary-row.total { border-top: 2px solid ${primaryColor}; padding-top: 16px; margin-top: 16px; font-weight: 700; font-size: 18px; color: #2C3E50; }
-    .total-amount { color: ${primaryColor}; }
-    .action-buttons { text-align: center; margin: 35px 0; }
-    .action-buttons p { color: #2C3E50; font-size: 14px; font-weight: 600; margin: 0 0 20px; }
-    .btn-approve { display: inline-block; background: #27AE60; color: white; padding: 13px 28px; text-decoration: none; border-radius: 6px; font-weight: 600; margin-right: 12px; font-size: 13px; transition: background 0.2s; }
-    .btn-approve:hover { background: #229954; }
-    .btn-decline { display: inline-block; background: #E74C3C; color: white; padding: 13px 28px; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 13px; transition: background 0.2s; }
-    .btn-decline:hover { background: #C0392B; }
-    .notes-box { padding: 20px; background: #FFF9E6; border-radius: 6px; border-left: 4px solid ${primaryColor}; margin: 30px 0; }
-    .notes-box p { margin: 0; font-size: 13px; color: #7D5E0F; }
-    .footer { padding: 30px 24px; background: #2C3E50; border-top: 4px solid ${primaryColor}; font-size: 12px; color: #BDC3C7; text-align: center; }
-    .footer p { margin: 0; }
-    .divider { height: 1px; background: #e8ecf1; margin: 30px 0; }
-    .contact-info { font-size: 13px; color: #2C3E50; margin: 20px 0 0 0; }
-  </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${subject}</title>
 </head>
-<body>
-  <div class="container">
-    <div class="header">
-    <div class="header-inner">
-      ${showLogo && logoUrl ? `<div class="logo"><img src="${logoUrl}" alt="${template?.company_name || company?.name}"></div>` : ''}
-      <div class="header-title">${docType.charAt(0).toUpperCase() + docType.slice(1)}</div>
-      <div class="header-subtitle">${docType === 'estimate' ? 'We\'ve prepared an estimate for your project' : 'Payment due on ' + (document.due_date ? new Date(document.due_date).toLocaleDateString() : 'receipt')}</div>
-    </div>
-    </div>
-    
-    <div class="content">
-      <p class="greeting">Hi ${customer.first_name || 'there'},</p>
-      <p class="intro-text">Thank you for reaching out! We've put together a detailed estimate for your project. Review the details below and let us know what you think.</p>
-      ${document.estimate_number ? `<p class="document-number">Estimate #${document.estimate_number}</p>` : ''}
-      
-      <table class="table">
-        <thead class="table-header">
+<body style="margin:0;padding:0;background-color:#f3f4f6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background-color:#f3f4f6;padding:32px 16px;">
+    <tr>
+      <td align="center">
+        <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="max-width:600px;background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
+
+          <!-- HEADER -->
           <tr>
-            <th>Description</th>
-            <th style="text-align:center;">Qty</th>
-            <th style="text-align:right;">Unit Price</th>
-            <th style="text-align:right;">Total</th>
+            <td style="background-color:${primaryColor};padding:40px 40px 36px;text-align:center;">
+              ${showLogo && logoUrl ? `<img src="${logoUrl}" alt="${companyName}" style="max-height:56px;width:auto;margin-bottom:20px;display:block;margin-left:auto;margin-right:auto;">` : ''}
+              <div style="display:inline-block;background:rgba(255,255,255,0.2);border-radius:6px;padding:6px 14px;margin-bottom:16px;">
+                <span style="font-size:12px;font-weight:700;color:rgba(255,255,255,0.9);text-transform:uppercase;letter-spacing:1.5px;">${docLabel}</span>
+              </div>
+              <div style="font-size:30px;font-weight:800;color:#ffffff;line-height:1.2;margin:0;">${companyName}</div>
+              ${docNumber ? `<div style="font-size:14px;color:rgba(255,255,255,0.85);margin-top:8px;font-weight:500;">#${docNumber}</div>` : ''}
+            </td>
           </tr>
-        </thead>
-        <tbody>
-          ${lineItemsHtml}
-        </tbody>
-      </table>
-      
-      <div class="summary">
-        <div class="summary-row">
-          <span>Subtotal</span>
-          <span>$${subtotal.toFixed(2)}</span>
-        </div>
-        ${taxAmount > 0 ? `<div class="summary-row">
-          <span>Tax (${((document.tax_rate || 0) * 100).toFixed(1)}%)</span>
-          <span>$${taxAmount.toFixed(2)}</span>
-        </div>` : ''}
-        ${discount > 0 ? `<div class="summary-row">
-          <span>Discount</span>
-          <span>-$${discount.toFixed(2)}</span>
-        </div>` : ''}
-        <div class="summary-row total">
-          <span>Total</span>
-          <span class="total-amount">$${amount.toFixed(2)}</span>
-        </div>
-      </div>
-      
-      ${document.notes ? `<div class="notes-box">
-        <p><strong>📝 Notes:</strong> ${document.notes}</p>
-      </div>` : ''}
-      
-      <div class="action-buttons">
-        <p>Next Steps</p>
-        <a href="${baseUrl}/CustomerPortal?estimate_id=${document.id}" class="btn-approve">📋 Review in Portal & Approve</a>
-      </div>
-      
-      <div class="divider"></div>
-      
-      <p style="color:#555;font-size:13px;margin:0 0 12px;">Have questions? We're here to help!</p>
-      <div class="contact-info">
-        ${template?.company_phone || company?.phone ? `<div style="margin-bottom:6px;">📞 <strong>${template?.company_phone || company.phone}</strong></div>` : ''}
-        ${template?.company_email || company?.email ? `<div>📧 <strong>${template?.company_email || company.email}</strong></div>` : ''}
-      </div>
-    </div>
-    
-    <div class="footer">
-      <p style="margin-bottom:8px;"><strong>${template?.company_name || company?.name || 'HoneyDo Crew'}</strong></p>
-      ${footerText ? `<p style="margin-bottom:8px;font-size:11px;">${footerText}</p>` : ''}
-      <p>© ${new Date().getFullYear()} ${template?.company_name || company?.name || 'HoneyDo Crew'}. All rights reserved.</p>
-    </div>
-  </div>
+
+          <!-- BODY -->
+          <tr>
+            <td style="padding:40px 40px 0;">
+              <p style="margin:0 0 8px;font-size:20px;font-weight:700;color:#111827;">Hi ${customer.first_name || 'there'},</p>
+              <p style="margin:0 0 32px;font-size:15px;color:#6b7280;line-height:1.7;">${introText}</p>
+
+              <!-- ITEMS TABLE -->
+              <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="border-collapse:collapse;border-radius:8px;overflow:hidden;border:1px solid #e5e7eb;">
+                <thead>
+                  <tr style="background-color:${primaryColor};">
+                    <th style="padding:12px 16px;text-align:left;font-size:11px;font-weight:700;color:#ffffff;text-transform:uppercase;letter-spacing:0.8px;">Description</th>
+                    <th style="padding:12px 16px;text-align:center;font-size:11px;font-weight:700;color:#ffffff;text-transform:uppercase;letter-spacing:0.8px;white-space:nowrap;">Qty</th>
+                    <th style="padding:12px 16px;text-align:right;font-size:11px;font-weight:700;color:#ffffff;text-transform:uppercase;letter-spacing:0.8px;white-space:nowrap;">Unit Price</th>
+                    <th style="padding:12px 16px;text-align:right;font-size:11px;font-weight:700;color:#ffffff;text-transform:uppercase;letter-spacing:0.8px;white-space:nowrap;">Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${lineItemsHtml || `<tr><td colspan="4" style="padding:20px 16px;text-align:center;color:#9ca3af;font-size:14px;">No items</td></tr>`}
+                </tbody>
+              </table>
+
+              <!-- TOTALS -->
+              <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin-top:24px;">
+                <tr>
+                  <td width="50%"></td>
+                  <td width="50%">
+                    <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background:#f9fafb;border-radius:8px;overflow:hidden;border:1px solid #e5e7eb;">
+                      <tr>
+                        <td style="padding:12px 16px;font-size:14px;color:#6b7280;">Subtotal</td>
+                        <td style="padding:12px 16px;font-size:14px;color:#374151;font-weight:500;text-align:right;">$${subtotal.toFixed(2)}</td>
+                      </tr>
+                      ${taxAmount > 0 ? `<tr>
+                        <td style="padding:12px 16px;font-size:14px;color:#6b7280;border-top:1px solid #e5e7eb;">Tax (${taxRate}%)</td>
+                        <td style="padding:12px 16px;font-size:14px;color:#374151;font-weight:500;text-align:right;border-top:1px solid #e5e7eb;">$${taxAmount.toFixed(2)}</td>
+                      </tr>` : ''}
+                      ${discount > 0 ? `<tr>
+                        <td style="padding:12px 16px;font-size:14px;color:#6b7280;border-top:1px solid #e5e7eb;">Discount</td>
+                        <td style="padding:12px 16px;font-size:14px;color:#059669;font-weight:500;text-align:right;border-top:1px solid #e5e7eb;">-$${discount.toFixed(2)}</td>
+                      </tr>` : ''}
+                      <tr style="background-color:${primaryColor};">
+                        <td style="padding:14px 16px;font-size:15px;font-weight:700;color:#ffffff;">Total</td>
+                        <td style="padding:14px 16px;font-size:18px;font-weight:800;color:#ffffff;text-align:right;">$${amount.toFixed(2)}</td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+
+              ${document.notes ? `
+              <!-- NOTES -->
+              <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin-top:24px;">
+                <tr>
+                  <td style="background:#fffbeb;border-left:4px solid #f59e0b;border-radius:0 8px 8px 0;padding:16px 20px;">
+                    <p style="margin:0 0 4px;font-size:12px;font-weight:700;color:#92400e;text-transform:uppercase;letter-spacing:0.5px;">Notes</p>
+                    <p style="margin:0;font-size:14px;color:#78350f;line-height:1.6;">${document.notes}</p>
+                  </td>
+                </tr>
+              </table>` : ''}
+
+              <!-- CTA BUTTON -->
+              <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin-top:36px;margin-bottom:8px;">
+                <tr>
+                  <td align="center">
+                    <a href="${portalLink}" style="display:inline-block;background-color:${primaryColor};color:#ffffff;font-size:15px;font-weight:700;text-decoration:none;padding:16px 40px;border-radius:8px;letter-spacing:0.3px;">${ctaLabel}</a>
+                  </td>
+                </tr>
+                <tr>
+                  <td align="center" style="padding-top:12px;">
+                    <p style="margin:0;font-size:12px;color:#9ca3af;">Or copy this link: <a href="${portalLink}" style="color:${primaryColor};word-break:break-all;">${portalLink}</a></p>
+                  </td>
+                </tr>
+              </table>
+
+            </td>
+          </tr>
+
+          <!-- CONTACT -->
+          ${companyPhone || companyEmail ? `
+          <tr>
+            <td style="padding:32px 40px 0;">
+              <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background:#f9fafb;border-radius:8px;border:1px solid #e5e7eb;">
+                <tr>
+                  <td style="padding:20px 24px;">
+                    <p style="margin:0 0 12px;font-size:13px;font-weight:700;color:#374151;text-transform:uppercase;letter-spacing:0.5px;">Questions? Contact Us</p>
+                    <table cellpadding="0" cellspacing="0" role="presentation">
+                      ${companyPhone ? `<tr><td style="padding:4px 0;font-size:14px;color:#6b7280;">&#128222;&nbsp;&nbsp;<a href="tel:${companyPhone}" style="color:${primaryColor};font-weight:600;text-decoration:none;">${companyPhone}</a></td></tr>` : ''}
+                      ${companyEmail ? `<tr><td style="padding:4px 0;font-size:14px;color:#6b7280;">&#9993;&nbsp;&nbsp;<a href="mailto:${companyEmail}" style="color:${primaryColor};font-weight:600;text-decoration:none;">${companyEmail}</a></td></tr>` : ''}
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>` : ''}
+
+          <!-- FOOTER -->
+          <tr>
+            <td style="padding:32px 40px;text-align:center;border-top:1px solid #e5e7eb;margin-top:32px;">
+              <p style="margin:0 0 6px;font-size:14px;font-weight:700;color:#374151;">${companyName}</p>
+              ${footerText ? `<p style="margin:0 0 6px;font-size:12px;color:#9ca3af;">${footerText}</p>` : ''}
+              <p style="margin:0;font-size:12px;color:#d1d5db;">&copy; ${new Date().getFullYear()} ${companyName}. All rights reserved.</p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
 </body>
 </html>`;
 
-    // Send email via Resend REST API
     const resendApiKey = Deno.env.get('RESEND_API_KEY');
     const emailResponse = await fetch('https://api.resend.com/emails', {
       method: 'POST',
@@ -218,7 +242,7 @@ Deno.serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: `${company?.name || 'FieldFlow'} <noreply@honeydocrew.co>`,
+        from: `${companyName} <noreply@honeydocrew.co>`,
         to: customer.email,
         subject,
         html,
@@ -227,6 +251,7 @@ Deno.serve(async (req) => {
 
     if (!emailResponse.ok) {
       const errorData = await emailResponse.json();
+      console.error('Resend API error:', errorData);
       throw new Error(`Resend API error: ${JSON.stringify(errorData)}`);
     }
 
