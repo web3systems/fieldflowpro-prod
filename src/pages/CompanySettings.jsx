@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useApp } from '@/layout.jsx';
 import CompanyTeamTab from '@/components/settings/CompanyTeamTab';
 import CompanyBillingTab from '@/components/settings/CompanyBillingTab';
+import CustomerPortalSettingsTab from '@/components/settings/CustomerPortalSettingsTab';
 
 export default function CompanySettings() {
   const { activeCompany, user } = useApp();
