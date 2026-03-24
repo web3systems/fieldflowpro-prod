@@ -1,54 +1,47 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectGroup, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Trash2 } from "lucide-react";
 import AddServiceModal from "./AddServiceModal";
 
-export default function LineItemRow({ item, idx, companyId, services = [], onServicesUpdate, onUpdate, onRemove, categoryFilter }) {
+export default function LineItemRow({ item, idx, companyId, services = [], onServicesUpdate, onUpdate, onRemove }) {
   const [showAddModal, setShowAddModal] = useState(false);
-
-  // Log whenever service_id changes to debug snap-back
-  useEffect(() => {
-    console.log(`[LineItemRow ${idx}] item.service_id = ${item.service_id}, selectValue will be = ${item.service_id || "__custom__"}`);
-  }, [item.service_id, idx]);
 
   function handleCreated(svc) {
     if (onServicesUpdate) onServicesUpdate(svc);
-    onUpdate(idx, "service_id", svc.id);
-    onUpdate(idx, "description", svc.name);
-    onUpdate(idx, "unit_price", svc.unit_price || 0);
+    // Update all fields at once to avoid stale state issues
+    onUpdate(idx, null, {
+      ...item,
+      service_id: svc.id,
+      description: svc.name,
+      unit_price: svc.unit_price || 0,
+      total: (item.quantity || 1) * (svc.unit_price || 0),
+    });
     setShowAddModal(false);
   }
 
   function handleServiceSelect(value) {
-    console.log(`[LineItemRow ${idx}] handleServiceSelect called with value = ${value}`);
     if (value === "__add_new__") {
       setShowAddModal(true);
       return;
     }
     if (value === "__custom__") {
-      console.log(`[LineItemRow ${idx}] Setting to custom`);
-      onUpdate(idx, "service_id", null);
-      onUpdate(idx, "description", "");
+      onUpdate(idx, null, { ...item, service_id: null, description: "" });
       return;
     }
     const svc = services.find(s => s.id === value);
-    console.log(`[LineItemRow ${idx}] Found service:`, svc);
     if (svc) {
-      console.log(`[LineItemRow ${idx}] Calling onUpdate with service_id=${svc.id}, name=${svc.name}, price=${svc.unit_price}`);
-      onUpdate(idx, "service_id", svc.id);
-      onUpdate(idx, "description", svc.name);
-      onUpdate(idx, "unit_price", svc.unit_price || 0);
-    } else {
-      console.log(`[LineItemRow ${idx}] WARNING: Service not found in list`);
+      // Pass the entire updated item to avoid multi-call stale state
+      onUpdate(idx, null, {
+        ...item,
+        service_id: svc.id,
+        description: svc.name,
+        unit_price: svc.unit_price || 0,
+        total: (item.quantity || 1) * (svc.unit_price || 0),
+      });
     }
   }
 
-  // Determine if item uses a service or custom description
-  const isCustom = !item.service_id;
-  
-  // selectValue: either the service_id or "__custom__"
-  // CRITICAL: Only show "__custom__" if service_id is actually null/undefined
   const selectValue = item.service_id || "__custom__";
 
   const laborServices = useMemo(() => services.filter(s => s.category === "Labor" || s.category === "labor"), [services]);
@@ -65,41 +58,41 @@ export default function LineItemRow({ item, idx, companyId, services = [], onSer
         />
       )}
       <div className="grid grid-cols-12 gap-2 items-start p-3 bg-slate-50 rounded-lg">
-         <div className="col-span-5 space-y-1">
-           <Select value={selectValue} onValueChange={handleServiceSelect}>
-             <SelectTrigger className="bg-white text-sm h-9">
-               <SelectValue placeholder="Select a service..." />
-             </SelectTrigger>
-             <SelectContent>
-               <SelectItem value="__add_new__" className="text-blue-600 font-medium">+ Add New</SelectItem>
-               <SelectItem value="__custom__">-- Custom --</SelectItem>
-               {laborServices.length > 0 && (
-                 <SelectGroup>
-                   <SelectLabel>Labor</SelectLabel>
-                   {laborServices.map(svc => (
-                     <SelectItem key={svc.id} value={svc.id}>{svc.name}</SelectItem>
-                   ))}
-                 </SelectGroup>
-               )}
-               {materialServices.length > 0 && (
-                 <SelectGroup>
-                   <SelectLabel>Materials</SelectLabel>
-                   {materialServices.map(svc => (
-                     <SelectItem key={svc.id} value={svc.id}>{svc.name}</SelectItem>
-                   ))}
-                 </SelectGroup>
-               )}
-               {otherServices.length > 0 && (
-                 <SelectGroup>
-                   <SelectLabel>Other</SelectLabel>
-                   {otherServices.map(svc => (
-                     <SelectItem key={svc.id} value={svc.id}>{svc.name}</SelectItem>
-                   ))}
-                 </SelectGroup>
-               )}
-             </SelectContent>
-           </Select>
-          {isCustom && (
+        <div className="col-span-5 space-y-1">
+          <Select value={selectValue} onValueChange={handleServiceSelect}>
+            <SelectTrigger className="bg-white text-sm h-9">
+              <SelectValue placeholder="Select a service..." />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="__add_new__" className="text-blue-600 font-medium">+ Add New Service</SelectItem>
+              <SelectItem value="__custom__">-- Custom --</SelectItem>
+              {laborServices.length > 0 && (
+                <SelectGroup>
+                  <SelectLabel>Labor</SelectLabel>
+                  {laborServices.map(svc => (
+                    <SelectItem key={svc.id} value={svc.id}>{svc.name}</SelectItem>
+                  ))}
+                </SelectGroup>
+              )}
+              {materialServices.length > 0 && (
+                <SelectGroup>
+                  <SelectLabel>Materials</SelectLabel>
+                  {materialServices.map(svc => (
+                    <SelectItem key={svc.id} value={svc.id}>{svc.name}</SelectItem>
+                  ))}
+                </SelectGroup>
+              )}
+              {otherServices.length > 0 && (
+                <SelectGroup>
+                  <SelectLabel>Other</SelectLabel>
+                  {otherServices.map(svc => (
+                    <SelectItem key={svc.id} value={svc.id}>{svc.name}</SelectItem>
+                  ))}
+                </SelectGroup>
+              )}
+            </SelectContent>
+          </Select>
+          {!item.service_id && (
             <Input
               value={item.description}
               onChange={e => onUpdate(idx, "description", e.target.value)}
