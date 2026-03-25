@@ -62,8 +62,21 @@ export default function CustomerPortal() {
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    if (params.has("estimate_id")) setActiveTab("estimates");
-    else if (params.has("invoice_id")) setActiveTab("invoices");
+    const paymentSuccess = params.get("payment_success");
+    const paidInvoiceId = params.get("invoice_id");
+    if (paymentSuccess === "true" && paidInvoiceId) {
+      base44.entities.Invoice.update(paidInvoiceId, {
+        status: "paid",
+        paid_date: new Date().toISOString().split("T")[0],
+        payment_method: "stripe",
+      }).catch(() => {});
+      window.history.replaceState({}, "", window.location.pathname);
+      setActiveTab("invoices");
+    } else if (params.has("estimate_id")) {
+      setActiveTab("estimates");
+    } else if (params.has("invoice_id")) {
+      setActiveTab("invoices");
+    }
   }, []);
 
   async function init() {
