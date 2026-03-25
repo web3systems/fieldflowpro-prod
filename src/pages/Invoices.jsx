@@ -95,9 +95,13 @@ export default function Invoices() {
 
   function updateItem(index, field, value) {
     const items = [...form.line_items];
-    items[index] = { ...items[index], [field]: value };
-    if (field === "quantity" || field === "unit_price") {
-      items[index].total = (items[index].quantity || 0) * (items[index].unit_price || 0);
+    if (field === null && typeof value === "object") {
+      items[index] = value;
+    } else {
+      items[index] = { ...items[index], [field]: value };
+      if (field === "quantity" || field === "unit_price") {
+        items[index].total = (items[index].quantity || 0) * (items[index].unit_price || 0);
+      }
     }
     const subtotal = items.reduce((s, i) => s + (i.total || 0), 0);
     const tax_amount = subtotal * ((form.tax_rate || 0) / 100);
