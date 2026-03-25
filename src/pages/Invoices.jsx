@@ -67,7 +67,7 @@ export default function Invoices() {
       const paidInvoiceId = params.get("invoice_id");
 
       if (paymentSuccess === "true" && paidInvoiceId) {
-        base44.entities.Invoice.update(paidInvoiceId, { status: "paid" }).then(() => loadData());
+        base44.entities.Invoice.update(paidInvoiceId, { status: "paid", paid_date: new Date().toISOString().split("T")[0], payment_method: "stripe" }).then(() => loadData());
         window.history.replaceState({}, "", window.location.pathname);
       } else if (customerId) {
         const num = `INV-${String(invoices.length + 1).padStart(4, "0")}`;
@@ -168,7 +168,8 @@ export default function Invoices() {
   }
 
   const filtered = invoices.filter(inv => {
-    const matchSearch = !search || inv.invoice_number?.includes(search);
+    const customerName = getCustomerName(inv.customer_id).toLowerCase();
+    const matchSearch = !search || inv.invoice_number?.toLowerCase().includes(search.toLowerCase()) || customerName.includes(search.toLowerCase());
     const matchStatus = filterStatus === "all" || inv.status === filterStatus;
     return matchSearch && matchStatus;
   });
