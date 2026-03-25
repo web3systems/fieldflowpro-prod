@@ -4,8 +4,8 @@ import { base44 } from "@/api/base44Client";
 import { useApp } from "../Layout";
 import {
   Plus, DollarSign, Search, ChevronRight, CheckCircle,
-  Clock, AlertCircle, Trash2, CreditCard, ExternalLink,
-  Download, Mail, Send, X
+  Clock, AlertCircle, CreditCard, ExternalLink,
+  Download, Mail, X
 } from "lucide-react";
 import { downloadInvoicePdf } from "../components/documents/generatePdf";
 import { Button } from "@/components/ui/button";
