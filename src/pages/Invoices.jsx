@@ -44,6 +44,7 @@ export default function Invoices() {
   const { activeCompany } = useApp();
   const [invoices, setInvoices] = useState([]);
   const [customers, setCustomers] = useState([]);
+  const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
