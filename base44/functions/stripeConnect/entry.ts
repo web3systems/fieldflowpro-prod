@@ -113,7 +113,7 @@ Deno.serve(async (req) => {
       if (company?.stripe_account_id) {
         // Deauthorize the account
         await stripe.oauth.deauthorize({
-          client_id: account.stripe_account_id,
+          client_id: company.stripe_account_id,
           stripe_user_id: company.stripe_account_id
         }).catch(e => console.log('Deauthorize error (non-fatal):', e.message));
 
