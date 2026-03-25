@@ -236,20 +236,6 @@ export default function EstimateDetail() {
     }
   }
 
-  async function handleSendSms() {
-    setSendingSms(true);
-    try {
-      await base44.functions.invoke("sendEstimateOrInvoice", {
-        estimate_id: id,
-        customer_id: form.customer_id,
-        company_id: activeCompany?.id,
-        contact_method: "sms",
-      });
-    } finally {
-      setSendingSms(false);
-    }
-  }
-
   async function handleDuplicate() {
     setDuplicating(true);
     const allEsts = await base44.entities.Estimate.filter({ company_id: activeCompany.id });

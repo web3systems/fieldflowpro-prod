@@ -118,19 +118,6 @@ export default function InvoiceDetail() {
     await loadData();
   }
 
-  async function handleSendSms() {
-    setSendingSms(true);
-    try {
-      await base44.functions.invoke("sendEstimateOrInvoice", {
-        invoice_id: id,
-        customer_id: form.customer_id,
-        contact_method: "sms",
-      });
-    } finally {
-      setSendingSms(false);
-    }
-  }
-
   function handleDownloadPdf() {
     const customer = customers.find(c => c.id === form.customer_id);
     downloadInvoicePdf({ ...form, id }, customer, activeCompany);
