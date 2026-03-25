@@ -413,9 +413,20 @@ export default function EstimateDetail() {
           {/* Mobile summary */}
           <div className="lg:hidden space-y-3">
             <Card className="border-0 shadow-sm">
-              <CardContent className="p-4 flex flex-wrap gap-4">
+              <CardContent className="p-4 flex flex-wrap gap-4 items-center">
                 <div className="flex items-center gap-2 text-sm"><User className="w-3.5 h-3.5 text-slate-400" /><span>{getCustomerName(form.customer_id)}</span></div>
                 <div className="flex items-center gap-2 text-sm"><DollarSign className="w-3.5 h-3.5 text-slate-400" /><span className="font-semibold">${(opt?.total || 0).toLocaleString()}</span></div>
+                <div className="flex items-center gap-2 ml-auto">
+                  <Label className="text-xs text-slate-500">Status:</Label>
+                  <Select value={form.status} onValueChange={async (v) => {
+                    setForm(f => ({ ...f, status: v }));
+                    await base44.entities.Estimate.update(id, { status: v });
+                    setEstimate(e => ({ ...e, status: v }));
+                  }}>
+                    <SelectTrigger className="h-7 text-xs w-32"><SelectValue /></SelectTrigger>
+                    <SelectContent>{Object.keys(STATUS_STYLES).map(s => <SelectItem key={s} value={s} className="capitalize">{s}</SelectItem>)}</SelectContent>
+                  </Select>
+                </div>
               </CardContent>
             </Card>
             {canAct && (
