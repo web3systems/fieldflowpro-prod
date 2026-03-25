@@ -40,6 +40,19 @@ export default function Dashboard() {
   }, [activeCompany]);
 
   useEffect(() => {
+    const unsub = base44.entities.Invoice.subscribe((event) => {
+      if (event.type === "update" || event.type === "create") {
+        setInvoices(prev => {
+          const exists = prev.find(i => i.id === event.id);
+          if (exists) return prev.map(i => i.id === event.id ? event.data : i);
+          return [...prev, event.data];
+        });
+      }
+    });
+    return unsub;
+  }, []);
+
+  useEffect(() => {
     base44.auth.me().then(async u => {
       setUser(u);
       // Only redirect to customer portal if they're role "user" AND have no staff access records
