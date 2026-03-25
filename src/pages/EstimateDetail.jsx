@@ -362,6 +362,22 @@ export default function EstimateDetail() {
           <Card className="border-0 shadow-sm">
             <CardContent className="p-4 space-y-2">
               <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">Actions</p>
+
+              {/* Manual status change — always visible */}
+              <div className="pb-3 border-b border-slate-100">
+                <Label className="text-xs text-slate-500 mb-1 block">Change Status</Label>
+                <div className="flex gap-2">
+                  <Select value={form.status} onValueChange={async (v) => {
+                    setForm(f => ({ ...f, status: v }));
+                    await base44.entities.Estimate.update(id, { status: v });
+                    setEstimate(e => ({ ...e, status: v }));
+                  }}>
+                    <SelectTrigger className="h-8 text-sm flex-1"><SelectValue /></SelectTrigger>
+                    <SelectContent>{Object.keys(STATUS_STYLES).map(s => <SelectItem key={s} value={s} className="capitalize">{s}</SelectItem>)}</SelectContent>
+                  </Select>
+                </div>
+              </div>
+
               {canAct && (
                 <>
                   <Button onClick={handleDecline} variant="outline" className="w-full gap-2 border-red-200 text-red-600 hover:bg-red-50">
@@ -375,7 +391,6 @@ export default function EstimateDetail() {
                     <Button onClick={handleSendEmail} disabled={sendingEmail} variant="outline" className="w-full gap-2 border-blue-200 text-blue-600 hover:bg-blue-50">
                       <Mail className="w-4 h-4" /> {sendingEmail ? "Sending..." : "Send via Email"}
                     </Button>
-
                   </div>
                 </>
               )}
