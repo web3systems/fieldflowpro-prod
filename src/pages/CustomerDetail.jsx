@@ -12,6 +12,7 @@ import CustomerSidebar from "@/components/customers/CustomerSidebar";
 import CustomerAddresses from "@/components/customers/CustomerAddresses";
 import CustomerTasks from "@/components/customers/CustomerTasks";
 import CustomerNotes from "@/components/customers/CustomerNotes";
+import AssignRecordModal from "@/components/customers/AssignRecordModal";
 
 const statusStyle = {
   active: "bg-green-100 text-green-700",
