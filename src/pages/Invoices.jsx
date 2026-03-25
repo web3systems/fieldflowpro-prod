@@ -31,7 +31,7 @@ const STATUS_STYLES = {
   void: { label: "Void", style: "bg-gray-100 text-gray-500", icon: Clock },
 };
 
-const defaultItem = { description: "", quantity: 1, unit_price: 0, total: 0 };
+const defaultItem = { service_id: null, description: "", quantity: 1, unit_price: 0, total: 0 };
 const defaultForm = {
   title: "", customer_id: "", job_id: "", status: "draft",
   line_items: [{ ...defaultItem }], subtotal: 0, tax_rate: 0,
