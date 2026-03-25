@@ -6,7 +6,7 @@ import { createPageUrl } from "@/utils";
 import {
   Building2, Users, CheckCircle, XCircle, Clock, Briefcase,
   DollarSign, UserPlus, Bell, RefreshCw, ChevronRight,
-  ShieldCheck, TrendingUp, AlertTriangle, Search, Mail, CreditCard, Zap, Upload, Megaphone
+  ShieldCheck, TrendingUp, AlertTriangle, Search, Mail, CreditCard, Zap, Upload, Megaphone, ExternalLink
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
