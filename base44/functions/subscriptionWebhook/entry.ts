@@ -57,6 +57,32 @@ Deno.serve(async (req) => {
           // User may already exist — not a fatal error
           console.log(`Invite skipped for ${owner_email}: ${inviteErr.message}`);
         }
+
+        // Send welcome email with login link
+        try {
+          await base44.asServiceRole.integrations.Core.SendEmail({
+            to: owner_email,
+            subject: "Welcome to FieldFlow Pro — Your account is ready!",
+            body: `
+              <div style="font-family: sans-serif; max-width: 560px; margin: 0 auto;">
+                <h2 style="color: #1e293b;">Welcome to FieldFlow Pro, ${owner_name || owner_email}!</h2>
+                <p>Your <strong>${plan}</strong> subscription is now active and your account is ready to go.</p>
+                <p>Click below to sign in and get started:</p>
+                <p style="margin: 24px 0;">
+                  <a href="https://app.fieldflowpro.com/Dashboard" style="background: #3b82f6; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: 600;">
+                    Go to My Dashboard →
+                  </a>
+                </p>
+                <p style="color: #64748b; font-size: 14px;">You'll receive a separate email to set your password. If you have any questions, just reply to this email.</p>
+                <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0;" />
+                <p style="color: #94a3b8; font-size: 12px;">FieldFlow Pro · Field Service Management</p>
+              </div>
+            `
+          });
+          console.log(`Welcome email sent to ${owner_email}`);
+        } catch (emailErr) {
+          console.error(`Welcome email failed for ${owner_email}: ${emailErr.message}`);
+        }
       }
     }
 
