@@ -7,6 +7,7 @@ import { useApp } from '@/layout.jsx';
 import CompanyTeamTab from '@/components/settings/CompanyTeamTab';
 import CompanyBillingTab from '@/components/settings/CompanyBillingTab';
 import CustomerPortalSettingsTab from '@/components/settings/CustomerPortalSettingsTab';
+import StripeConnectCard from '@/components/settings/StripeConnectCard';
 
 export default function CompanySettings() {
   const { activeCompany, user } = useApp();
