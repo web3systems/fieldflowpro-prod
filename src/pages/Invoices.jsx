@@ -210,17 +210,22 @@ export default function Invoices() {
       return;
     }
     setPaymentLoading(true);
-    const currentUrl = window.location.href.split("?")[0];
-    const response = await base44.functions.invoke("createStripeCheckout", {
-      invoice_id: editing.id,
-      success_url: currentUrl,
-      cancel_url: currentUrl,
-    });
-    setPaymentLoading(false);
-    if (response.data?.url) {
-      window.location.href = response.data.url;
-    } else {
-      alert(response.data?.error || "Failed to create payment session.");
+    try {
+      const currentUrl = window.location.href.split("?")[0];
+      const response = await base44.functions.invoke("createStripeCheckout", {
+        invoice_id: editing.id,
+        success_url: currentUrl,
+        cancel_url: currentUrl,
+      });
+      if (response.data?.url) {
+        window.location.href = response.data.url;
+      } else {
+        setPaymentLoading(false);
+        alert(response.data?.error || "Failed to create payment session.");
+      }
+    } catch (err) {
+      setPaymentLoading(false);
+      alert(err?.response?.data?.error || err.message || "Failed to create payment session.");
     }
   }
 
