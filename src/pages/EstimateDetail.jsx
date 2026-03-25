@@ -6,7 +6,7 @@ import { createPageUrl } from "@/utils";
 import {
   ArrowLeft, Download, Copy, CheckCircle, XCircle, Briefcase,
   Plus, Save, User, Calendar, DollarSign, FileText, Edit2, X, Trash2,
-  Mail, MessageSquare
+  Mail
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -62,7 +62,6 @@ export default function EstimateDetail() {
   const [editingInfo, setEditingInfo] = useState(false);
   const [activeOptionIdx, setActiveOptionIdx] = useState(0);
   const [sendingEmail, setSendingEmail] = useState(false);
-  const [sendingSms, setSendingSms] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
 
   const normalizeLineItems = (items) => {
@@ -376,9 +375,7 @@ export default function EstimateDetail() {
                     <Button onClick={handleSendEmail} disabled={sendingEmail} variant="outline" className="w-full gap-2 border-blue-200 text-blue-600 hover:bg-blue-50">
                       <Mail className="w-4 h-4" /> {sendingEmail ? "Sending..." : "Send via Email"}
                     </Button>
-                    <Button onClick={handleSendSms} disabled={sendingSms} variant="outline" className="w-full gap-2 border-green-200 text-green-600 hover:bg-green-50">
-                      <MessageSquare className="w-4 h-4" /> {sendingSms ? "Sending..." : "Send via SMS"}
-                    </Button>
+
                   </div>
                 </>
               )}
