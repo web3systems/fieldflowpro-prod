@@ -547,15 +547,14 @@ export default function CustomerPortal() {
 
             {/* Messages Tab */}
             {activeTab === "messages" && (
-              <div>
-                <div className="bg-white border border-slate-200 rounded-xl overflow-hidden" style={{ height: "60vh" }}>
-                  {customer && (
-                    <iframe
-                      title="Messages"
-                      style={{ width: "100%", height: "100%", border: "none" }}
-                      srcDoc={`<p style="font-family:sans-serif;color:#94a3b8;text-align:center;margin-top:3rem;">Loading messages...</p>`}
-                    />
-                  )}
+              <div className="max-w-lg">
+                <div className="bg-slate-50 border border-slate-200 rounded-xl p-8 text-center">
+                  <MessageCircle className="w-12 h-12 mx-auto mb-3 text-slate-300" />
+                  <h2 className="text-lg font-bold text-slate-700 mb-2">Send a Message</h2>
+                  <p className="text-slate-500 text-sm mb-4">To get in touch, please contact us directly:</p>
+                  {company?.phone && <p className="text-slate-700 font-medium mb-1">📞 {company.phone}</p>}
+                  {company?.email && <p className="text-slate-700 font-medium">✉️ {company.email}</p>}
+                  {!company?.phone && !company?.email && <p className="text-slate-400 text-sm">Contact info not available.</p>}
                 </div>
               </div>
             )}
