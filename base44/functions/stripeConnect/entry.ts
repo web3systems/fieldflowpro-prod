@@ -109,7 +109,8 @@ Deno.serve(async (req) => {
     }
 
     if (action === 'disconnect') {
-      const company = await base44.asServiceRole.entities.Company.get(company_id);
+      const companies = await base44.asServiceRole.entities.Company.filter({ id: company_id });
+      const company = companies[0];
       if (company?.stripe_account_id) {
         // Deauthorize the account
         await stripe.oauth.deauthorize({
