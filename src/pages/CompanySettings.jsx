@@ -63,6 +63,10 @@ export default function CompanySettings() {
             <CustomerPortalSettingsTab company={company} onSave={loadCompany} />
           </TabsContent>
 
+          <TabsContent value="payments">
+            <StripeConnectCard company={company} />
+          </TabsContent>
+
           {isOwner && (
             <TabsContent value="general">
               <Card>
