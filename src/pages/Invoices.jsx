@@ -82,12 +82,14 @@ export default function Invoices() {
 
   async function loadData() {
     setLoading(true);
-    const [inv, c] = await Promise.all([
+    const [inv, c, svcs] = await Promise.all([
       base44.entities.Invoice.filter({ company_id: activeCompany.id }),
       base44.entities.Customer.filter({ company_id: activeCompany.id }),
+      base44.entities.Service.filter({ company_id: activeCompany.id, is_active: true }),
     ]);
     setInvoices(inv);
     setCustomers(c);
+    setServices(svcs);
     setLoading(false);
   }
 
