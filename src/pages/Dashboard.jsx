@@ -279,6 +279,27 @@ export default function Dashboard() {
 
       <RevenueChart invoices={invoices} />
 
+      {/* Today's Payments */}
+      <Card className="border-0 shadow-sm border-l-4 border-l-green-500">
+        <CardContent className="p-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-green-50 flex items-center justify-center">
+              <CreditCard className="w-5 h-5 text-green-600" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-slate-700">Today's Payments</p>
+              <p className="text-xs text-slate-400">{todayPaidInvoices.length} invoice{todayPaidInvoices.length !== 1 ? "s" : ""} paid today</p>
+            </div>
+          </div>
+          <div className="text-right">
+            <p className="text-2xl font-bold text-green-600">${todayPaymentsTotal.toLocaleString("en-US", { minimumFractionDigits: 2 })}</p>
+            <Link to={createPageUrl("Invoices")} className="text-xs text-blue-600 hover:underline flex items-center gap-1 justify-end mt-0.5">
+              View invoices <ArrowRight className="w-3 h-3" />
+            </Link>
+          </div>
+        </CardContent>
+      </Card>
+
       <div className="grid lg:grid-cols-2 gap-6">
         {/* Today's Jobs */}
         <Card className="border-0 shadow-sm">
@@ -326,7 +347,7 @@ export default function Dashboard() {
           </CardContent>
         </Card>
 
-        {/* Recent Jobs */}
+        {/* Recent Activity - jobs + payments mixed */}
         <Card className="border-0 shadow-sm">
           <CardHeader className="px-4 py-4 border-b border-slate-100">
             <div className="flex items-center justify-between">
@@ -334,7 +355,7 @@ export default function Dashboard() {
                 <Clock className="w-4 h-4 text-violet-500" />
                 Recent Activity
               </CardTitle>
-              <Link to={createPageUrl("Jobs")} className="text-xs text-blue-600 hover:underline flex items-center gap-1">
+              <Link to={createPageUrl("Invoices")} className="text-xs text-blue-600 hover:underline flex items-center gap-1">
                 View all <ArrowRight className="w-3 h-3" />
               </Link>
             </div>
@@ -346,33 +367,56 @@ export default function Dashboard() {
                   <div key={i} className="h-14 bg-slate-100 rounded-lg animate-pulse" />
                 ))}
               </div>
-            ) : jobs.length === 0 ? (
-              <div className="p-8 text-center text-slate-400 text-sm">No jobs yet</div>
+            ) : recentActivity.length === 0 ? (
+              <div className="p-8 text-center text-slate-400 text-sm">No recent activity</div>
             ) : (
               <div className="divide-y divide-slate-100">
-                {jobs.slice(0, 5).map(job => (
-                  <div key={job.id} className="flex items-center gap-3 px-4 py-3">
-                    <div className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 ${
-                      job.status === "completed" ? "bg-green-100" : job.status === "in_progress" ? "bg-amber-100" : "bg-blue-100"
-                    }`}>
-                      {job.status === "completed"
-                        ? <CheckCircle className="w-3.5 h-3.5 text-green-600" />
-                        : job.status === "cancelled"
-                        ? <AlertCircle className="w-3.5 h-3.5 text-red-600" />
-                        : <Clock className="w-3.5 h-3.5 text-blue-600" />
-                      }
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-slate-800 truncate">{job.title}</p>
-                      <p className="text-xs text-slate-400">
-                        {job.created_date ? format(new Date(job.created_date), "MMM d") : ""}
-                      </p>
-                    </div>
-                    <Badge className={`text-xs ${statusColors[job.status] || "bg-gray-100 text-gray-600"}`}>
-                      {job.status?.replace("_", " ")}
-                    </Badge>
-                  </div>
-                ))}
+                {recentActivity.map((item, idx) => {
+                  if (item.type === "payment") {
+                    const inv = item.data;
+                    const cust = customers.find(c => c.id === inv.customer_id);
+                    return (
+                      <Link key={`inv-${inv.id}`} to={`/InvoiceDetail/${inv.id}`} className="flex items-center gap-3 px-4 py-3 hover:bg-slate-50 transition-colors">
+                        <div className="w-7 h-7 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+                          <CreditCard className="w-3.5 h-3.5 text-green-600" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-slate-800 truncate">
+                            Payment — {cust ? `${cust.first_name} ${cust.last_name}` : inv.invoice_number || "Invoice"}
+                          </p>
+                          <p className="text-xs text-slate-400">
+                            {inv.paid_date ? format(new Date(inv.paid_date), "MMM d") : ""}
+                          </p>
+                        </div>
+                        <span className="text-sm font-semibold text-green-600">${(inv.total || 0).toLocaleString("en-US", { minimumFractionDigits: 2 })}</span>
+                      </Link>
+                    );
+                  }
+                  const job = item.data;
+                  return (
+                    <Link key={`job-${job.id}`} to={`/JobDetail/${job.id}`} className="flex items-center gap-3 px-4 py-3 hover:bg-slate-50 transition-colors">
+                      <div className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 ${
+                        job.status === "completed" ? "bg-green-100" : job.status === "in_progress" ? "bg-amber-100" : "bg-blue-100"
+                      }`}>
+                        {job.status === "completed"
+                          ? <CheckCircle className="w-3.5 h-3.5 text-green-600" />
+                          : job.status === "cancelled"
+                          ? <AlertCircle className="w-3.5 h-3.5 text-red-600" />
+                          : <Clock className="w-3.5 h-3.5 text-blue-600" />
+                        }
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-slate-800 truncate">{job.title}</p>
+                        <p className="text-xs text-slate-400">
+                          {item.date ? format(new Date(item.date), "MMM d") : ""}
+                        </p>
+                      </div>
+                      <Badge className={`text-xs ${statusColors[job.status] || "bg-gray-100 text-gray-600"}`}>
+                        {job.status?.replace("_", " ")}
+                      </Badge>
+                    </Link>
+                  );
+                })}
               </div>
             )}
           </CardContent>
