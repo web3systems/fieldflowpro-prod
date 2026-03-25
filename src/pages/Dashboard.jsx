@@ -84,6 +84,20 @@ export default function Dashboard() {
   const pendingRevenue = invoices.filter(i => ["sent", "viewed", "overdue"].includes(i.status)).reduce((s, i) => s + (i.total || 0), 0);
   const newLeads = leads.filter(l => l.status === "new").length;
 
+  const todayStr = format(new Date(), "yyyy-MM-dd");
+  const todayPaidInvoices = invoices.filter(i =>
+    i.status === "paid" && i.paid_date && i.paid_date.startsWith(todayStr)
+  );
+  const todayPaymentsTotal = todayPaidInvoices.reduce((s, i) => s + (i.total || 0), 0);
+
+  // Recent activity: mix of recent jobs AND recent paid invoices, sorted by date
+  const recentActivity = [
+    ...jobs.map(j => ({ type: "job", date: j.updated_date || j.created_date, data: j })),
+    ...invoices.filter(i => i.status === "paid").map(i => ({ type: "payment", date: i.paid_date || i.updated_date, data: i })),
+  ]
+    .sort((a, b) => new Date(b.date) - new Date(a.date))
+    .slice(0, 6);
+
   const stats = [
     {
       label: "Active Jobs",
