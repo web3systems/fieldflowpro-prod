@@ -5,8 +5,7 @@ import { useApp } from "../Layout";
 import { createPageUrl } from "@/utils";
 import {
   ArrowLeft, DollarSign, User, Calendar, CreditCard, Mail,
-  Download, Save, Edit2, Plus, Trash2, CheckCircle, AlertCircle, Clock, ExternalLink,
-  MessageSquare
+  Download, Save, Edit2, Plus, Trash2, CheckCircle, AlertCircle, Clock, ExternalLink
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -50,7 +49,6 @@ export default function InvoiceDetail() {
   const [sendingEmail, setSendingEmail] = useState(false);
   const [form, setForm] = useState(defaultForm);
   const [editingInfo, setEditingInfo] = useState(false);
-  const [sendingSms, setSendingSms] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
 
   const loadData = useCallback(async () => {
@@ -269,11 +267,7 @@ export default function InvoiceDetail() {
                     <Mail className="w-4 h-4" />{sendingEmail ? "Sending..." : "Email to Customer"}
                   </Button>
                 )}
-                {customer?.phone && (
-                  <Button variant="outline" onClick={handleSendSms} disabled={sendingSms} className="w-full gap-2 border-green-200 text-green-600 hover:bg-green-50">
-                    <MessageSquare className="w-4 h-4" />{sendingSms ? "Sending..." : "SMS to Customer"}
-                  </Button>
-                )}
+
               </CardContent>
             </Card>
           )}
