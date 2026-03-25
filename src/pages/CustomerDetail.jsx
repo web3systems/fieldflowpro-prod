@@ -141,9 +141,14 @@ export default function CustomerDetail() {
               <h3 className="text-sm font-semibold text-slate-700 flex items-center gap-1.5">
                 <Briefcase className="w-4 h-4 text-slate-500" /> Jobs ({jobs.length})
               </h3>
-              <Button size="sm" variant="outline" className="text-xs gap-1" onClick={() => navigate(createPageUrl(`Jobs?customer_id=${id}`))}>
-                <Briefcase className="w-3 h-3" /> New Job
-              </Button>
+              <div className="flex gap-1">
+                <Button size="sm" variant="outline" className="text-xs gap-1" onClick={() => setAssignModal("job")}>
+                  <Link2 className="w-3 h-3" /> Assign Existing
+                </Button>
+                <Button size="sm" variant="outline" className="text-xs gap-1" onClick={() => navigate(createPageUrl(`Jobs?customer_id=${id}`))}>
+                  <Briefcase className="w-3 h-3" /> New Job
+                </Button>
+              </div>
             </div>
             {jobs.length === 0 ? (
               <p className="text-sm text-slate-400 py-4 text-center">No jobs yet.</p>
