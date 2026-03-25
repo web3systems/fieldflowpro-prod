@@ -47,6 +47,17 @@ Deno.serve(async (req) => {
         await base44.asServiceRole.entities.Subscription.create(subData);
       }
       console.log(`Subscription activated for company ${company_id}, plan ${plan}`);
+
+      // Auto-invite the owner so they can log in
+      if (owner_email) {
+        try {
+          await base44.asServiceRole.users.inviteUser(owner_email, "user");
+          console.log(`Invited owner ${owner_email} to the app`);
+        } catch (inviteErr) {
+          // User may already exist — not a fatal error
+          console.log(`Invite skipped for ${owner_email}: ${inviteErr.message}`);
+        }
+      }
     }
 
     if (event.type === 'customer.subscription.updated') {
