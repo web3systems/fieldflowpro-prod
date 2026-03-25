@@ -261,6 +261,16 @@ export default function CustomerDetail() {
           />
         </div>
       </div>
+
+      <AssignRecordModal
+        open={!!assignModal}
+        onClose={() => setAssignModal(null)}
+        type={assignModal}
+        companyId={customer.company_id}
+        customerId={id}
+        customerName={`${customer.first_name} ${customer.last_name}`}
+        onAssigned={loadData}
+      />
     </div>
   );
 }
