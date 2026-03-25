@@ -71,28 +71,41 @@ Deno.serve(async (req) => {
     }
 
     if (action === 'check_status') {
-      const company = await base44.asServiceRole.entities.Company.get(company_id);
+      const companies = await base44.asServiceRole.entities.Company.filter({ id: company_id });
+      const company = companies[0];
       if (!company?.stripe_account_id) {
         return Response.json({ connected: false });
       }
 
-      const account = await stripe.accounts.retrieve(company.stripe_account_id);
-      const isComplete = account.charges_enabled && account.details_submitted;
+      try {
+        const account = await stripe.accounts.retrieve(company.stripe_account_id);
+        const isComplete = account.charges_enabled && account.details_submitted;
 
-      // Update onboarding status if it changed
-      if (isComplete !== company.stripe_onboarding_complete) {
-        await base44.asServiceRole.entities.Company.update(company_id, {
-          stripe_onboarding_complete: isComplete
+        if (isComplete !== company.stripe_onboarding_complete) {
+          await base44.asServiceRole.entities.Company.update(company_id, {
+            stripe_onboarding_complete: isComplete
+          });
+        }
+
+        return Response.json({
+          connected: true,
+          account_id: company.stripe_account_id,
+          charges_enabled: account.charges_enabled,
+          details_submitted: account.details_submitted,
+          onboarding_complete: isComplete
         });
+      } catch (stripeErr) {
+        console.error('Stripe account retrieve error:', stripeErr.message);
+        // Account may have been deleted/deauthorized — reset
+        if (stripeErr.code === 'account_invalid' || stripeErr.statusCode === 404) {
+          await base44.asServiceRole.entities.Company.update(company_id, {
+            stripe_account_id: null,
+            stripe_onboarding_complete: false
+          });
+          return Response.json({ connected: false });
+        }
+        throw stripeErr;
       }
-
-      return Response.json({
-        connected: true,
-        account_id: company.stripe_account_id,
-        charges_enabled: account.charges_enabled,
-        details_submitted: account.details_submitted,
-        onboarding_complete: isComplete
-      });
     }
 
     if (action === 'disconnect') {
