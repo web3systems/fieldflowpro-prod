@@ -364,6 +364,15 @@ export default function SuperAdminDashboard() {
                 </CardContent>
               </Card>
             </Link>
+            <a href="/CustomerPortal" target="_blank" rel="noopener noreferrer">
+              <Card className="border-0 shadow-sm hover:shadow-md transition-shadow cursor-pointer group">
+                <CardContent className="p-4 flex items-center gap-3">
+                  <ExternalLink className="w-5 h-5 text-teal-500" />
+                  <span className="text-sm font-medium text-slate-700 group-hover:text-teal-600">Customer Portal</span>
+                  <ExternalLink className="w-4 h-4 text-slate-300 ml-auto" />
+                </CardContent>
+              </Card>
+            </a>
           </div>
         </TabsContent>
 
