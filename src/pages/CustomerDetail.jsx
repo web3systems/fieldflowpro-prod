@@ -32,6 +32,7 @@ export default function CustomerDetail() {
   const [technicians, setTechnicians] = useState([]);
   const [loading, setLoading] = useState(true);
   const [sendingInvite, setSendingInvite] = useState(false);
+  const [assignModal, setAssignModal] = useState(null); // "job" | "estimate" | "invoice"
 
   const loadData = useCallback(async () => {
     if (!id) return;
