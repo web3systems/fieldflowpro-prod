@@ -384,75 +384,73 @@ export default function CustomerPortal() {
             {/* Invoices Tab */}
             {activeTab === "invoices" && (
               <div>
-                <div className="flex border-b border-slate-200 mb-4">
-                  <button
-                    onClick={() => setInvoiceSubTab("appointments")}
-                    className={`px-4 py-2 text-sm font-semibold border-b-2 transition-colors ${invoiceSubTab === "appointments" ? "border-blue-600 text-blue-600" : "border-transparent text-slate-500 hover:text-slate-700"}`}
-                    style={invoiceSubTab === "appointments" ? { borderColor: accentColor, color: accentColor } : {}}
-                  >
-                    APPOINTMENTS
-                  </button>
-                  <button
-                    onClick={() => setInvoiceSubTab("service_plans")}
-                    className={`px-4 py-2 text-sm font-semibold border-b-2 transition-colors ${invoiceSubTab === "service_plans" ? "border-blue-600 text-blue-600" : "border-transparent text-slate-500 hover:text-slate-700"}`}
-                    style={invoiceSubTab === "service_plans" ? { borderColor: accentColor, color: accentColor } : {}}
-                  >
-                    SERVICE PLANS
-                  </button>
-                </div>
-
-                {invoiceSubTab === "appointments" && (
-                  <div>
-                    <table className="w-full text-sm">
-                      <thead>
-                        <tr className="border-b border-slate-200">
-                          <th className="text-left py-3 pr-4 font-semibold text-slate-500 text-xs uppercase">Invoice #</th>
-                          <th className="text-left py-3 pr-4 font-semibold text-slate-500 text-xs uppercase">Total amount</th>
-                          <th className="text-left py-3 pr-4 font-semibold text-slate-500 text-xs uppercase">Service date</th>
-                          <th className="text-left py-3 pr-4 font-semibold text-slate-500 text-xs uppercase">Due date</th>
-                          <th className="text-left py-3 font-semibold text-slate-500 text-xs uppercase">Status</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {paginatedInvoices.length === 0 ? (
-                          <tr>
-                            <td colSpan={5} className="text-center py-16 text-slate-400">No invoices</td>
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-slate-200">
+                      <th className="text-left py-3 pr-4 font-semibold text-slate-500 text-xs uppercase">Invoice #</th>
+                      <th className="text-left py-3 pr-4 font-semibold text-slate-500 text-xs uppercase">Total</th>
+                      <th className="text-left py-3 pr-4 font-semibold text-slate-500 text-xs uppercase">Date</th>
+                      <th className="text-left py-3 pr-4 font-semibold text-slate-500 text-xs uppercase">Due date</th>
+                      <th className="text-left py-3 pr-4 font-semibold text-slate-500 text-xs uppercase">Status</th>
+                      <th className="text-left py-3 font-semibold text-slate-500 text-xs uppercase">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {paginatedInvoices.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} className="text-center py-16 text-slate-400">No invoices</td>
+                      </tr>
+                    ) : (
+                      paginatedInvoices.map(inv => {
+                        const s = INVOICE_STATUS[inv.status] || INVOICE_STATUS.sent;
+                        const canPay = !["paid", "void", "draft"].includes(inv.status);
+                        return (
+                          <tr key={inv.id} className="border-b border-slate-100 hover:bg-slate-50">
+                            <td className="py-3 pr-4 font-medium text-slate-800">{inv.invoice_number || "—"}</td>
+                            <td className="py-3 pr-4 text-slate-700 font-semibold">${(inv.total || 0).toFixed(2)}</td>
+                            <td className="py-3 pr-4 text-slate-600">
+                              {inv.created_date ? format(new Date(inv.created_date), "MMM d, yyyy") : "—"}
+                            </td>
+                            <td className="py-3 pr-4 text-slate-600">
+                              {inv.due_date ? format(new Date(inv.due_date), "MMM d, yyyy") : "—"}
+                            </td>
+                            <td className="py-3 pr-4">
+                              <Badge className={`text-xs ${s.color}`}>{s.label}</Badge>
+                            </td>
+                            <td className="py-3">
+                              {canPay && (
+                                <button
+                                  onClick={async () => {
+                                    const isInIframe = window.self !== window.top;
+                                    if (isInIframe) { alert("Payment only works from the published app."); return; }
+                                    const res = await base44.functions.invoke("createStripeCheckout", {
+                                      invoice_id: inv.id,
+                                      success_url: window.location.href.split("?")[0] + "?invoice_id=" + inv.id,
+                                      cancel_url: window.location.href.split("?")[0],
+                                    });
+                                    if (res.data?.url) window.location.href = res.data.url;
+                                    else alert(res.data?.error || "Failed to start checkout.");
+                                  }}
+                                  className="text-xs px-3 py-1.5 rounded-md font-semibold text-white"
+                                  style={{ backgroundColor: accentColor }}
+                                >
+                                  Pay Now
+                                </button>
+                              )}
+                            </td>
                           </tr>
-                        ) : (
-                          paginatedInvoices.map(inv => {
-                            const s = INVOICE_STATUS[inv.status] || INVOICE_STATUS.sent;
-                            return (
-                              <tr key={inv.id} className="border-b border-slate-100 hover:bg-slate-50">
-                                <td className="py-3 pr-4 font-medium text-slate-800">{inv.invoice_number || "—"}</td>
-                                <td className="py-3 pr-4 text-slate-700 font-semibold">${(inv.total || 0).toFixed(2)}</td>
-                                <td className="py-3 pr-4 text-slate-600">
-                                  {inv.created_date ? format(new Date(inv.created_date), "MMM d, yyyy") : "—"}
-                                </td>
-                                <td className="py-3 pr-4 text-slate-600">
-                                  {inv.due_date ? format(new Date(inv.due_date), "MMM d, yyyy") : "—"}
-                                </td>
-                                <td className="py-3">
-                                  <Badge className={`text-xs ${s.color}`}>{s.label}</Badge>
-                                </td>
-                              </tr>
-                            );
-                          })
-                        )}
-                      </tbody>
-                    </table>
-                    <PaginationBar
-                      total={invoices.length}
-                      page={invoicePage}
-                      rowsPerPage={invoiceRowsPerPage}
-                      onPageChange={setInvoicePage}
-                      onRowsPerPageChange={v => { setInvoiceRowsPerPage(v); setInvoicePage(1); }}
-                    />
-                  </div>
-                )}
-
-                {invoiceSubTab === "service_plans" && (
-                  <div className="text-center py-16 text-slate-400">No service plans</div>
-                )}
+                        );
+                      })
+                    )}
+                  </tbody>
+                </table>
+                <PaginationBar
+                  total={invoices.length}
+                  page={invoicePage}
+                  rowsPerPage={invoiceRowsPerPage}
+                  onPageChange={setInvoicePage}
+                  onRowsPerPageChange={v => { setInvoiceRowsPerPage(v); setInvoicePage(1); }}
+                />
               </div>
             )}
 
