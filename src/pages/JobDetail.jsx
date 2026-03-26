@@ -126,7 +126,14 @@ export default function JobDetail() {
     </div>
   );
 
-  if (!job) return <div className="p-6 text-center text-slate-500">Job not found.</div>;
+  if (!job) return (
+    <div className="p-6 text-center text-slate-500 flex flex-col items-center gap-4 pt-20">
+      <p>Job not found.</p>
+      <button onClick={() => navigate(createPageUrl("Jobs"))} className="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700">
+        Back to Jobs
+      </button>
+    </div>
+  );
 
   const customer = customers.find(c => c.id === form.customer_id);
 

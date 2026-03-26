@@ -58,8 +58,27 @@ const AuthenticatedApp = () => {
       const isPublicPath = publicPaths.some(p => window.location.pathname === p || window.location.pathname.startsWith(p + '/'));
       if (!isPublicPath) {
         navigateToLogin();
-        return null;
       }
+      // Always show a redirect message instead of blank screen
+      return (
+        <div className="fixed inset-0 flex flex-col items-center justify-center bg-slate-50">
+          <div className="w-8 h-8 border-4 border-slate-200 border-t-blue-500 rounded-full animate-spin mb-4"></div>
+          <p className="text-slate-500 text-sm">Redirecting to login...</p>
+        </div>
+      );
+    } else {
+      // Unknown auth error — show a safe fallback instead of blank screen
+      return (
+        <div className="fixed inset-0 flex flex-col items-center justify-center bg-slate-50 gap-4">
+          <p className="text-slate-600 text-sm">Something went wrong loading the app.</p>
+          <button
+            onClick={() => window.location.href = '/'}
+            className="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700"
+          >
+            Go to Home
+          </button>
+        </div>
+      );
     }
   }
 

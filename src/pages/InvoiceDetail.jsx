@@ -151,7 +151,14 @@ export default function InvoiceDetail() {
     </div>
   );
 
-  if (!invoice) return <div className="p-6 text-center text-slate-500">Invoice not found.</div>;
+  if (!invoice) return (
+    <div className="p-6 text-center text-slate-500 flex flex-col items-center gap-4 pt-20">
+      <p>Invoice not found.</p>
+      <button onClick={() => navigate(createPageUrl("Invoices"))} className="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700">
+        Back to Invoices
+      </button>
+    </div>
+  );
 
   const statusInfo = STATUS_STYLES[form.status] || STATUS_STYLES.draft;
 

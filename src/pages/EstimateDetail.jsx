@@ -262,7 +262,12 @@ export default function EstimateDetail() {
   );
 
   if (!estimate || !form) return (
-    <div className="p-6 text-center text-slate-500">Estimate not found.</div>
+    <div className="p-6 text-center text-slate-500 flex flex-col items-center gap-4 pt-20">
+      <p>Estimate not found.</p>
+      <button onClick={() => navigate(createPageUrl("Estimates"))} className="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700">
+        Back to Estimates
+      </button>
+    </div>
   );
 
   const canAct = !["approved", "declined"].includes(form.status);
