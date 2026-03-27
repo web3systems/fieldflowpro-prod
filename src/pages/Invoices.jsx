@@ -60,25 +60,24 @@ export default function Invoices() {
   }, [activeCompany]);
 
   useEffect(() => {
-    if (activeCompany && customers.length > 0) {
-      const params = new URLSearchParams(window.location.search);
-      const customerId = params.get("customer_id");
-      const paymentSuccess = params.get("payment_success");
-      const paidInvoiceId = params.get("invoice_id");
+    if (!activeCompany) return;
+    const params = new URLSearchParams(window.location.search);
+    const customerId = params.get("customer_id");
+    const paymentSuccess = params.get("payment_success");
+    const paidInvoiceId = params.get("invoice_id");
 
-      if (paymentSuccess === "true" && paidInvoiceId) {
-        base44.entities.Invoice.update(paidInvoiceId, { status: "paid", paid_date: new Date().toISOString().split("T")[0], payment_method: "stripe" }).then(() => loadData());
-        window.history.replaceState({}, "", window.location.pathname);
-      } else if (customerId) {
-        const num = `INV-${String(invoices.length + 1).padStart(4, "0")}`;
-        const tax_rate = activeCompany?.default_tax_rate || 0;
-        setEditing(null);
-        setForm({ ...defaultForm, invoice_number: num, customer_id: customerId, line_items: [{ ...defaultItem }], tax_rate });
-        setSheetOpen(true);
-        window.history.replaceState({}, "", window.location.pathname);
-      }
+    if (paymentSuccess === "true" && paidInvoiceId) {
+      base44.entities.Invoice.update(paidInvoiceId, { status: "paid", paid_date: new Date().toISOString().split("T")[0], payment_method: "stripe" }).then(() => loadData());
+      window.history.replaceState({}, "", window.location.pathname);
+    } else if (customerId) {
+      const num = `INV-${String(invoices.length + 1).padStart(4, "0")}`;
+      const tax_rate = activeCompany?.default_tax_rate || 0;
+      setEditing(null);
+      setForm({ ...defaultForm, invoice_number: num, customer_id: customerId, line_items: [{ ...defaultItem }], tax_rate });
+      setSheetOpen(true);
+      window.history.replaceState({}, "", window.location.pathname);
     }
-  }, [activeCompany, customers]);
+  }, [activeCompany, invoices.length]);
 
   async function loadData() {
     setLoading(true);
