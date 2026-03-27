@@ -47,6 +47,8 @@ export default function Dashboard() {
           if (exists) return prev.map(i => i.id === event.id ? event.data : i);
           return [...prev, event.data];
         });
+      } else if (event.type === "delete") {
+        setInvoices(prev => prev.filter(i => i.id !== event.id));
       }
     });
     return unsub;
