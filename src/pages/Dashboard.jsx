@@ -40,8 +40,10 @@ export default function Dashboard() {
   }, [activeCompany]);
 
   useEffect(() => {
+    if (!activeCompany) return;
     const unsub = base44.entities.Invoice.subscribe((event) => {
       if (event.type === "update" || event.type === "create") {
+        if (event.data?.company_id !== activeCompany.id) return;
         setInvoices(prev => {
           const exists = prev.find(i => i.id === event.id);
           if (exists) return prev.map(i => i.id === event.id ? event.data : i);
@@ -52,7 +54,7 @@ export default function Dashboard() {
       }
     });
     return unsub;
-  }, []);
+  }, [activeCompany]);
 
   useEffect(() => {
     base44.auth.me().then(async u => {
