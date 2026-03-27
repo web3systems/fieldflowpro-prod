@@ -166,6 +166,11 @@ export default function Invoices() {
     await loadData();
   }
 
+  const getCustomerName = (id) => {
+    const c = customers.find(c => c.id === id);
+    return c ? (c.business_name || `${c.first_name || ""} ${c.last_name || ""}`.trim() || "—") : "—";
+  };
+
   const filtered = invoices.filter(inv => {
     const customerName = getCustomerName(inv.customer_id).toLowerCase();
     const matchSearch = !search || inv.invoice_number?.toLowerCase().includes(search.toLowerCase()) || customerName.includes(search.toLowerCase());
@@ -236,11 +241,6 @@ export default function Invoices() {
       alert(err?.response?.data?.error || err.message || "Failed to create payment session.");
     }
   }
-
-  const getCustomerName = (id) => {
-    const c = customers.find(c => c.id === id);
-    return c ? `${c.first_name} ${c.last_name}` : "—";
-  };
 
   return (
     <div className="relative min-h-full p-4 md:p-6 pb-24 lg:pb-6 space-y-5 max-w-7xl mx-auto">
