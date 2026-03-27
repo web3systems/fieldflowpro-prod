@@ -356,7 +356,9 @@ export default function Invoices() {
                   <SelectTrigger><SelectValue placeholder="Select customer" /></SelectTrigger>
                   <SelectContent>
                     {customers.map(c => (
-                      <SelectItem key={c.id} value={c.id}>{c.first_name} {c.last_name}</SelectItem>
+                      <SelectItem key={c.id} value={c.id}>
+                        {c.business_name || `${c.first_name || ""} ${c.last_name || ""}`.trim() || "—"}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
