@@ -16,6 +16,7 @@ export default function LineItemRow({ item, idx, companyId, services = [], onSer
       description: svc.name,
       unit_price: svc.unit_price || 0,
       total: (item.quantity || 1) * (svc.unit_price || 0),
+      notes: item.notes || "",
     });
     setShowAddModal(false);
   }
@@ -31,13 +32,13 @@ export default function LineItemRow({ item, idx, companyId, services = [], onSer
     }
     const svc = services.find(s => s.id === value);
     if (svc) {
-      // Pass the entire updated item to avoid multi-call stale state
       onUpdate(idx, null, {
         ...item,
         service_id: svc.id,
         description: svc.name,
         unit_price: svc.unit_price || 0,
         total: (item.quantity || 1) * (svc.unit_price || 0),
+        notes: item.notes || "",
       });
     }
   }
