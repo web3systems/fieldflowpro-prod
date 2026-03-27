@@ -92,6 +92,14 @@ export default function Invoices() {
     setLoading(false);
   }
 
+  function calcTotals(items, tax_rate, discount) {
+    const subtotal = items.reduce((s, i) => s + (i.total || 0), 0);
+    const taxableSubtotal = items.reduce((s, i) => i.taxable === false ? s : s + (i.total || 0), 0);
+    const tax_amount = taxableSubtotal * ((tax_rate || 0) / 100);
+    const total = subtotal + tax_amount - (discount || 0);
+    return { subtotal, tax_amount, total };
+  }
+
   function updateItem(index, field, value) {
     const items = [...form.line_items];
     if (field === null && typeof value === "object") {
@@ -102,9 +110,7 @@ export default function Invoices() {
         items[index].total = (items[index].quantity || 0) * (items[index].unit_price || 0);
       }
     }
-    const subtotal = items.reduce((s, i) => s + (i.total || 0), 0);
-    const tax_amount = subtotal * ((form.tax_rate || 0) / 100);
-    const total = subtotal + tax_amount - (form.discount || 0);
+    const { subtotal, tax_amount, total } = calcTotals(items, form.tax_rate, form.discount);
     setForm({ ...form, line_items: items, subtotal, tax_amount, total });
   }
 
@@ -120,17 +126,13 @@ export default function Invoices() {
     } else {
       items.push(service);
     }
-    const subtotal = items.reduce((s, i) => s + (i.total || 0), 0);
-    const tax_amount = subtotal * ((form.tax_rate || 0) / 100);
-    const total = subtotal + tax_amount - (form.discount || 0);
+    const { subtotal, tax_amount, total } = calcTotals(items, form.tax_rate, form.discount);
     setForm({ ...form, line_items: items, subtotal, tax_amount, total });
   }
 
   function removeItem(index) {
     const items = form.line_items.filter((_, i) => i !== index);
-    const subtotal = items.reduce((s, i) => s + (i.total || 0), 0);
-    const tax_amount = subtotal * ((form.tax_rate || 0) / 100);
-    const total = subtotal + tax_amount - (form.discount || 0);
+    const { subtotal, tax_amount, total } = calcTotals(items, form.tax_rate, form.discount);
     setForm({ ...form, line_items: items, subtotal, tax_amount, total });
   }
 
@@ -474,8 +476,7 @@ export default function Invoices() {
                     <span className="text-sm text-slate-600 flex-1">Tax Rate (%)</span>
                     <Input type="number" value={form.tax_rate} onChange={e => {
                       const tax_rate = parseFloat(e.target.value) || 0;
-                      const tax_amount = form.subtotal * (tax_rate / 100);
-                      const total = form.subtotal + tax_amount - (form.discount || 0);
+                      const { tax_amount, total } = calcTotals(form.line_items, tax_rate, form.discount);
                       setForm({ ...form, tax_rate, tax_amount, total });
                     }} className="w-20 h-7 text-sm bg-white" />
                     <span className="text-sm text-slate-500">${(form.tax_amount || 0).toFixed(2)}</span>
