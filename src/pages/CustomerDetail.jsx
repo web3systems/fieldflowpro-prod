@@ -89,10 +89,15 @@ export default function CustomerDetail() {
         <div className="h-4 w-px bg-slate-200" />
         <div className="flex items-center gap-2 flex-1 min-w-0">
           <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-bold flex-shrink-0 text-sm">
-            {customer.first_name?.[0]}{customer.last_name?.[0]}
+            {customer.business_name ? customer.business_name[0].toUpperCase() : `${customer.first_name?.[0] || ""}${customer.last_name?.[0] || ""}`}
           </div>
           <div>
-            <h1 className="text-xl font-bold text-slate-900 leading-tight">{customer.first_name} {customer.last_name}</h1>
+            <h1 className="text-xl font-bold text-slate-900 leading-tight">
+              {customer.business_name || `${customer.first_name || ""} ${customer.last_name || ""}`.trim() || "—"}
+            </h1>
+            {customer.business_name && (customer.first_name || customer.last_name) && (
+              <p className="text-sm text-slate-500 leading-tight">{customer.first_name} {customer.last_name}</p>
+            )}
             <Badge className={`text-xs mt-0.5 ${statusStyle[customer.status] || "bg-gray-100 text-gray-600"}`}>{customer.status}</Badge>
           </div>
         </div>
