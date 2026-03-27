@@ -395,10 +395,10 @@ export default function Dashboard() {
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium text-slate-800 truncate">
-                            Payment — {cust ? `${cust.first_name} ${cust.last_name}` : inv.invoice_number || "Invoice"}
+                            {cust ? (cust.business_name || `${cust.first_name} ${cust.last_name}`.trim()) : inv.invoice_number || "Invoice"}
                           </p>
-                          <p className="text-xs text-slate-400">
-                            {inv.paid_date ? format(new Date(inv.paid_date), "MMM d") : ""}
+                          <p className="text-xs text-slate-400 truncate">
+                            Payment · {inv.paid_date ? format(new Date(inv.paid_date), "MMM d") : ""}
                           </p>
                         </div>
                         <span className="text-sm font-semibold text-green-600">${(inv.total || 0).toLocaleString("en-US", { minimumFractionDigits: 2 })}</span>
