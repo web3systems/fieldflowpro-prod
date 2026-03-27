@@ -100,6 +100,12 @@ export default function LineItemRow({ item, idx, companyId, services = [], onSer
               className="bg-white text-sm"
             />
           )}
+          <Input
+            value={item.notes || ""}
+            onChange={e => onUpdate(idx, "notes", e.target.value)}
+            placeholder="Notes (optional)..."
+            className="bg-white text-sm text-slate-500"
+          />
         </div>
         <div className="col-span-2">
           <Input
