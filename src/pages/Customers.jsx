@@ -117,7 +117,7 @@ export default function Customers() {
   }
 
   const filtered = customers.filter(c => {
-    const name = `${c.first_name} ${c.last_name}`.toLowerCase();
+    const name = `${c.business_name || ""} ${c.first_name || ""} ${c.last_name || ""}`.toLowerCase();
     const matchSearch = !search || name.includes(search.toLowerCase()) || c.email?.includes(search.toLowerCase()) || c.phone?.includes(search);
     const matchStatus = filterStatus === "all" || c.status === filterStatus;
     return matchSearch && matchStatus;
@@ -420,7 +420,7 @@ export default function Customers() {
       <AlertDialog open={!!deleteTarget} onOpenChange={() => setDeleteTarget(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete {deleteTarget?.first_name} {deleteTarget?.last_name}?</AlertDialogTitle>
+            <AlertDialogTitle>Delete {deleteTarget?.business_name || `${deleteTarget?.first_name || ""} ${deleteTarget?.last_name || ""}`.trim() || "this customer"}?</AlertDialogTitle>
             <AlertDialogDescription>This will permanently delete this customer along with all their jobs, invoices, and estimates. This cannot be undone.</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
