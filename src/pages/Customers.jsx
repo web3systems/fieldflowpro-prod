@@ -261,10 +261,39 @@ export default function Customers() {
               </div>
             )}
 
+            {/* Customer type toggle */}
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => setForm({ ...form, customer_type: "homeowner" })}
+                className={`flex-1 py-2 rounded-lg text-sm font-medium border transition-colors ${form.customer_type !== "business" ? "bg-blue-600 text-white border-blue-600" : "bg-white text-slate-600 border-slate-200 hover:border-slate-300"}`}
+              >
+                Homeowner
+              </button>
+              <button
+                type="button"
+                onClick={() => setForm({ ...form, customer_type: "business" })}
+                className={`flex-1 py-2 rounded-lg text-sm font-medium border transition-colors ${form.customer_type === "business" ? "bg-blue-600 text-white border-blue-600" : "bg-white text-slate-600 border-slate-200 hover:border-slate-300"}`}
+              >
+                Business
+              </button>
+            </div>
+
             {/* Name row */}
-            <div className="grid grid-cols-2 gap-3">
-              <Input placeholder="First name" value={form.first_name} onChange={e => setForm({ ...form, first_name: e.target.value })} />
-              <Input placeholder="Last name" value={form.last_name} onChange={e => setForm({ ...form, last_name: e.target.value })} />
+            {form.customer_type === "business" && (
+              <div>
+                <Label className="text-xs text-slate-500 mb-1 block">Business Name *</Label>
+                <Input placeholder="Business name" value={form.business_name || ""} onChange={e => setForm({ ...form, business_name: e.target.value })} />
+              </div>
+            )}
+            <div>
+              {form.customer_type === "business" && (
+                <Label className="text-xs text-slate-500 mb-1 block">Contact Person</Label>
+              )}
+              <div className="grid grid-cols-2 gap-3">
+                <Input placeholder="First name" value={form.first_name} onChange={e => setForm({ ...form, first_name: e.target.value })} />
+                <Input placeholder="Last name" value={form.last_name} onChange={e => setForm({ ...form, last_name: e.target.value })} />
+              </div>
             </div>
 
             {/* Display name / phone / role row */}
@@ -375,7 +404,7 @@ export default function Customers() {
               </div>
               <div className="flex gap-3">
                 <Button variant="outline" onClick={() => setSheetOpen(false)}>Cancel</Button>
-                <Button onClick={handleSave} disabled={saving || !form.first_name || !form.last_name} className="bg-blue-600 hover:bg-blue-700">
+                <Button onClick={handleSave} disabled={saving || (form.customer_type === "business" ? !form.business_name : (!form.first_name || !form.last_name))} className="bg-blue-600 hover:bg-blue-700">
                   {saving ? "Saving..." : editing ? "Save Changes" : "Create"}
                 </Button>
               </div>
