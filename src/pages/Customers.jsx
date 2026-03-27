@@ -185,11 +185,13 @@ export default function Customers() {
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-semibold flex-shrink-0">
-                    {customer.first_name?.[0]}{customer.last_name?.[0]}
+                    {customer.business_name ? customer.business_name[0].toUpperCase() : `${customer.first_name?.[0] || ""}${customer.last_name?.[0] || ""}`}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <h3 className="font-semibold text-slate-800">{customer.first_name} {customer.last_name}</h3>
+                      <h3 className="font-semibold text-slate-800">
+                        {customer.business_name || `${customer.first_name || ""} ${customer.last_name || ""}`.trim() || "—"}
+                      </h3>
                       <Badge className={`text-xs ${statusStyle[customer.status] || "bg-gray-100 text-gray-600"}`}>
                         {customer.status}
                       </Badge>
