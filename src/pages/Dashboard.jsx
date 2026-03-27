@@ -419,10 +419,10 @@ export default function Dashboard() {
                         }
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-slate-800 truncate">{job.title}</p>
-                        <p className="text-xs text-slate-400">
-                          {item.date ? format(new Date(item.date), "MMM d") : ""}
+                        <p className="text-sm font-medium text-slate-800 truncate">
+                          {(() => { const c = customers.find(cu => cu.id === job.customer_id); return c ? (c.business_name || `${c.first_name} ${c.last_name}`.trim()) : "—"; })()}
                         </p>
+                        <p className="text-xs text-slate-400 truncate">{job.title}</p>
                       </div>
                       <Badge className={`text-xs ${statusColors[job.status] || "bg-gray-100 text-gray-600"}`}>
                         {job.status?.replace("_", " ")}
