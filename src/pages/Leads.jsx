@@ -8,7 +8,6 @@ import {
   ChevronRight, Trash2, Code2
 } from "lucide-react";
 import EmbedCodeModal from "../components/leads/EmbedCodeModal";
-import BookingEmbedModal from "../components/booking/BookingEmbedModal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -53,7 +52,6 @@ export default function Leads() {
   const [saving, setSaving] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [embedOpen, setEmbedOpen] = useState(false);
-  const [bookingEmbedOpen, setBookingEmbedOpen] = useState(false);
 
   useEffect(() => {
     if (activeCompany) loadLeads();
@@ -110,11 +108,8 @@ export default function Leads() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={() => setBookingEmbedOpen(true)} className="gap-2">
-            <Code2 className="w-4 h-4" /> Book Online
-          </Button>
           <Button variant="outline" onClick={() => setEmbedOpen(true)} className="gap-2">
-            <Code2 className="w-4 h-4" /> Get a Quote
+            <Code2 className="w-4 h-4" /> Get Embed Code
           </Button>
           <Button onClick={openCreate} className="gap-2 bg-blue-600 hover:bg-blue-700">
             <Plus className="w-4 h-4" /> Add Lead
@@ -281,7 +276,6 @@ export default function Leads() {
       )}
 
       <EmbedCodeModal open={embedOpen} onClose={() => setEmbedOpen(false)} company={activeCompany} />
-      <BookingEmbedModal open={bookingEmbedOpen} onClose={() => setBookingEmbedOpen(false)} company={activeCompany} />
 
       <AlertDialog open={!!deleteTarget} onOpenChange={() => setDeleteTarget(null)}>
         <AlertDialogContent>
