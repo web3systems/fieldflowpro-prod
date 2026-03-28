@@ -503,7 +503,7 @@ export default function Invoices() {
                 >
                   <Download className="w-4 h-4" /> Download PDF
                 </Button>
-                {customers.find(c => c.id === form.customer_id)?.email && !["paid", "void"].includes(form.status) && (
+                {customers.find(c => c.id === form.customer_id)?.email && (
                   <Button
                     variant="outline"
                     onClick={handleSendEmail}

@@ -43,7 +43,8 @@ export default function LineItemRow({ item, idx, companyId, services = [], onSer
     }
   }
 
-  const selectValue = item.service_id || "__custom__";
+  const serviceExists = item.service_id && services.some(s => s.id === item.service_id);
+  const selectValue = serviceExists ? item.service_id : "__custom__";
 
   const laborServices = useMemo(() => services.filter(s => s.category === "Labor" || s.category === "labor"), [services]);
   const materialServices = useMemo(() => services.filter(s => s.category === "Materials" || s.category === "materials"), [services]);
@@ -93,7 +94,7 @@ export default function LineItemRow({ item, idx, companyId, services = [], onSer
               )}
             </SelectContent>
           </Select>
-          {!item.service_id && (
+          {!serviceExists && (
             <Input
               value={item.description}
               onChange={e => onUpdate(idx, "description", e.target.value)}
