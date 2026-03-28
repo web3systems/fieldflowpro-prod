@@ -503,17 +503,15 @@ export default function Invoices() {
                 >
                   <Download className="w-4 h-4" /> Download PDF
                 </Button>
-                {customers.find(c => c.id === form.customer_id)?.email && (
-                  <Button
-                    variant="outline"
-                    onClick={handleSendEmail}
-                    disabled={sendingEmail}
-                    className="flex-1 gap-1.5 border-blue-200 text-blue-600 hover:bg-blue-50"
-                  >
-                    <Mail className="w-4 h-4" />
-                    {sendingEmail ? "Sending..." : "Send to Customer"}
-                  </Button>
-                )}
+                <Button
+                  variant="outline"
+                  onClick={handleSendEmail}
+                  disabled={sendingEmail}
+                  className="flex-1 gap-1.5 border-blue-200 text-blue-600 hover:bg-blue-50"
+                >
+                  <Mail className="w-4 h-4" />
+                  {sendingEmail ? "Sending..." : "Email to Customer"}
+                </Button>
               </div>
             )}
 
