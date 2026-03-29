@@ -1,4 +1,7 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { Resend } from 'npm:resend@4.0.0';
+
+const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
 Deno.serve(async (req) => {
   try {
@@ -81,10 +84,11 @@ Deno.serve(async (req) => {
         });
       }
       if (r.sendEmail) {
-        await base44.asServiceRole.integrations.Core.SendEmail({
+        await resend.emails.send({
+          from: 'Honeydo Crew <notifications@honeydocrew.co>',
           to: r.email,
           subject: `New Customer: ${customerName} — ${company.name}`,
-          body: emailBody,
+          html: emailBody,
         });
         console.log(`Email sent to ${r.email}`);
       }
