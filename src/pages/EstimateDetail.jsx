@@ -6,7 +6,7 @@ import { createPageUrl } from "@/utils";
 import {
   ArrowLeft, Download, Copy, CheckCircle, XCircle, Briefcase,
   Plus, Save, User, Calendar, DollarSign, FileText, Edit2, X, Trash2,
-  Mail
+  Mail, Phone, MapPin
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -252,8 +252,10 @@ export default function EstimateDetail() {
 
   const getCustomerName = (cid) => {
     const c = customers.find(c => c.id === cid);
-    return c ? `${c.first_name} ${c.last_name}` : "—";
+    return c ? (c.business_name || `${c.first_name || ""} ${c.last_name || ""}`.trim() || "—") : "—";
   };
+
+  const getCustomer = (cid) => customers.find(c => c.id === cid) || null;
 
   if (loading) return (
     <div className="p-6 space-y-4">
@@ -346,10 +348,38 @@ export default function EstimateDetail() {
                 <>
                   <div className="flex items-center gap-2 text-sm">
                     <User className="w-3.5 h-3.5 text-slate-400" />
-                    <span className="text-slate-700">{getCustomerName(form.customer_id)}</span>
+                    <span className="text-slate-700 font-medium">{getCustomerName(form.customer_id)}</span>
                   </div>
+                  {(() => {
+                    const c = getCustomer(form.customer_id);
+                    return c ? (
+                      <div className="space-y-1.5 pt-1 border-t border-slate-100">
+                        <div>
+                          <p className="text-xs text-slate-400">Phone</p>
+                          {c.phone
+                            ? <a href={`tel:${c.phone}`} className="text-sm text-blue-600 hover:underline flex items-center gap-1"><Phone className="w-3 h-3" />{c.phone}</a>
+                            : <p className="text-sm text-slate-400">—</p>
+                          }
+                        </div>
+                        <div>
+                          <p className="text-xs text-slate-400">Email</p>
+                          {c.email
+                            ? <a href={`mailto:${c.email}`} className="text-sm text-blue-600 hover:underline flex items-center gap-1 break-all"><Mail className="w-3 h-3" />{c.email}</a>
+                            : <p className="text-sm text-slate-400">—</p>
+                          }
+                        </div>
+                        <div>
+                          <p className="text-xs text-slate-400">Address</p>
+                          {c.address
+                            ? <p className="text-sm text-slate-700 flex items-start gap-1"><MapPin className="w-3 h-3 mt-0.5 flex-shrink-0" />{c.address}{c.city ? `, ${c.city}` : ""}{c.state ? `, ${c.state}` : ""} {c.zip || ""}</p>
+                            : <p className="text-sm text-slate-400">—</p>
+                          }
+                        </div>
+                      </div>
+                    ) : null;
+                  })()}
                   {form.valid_until && (
-                    <div className="flex items-center gap-2 text-sm">
+                    <div className="flex items-center gap-2 text-sm pt-1 border-t border-slate-100">
                       <Calendar className="w-3.5 h-3.5 text-slate-400" />
                       <span className="text-slate-600">Valid until {format(new Date(form.valid_until), "MMM d, yyyy")}</span>
                     </div>
