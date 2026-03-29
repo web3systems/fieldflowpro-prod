@@ -51,25 +51,6 @@ export default function CustomerSidebar({ customer, invoices, onUpdate, onPortal
 
   return (
     <div className="space-y-4">
-      {/* Summary */}
-      <div className="bg-white rounded-xl shadow-sm border-0 p-4 space-y-2">
-        <h3 className="text-sm font-semibold text-slate-700 mb-3">Summary</h3>
-        <div>
-          <p className="text-xs text-slate-400">Created</p>
-          <p className="text-sm text-slate-700">{customer.created_date ? format(new Date(customer.created_date), "MM/dd/yyyy") : "—"}</p>
-        </div>
-        <div>
-          <p className="text-xs text-blue-500 font-medium">Lifetime value</p>
-          <p className="text-sm font-semibold text-slate-800">${lifetimeValue.toLocaleString()}</p>
-        </div>
-        <div>
-          <p className="text-xs text-slate-400">Outstanding balance</p>
-          <p className={`text-sm font-semibold ${outstanding > 0 ? "text-orange-600" : "text-slate-700"}`}>
-            ${outstanding.toLocaleString()}
-          </p>
-        </div>
-      </div>
-
       {/* Contact Info */}
       <div className="bg-white rounded-xl shadow-sm border-0 p-4">
         <div className="flex items-center justify-between mb-3">
@@ -104,31 +85,27 @@ export default function CustomerSidebar({ customer, invoices, onUpdate, onPortal
               <p className="text-xs text-slate-400">Contact</p>
               <p className="text-sm text-slate-800 font-medium">{customer.first_name} {customer.last_name}</p>
             </div>
-            {customer.phone && (
-              <div>
-                <p className="text-xs text-slate-400">Phone</p>
-                <a href={`tel:${customer.phone}`} className="text-sm text-blue-600 hover:underline flex items-center gap-1">
-                  <Phone className="w-3 h-3" />{customer.phone}
-                </a>
-              </div>
-            )}
-            {customer.email && (
-              <div>
-                <p className="text-xs text-slate-400">Email</p>
-                <a href={`mailto:${customer.email}`} className="text-sm text-blue-600 hover:underline flex items-center gap-1 break-all">
-                  <Mail className="w-3 h-3" />{customer.email}
-                </a>
-              </div>
-            )}
-            {customer.address && (
-              <div>
-                <p className="text-xs text-slate-400">Address</p>
-                <p className="text-sm text-slate-700 flex items-start gap-1">
-                  <MapPin className="w-3 h-3 mt-0.5 flex-shrink-0" />
-                  {customer.address}{customer.city ? `, ${customer.city}` : ""}{customer.state ? `, ${customer.state}` : ""} {customer.zip || ""}
-                </p>
-              </div>
-            )}
+            <div>
+              <p className="text-xs text-slate-400">Phone</p>
+              {customer.phone
+                ? <a href={`tel:${customer.phone}`} className="text-sm text-blue-600 hover:underline flex items-center gap-1"><Phone className="w-3 h-3" />{customer.phone}</a>
+                : <p className="text-sm text-slate-400">—</p>
+              }
+            </div>
+            <div>
+              <p className="text-xs text-slate-400">Email</p>
+              {customer.email
+                ? <a href={`mailto:${customer.email}`} className="text-sm text-blue-600 hover:underline flex items-center gap-1 break-all"><Mail className="w-3 h-3" />{customer.email}</a>
+                : <p className="text-sm text-slate-400">—</p>
+              }
+            </div>
+            <div>
+              <p className="text-xs text-slate-400">Address</p>
+              {customer.address
+                ? <p className="text-sm text-slate-700 flex items-start gap-1"><MapPin className="w-3 h-3 mt-0.5 flex-shrink-0" />{customer.address}{customer.city ? `, ${customer.city}` : ""}{customer.state ? `, ${customer.state}` : ""} {customer.zip || ""}</p>
+                : <p className="text-sm text-slate-400">—</p>
+              }
+            </div>
             <div className="pt-1">
               <p className="text-xs text-slate-400 mb-1">Customer portal</p>
               <Button variant="outline" size="sm" className="h-7 text-xs gap-1" onClick={onPortalInvite} disabled={!customer.email || sendingInvite}>
@@ -137,6 +114,25 @@ export default function CustomerSidebar({ customer, invoices, onUpdate, onPortal
             </div>
           </div>
         )}
+      </div>
+
+      {/* Summary */}
+      <div className="bg-white rounded-xl shadow-sm border-0 p-4 space-y-2">
+        <h3 className="text-sm font-semibold text-slate-700 mb-3">Summary</h3>
+        <div>
+          <p className="text-xs text-slate-400">Created</p>
+          <p className="text-sm text-slate-700">{customer.created_date ? format(new Date(customer.created_date), "MM/dd/yyyy") : "—"}</p>
+        </div>
+        <div>
+          <p className="text-xs text-blue-500 font-medium">Lifetime value</p>
+          <p className="text-sm font-semibold text-slate-800">${lifetimeValue.toLocaleString()}</p>
+        </div>
+        <div>
+          <p className="text-xs text-slate-400">Outstanding balance</p>
+          <p className={`text-sm font-semibold ${outstanding > 0 ? "text-orange-600" : "text-slate-700"}`}>
+            ${outstanding.toLocaleString()}
+          </p>
+        </div>
       </div>
 
       {/* Communication Preferences */}
