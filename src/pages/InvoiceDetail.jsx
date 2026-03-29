@@ -5,7 +5,8 @@ import { useApp } from "../Layout";
 import { createPageUrl } from "@/utils";
 import {
   ArrowLeft, DollarSign, User, Calendar, CreditCard, Mail,
-  Download, Save, Edit2, Plus, Trash2, CheckCircle, AlertCircle, Clock, ExternalLink
+  Download, Save, Edit2, Plus, Trash2, CheckCircle, AlertCircle, Clock, ExternalLink,
+  Phone, MapPin
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -315,9 +316,22 @@ export default function InvoiceDetail() {
           {/* Mobile info */}
           <div className="lg:hidden">
             <Card className="border-0 shadow-sm">
-              <CardContent className="p-4 flex flex-wrap gap-4">
-                <div className="flex items-center gap-2 text-sm"><User className="w-3.5 h-3.5 text-slate-400" /><span>{getCustomerName(form.customer_id)}</span></div>
-                <div className="flex items-center gap-2 text-sm"><DollarSign className="w-3.5 h-3.5 text-slate-400" /><span className="font-semibold">${(form.total || 0).toLocaleString()}</span></div>
+              <CardContent className="p-4 space-y-2">
+                <p className="font-semibold text-slate-800 text-sm">{getCustomerName(form.customer_id)}</p>
+                {customer?.phone && <a href={`tel:${customer.phone}`} className="flex items-center gap-1.5 text-xs text-blue-600 hover:underline"><Phone className="w-3 h-3" />{customer.phone}</a>}
+                {customer?.email && <a href={`mailto:${customer.email}`} className="flex items-center gap-1.5 text-xs text-blue-600 hover:underline"><Mail className="w-3 h-3" />{customer.email}</a>}
+                {customer?.address && <p className="text-xs text-slate-600 flex items-start gap-1"><MapPin className="w-3 h-3 mt-0.5 flex-shrink-0" />{customer.address}{customer.city ? `, ${customer.city}` : ""}{customer.state ? `, ${customer.state}` : ""} {customer.zip || ""}</p>}
+                {form.due_date && <p className="text-xs text-slate-400">Due: {format(new Date(form.due_date), "MMM d, yyyy")}</p>}
+                <div className="flex items-center justify-between pt-1 border-t border-slate-100">
+                  <span className="text-xs text-slate-500">Total</span>
+                  <span className="font-bold text-slate-900">${(form.total || 0).toLocaleString()}</span>
+                </div>
+                {canPay && (
+                  <Button onClick={handleStripePayment} disabled={paymentLoading} className="w-full gap-2 bg-violet-600 hover:bg-violet-700 mt-1">
+                    <CreditCard className="w-4 h-4" />
+                    {paymentLoading ? "Redirecting..." : `Pay $${amountDue.toFixed(2)} via Stripe`}
+                  </Button>
+                )}
               </CardContent>
             </Card>
           </div>

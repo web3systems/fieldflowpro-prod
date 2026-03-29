@@ -3,7 +3,8 @@ import { useParams, useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { useApp } from "../Layout";
 import { createPageUrl } from "@/utils";
-import { ArrowLeft, Briefcase, Star, CreditCard, FileText } from "lucide-react";
+import { ArrowLeft, Briefcase, Star, CreditCard, FileText, Phone, Mail, MapPin, ExternalLink } from "lucide-react";
+import { Link } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -192,10 +193,16 @@ export default function JobDetail() {
         {/* Main Content */}
         <div className="flex-1 min-w-0 space-y-4">
           {/* Mobile customer info */}
-          <div className="lg:hidden bg-white border border-slate-200 rounded-xl p-4 flex flex-wrap gap-3 text-sm">
-            <span className="text-slate-600">{customer ? `${customer.first_name} ${customer.last_name}` : "No customer"}</span>
-            {form.scheduled_start && <span className="text-slate-400">{format(new Date(form.scheduled_start), "MMM d")}</span>}
-            {form.total_amount > 0 && <span className="font-semibold text-slate-900">${form.total_amount.toLocaleString()}</span>}
+          <div className="lg:hidden bg-white border border-slate-200 rounded-xl p-4 space-y-2">
+            <div className="flex items-center justify-between">
+              <p className="font-semibold text-slate-800 text-sm">{customer ? (customer.business_name || `${customer.first_name || ""} ${customer.last_name || ""}`.trim()) : "No customer"}</p>
+              {customer && <Link to={`/CustomerDetail/${customer.id}`} className="flex items-center gap-1 text-xs text-blue-600 hover:underline">Profile <ExternalLink className="w-3 h-3" /></Link>}
+            </div>
+            {customer?.phone && <a href={`tel:${customer.phone}`} className="flex items-center gap-1.5 text-xs text-blue-600 hover:underline"><Phone className="w-3 h-3" />{customer.phone}</a>}
+            {customer?.email && <a href={`mailto:${customer.email}`} className="flex items-center gap-1.5 text-xs text-blue-600 hover:underline"><Mail className="w-3 h-3" />{customer.email}</a>}
+            {customer?.address && <p className="text-xs text-slate-600 flex items-start gap-1"><MapPin className="w-3 h-3 mt-0.5 flex-shrink-0" />{customer.address}{customer.city ? `, ${customer.city}` : ""}{customer.state ? `, ${customer.state}` : ""} {customer.zip || ""}</p>}
+            {form.scheduled_start && <p className="text-xs text-slate-400">Scheduled: {format(new Date(form.scheduled_start), "MMM d, yyyy · h:mm a")}</p>}
+            {form.total_amount > 0 && <p className="text-sm font-semibold text-slate-900">${form.total_amount.toLocaleString()}</p>}
           </div>
 
           {/* Appointment */}

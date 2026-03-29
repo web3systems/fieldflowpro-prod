@@ -52,7 +52,7 @@ export default function JobSidebar({ job, form, setForm, customers, onSave, savi
   }
 
   return (
-    <div className="w-64 flex-shrink-0 space-y-0 hidden lg:block">
+    <div className="w-64 flex-shrink-0 space-y-0 hidden lg:flex lg:flex-col">
       {/* Customer Info */}
       <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
         <div className="p-4 border-b border-slate-100 flex items-center justify-between">

@@ -5,7 +5,7 @@ import { useApp } from "../Layout";
 import { createPageUrl } from "@/utils";
 import {
   ArrowLeft, Download, Copy, CheckCircle, XCircle, Briefcase,
-  Plus, Save, User, Calendar, DollarSign, FileText, Edit2, X, Trash2,
+  Plus, Save, User, Calendar, DollarSign, FileText, Edit2, X,
   Mail, Phone, MapPin
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -448,10 +448,18 @@ export default function EstimateDetail() {
           {/* Mobile summary */}
           <div className="lg:hidden space-y-3">
             <Card className="border-0 shadow-sm">
-              <CardContent className="p-4 flex flex-wrap gap-4 items-center">
-                <div className="flex items-center gap-2 text-sm"><User className="w-3.5 h-3.5 text-slate-400" /><span>{getCustomerName(form.customer_id)}</span></div>
-                <div className="flex items-center gap-2 text-sm"><DollarSign className="w-3.5 h-3.5 text-slate-400" /><span className="font-semibold">${(opt?.total || 0).toLocaleString()}</span></div>
-                <div className="flex items-center gap-2 ml-auto">
+              <CardContent className="p-4 space-y-2">
+                <p className="font-semibold text-slate-800 text-sm">{getCustomerName(form.customer_id)}</p>
+                {(() => { const c = getCustomer(form.customer_id); return c ? (<>
+                  {c.phone && <a href={`tel:${c.phone}`} className="flex items-center gap-1.5 text-xs text-blue-600 hover:underline"><Phone className="w-3 h-3" />{c.phone}</a>}
+                  {c.email && <a href={`mailto:${c.email}`} className="flex items-center gap-1.5 text-xs text-blue-600 hover:underline"><Mail className="w-3 h-3" />{c.email}</a>}
+                  {c.address && <p className="text-xs text-slate-600 flex items-start gap-1"><MapPin className="w-3 h-3 mt-0.5 flex-shrink-0" />{c.address}{c.city ? `, ${c.city}` : ""}{c.state ? `, ${c.state}` : ""} {c.zip || ""}</p>}
+                </>) : null; })()}
+                <div className="flex items-center justify-between pt-1 border-t border-slate-100">
+                  <span className="text-xs text-slate-500">Total</span>
+                  <span className="font-bold text-slate-900">${(opt?.total || 0).toLocaleString()}</span>
+                </div>
+                <div className="flex items-center gap-2 pt-1">
                   <Label className="text-xs text-slate-500">Status:</Label>
                   <Select value={form.status} onValueChange={async (v) => {
                     setForm(f => ({ ...f, status: v }));
