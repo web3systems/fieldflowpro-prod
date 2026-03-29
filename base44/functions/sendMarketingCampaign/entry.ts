@@ -11,7 +11,8 @@ Deno.serve(async (req) => {
     const { campaign_id } = await req.json();
     if (!campaign_id) return Response.json({ error: 'campaign_id required' }, { status: 400 });
 
-    const campaign = await base44.asServiceRole.entities.MarketingCampaign.get(campaign_id);
+    const campaigns = await base44.asServiceRole.entities.MarketingCampaign.filter({ id: campaign_id });
+    const campaign = campaigns[0];
     if (!campaign) return Response.json({ error: 'Campaign not found' }, { status: 404 });
 
     // Fetch audience
