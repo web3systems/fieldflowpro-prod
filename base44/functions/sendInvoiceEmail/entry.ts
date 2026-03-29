@@ -44,7 +44,9 @@ Deno.serve(async (req) => {
       </table>` : "";
 
     const companyName = company?.name || "Your Service Provider";
-    const fromDomain = company?.email ? company.email.split('@')[1] : 'honeydocrew.co';
+    const VERIFIED_DOMAINS = ['honeydocrew.co', 'honeydoclean.com', 'prettylittlepolishers.com'];
+    const companyDomain = company?.email ? company.email.split('@')[1] : null;
+    const fromDomain = (companyDomain && VERIFIED_DOMAINS.includes(companyDomain)) ? companyDomain : 'honeydocrew.co';
     const resendApiKey = Deno.env.get('RESEND_API_KEY');
 
     const emailResponse = await fetch('https://api.resend.com/emails', {
