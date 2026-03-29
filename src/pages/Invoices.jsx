@@ -186,14 +186,20 @@ export default function Invoices() {
 
   async function handleSendEmail() {
     setSendingEmail(true);
-    const portalUrl = window.location.origin + "/CustomerPortal";
-    await base44.functions.invoke("sendInvoiceEmail", {
-      invoice_id: editing.id,
-      portal_url: portalUrl,
-    });
-    setSendingEmail(false);
-    await loadData();
-    setSheetOpen(false);
+    try {
+      const portalUrl = window.location.origin + "/CustomerPortal";
+      await base44.functions.invoke("sendInvoiceEmail", {
+        invoice_id: editing.id,
+        portal_url: portalUrl,
+      });
+      await loadData();
+      setSheetOpen(false);
+    } catch (err) {
+      const msg = err?.response?.data?.error || err.message || "Failed to send email";
+      alert(`Email failed: ${msg}`);
+    } finally {
+      setSendingEmail(false);
+    }
   }
 
   function handleDownloadPdf() {
