@@ -186,7 +186,7 @@ export default function InvoiceDetail() {
           <Button size="sm" variant="outline" onClick={handleDownloadPdf} className="gap-1 text-xs hidden sm:flex">
             <Download className="w-3.5 h-3.5" /> PDF
           </Button>
-          {customer?.email && canPay && (
+          {customer?.email && (
             <Button size="sm" variant="outline" onClick={handleSendEmail} disabled={sendingEmail} className="gap-1 text-xs hidden sm:flex border-blue-200 text-blue-600 hover:bg-blue-50">
               <Mail className="w-3.5 h-3.5" />{sendingEmail ? "Sending..." : "Send Email"}
             </Button>
@@ -260,25 +260,26 @@ export default function InvoiceDetail() {
             </CardContent>
           </Card>
 
-          {canPay && (
-            <Card className="border-0 shadow-sm">
-              <CardContent className="p-4 space-y-2">
-                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">Payment</p>
-                <Button onClick={handleStripePayment} disabled={paymentLoading} className="w-full gap-2 bg-violet-600 hover:bg-violet-700">
-                  <CreditCard className="w-4 h-4" />
-                  {paymentLoading ? "Redirecting..." : `Pay $${amountDue.toFixed(2)} via Stripe`}
-                  <ExternalLink className="w-3.5 h-3.5 ml-auto" />
-                </Button>
-                <p className="text-xs text-slate-400 text-center">Customer redirected to secure Stripe checkout</p>
-                {customer?.email && (
-                  <Button variant="outline" onClick={handleSendEmail} disabled={sendingEmail} className="w-full gap-2 border-blue-200 text-blue-600 hover:bg-blue-50">
-                    <Mail className="w-4 h-4" />{sendingEmail ? "Sending..." : "Email to Customer"}
+          <Card className="border-0 shadow-sm">
+            <CardContent className="p-4 space-y-2">
+              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">Actions</p>
+              {canPay && (
+                <>
+                  <Button onClick={handleStripePayment} disabled={paymentLoading} className="w-full gap-2 bg-violet-600 hover:bg-violet-700">
+                    <CreditCard className="w-4 h-4" />
+                    {paymentLoading ? "Redirecting..." : `Pay $${amountDue.toFixed(2)} via Stripe`}
+                    <ExternalLink className="w-3.5 h-3.5 ml-auto" />
                   </Button>
-                )}
-
-              </CardContent>
-            </Card>
-          )}
+                  <p className="text-xs text-slate-400 text-center">Customer redirected to secure Stripe checkout</p>
+                </>
+              )}
+              {customer?.email && (
+                <Button variant="outline" onClick={handleSendEmail} disabled={sendingEmail} className="w-full gap-2 border-blue-200 text-blue-600 hover:bg-blue-50">
+                  <Mail className="w-4 h-4" />{sendingEmail ? "Sending..." : "Email Invoice to Customer"}
+                </Button>
+              )}
+            </CardContent>
+          </Card>
         </div>
 
         {/* Main */}
@@ -330,6 +331,11 @@ export default function InvoiceDetail() {
                   <Button onClick={handleStripePayment} disabled={paymentLoading} className="w-full gap-2 bg-violet-600 hover:bg-violet-700 mt-1">
                     <CreditCard className="w-4 h-4" />
                     {paymentLoading ? "Redirecting..." : `Pay $${amountDue.toFixed(2)} via Stripe`}
+                  </Button>
+                )}
+                {customer?.email && (
+                  <Button variant="outline" onClick={handleSendEmail} disabled={sendingEmail} className="w-full gap-2 border-blue-200 text-blue-600 hover:bg-blue-50 mt-1">
+                    <Mail className="w-4 h-4" />{sendingEmail ? "Sending..." : "Email Invoice to Customer"}
                   </Button>
                 )}
               </CardContent>
