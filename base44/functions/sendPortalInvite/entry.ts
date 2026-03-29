@@ -1,4 +1,19 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { Resend } from 'npm:resend@4.0.0';
+
+const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+
+function getSenderForCompany(company) {
+  const name = (company?.name || '').toLowerCase();
+  const slug = (company?.slug || '').toLowerCase();
+  if (name.includes('pretty little') || slug.includes('pretty')) {
+    return `${company.name} <notifications@prettylittlepolishers.com>`;
+  }
+  if (name.includes('honeydo clean') || slug.includes('honeydoclean')) {
+    return `${company.name} <notifications@honeydoclean.com>`;
+  }
+  return `${company?.name || 'Honeydo Crew'} <notifications@honeydocrew.co>`;
+}
 
 Deno.serve(async (req) => {
   try {
@@ -12,7 +27,6 @@ Deno.serve(async (req) => {
     const customer = customers[0];
     if (!customer?.email) return Response.json({ error: 'Customer has no email' }, { status: 400 });
 
-    // Verify user has access to this customer's company
     if (user.role !== 'admin') {
       const access = await base44.asServiceRole.entities.UserCompanyAccess.filter({
         user_email: user.email,
@@ -23,11 +37,13 @@ Deno.serve(async (req) => {
 
     const companies = await base44.asServiceRole.entities.Company.filter({ id: customer.company_id });
     const company = companies[0];
+    const fromAddress = getSenderForCompany(company);
 
-    await base44.asServiceRole.integrations.Core.SendEmail({
+    await resend.emails.send({
+      from: fromAddress,
       to: customer.email,
       subject: `Your customer portal is ready — ${company?.name}`,
-      body: `<div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 24px;">
+      html: `<div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 24px;">
         <h2 style="color: #1e293b; margin: 0 0 16px;">Your Customer Portal is Ready</h2>
         <p style="color: #475569;">Hi ${customer.first_name},</p>
         <p style="color: #475569;"><strong>${company?.name}</strong> has set up a customer portal for you. You can view your jobs, invoices, and estimates anytime.</p>
@@ -39,7 +55,7 @@ Deno.serve(async (req) => {
       </div>`
     });
 
-    console.log(`Portal invite sent to ${customer.email}`);
+    console.log(`Portal invite sent to ${customer.email} from ${fromAddress}`);
     return Response.json({ success: true });
   } catch (error) {
     console.error("Error sending portal invite:", error.message);
