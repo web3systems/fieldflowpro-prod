@@ -1,4 +1,19 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { Resend } from 'npm:resend@4.0.0';
+
+const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+
+function getSenderForCompany(company) {
+  const name = (company?.name || '').toLowerCase();
+  const slug = (company?.slug || '').toLowerCase();
+  if (name.includes('pretty little') || slug.includes('pretty')) {
+    return `${company.name} <notifications@prettylittlepolishers.com>`;
+  }
+  if (name.includes('honeydo clean') || slug.includes('honeydoclean')) {
+    return `${company.name} <notifications@honeydoclean.com>`;
+  }
+  return `${company?.name || 'Honeydo Crew'} <notifications@honeydocrew.co>`;
+}
 
 Deno.serve(async (req) => {
   try {
@@ -6,18 +21,10 @@ Deno.serve(async (req) => {
     const payload = await req.json();
     const { event, data, old_data } = payload;
 
-    // Only fire when status changes to "scheduled"
     if (!data || data.status !== "scheduled") return Response.json({ skipped: true });
     if (old_data?.status === "scheduled") return Response.json({ skipped: true });
     if (!data.scheduled_start) return Response.json({ skipped: true });
-
-    // Skip notifications for bulk-imported records
-    if (data.imported === true) {
-      console.log("Skipping notification for imported job:", event?.entity_id);
-      return Response.json({ skipped: true, reason: "imported record" });
-    }
-
-    // Verify company_id exists (automation calls don't have user context, so we verify data integrity)
+    if (data.imported === true) return Response.json({ skipped: true, reason: "imported record" });
     if (!data.company_id) return Response.json({ skipped: true, reason: "no company_id" });
 
     const customers = await base44.asServiceRole.entities.Customer.filter({ id: data.customer_id });
@@ -26,14 +33,16 @@ Deno.serve(async (req) => {
 
     const companies = await base44.asServiceRole.entities.Company.filter({ id: data.company_id });
     const company = companies[0];
+    const fromAddress = getSenderForCompany(company);
 
     const dateStr = new Date(data.scheduled_start).toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
     const timeStr = new Date(data.scheduled_start).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
 
-    await base44.asServiceRole.integrations.Core.SendEmail({
+    await resend.emails.send({
+      from: fromAddress,
       to: customer.email,
       subject: `Appointment Confirmed — ${dateStr}`,
-      body: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;">
+      html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;">
         <h2 style="color:#1e293b;margin:0 0 16px;">Appointment Confirmed ✓</h2>
         <p style="color:#475569;">Hi ${customer.first_name},</p>
         <p style="color:#475569;">Your appointment with <strong>${company?.name}</strong> has been scheduled.</p>
@@ -47,7 +56,7 @@ Deno.serve(async (req) => {
       </div>`
     });
 
-    console.log(`Job scheduled email sent to ${customer.email} for job ${event.entity_id}`);
+    console.log(`Job scheduled email sent to ${customer.email} from ${fromAddress}`);
     return Response.json({ success: true });
   } catch (error) {
     console.error("Error sending job scheduled email:", error.message);

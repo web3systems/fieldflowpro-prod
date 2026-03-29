@@ -1,4 +1,21 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { Resend } from 'npm:resend@4.0.0';
+
+const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+
+// Map company slugs/names to their verified sending domains
+function getSenderForCompany(company) {
+  const name = (company?.name || '').toLowerCase();
+  const slug = (company?.slug || '').toLowerCase();
+  if (name.includes('pretty little') || slug.includes('pretty')) {
+    return `${company.name} <notifications@prettylittlepolishers.com>`;
+  }
+  if (name.includes('honeydo clean') || slug.includes('honeydoclean')) {
+    return `${company.name} <notifications@honeydoclean.com>`;
+  }
+  // Default fallback
+  return `${company?.name || 'Honeydo Crew'} <notifications@honeydocrew.co>`;
+}
 
 Deno.serve(async (req) => {
   try {
@@ -14,6 +31,10 @@ Deno.serve(async (req) => {
     const campaigns = await base44.asServiceRole.entities.MarketingCampaign.filter({ id: campaign_id });
     const campaign = campaigns[0];
     if (!campaign) return Response.json({ error: 'Campaign not found' }, { status: 404 });
+
+    const companies = await base44.asServiceRole.entities.Company.filter({ id: campaign.company_id });
+    const company = companies[0];
+    const fromAddress = getSenderForCompany(company);
 
     // Fetch audience
     let recipients = [];
@@ -37,17 +58,17 @@ Deno.serve(async (req) => {
         .map(c => ({ name: `${c.first_name} ${c.last_name}`, email: c.email, phone: c.phone }));
     }
 
-    console.log(`Sending ${campaign.type} campaign "${campaign.name}" to ${recipients.length} recipients`);
+    console.log(`Sending ${campaign.type} campaign "${campaign.name}" to ${recipients.length} recipients from ${fromAddress}`);
 
-    // Send emails using built-in integration
     let sentCount = 0;
     if (campaign.type === 'email') {
       for (const r of recipients) {
         try {
-          await base44.asServiceRole.integrations.Core.SendEmail({
+          await resend.emails.send({
+            from: fromAddress,
             to: r.email,
             subject: campaign.subject || campaign.name,
-            body: campaign.message.replace(/\{name\}/gi, r.name),
+            html: campaign.message.replace(/\{name\}/gi, r.name),
           });
           sentCount++;
         } catch (e) {
@@ -55,12 +76,10 @@ Deno.serve(async (req) => {
         }
       }
     } else {
-      // SMS - log intent (actual SMS requires Twilio or similar)
       console.log(`SMS campaign: would send to ${recipients.length} phone numbers`);
       sentCount = recipients.length;
     }
 
-    // Update campaign status
     await base44.asServiceRole.entities.MarketingCampaign.update(campaign_id, {
       status: 'sent',
       sent_at: new Date().toISOString(),

@@ -1,4 +1,19 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { Resend } from 'npm:resend@4.0.0';
+
+const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+
+function getSenderForCompany(company) {
+  const name = (company?.name || '').toLowerCase();
+  const slug = (company?.slug || '').toLowerCase();
+  if (name.includes('pretty little') || slug.includes('pretty')) {
+    return `${company.name} <notifications@prettylittlepolishers.com>`;
+  }
+  if (name.includes('honeydo clean') || slug.includes('honeydoclean')) {
+    return `${company.name} <notifications@honeydoclean.com>`;
+  }
+  return `${company?.name || 'Honeydo Crew'} <notifications@honeydocrew.co>`;
+}
 
 Deno.serve(async (req) => {
   try {
@@ -10,24 +25,29 @@ Deno.serve(async (req) => {
     }
 
     const { subject, message, company_ids } = await req.json();
-
     if (!subject || !message || !company_ids?.length) {
       return Response.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
+    // Pre-load all companies so we can get the right sender per company
+    const allCompanies = await base44.asServiceRole.entities.Company.list();
+    const companyMap = Object.fromEntries(allCompanies.map(c => [c.id, c]));
+
     const allCustomers = await base44.asServiceRole.entities.Customer.list();
     const targets = allCustomers.filter(c => company_ids.includes(c.company_id) && c.email);
-
-    let sent = 0;
     const skipped = allCustomers.filter(c => company_ids.includes(c.company_id) && !c.email).length;
 
+    let sent = 0;
     for (const customer of targets) {
       const name = `${customer.first_name || ''} ${customer.last_name || ''}`.trim() || 'Valued Customer';
+      const company = companyMap[customer.company_id];
+      const fromAddress = getSenderForCompany(company);
       try {
-        await base44.asServiceRole.integrations.Core.SendEmail({
+        await resend.emails.send({
+          from: fromAddress,
           to: customer.email,
           subject,
-          body: `<p>Hi ${name},</p><br/>${message.replace(/\n/g, '<br/>')}`,
+          html: `<p>Hi ${name},</p><br/>${message.replace(/\n/g, '<br/>')}`,
         });
         sent++;
       } catch (err) {

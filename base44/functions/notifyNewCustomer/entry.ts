@@ -3,6 +3,18 @@ import { Resend } from 'npm:resend@4.0.0';
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
+function getSenderForCompany(company) {
+  const name = (company?.name || '').toLowerCase();
+  const slug = (company?.slug || '').toLowerCase();
+  if (name.includes('pretty little') || slug.includes('pretty')) {
+    return `${company.name} <notifications@prettylittlepolishers.com>`;
+  }
+  if (name.includes('honeydo clean') || slug.includes('honeydoclean')) {
+    return `${company.name} <notifications@honeydoclean.com>`;
+  }
+  return `${company?.name || 'Honeydo Crew'} <notifications@honeydocrew.co>`;
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -54,6 +66,7 @@ Deno.serve(async (req) => {
       recipients = [...allEmails].map(email => ({ email, inApp: true, sendEmail: true }));
     }
 
+    const fromAddress = getSenderForCompany(company);
     console.log(`New customer "${customerName}" — notifying ${recipients.length} recipient(s): ${recipients.map(r => r.email).join(", ")}`);
 
     const emailBody = `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;">
@@ -85,7 +98,7 @@ Deno.serve(async (req) => {
       }
       if (r.sendEmail) {
         await resend.emails.send({
-          from: 'Honeydo Crew <notifications@honeydocrew.co>',
+          from: fromAddress,
           to: r.email,
           subject: `New Customer: ${customerName} — ${company.name}`,
           html: emailBody,
