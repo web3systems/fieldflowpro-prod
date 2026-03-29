@@ -43,23 +43,41 @@ Deno.serve(async (req) => {
         `).join("")}
       </table>` : "";
 
-    await base44.asServiceRole.integrations.Core.SendEmail({
-      to: customer.email,
-      subject: `Invoice ${invoice.invoice_number} from ${company?.name || "Your Service Provider"}`,
-      body: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;">
-        <h2 style="color:#1e293b;margin:0 0 8px;">Invoice ${invoice.invoice_number}</h2>
-        <p style="color:#475569;">Hi ${customer.first_name},</p>
-        <p style="color:#475569;">You have a new invoice from <strong>${company?.name}</strong>.</p>
-        <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:20px;margin:20px 0;">
-          <div style="font-size:28px;font-weight:700;color:#1e293b;">$${(invoice.total || 0).toFixed(2)}</div>
-          ${invoice.due_date ? `<div style="color:#64748b;margin-top:4px;">Due ${new Date(invoice.due_date).toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"})}</div>` : ""}
-        </div>
-        ${lineItemsHtml}
-        ${portal_url ? `<div style="text-align:center;margin:24px 0;"><a href="${portal_url}" style="display:inline-block;background:#2563eb;color:white;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:600;font-size:15px;">View & Pay Invoice →</a></div>` : ""}
-        ${invoice.notes ? `<p style="color:#64748b;font-size:14px;background:#f8fafc;padding:12px;border-radius:6px;border-left:3px solid #e2e8f0;">${invoice.notes}</p>` : ""}
-        <p style="color:#94a3b8;font-size:12px;margin-top:24px;">Questions? Contact ${company?.email || company?.phone || "us"}.</p>
-      </div>`
+    const companyName = company?.name || "Your Service Provider";
+    const fromDomain = company?.email ? company.email.split('@')[1] : 'honeydocrew.co';
+    const resendApiKey = Deno.env.get('RESEND_API_KEY');
+
+    const emailResponse = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${resendApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        from: `${companyName} <noreply@${fromDomain}>`,
+        to: customer.email,
+        subject: `Invoice ${invoice.invoice_number} from ${companyName}`,
+        html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;">
+          <h2 style="color:#1e293b;margin:0 0 8px;">Invoice ${invoice.invoice_number}</h2>
+          <p style="color:#475569;">Hi ${customer.first_name},</p>
+          <p style="color:#475569;">You have a new invoice from <strong>${companyName}</strong>.</p>
+          <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:20px;margin:20px 0;">
+            <div style="font-size:28px;font-weight:700;color:#1e293b;">$${(invoice.total || 0).toFixed(2)}</div>
+            ${invoice.due_date ? `<div style="color:#64748b;margin-top:4px;">Due ${new Date(invoice.due_date).toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"})}</div>` : ""}
+          </div>
+          ${lineItemsHtml}
+          ${portal_url ? `<div style="text-align:center;margin:24px 0;"><a href="${portal_url}" style="display:inline-block;background:#2563eb;color:white;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:600;font-size:15px;">View &amp; Pay Invoice →</a></div>` : ""}
+          ${invoice.notes ? `<p style="color:#64748b;font-size:14px;background:#f8fafc;padding:12px;border-radius:6px;border-left:3px solid #e2e8f0;">${invoice.notes}</p>` : ""}
+          <p style="color:#94a3b8;font-size:12px;margin-top:24px;">Questions? Contact ${company?.email || company?.phone || "us"}.</p>
+        </div>`
+      }),
     });
+
+    if (!emailResponse.ok) {
+      const errorData = await emailResponse.json();
+      console.error('Resend API error:', errorData);
+      throw new Error(`Resend API error: ${JSON.stringify(errorData)}`);
+    }
 
     // Auto-advance draft invoices to "sent"
     if (invoice.status === "draft") {

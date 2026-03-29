@@ -312,7 +312,7 @@ Deno.serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: `${companyName} <noreply@honeydocrew.co>`,
+        from: `${companyName} <noreply@${company?.email ? company.email.split('@')[1] : 'honeydocrew.co'}>`,
         to: customer.email,
         subject,
         html,
