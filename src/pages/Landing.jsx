@@ -101,9 +101,9 @@ const FEATURES = [
 
 const TESTIMONIALS = [
   {
-    name: "Mike Torres",
-    company: "Torres Landscaping",
-    quote: "FieldFlow Pro replaced 4 different tools we were using. Our team is faster, billing is automated, and we haven't missed an invoice since.",
+    name: "Dave Kowalski",
+    company: "Kowalski Handyman Services",
+    quote: "I always said there was no software made for handymen. FieldFlow Pro proved me wrong. I send estimates from my phone, customers approve online, and I get paid the same day the job is done.",
     rating: 5,
   },
   {
@@ -115,7 +115,7 @@ const TESTIMONIALS = [
   {
     name: "James Whitfield",
     company: "Whitfield Electrical",
-    quote: "We manage 3 service brands from one dashboard. The multi-company feature is a game changer for us.",
+    quote: "We manage 3 service brands from one dashboard. Scheduling, invoicing, and payments — all in one place. I can't imagine running the business without it.",
     rating: 5,
   },
 ];
@@ -145,25 +145,25 @@ const FAQS = [
 
 const HERO_SLIDES = [
   {
-    image: "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=1600&auto=format&fit=crop&q=80",
-    badge: "🚀 Built for Field Service Businesses",
-    title: "Run your field service",
-    titleHighlight: "business smarter.",
-    subtitle: "FieldFlow Pro gives cleaning, landscaping, plumbing, and electrical businesses the tools to schedule jobs, manage customers, send invoices, and grow — all in one place.",
+    image: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1600&auto=format&fit=crop&q=80",
+    badge: "🔨 Finally — Software Built for Handymen",
+    title: "The all-in-one platform",
+    titleHighlight: "handymen actually need.",
+    subtitle: "Most software ignores handyman businesses. We built FieldFlow Pro specifically for the way you work — quote jobs, schedule visits, track materials, and get paid fast.",
   },
   {
     image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1600&auto=format&fit=crop&q=80",
-    badge: "🔧 Handyman & Repair Services",
-    title: "From the first call to",
-    titleHighlight: "the final invoice.",
-    subtitle: "Manage every handyman job with ease — dispatch techs, track time on-site, and collect payment the moment the work is done.",
+    badge: "🔧 From First Call to Final Payment",
+    title: "Stop losing jobs to",
+    titleHighlight: "bad follow-up.",
+    subtitle: "Capture every lead, send professional estimates in minutes, and follow up automatically — so you never lose a job because you were too busy to reply.",
   },
   {
-    image: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1600&auto=format&fit=crop&q=80",
-    badge: "📈 Grow Your Revenue",
-    title: "Stop juggling tools.",
-    titleHighlight: "Start growing faster.",
-    subtitle: "Replace spreadsheets, paper invoices, and disconnected apps with one platform built specifically for field service businesses.",
+    image: "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=1600&auto=format&fit=crop&q=80",
+    badge: "📈 Works for Any Field Service Trade",
+    title: "Not just handyman —",
+    titleHighlight: "any trade, one platform.",
+    subtitle: "Whether you're a handyman, plumber, painter, HVAC tech, or cleaner — FieldFlow Pro runs your entire operation from scheduling to invoicing.",
   },
 ];
 
@@ -315,10 +315,72 @@ export default function Landing() {
       {/* LOGOS / SOCIAL PROOF */}
       <section className="bg-slate-50 pt-12 pb-12 border-b border-slate-100">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center">
-          <p className="text-slate-400 text-sm mb-8 uppercase tracking-widest font-medium">Trusted by field service businesses across industries</p>
-          <div className="flex flex-wrap justify-center gap-6 text-slate-400 font-semibold text-sm">
-            {["Cleaning", "Landscaping", "Plumbing", "Electrical", "HVAC", "Handyman", "Painting"].map(i => (
-              <span key={i} className="px-4 py-2 bg-white border border-slate-200 rounded-full">{i}</span>
+          <p className="text-slate-400 text-sm mb-8 uppercase tracking-widest font-medium">Built for handymen & every trade that works in the field</p>
+          <div className="flex flex-wrap justify-center gap-3 text-slate-500 font-semibold text-sm">
+            {[
+              { label: "Handyman", highlight: true },
+              { label: "Plumbing" },
+              { label: "Electrical" },
+              { label: "Painting" },
+              { label: "HVAC" },
+              { label: "Cleaning" },
+              { label: "Landscaping" },
+              { label: "Carpentry" },
+            ].map(({ label, highlight }) => (
+              <span
+                key={label}
+                className={`px-4 py-2 border rounded-full ${highlight ? "bg-blue-600 text-white border-blue-600 font-bold" : "bg-white border-slate-200"}`}
+              >
+                {label}
+              </span>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* HANDYMAN PAIN POINT SECTION */}
+      <section className="py-20 bg-white border-b border-slate-100">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6">
+          <div className="text-center mb-12">
+            <Badge className="bg-amber-50 text-amber-700 border-amber-200 mb-4">🔨 For Handymen, By Design</Badge>
+            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-4">
+              "There's no good software for handymen."<br />
+              <span className="text-blue-600">We heard you. We fixed it.</span>
+            </h2>
+            <p className="text-slate-500 text-lg max-w-2xl mx-auto">
+              Generic service software is built for large companies with office staff. FieldFlow Pro is built for the person doing the work — solo operators, small crews, and growing handyman businesses.
+            </p>
+          </div>
+          <div className="grid sm:grid-cols-3 gap-6">
+            {[
+              {
+                before: "Texting quotes back and forth",
+                after: "Send a professional estimate in 2 minutes from your phone",
+                icon: "📱",
+              },
+              {
+                before: "Chasing customers for payment",
+                after: "Customers pay online the moment the job is done",
+                icon: "💵",
+              },
+              {
+                before: "Forgetting follow-ups and losing leads",
+                after: "Every lead is tracked, followed up, and converted automatically",
+                icon: "📋",
+              },
+            ].map(({ before, after, icon }) => (
+              <div key={before} className="bg-slate-50 border border-slate-100 rounded-2xl p-6">
+                <div className="text-3xl mb-4">{icon}</div>
+                <div className="mb-3">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-red-400 mb-1">Before</p>
+                  <p className="text-slate-500 text-sm">{before}</p>
+                </div>
+                <div className="w-full h-px bg-slate-200 my-3" />
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-green-600 mb-1">After FieldFlow Pro</p>
+                  <p className="text-slate-700 text-sm font-medium">{after}</p>
+                </div>
+              </div>
             ))}
           </div>
         </div>
@@ -328,8 +390,8 @@ export default function Landing() {
       <section id="features" className="py-24 max-w-6xl mx-auto px-4 sm:px-6">
         <div className="text-center mb-16">
           <Badge className="bg-blue-50 text-blue-600 border-blue-100 mb-4">Features</Badge>
-          <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-4">Everything your crew needs</h2>
-          <p className="text-slate-500 text-lg max-w-xl mx-auto">From booking to payment, FieldFlow Pro handles the entire job lifecycle so you can focus on the work.</p>
+          <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-4">Everything a handyman business needs</h2>
+          <p className="text-slate-500 text-lg max-w-xl mx-auto">From the first inquiry to the final payment — FieldFlow Pro handles the entire job lifecycle so you can stay on the tools.</p>
         </div>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {FEATURES.map(({ icon: Icon, title, desc, color }) => (
@@ -412,8 +474,8 @@ export default function Landing() {
       <section id="testimonials" className="py-24 max-w-6xl mx-auto px-4 sm:px-6">
         <div className="text-center mb-16">
           <Badge className="bg-emerald-50 text-emerald-600 border-emerald-100 mb-4">Reviews</Badge>
-          <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-4">Loved by field service pros</h2>
-          <p className="text-slate-500 text-lg">See what real business owners are saying.</p>
+          <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-4">Real handymen. Real results.</h2>
+          <p className="text-slate-500 text-lg">From solo operators to growing crews — here's what they're saying.</p>
         </div>
         <div className="grid md:grid-cols-3 gap-6">
           {TESTIMONIALS.map(({ name, company, quote, rating }) => (
@@ -449,8 +511,8 @@ export default function Landing() {
       {/* CTA */}
       <section className="py-24 bg-gradient-to-br from-blue-600 to-violet-700 text-white text-center">
         <div className="max-w-3xl mx-auto px-4 sm:px-6">
-          <h2 className="text-3xl sm:text-4xl font-extrabold mb-4">Ready to grow your business?</h2>
-          <p className="text-blue-100 text-lg mb-10">Join field service businesses already using FieldFlow Pro to save time, collect faster, and delight customers.</p>
+          <h2 className="text-3xl sm:text-4xl font-extrabold mb-4">Finally — software that works the way you do.</h2>
+          <p className="text-blue-100 text-lg mb-10">Handymen and field service pros across every trade are using FieldFlow Pro to win more jobs, get paid faster, and stop drowning in admin work.</p>
           <Link to="/Register">
             <Button size="lg" className="bg-white text-blue-700 hover:bg-blue-50 gap-2 px-10 font-semibold">
               Start Free Trial <ArrowRight className="w-4 h-4" />
