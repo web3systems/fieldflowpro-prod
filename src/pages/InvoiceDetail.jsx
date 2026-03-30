@@ -111,10 +111,15 @@ export default function InvoiceDetail() {
 
   async function handleSendEmail() {
     setSendingEmail(true);
-    const portalUrl = window.location.origin + "/CustomerPortal";
-    await base44.functions.invoke("sendInvoiceEmail", { invoice_id: id, portal_url: portalUrl });
-    setSendingEmail(false);
-    await loadData();
+    try {
+      const portalUrl = window.location.origin + "/CustomerPortal";
+      await base44.functions.invoke("sendInvoiceEmail", { invoice_id: id, portal_url: portalUrl });
+      await base44.entities.Invoice.update(id, { status: "sent" });
+      alert("Invoice sent successfully!");
+      navigate(createPageUrl("Invoices"));
+    } finally {
+      setSendingEmail(false);
+    }
   }
 
   function handleDownloadPdf() {
