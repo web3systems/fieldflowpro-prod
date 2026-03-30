@@ -48,6 +48,8 @@ export default function JobDetail() {
   const [invoiceActionLoading, setInvoiceActionLoading] = useState(false);
   const [reviewLoading, setReviewLoading] = useState(false);
   const [form, setForm] = useState(defaultJob);
+  const [showInvoicePrompt, setShowInvoicePrompt] = useState(false);
+  const [existingInvoices, setExistingInvoices] = useState([]);
   const { toast } = useToast();
 
   const loadData = useCallback(async () => {
@@ -56,7 +58,12 @@ export default function JobDetail() {
       activeCompany ? base44.entities.Customer.filter({ company_id: activeCompany.id }) : Promise.resolve([]),
       activeCompany ? base44.entities.Technician.filter({ company_id: activeCompany.id }) : Promise.resolve([]),
     ]);
-    if (jobs.length > 0) { setJob(jobs[0]); setForm({ ...defaultJob, ...jobs[0] }); }
+    if (jobs.length > 0) {
+      setJob(jobs[0]);
+      setForm({ ...defaultJob, ...jobs[0] });
+      const invs = await base44.entities.Invoice.filter({ job_id: id });
+      setExistingInvoices(invs);
+    }
     setCustomers(c);
     setTechs(t);
     setLoading(false);
@@ -64,12 +71,17 @@ export default function JobDetail() {
 
   useEffect(() => { loadData(); }, [loadData]);
 
-  async function handleSave() {
+  async function handleSave(statusOverride) {
     setSaving(true);
-    await base44.entities.Job.update(id, form);
-    setJob(j => ({ ...j, ...form }));
+    const dataToSave = statusOverride ? { ...form, status: statusOverride } : form;
+    await base44.entities.Job.update(id, dataToSave);
+    setJob(j => ({ ...j, ...dataToSave }));
     setSaving(false);
     toast({ title: "Job saved!" });
+    // Prompt to generate invoice if just marked completed and no invoice exists
+    if (statusOverride === "completed" && existingInvoices.length === 0) {
+      setShowInvoicePrompt(true);
+    }
   }
 
   async function sendReviewRequest() {
@@ -124,6 +136,8 @@ export default function JobDetail() {
       });
       if (res.data?.url) { window.location.href = res.data.url; return; }
     }
+    setExistingInvoices(prev => [...prev, invoice]);
+    setShowInvoicePrompt(false);
     navigate(`/InvoiceDetail/${invoice.id}`);
   }
 
@@ -184,6 +198,29 @@ export default function JobDetail() {
           )}
         </div>
       </div>
+
+      {/* Invoice prompt banner */}
+      {showInvoicePrompt && (
+        <div className="mb-5 flex items-center justify-between gap-4 bg-green-50 border border-green-200 rounded-xl px-5 py-4">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+              <FileText className="w-4 h-4 text-green-600" />
+            </div>
+            <div>
+              <p className="font-semibold text-green-800 text-sm">Job marked as completed!</p>
+              <p className="text-green-700 text-xs">Would you like to generate an invoice now?</p>
+            </div>
+          </div>
+          <div className="flex gap-2 flex-shrink-0">
+            <Button size="sm" variant="outline" className="text-xs border-green-300 text-green-700 hover:bg-green-100" onClick={() => setShowInvoicePrompt(false)}>
+              Not now
+            </Button>
+            <Button size="sm" className="text-xs bg-green-600 hover:bg-green-700 gap-1" onClick={() => generateInvoice(false)} disabled={invoiceActionLoading}>
+              <FileText className="w-3.5 h-3.5" /> {invoiceActionLoading ? "Creating..." : "Create Invoice"}
+            </Button>
+          </div>
+        </div>
+      )}
 
       <div className="flex gap-5">
         {/* Left Sidebar */}

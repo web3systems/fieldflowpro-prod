@@ -25,7 +25,7 @@ const PRIORITY_OPTIONS = [
   { value: "urgent", label: "Urgent" },
 ];
 
-export default function JobSidebar({ job, form, setForm, customers, onSave, saving }) {
+export default function JobSidebar({ job, form, setForm, customers, onSave, saving, onStatusChange }) {
   const [editing, setEditing] = useState(false);
   const [tagInput, setTagInput] = useState("");
 
@@ -33,7 +33,7 @@ export default function JobSidebar({ job, form, setForm, customers, onSave, savi
   const fullAddress = [form.address, form.city, form.state, form.zip].filter(Boolean).join(", ");
 
   async function handleSave() {
-    await onSave();
+    await onSave(form.status);
     setEditing(false);
   }
 
