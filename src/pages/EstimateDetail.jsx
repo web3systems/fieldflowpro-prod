@@ -230,6 +230,11 @@ export default function EstimateDetail() {
         company_id: activeCompany?.id,
         contact_method: "email",
       });
+      // Update status to "sent"
+      await base44.entities.Estimate.update(id, { status: "sent" });
+      // Brief confirmation then navigate back
+      alert("Estimate sent successfully!");
+      navigate(createPageUrl("Estimates"));
     } finally {
       setSendingEmail(false);
     }
