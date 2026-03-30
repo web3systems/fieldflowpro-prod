@@ -192,8 +192,10 @@ export default function Invoices() {
         invoice_id: editing.id,
         portal_url: portalUrl,
       });
-      await loadData();
+      await base44.entities.Invoice.update(editing.id, { status: "sent" });
+      alert("Invoice sent successfully!");
       setSheetOpen(false);
+      await loadData();
     } catch (err) {
       const msg = err?.response?.data?.error || err.message || "Failed to send email";
       alert(`Email failed: ${msg}`);

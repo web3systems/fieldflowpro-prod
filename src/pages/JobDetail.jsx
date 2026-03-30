@@ -85,7 +85,13 @@ export default function JobDetail() {
     let subtotal = form.total_amount || 0;
     if (job.estimate_id && line_items.length === 0) {
       const ests = await base44.entities.Estimate.filter({ id: job.estimate_id });
-      if (ests[0]) { line_items = ests[0].line_items || []; subtotal = ests[0].subtotal || ests[0].total || 0; }
+      if (ests[0]) {
+        const est = ests[0];
+        // Support both multi-option and legacy flat structure
+        const opt = est.options?.[0];
+        line_items = opt?.line_items || est.line_items || [];
+        subtotal = opt?.subtotal || est.subtotal || opt?.total || est.total || 0;
+      }
     }
     if (line_items.length === 0 && form.total_amount) {
       line_items = [{ description: form.title, quantity: 1, unit_price: form.total_amount, total: form.total_amount }];

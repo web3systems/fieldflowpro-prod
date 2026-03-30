@@ -18,8 +18,9 @@ export default function JobLineItemsSection({ form, setForm, companyId, onSave }
   }, [companyId]);
 
   const lineItems = form.line_items || [];
-  const serviceItems = lineItems.filter(i => i.category !== "material");
-  const materialItems = lineItems.filter(i => i.category === "material");
+  // Build indexed lists to avoid fragile indexOf lookups
+  const serviceItems = lineItems.map((item, idx) => ({ item, idx })).filter(({ item }) => item.category !== "material");
+  const materialItems = lineItems.map((item, idx) => ({ item, idx })).filter(({ item }) => item.category === "material");
 
   const laborServices = useMemo(() => services.filter(s => s.category === "Labor" || s.category === "labor"), [services]);
   const materialServices = useMemo(() => services.filter(s => s.category === "Materials" || s.category === "materials"), [services]);
@@ -73,7 +74,7 @@ export default function JobLineItemsSection({ form, setForm, companyId, onSave }
   const total = subtotal + taxAmount - (form.discount || 0);
 
   function renderItem(item, index) {
-    const globalIndex = lineItems.indexOf(item);
+    const globalIndex = index;
     return (
       <div key={globalIndex} className="border-b border-slate-100 last:border-0">
         <div className="px-5 py-3 grid grid-cols-12 gap-2 items-center">
@@ -153,7 +154,7 @@ export default function JobLineItemsSection({ form, setForm, companyId, onSave }
           <div className="px-5 pt-3 pb-1">
             <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Services</p>
           </div>
-          {serviceItems.map(item => renderItem(item, lineItems.indexOf(item)))}
+          {serviceItems.map(({ item, idx }) => renderItem(item, idx))}
           <div className="px-5 py-2 border-b border-slate-100">
             <button onClick={() => addItem("service")} className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700">
               <Plus className="w-3.5 h-3.5" /> Add service
@@ -164,7 +165,7 @@ export default function JobLineItemsSection({ form, setForm, companyId, onSave }
           <div className="px-5 pt-3 pb-1">
             <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Materials</p>
           </div>
-          {materialItems.map(item => renderItem(item, lineItems.indexOf(item)))}
+          {materialItems.map(({ item, idx }) => renderItem(item, idx))}
           <div className="px-5 py-2 border-b border-slate-200">
             <button onClick={() => addItem("material")} className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700">
               <Plus className="w-3.5 h-3.5" /> Add material

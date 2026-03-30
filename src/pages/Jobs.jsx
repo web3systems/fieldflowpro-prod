@@ -191,8 +191,10 @@ export default function Jobs() {
       const estimates = await base44.entities.Estimate.filter({ id: job.estimate_id });
       const est = estimates[0];
       if (est) {
-        line_items = est.line_items || [];
-        subtotal = est.subtotal || est.total || 0;
+        // Support both multi-option and legacy flat structure
+        const opt = est.options?.[0];
+        line_items = opt?.line_items || est.line_items || [];
+        subtotal = opt?.subtotal || est.subtotal || opt?.total || est.total || 0;
       }
     }
     if (line_items.length === 0 && job.total_amount) {
