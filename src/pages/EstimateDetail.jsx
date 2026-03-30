@@ -554,7 +554,7 @@ export default function EstimateDetail() {
                     </div>
                   </div>
 
-                  {opt.line_items?.filter(item => !item.category || item.category === 'labor').length > 0 ? (
+                  {opt.line_items?.map((item, origIdx) => ({ item, origIdx })).filter(({ item }) => !item.category || item.category === 'labor').length > 0 ? (
                     <>
                       <div className="grid grid-cols-12 gap-2 px-3 text-xs font-medium text-slate-400 uppercase tracking-wide mb-2">
                         <div className="col-span-5">Service / Description</div>
@@ -563,9 +563,7 @@ export default function EstimateDetail() {
                         <div className="col-span-2 text-right">Total</div>
                         <div className="col-span-1" />
                       </div>
-                      {opt.line_items?.filter(item => !item.category || item.category === 'labor').map((item, idx) => {
-                        const origIdx = opt.line_items.indexOf(item);
-                        return (
+                      {opt.line_items?.map((item, origIdx) => ({ item, origIdx })).filter(({ item }) => !item.category || item.category === 'labor').map(({ item, origIdx }) => (
                           <LineItemRow
                             key={origIdx}
                             item={item}
@@ -576,8 +574,7 @@ export default function EstimateDetail() {
                             onUpdate={updateItem}
                             onRemove={removeItem}
                           />
-                        );
-                      })}
+                        ))}
                     </>
                   ) : (
                     <p className="text-xs text-slate-400 px-3 py-2">No labor items added</p>
@@ -594,7 +591,7 @@ export default function EstimateDetail() {
                     </div>
                   </div>
 
-                  {opt.line_items?.filter(item => item.category === 'materials').length > 0 ? (
+                  {opt.line_items?.map((item, origIdx) => ({ item, origIdx })).filter(({ item }) => item.category === 'materials').length > 0 ? (
                     <>
                       <div className="grid grid-cols-12 gap-2 px-3 text-xs font-medium text-slate-400 uppercase tracking-wide mb-2">
                         <div className="col-span-5">Service / Description</div>
@@ -603,9 +600,7 @@ export default function EstimateDetail() {
                         <div className="col-span-2 text-right">Total</div>
                         <div className="col-span-1" />
                       </div>
-                      {opt.line_items?.filter(item => item.category === 'materials').map((item, idx) => {
-                        const origIdx = opt.line_items.indexOf(item);
-                        return (
+                      {opt.line_items?.map((item, origIdx) => ({ item, origIdx })).filter(({ item }) => item.category === 'materials').map(({ item, origIdx }) => (
                           <LineItemRow
                             key={origIdx}
                             item={item}
@@ -616,8 +611,7 @@ export default function EstimateDetail() {
                             onUpdate={updateItem}
                             onRemove={removeItem}
                           />
-                        );
-                      })}
+                        ))}
                     </>
                   ) : (
                     <p className="text-xs text-slate-400 px-3 py-2">No material items added</p>
