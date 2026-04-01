@@ -7,7 +7,7 @@ import {
   Plus, FileText, Search, Trash2, ChevronRight,
   CheckCircle, XCircle, Briefcase, Download, Copy,
   Phone, Mail, MapPin, ExternalLink, X, Calendar, Users, 
-  ListChecks, Paperclip, UserCircle2, ArrowLeft
+  ListChecks, Paperclip, UserCircle2, ArrowLeft, Sparkles
 } from "lucide-react";
 import { downloadEstimatePdf } from "../components/documents/generatePdf";
 import { Button } from "@/components/ui/button";
@@ -262,6 +262,9 @@ export default function Estimates() {
         <div className="flex gap-2">
           <Button variant="outline" onClick={handleExportCsv} className="gap-2 hidden sm:flex">
             <Download className="w-4 h-4" /> Export CSV
+          </Button>
+          <Button variant="outline" onClick={() => navigate("/AIEstimator")} className="gap-2 border-purple-200 text-purple-700 hover:bg-purple-50">
+            <Sparkles className="w-4 h-4" /> AI Estimator
           </Button>
           <Button onClick={openCreate} className="gap-2 bg-blue-600 hover:bg-blue-700">
             <Plus className="w-4 h-4" /> New Estimate
