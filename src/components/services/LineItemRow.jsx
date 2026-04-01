@@ -44,7 +44,9 @@ export default function LineItemRow({ item, idx, companyId, services = [], onSer
   }
 
   const serviceExists = item.service_id && services.some(s => s.id === item.service_id);
-  const selectValue = serviceExists ? item.service_id : "__custom__";
+  // If service_id is set but not in the list yet (services still loading), keep showing the id
+  // so the select doesn't flash to __custom__ while services load
+  const selectValue = item.service_id ? item.service_id : "__custom__";
 
   const laborServices = useMemo(() => services.filter(s => s.category === "Labor" || s.category === "labor"), [services]);
   const materialServices = useMemo(() => services.filter(s => s.category === "Materials" || s.category === "materials"), [services]);
@@ -68,6 +70,10 @@ export default function LineItemRow({ item, idx, companyId, services = [], onSer
             <SelectContent>
               <SelectItem value="__add_new__" className="text-blue-600 font-medium">+ Add New Service</SelectItem>
               <SelectItem value="__custom__">-- Custom --</SelectItem>
+              {/* Hidden option keeps the select valid when service_id is set but not yet in the list */}
+              {item.service_id && !serviceExists && (
+                <SelectItem value={item.service_id} className="hidden">{item.description || item.service_id}</SelectItem>
+              )}
               {laborServices.length > 0 && (
                 <SelectGroup>
                   <SelectLabel>Labor</SelectLabel>
@@ -94,7 +100,7 @@ export default function LineItemRow({ item, idx, companyId, services = [], onSer
               )}
             </SelectContent>
           </Select>
-          {!serviceExists && (
+          {(!item.service_id || !serviceExists) && (
             <Input
               value={item.description}
               onChange={e => onUpdate(idx, "description", e.target.value)}
