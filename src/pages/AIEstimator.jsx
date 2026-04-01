@@ -126,7 +126,7 @@ export default function AIEstimator() {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-slate-50">
+    <div className="flex flex-col h-full bg-slate-50" style={{ height: "calc(100vh - 57px)" }}>
       {/* Header */}
       <div className="bg-white border-b border-slate-200 px-4 py-3 flex items-center gap-3 flex-shrink-0">
         <Button variant="ghost" size="sm" onClick={() => navigate(createPageUrl("Estimates"))} className="gap-1 text-slate-500">
