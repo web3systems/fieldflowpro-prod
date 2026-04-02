@@ -16,6 +16,7 @@ import JobFieldTechSection from "@/components/jobs/JobFieldTechSection";
 import JobLineItemsSection from "@/components/jobs/JobLineItemsSection";
 import JobInvoiceSection from "@/components/jobs/JobInvoiceSection";
 import JobNotesSection from "@/components/jobs/JobNotesSection";
+import JobPhotosSection from "@/components/jobs/JobPhotosSection";
 
 const STATUS_COLORS = {
   new: "bg-blue-100 text-blue-700 border-blue-200",
@@ -269,6 +270,12 @@ export default function JobDetail() {
             setForm={setForm}
             companyId={activeCompany?.id}
             onSave={handleSave}
+          />
+
+          {/* Before & After Photos */}
+          <JobPhotosSection
+            job={job}
+            onPhotosUpdated={(field, updated) => setJob(j => ({ ...j, [field]: updated }))}
           />
 
           {/* Notes */}
