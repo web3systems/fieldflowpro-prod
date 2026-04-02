@@ -2,7 +2,8 @@ import { useState, useRef, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Send, Bot, User, Loader2, Sparkles } from "lucide-react";
+import { Send, Bot, User, Loader2, Sparkles, Image } from "lucide-react";
+import MediaUploader from "./MediaUploader";
 
 export default function AIEstimatorChat({ customers, services, company, onEstimateReady }) {
   const [messages, setMessages] = useState([
@@ -13,6 +14,7 @@ export default function AIEstimatorChat({ customers, services, company, onEstima
   ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [attachedMedia, setAttachedMedia] = useState([]);
   const bottomRef = useRef(null);
 
   useEffect(() => {
@@ -72,9 +74,16 @@ Until you have enough information, keep asking questions naturally and helpfully
       newMessages.map(m => `${m.role === "user" ? "Technician" : "AI"}: ${m.content}`).join("\n\n") +
       "\n\nAI:";
 
+    const imageUrls = attachedMedia.filter(m => m.type === "image").map(m => m.url);
+    const videoUrls = attachedMedia.filter(m => m.type === "video").map(m => m.url);
+    const mediaNote = attachedMedia.length > 0
+      ? `\n\nThe technician has attached ${imageUrls.length} image(s) and ${videoUrls.length} video(s) for context. Use any visual information to better assess scope, materials, and labor required.`
+      : "";
+
     const aiResponse = await base44.integrations.Core.InvokeLLM({
-      prompt: fullPrompt,
+      prompt: fullPrompt + mediaNote,
       model: "claude_sonnet_4_6",
+      file_urls: imageUrls.length > 0 ? imageUrls : undefined,
     });
 
     const assistantMsg = { role: "assistant", content: aiResponse };
@@ -99,6 +108,10 @@ Until you have enough information, keep asking questions naturally and helpfully
       e.preventDefault();
       sendMessage();
     }
+  }
+
+  function handleMediaUploaded(entry) {
+    setAttachedMedia(prev => [...prev, entry]);
   }
 
   return (
@@ -140,8 +153,16 @@ Until you have enough information, keep asking questions naturally and helpfully
         <div ref={bottomRef} />
       </div>
 
+      {/* Media uploader */}
+      <MediaUploader onMediaUploaded={handleMediaUploaded} />
+
       {/* Input */}
       <div className="p-4 border-t border-slate-200 bg-white">
+        {attachedMedia.length > 0 && (
+          <div className="flex items-center gap-1 mb-2 text-xs text-purple-600 font-medium">
+            <Image className="w-3 h-3" /> {attachedMedia.length} file{attachedMedia.length > 1 ? "s" : ""} will be shared with AI
+          </div>
+        )}
         <div className="flex gap-2 items-end">
           <Textarea
             value={input}
