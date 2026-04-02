@@ -3,16 +3,21 @@ import { Resend } from 'npm:resend@4.0.0';
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
-function getSenderForCompany(company) {
-  const name = (company?.name || '').toLowerCase();
-  const slug = (company?.slug || '').toLowerCase();
-  if (name.includes('pretty little') || slug.includes('pretty')) {
-    return `${company.name} <notifications@prettylittlepolishers.com>`;
+async function resolveMailSettings(base44, companyId) {
+  const PLATFORM_FROM = 'FieldFlow Pro <notifications@fieldflowpro.com>';
+  const PLATFORM_REPLY_TO = 'notifications@fieldflowpro.com';
+  if (!companyId) return { error: 'No company_id', blocked: true };
+  const settings = await base44.asServiceRole.entities.CompanyEmailSettings.filter({ company_id: companyId });
+  const cfg = settings[0];
+  if (!cfg || !cfg.mail_enabled) return { error: `Email not configured for company ${companyId}`, blocked: true };
+  if (cfg.mail_domain_verified) {
+    return { from: `${cfg.mail_from_name} <${cfg.mail_from_address}>`, replyTo: cfg.mail_reply_to || cfg.mail_from_address, enabled: true, fallbackUsed: false };
   }
-  if (name.includes('honeydo clean') || slug.includes('honeydoclean')) {
-    return `${company.name} <notifications@honeydoclean.com>`;
+  if (cfg.mail_fallback_allowed) {
+    console.warn(`[MailResolver] Company ${companyId} using platform fallback`);
+    return { from: PLATFORM_FROM, replyTo: PLATFORM_REPLY_TO, enabled: true, fallbackUsed: true };
   }
-  return `${company?.name || 'Honeydo Crew'} <notifications@honeydocrew.co>`;
+  return { error: `Domain not verified and fallback not allowed for company ${companyId}`, blocked: true };
 }
 
 Deno.serve(async (req) => {
@@ -21,11 +26,7 @@ Deno.serve(async (req) => {
     const payload = await req.json();
     const { data } = payload;
 
-    if (!data || !data.company_id) {
-      return Response.json({ skipped: true, reason: "no customer data" });
-    }
-
-    // Skip notifications for bulk-imported records
+    if (!data || !data.company_id) return Response.json({ skipped: true, reason: "no customer data" });
     if (data.imported === true) {
       console.log("Skipping notification for imported customer:", data.id);
       return Response.json({ skipped: true, reason: "imported record" });
@@ -34,40 +35,32 @@ Deno.serve(async (req) => {
     const customer = data;
     const customerName = `${customer.first_name} ${customer.last_name}`;
 
-    // Get company info
     const companies = await base44.asServiceRole.entities.Company.filter({ id: customer.company_id });
     const company = companies[0];
     if (!company) return Response.json({ skipped: true, reason: "company not found" });
 
-    // Get recipients: prefer NotificationSettings, fall back to all users with company access
+    const mailSettings = await resolveMailSettings(base44, customer.company_id);
+    // For staff notifications, if mail not configured fall back silently (just do in-app)
+    const canSendEmail = !mailSettings.blocked;
+
     const notifSettings = await base44.asServiceRole.entities.NotificationSetting.filter({ company_id: customer.company_id });
-    
     let recipients = [];
 
     if (notifSettings.length > 0) {
-      // Use users who have new_customer notifications enabled
       recipients = notifSettings
         .filter(s => s.is_enabled !== false && s.events?.new_customer !== false && s.user_email)
         .map(s => ({ email: s.user_email, inApp: s.channels?.in_app !== false, sendEmail: s.channels?.email !== false }));
     } else {
-      // Fallback: notify all registered app users who have access to this company
       const allUsers = await base44.asServiceRole.entities.User.list();
       const registeredEmails = new Set(allUsers.map(u => u.email));
-
       const accesses = await base44.asServiceRole.entities.UserCompanyAccess.filter({ company_id: customer.company_id });
       const accessEmails = accesses.filter(a => a.user_email && registeredEmails.has(a.user_email)).map(a => a.user_email);
-      
-      // Include company creator if registered
       const allEmails = new Set(accessEmails);
-      if (company.created_by && registeredEmails.has(company.created_by)) {
-        allEmails.add(company.created_by);
-      }
-
+      if (company.created_by && registeredEmails.has(company.created_by)) allEmails.add(company.created_by);
       recipients = [...allEmails].map(email => ({ email, inApp: true, sendEmail: true }));
     }
 
-    const fromAddress = getSenderForCompany(company);
-    console.log(`New customer "${customerName}" — notifying ${recipients.length} recipient(s): ${recipients.map(r => r.email).join(", ")}`);
+    console.log(`[notifyNewCustomer] New customer "${customerName}" — notifying ${recipients.length} recipient(s)`);
 
     const emailBody = `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;">
       <h2 style="color:#1e293b;margin:0 0 16px;">New Customer Added</h2>
@@ -96,19 +89,19 @@ Deno.serve(async (req) => {
           channels_sent: ["in_app"],
         });
       }
-      if (r.sendEmail) {
+      if (r.sendEmail && canSendEmail) {
         await resend.emails.send({
-          from: fromAddress,
+          from: mailSettings.from,
+          reply_to: mailSettings.replyTo,
           to: r.email,
           subject: `New Customer: ${customerName} — ${company.name}`,
           html: emailBody,
         });
-        console.log(`Email sent to ${r.email}`);
+        console.log(`[notifyNewCustomer] Email sent to ${r.email} from ${mailSettings.from}`);
       }
     });
 
     await Promise.all(promises);
-
     return Response.json({ success: true, notified: recipients.length });
   } catch (error) {
     console.error("Error in notifyNewCustomer:", error.message);

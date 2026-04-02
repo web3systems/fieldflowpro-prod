@@ -1,0 +1,65 @@
+{
+  "name": "CompanyEmailSettings",
+  "type": "object",
+  "properties": {
+    "company_id": {
+      "type": "string"
+    },
+    "mail_enabled": {
+      "type": "boolean",
+      "default": false
+    },
+    "mail_from_name": {
+      "type": "string"
+    },
+    "mail_from_address": {
+      "type": "string"
+    },
+    "mail_reply_to": {
+      "type": "string"
+    },
+    "mail_domain": {
+      "type": "string"
+    },
+    "mail_domain_verified": {
+      "type": "boolean",
+      "default": false
+    },
+    "mail_fallback_allowed": {
+      "type": "boolean",
+      "default": true
+    },
+    "mail_method": {
+      "type": "string",
+      "enum": [
+        "resend",
+        "smtp"
+      ],
+      "default": "resend"
+    },
+    "smtp_host": {
+      "type": "string"
+    },
+    "smtp_port": {
+      "type": "number"
+    },
+    "smtp_username": {
+      "type": "string"
+    },
+    "smtp_password": {
+      "type": "string"
+    },
+    "smtp_encryption": {
+      "type": "string",
+      "enum": [
+        "none",
+        "tls",
+        "starttls"
+      ],
+      "default": "tls"
+    }
+  },
+  "required": [
+    "company_id"
+  ]
+}

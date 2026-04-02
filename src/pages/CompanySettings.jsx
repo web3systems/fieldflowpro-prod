@@ -8,6 +8,7 @@ import CompanyTeamTab from '@/components/settings/CompanyTeamTab';
 import CompanyBillingTab from '@/components/settings/CompanyBillingTab';
 import CustomerPortalSettingsTab from '@/components/settings/CustomerPortalSettingsTab';
 import StripeConnectCard from '@/components/settings/StripeConnectCard';
+import CompanyEmailSettingsTab from '@/components/settings/CompanyEmailSettingsTab';
 
 export default function CompanySettings() {
   const { activeCompany, user } = useApp();
@@ -48,6 +49,7 @@ export default function CompanySettings() {
             <TabsTrigger value="billing">Billing & Plan</TabsTrigger>
             <TabsTrigger value="portal">Customer Portal</TabsTrigger>
             <TabsTrigger value="payments">Payments</TabsTrigger>
+            <TabsTrigger value="email">Email Settings</TabsTrigger>
             {isOwner && <TabsTrigger value="general">General</TabsTrigger>}
           </TabsList>
 
@@ -65,6 +67,10 @@ export default function CompanySettings() {
 
           <TabsContent value="payments">
             <StripeConnectCard company={company} />
+          </TabsContent>
+
+          <TabsContent value="email">
+            <CompanyEmailSettingsTab company={company} />
           </TabsContent>
 
           {isOwner && (
