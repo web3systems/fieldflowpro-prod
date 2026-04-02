@@ -26,6 +26,7 @@ import CompanySettings from './pages/CompanySettings';
 import SaaSAdminDashboard from './pages/SaaSAdminDashboard';
 import EmailTemplateEditor from './pages/EmailTemplateEditor';
 import AIEstimator from './pages/AIEstimator';
+import ReleaseNotes from './pages/ReleaseNotes';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 
@@ -120,6 +121,7 @@ const AuthenticatedApp = () => {
       <Route path="/Landing" element={<Landing />} />
       <Route path="/EmailTemplateEditor" element={<LayoutWrapper currentPageName="EmailTemplateEditor"><EmailTemplateEditor /></LayoutWrapper>} />
       <Route path="/AIEstimator" element={<LayoutWrapper currentPageName="Estimates"><AIEstimator /></LayoutWrapper>} />
+      <Route path="/ReleaseNotes" element={<LayoutWrapper currentPageName="ReleaseNotes"><ReleaseNotes /></LayoutWrapper>} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
