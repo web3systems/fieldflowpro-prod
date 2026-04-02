@@ -3,14 +3,14 @@ import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { useApp } from "../Layout";
 import { createPageUrl } from "@/utils";
-import { ArrowLeft, Bot, CheckCircle, Edit3, Save, Send, Sparkles, Mail, Download, Copy } from "lucide-react";
+import { ArrowLeft, Bot, CheckCircle, Edit3, Save, Sparkles, Mail, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import AIEstimatorChat from "@/components/estimates/AIEstimatorChat";
+import EstimateIntakeForm from "@/components/estimates/EstimateIntakeForm";
 import { downloadEstimatePdf } from "@/components/documents/generatePdf";
 
 export default function AIEstimator() {
@@ -139,7 +139,7 @@ export default function AIEstimator() {
           </div>
           <div>
             <h1 className="text-base font-bold text-slate-900">AI Estimator</h1>
-            <p className="text-xs text-slate-500">Chat to build a professional estimate</p>
+            <p className="text-xs text-slate-500">Fill out the form to instantly generate an estimate</p>
           </div>
         </div>
         {phase !== "chat" && (
@@ -152,22 +152,16 @@ export default function AIEstimator() {
       </div>
 
       <div className="flex flex-1 min-h-0">
-        {/* Chat panel */}
+        {/* Intake Form panel */}
         <div className={`flex flex-col border-r border-slate-200 bg-white ${phase === "chat" ? "flex-1" : "w-96 flex-shrink-0"}`}>
           {phase === "chat" ? (
-            <div className="flex-1 min-h-0 flex flex-col">
-              <div className="p-3 bg-purple-50 border-b border-purple-100 flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-purple-600" />
-                <p className="text-sm text-purple-700 font-medium">AI will ask questions and automatically generate the estimate when ready</p>
-              </div>
-              <div className="flex-1 min-h-0">
-                <AIEstimatorChat
-                  customers={customers}
-                  services={services}
-                  company={activeCompany}
-                  onEstimateReady={handleEstimateReady}
-                />
-              </div>
+            <div className="flex-1 min-h-0 overflow-y-auto">
+              <EstimateIntakeForm
+                customers={customers}
+                services={services}
+                company={activeCompany}
+                onEstimateReady={handleEstimateReady}
+              />
             </div>
           ) : (
             <div className="flex flex-col h-full">
@@ -176,7 +170,7 @@ export default function AIEstimator() {
                 <p className="text-sm text-green-700 font-medium">Estimate ready! Review it on the right.</p>
               </div>
               <div className="flex-1 overflow-y-auto p-4 text-sm text-slate-500">
-                <p className="font-medium text-slate-700 mb-2">Conversation summary:</p>
+                <p className="font-medium text-slate-700 mb-2">AI summary:</p>
                 <p className="italic">"{draftEstimate?.summary || draftEstimate?.title}"</p>
                 <button
                   onClick={() => { setPhase("chat"); setDraftEstimate(null); setSavedEstimate(null); }}
