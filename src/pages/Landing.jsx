@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
+import { base44 } from "@/api/base44Client";
 import {
   Globe, CheckCircle, ArrowRight, Menu, X, Star,
   Briefcase, Users, DollarSign, Calendar, BarChart3,
@@ -264,6 +265,10 @@ function FAQItem({ q, a }) {
 export default function Landing() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  const handleSignIn = () => {
+    base44.auth.redirectToLogin(`${window.location.origin}/Dashboard`);
+  };
+
   return (
     <div className="min-h-screen bg-white text-slate-900 font-sans">
       {/* NAV */}
@@ -282,9 +287,7 @@ export default function Landing() {
           </nav>
 
           <div className="hidden md:flex items-center gap-3">
-            <Link to="/Dashboard">
-              <Button variant="ghost" size="sm">Sign In</Button>
-            </Link>
+            <Button variant="ghost" size="sm" onClick={handleSignIn}>Sign In</Button>
             <Link to="/Register">
               <Button size="sm" className="bg-blue-600 hover:bg-blue-700">Get Started Free</Button>
             </Link>
@@ -303,7 +306,7 @@ export default function Landing() {
             <a href="#testimonials" className="block text-sm text-slate-600" onClick={() => setMobileMenuOpen(false)}>Reviews</a>
             <a href="#faq" className="block text-sm text-slate-600" onClick={() => setMobileMenuOpen(false)}>FAQ</a>
             <div className="flex gap-2 pt-2">
-              <Link to="/Dashboard" className="flex-1"><Button variant="outline" className="w-full" size="sm">Sign In</Button></Link>
+              <Button variant="outline" className="flex-1 w-full" size="sm" onClick={() => { setMobileMenuOpen(false); handleSignIn(); }}>Sign In</Button>
               <Link to="/Register" className="flex-1"><Button className="w-full bg-blue-600 hover:bg-blue-700" size="sm">Get Started</Button></Link>
             </div>
           </div>
