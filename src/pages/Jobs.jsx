@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { useApp } from "../Layout";
 import { createPageUrl } from "@/utils";
@@ -65,6 +65,9 @@ export default function Jobs() {
   const [privateNoteTab, setPrivateNoteTab] = useState("job"); // "job" | "customer"
   const [customerSearch, setCustomerSearch] = useState("");
   const [anytime, setAnytime] = useState(false);
+  const [openSection, setOpenSection] = useState(null); // which left-panel section is open
+  const [tagInput, setTagInput] = useState("");
+  const [checklistInput, setChecklistInput] = useState("");
 
   useEffect(() => {
     if (activeCompany) loadData();
@@ -142,6 +145,9 @@ export default function Jobs() {
 
   function openCreate() {
     setEditing(null);
+    setOpenSection(null);
+    setTagInput("");
+    setChecklistInput("");
     const now = new Date();
     now.setMinutes(0, 0, 0);
     now.setHours(now.getHours() + 1);
@@ -465,9 +471,9 @@ export default function Jobs() {
                       {getCustomerName(form.customer_id)}
                     </div>
                   )}
-                  <button className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700 mt-1">
+                  <Link to="/Customers?new=1" className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700 mt-1" onClick={() => setSheetOpen(false)}>
                     <Plus className="w-3.5 h-3.5" /> New customer
-                  </button>
+                  </Link>
                 </div>
 
                 {/* Schedule */}
@@ -521,19 +527,119 @@ export default function Jobs() {
                   </div>
                 </div>
 
-                {/* Collapsible sections */}
-                {[
-                  { icon: <List className="w-4 h-4" />, label: "Checklists" },
-                  { icon: <Paperclip className="w-4 h-4" />, label: "Attachments" },
-                  { icon: <FileText className="w-4 h-4" />, label: "Fields" },
-                  { icon: <Tag className="w-4 h-4" />, label: "Tags" },
-                  { icon: <User className="w-4 h-4" />, label: "Lead source" },
-                ].map(({ icon, label }) => (
-                  <div key={label} className="bg-white border rounded-lg px-3 py-2 flex items-center justify-between text-sm text-slate-600 cursor-pointer hover:bg-slate-50">
-                    <div className="flex items-center gap-2">{icon}{label}</div>
+                {/* Checklists */}
+                <div className="bg-white border rounded-lg overflow-hidden">
+                  <button className="w-full px-3 py-2 flex items-center justify-between text-sm text-slate-600 hover:bg-slate-50" onClick={() => setOpenSection(openSection === "checklist" ? null : "checklist")}>
+                    <div className="flex items-center gap-2"><List className="w-4 h-4" />Checklists {(form.checklist||[]).length > 0 && <span className="text-xs bg-slate-100 px-1.5 py-0.5 rounded-full">{(form.checklist||[]).length}</span>}</div>
                     <Plus className="w-4 h-4 text-slate-400" />
-                  </div>
-                ))}
+                  </button>
+                  {openSection === "checklist" && (
+                    <div className="px-3 pb-3 border-t space-y-2 pt-2">
+                      {(form.checklist||[]).map((item, i) => (
+                        <div key={i} className="flex items-center gap-2">
+                          <input type="checkbox" checked={item.completed||false} onChange={e => { const cl=[...(form.checklist||[])]; cl[i]={...cl[i],completed:e.target.checked}; setForm(f=>({...f,checklist:cl})); }} className="rounded" />
+                          <span className={`text-xs flex-1 ${item.completed?"line-through text-slate-400":"text-slate-700"}`}>{item.item}</span>
+                          <button onClick={() => setForm(f=>({...f,checklist:(f.checklist||[]).filter((_,idx)=>idx!==i)}))} className="text-slate-300 hover:text-red-400"><X className="w-3 h-3" /></button>
+                        </div>
+                      ))}
+                      <div className="flex gap-1">
+                        <Input value={checklistInput} onChange={e=>setChecklistInput(e.target.value)} placeholder="New item..." className="h-7 text-xs" onKeyDown={e=>{if(e.key==="Enter"){e.preventDefault();if(checklistInput.trim()){setForm(f=>({...f,checklist:[...(f.checklist||[]),{item:checklistInput.trim(),completed:false}]}));setChecklistInput("");}}}} />
+                        <Button size="sm" variant="outline" className="h-7 px-2" onClick={()=>{if(checklistInput.trim()){setForm(f=>({...f,checklist:[...(f.checklist||[]),{item:checklistInput.trim(),completed:false}]}));setChecklistInput("");}}}><Plus className="w-3 h-3" /></Button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Tags */}
+                <div className="bg-white border rounded-lg overflow-hidden">
+                  <button className="w-full px-3 py-2 flex items-center justify-between text-sm text-slate-600 hover:bg-slate-50" onClick={() => setOpenSection(openSection === "tags" ? null : "tags")}>
+                    <div className="flex items-center gap-2"><Tag className="w-4 h-4" />Tags {(form.tags||[]).length > 0 && <span className="text-xs bg-slate-100 px-1.5 py-0.5 rounded-full">{(form.tags||[]).length}</span>}</div>
+                    <Plus className="w-4 h-4 text-slate-400" />
+                  </button>
+                  {openSection === "tags" && (
+                    <div className="px-3 pb-3 border-t pt-2 space-y-2">
+                      <div className="flex flex-wrap gap-1">
+                        {(form.tags||[]).map(tag=>(
+                          <span key={tag} className="flex items-center gap-1 text-xs bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full">{tag}<button onClick={()=>setForm(f=>({...f,tags:(f.tags||[]).filter(t=>t!==tag)}))} className="hover:text-red-500"><X className="w-2.5 h-2.5" /></button></span>
+                        ))}
+                      </div>
+                      <div className="flex gap-1">
+                        <Input value={tagInput} onChange={e=>setTagInput(e.target.value)} placeholder="Add tag..." className="h-7 text-xs" onKeyDown={e=>{if(e.key==="Enter"){e.preventDefault();if(tagInput.trim()&&!(form.tags||[]).includes(tagInput.trim())){setForm(f=>({...f,tags:[...(f.tags||[]),tagInput.trim()]}));setTagInput("");}}}} />
+                        <Button size="sm" variant="outline" className="h-7 px-2" onClick={()=>{if(tagInput.trim()&&!(form.tags||[]).includes(tagInput.trim())){setForm(f=>({...f,tags:[...(f.tags||[]),tagInput.trim()]}));setTagInput("");}}}><Plus className="w-3 h-3" /></Button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Fields */}
+                <div className="bg-white border rounded-lg overflow-hidden">
+                  <button className="w-full px-3 py-2 flex items-center justify-between text-sm text-slate-600 hover:bg-slate-50" onClick={() => setOpenSection(openSection === "fields" ? null : "fields")}>
+                    <div className="flex items-center gap-2"><FileText className="w-4 h-4" />Fields</div>
+                    <Plus className="w-4 h-4 text-slate-400" />
+                  </button>
+                  {openSection === "fields" && (
+                    <div className="px-3 pb-3 border-t pt-2 space-y-2">
+                      <div>
+                        <Label className="text-xs">Description</Label>
+                        <Textarea value={form.description||""} onChange={e=>setForm(f=>({...f,description:e.target.value}))} rows={2} placeholder="Job description..." className="text-xs resize-none" />
+                      </div>
+                      <div>
+                        <Label className="text-xs">Service Type</Label>
+                        <Input value={form.service_type||""} onChange={e=>setForm(f=>({...f,service_type:e.target.value}))} placeholder="e.g. HVAC, Cleaning..." className="h-8 text-xs" />
+                      </div>
+                      <div>
+                        <Label className="text-xs">Address</Label>
+                        <Input value={form.address||""} onChange={e=>setForm(f=>({...f,address:e.target.value}))} placeholder="Street address" className="h-8 text-xs" />
+                      </div>
+                      <div className="grid grid-cols-2 gap-1">
+                        <div><Label className="text-xs">City</Label><Input value={form.city||""} onChange={e=>setForm(f=>({...f,city:e.target.value}))} className="h-8 text-xs" /></div>
+                        <div><Label className="text-xs">State</Label><Input value={form.state||""} onChange={e=>setForm(f=>({...f,state:e.target.value}))} className="h-8 text-xs" maxLength={2} /></div>
+                      </div>
+                      <div>
+                        <Label className="text-xs">ZIP</Label>
+                        <Input value={form.zip||""} onChange={e=>setForm(f=>({...f,zip:e.target.value}))} className="h-8 text-xs" />
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Lead Source */}
+                <div className="bg-white border rounded-lg overflow-hidden">
+                  <button className="w-full px-3 py-2 flex items-center justify-between text-sm text-slate-600 hover:bg-slate-50" onClick={() => setOpenSection(openSection === "leadsource" ? null : "leadsource")}>
+                    <div className="flex items-center gap-2"><User className="w-4 h-4" />Lead source {form.lead_source && <span className="text-xs bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded-full capitalize">{form.lead_source}</span>}</div>
+                    <Plus className="w-4 h-4 text-slate-400" />
+                  </button>
+                  {openSection === "leadsource" && (
+                    <div className="px-3 pb-3 border-t pt-2">
+                      <Select value={form.lead_source||""} onValueChange={v=>setForm(f=>({...f,lead_source:v}))}>
+                        <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="Select source..." /></SelectTrigger>
+                        <SelectContent>
+                          {["Website","Referral","Google","Facebook","Instagram","Phone","Walk-in","Other"].map(s=>(
+                            <SelectItem key={s} value={s.toLowerCase()}>{s}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+                </div>
+
+                {/* Priority */}
+                <div className="bg-white border rounded-lg overflow-hidden">
+                  <button className="w-full px-3 py-2 flex items-center justify-between text-sm text-slate-600 hover:bg-slate-50" onClick={() => setOpenSection(openSection === "priority" ? null : "priority")}>
+                    <div className="flex items-center gap-2"><Clock className="w-4 h-4" />Priority {form.priority && <span className="text-xs bg-slate-100 px-1.5 py-0.5 rounded-full capitalize">{form.priority}</span>}</div>
+                    <Plus className="w-4 h-4 text-slate-400" />
+                  </button>
+                  {openSection === "priority" && (
+                    <div className="px-3 pb-3 border-t pt-2">
+                      <Select value={form.priority||"medium"} onValueChange={v=>setForm(f=>({...f,priority:v}))}>
+                        <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          {PRIORITY_OPTIONS.map(p=><SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* Right column */}
