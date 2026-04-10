@@ -20,6 +20,7 @@ import JobNotesSection from "@/components/jobs/JobNotesSection";
 import JobPhotosSection from "@/components/jobs/JobPhotosSection";
 import JobCostingSection from "@/components/jobs/JobCostingSection";
 import JobActivityFeed from "@/components/jobs/JobActivityFeed";
+import AttachDocumentModal from "@/components/jobs/AttachDocumentModal";
 
 const STATUS_COLORS = {
   new: "bg-blue-100 text-blue-700 border-blue-200",
@@ -54,6 +55,7 @@ export default function JobDetail() {
   const [form, setForm] = useState(defaultJob);
   const [showInvoicePrompt, setShowInvoicePrompt] = useState(false);
   const [existingInvoices, setExistingInvoices] = useState([]);
+  const [showAttachModal, setShowAttachModal] = useState(false);
   const { toast } = useToast();
 
   const loadData = useCallback(async () => {
@@ -190,6 +192,9 @@ export default function JobDetail() {
           </div>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
+          <Button size="sm" variant="outline" className="gap-1 text-xs" onClick={() => setShowAttachModal(true)}>
+            <FileText className="w-3.5 h-3.5" /> Attach
+          </Button>
           {form.status === "completed" && (
             <>
               <Button size="sm" variant="outline" className="gap-1 text-xs" onClick={() => sendReviewRequest()} disabled={reviewLoading}>
@@ -202,6 +207,21 @@ export default function JobDetail() {
           )}
         </div>
       </div>
+
+      {/* Attach Document Modal */}
+      <AttachDocumentModal
+        open={showAttachModal}
+        onClose={() => setShowAttachModal(false)}
+        jobId={id}
+        customerId={form.customer_id}
+        companyId={activeCompany?.id}
+        currentEstimateId={job?.estimate_id}
+        onAttached={(type, doc) => {
+          if (type === "estimate") setJob(j => ({ ...j, estimate_id: doc.id }));
+          else setExistingInvoices(prev => [...prev.filter(i => i.id !== doc.id), doc]);
+          toast({ title: `${type === "estimate" ? "Estimate" : "Invoice"} attached successfully!` });
+        }}
+      />
 
       {/* Invoice prompt banner */}
       {showInvoicePrompt && (
