@@ -10,7 +10,8 @@ import { Check, Globe, Zap, Shield, Star } from "lucide-react";
 const SIGNUP_PLANS = ["starter", "professional", "enterprise"];
 
 export default function Register() {
-  const [step, setStep] = useState("plan");
+  const urlParams = new URLSearchParams(window.location.search);
+  const [step, setStep] = useState(urlParams.get('welcome') === 'true' ? 'welcome' : 'plan');
   const [selectedPlan, setSelectedPlan] = useState("professional");
   const [form, setForm] = useState({ name: "", email: "", company_name: "", phone: "" });
   const [loading, setLoading] = useState(false);
@@ -35,7 +36,7 @@ export default function Register() {
         company_phone: form.phone,
         owner_email: form.email,
         owner_name: form.name,
-        success_url: `${window.location.origin}/Dashboard?subscribed=true`,
+        success_url: `${window.location.origin}/Register?welcome=true`,
         cancel_url: `${window.location.origin}/Register`,
       });
 
@@ -48,6 +49,36 @@ export default function Register() {
       setError(e.message);
     }
     setLoading(false);
+  }
+
+  if (step === 'welcome') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 flex flex-col items-center justify-center px-4">
+        <div className="text-center max-w-md">
+          <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-6">
+            <Check className="w-8 h-8 text-white" />
+          </div>
+          <h1 className="text-3xl font-bold text-white mb-3">You're almost in!</h1>
+          <p className="text-blue-200 text-lg mb-6">
+            Check your email for two messages from us:
+          </p>
+          <div className="text-left space-y-3 bg-white/10 rounded-xl p-5 mb-8">
+            <div className="flex items-start gap-3">
+              <span className="text-green-400 font-bold mt-0.5">1.</span>
+              <p className="text-blue-100 text-sm"><strong className="text-white">Set your password</strong> — click the invite link to create your FieldFlow Pro login</p>
+            </div>
+            <div className="flex items-start gap-3">
+              <span className="text-green-400 font-bold mt-0.5">2.</span>
+              <p className="text-blue-100 text-sm"><strong className="text-white">Welcome email</strong> — with a link to your new dashboard</p>
+            </div>
+          </div>
+          <a href="/Dashboard" className="inline-block bg-blue-500 hover:bg-blue-400 text-white font-semibold px-8 py-3 rounded-xl transition-colors">
+            Go to Dashboard →
+          </a>
+          <p className="text-blue-400 text-xs mt-4">Didn't get an email? Check your spam folder or contact support@fieldflowpro.com</p>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -68,7 +99,7 @@ export default function Register() {
           <p className="text-blue-200 text-lg">No credit card required to start. Cancel anytime.</p>
         </div>
 
-        {step === "plan" ? (
+      {step === "plan" ? (
           <>
             <div className="grid md:grid-cols-3 gap-6 w-full max-w-5xl mb-8">
               {SIGNUP_PLANS.map(planKey => {

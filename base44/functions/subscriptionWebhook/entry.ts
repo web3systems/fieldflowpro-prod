@@ -58,6 +58,22 @@ Deno.serve(async (req) => {
           console.log(`Invite skipped for ${owner_email}: ${inviteErr.message}`);
         }
 
+        // Create UserCompanyAccess so they can see their company on login
+        try {
+          const existing_access = await base44.asServiceRole.entities.UserCompanyAccess.filter({ user_email: owner_email, company_id });
+          if (!existing_access[0]) {
+            await base44.asServiceRole.entities.UserCompanyAccess.create({
+              user_email: owner_email,
+              company_id,
+              role: 'manager',
+              user_name: owner_name || '',
+            });
+            console.log(`UserCompanyAccess created for ${owner_email} on company ${company_id}`);
+          }
+        } catch (accessErr) {
+          console.error(`UserCompanyAccess creation failed: ${accessErr.message}`);
+        }
+
         // Send welcome email with login link
         try {
           await base44.asServiceRole.integrations.Core.SendEmail({
