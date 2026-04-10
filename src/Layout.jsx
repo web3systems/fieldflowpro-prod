@@ -68,6 +68,7 @@ export default function Layout({ children, currentPageName }) {
   const location = useLocation();
 
   const isCustomerPortalCheck = currentPageName === "CustomerPortal";
+  const isCustomerPortal = isCustomerPortalCheck;
   const isSuperAdminUser = user?.role === "super_admin" || user?.role === "admin";
   const pendingRequestCount = useAccessRequestCount(isSuperAdminUser);
 
