@@ -8,7 +8,8 @@ import {
   Bell, LogOut, Wrench, BarChart3, Globe, Home, UsersRound, CalendarDays, ShieldCheck, CreditCard, Megaphone, Calculator, MessageCircle, Mail
 } from "lucide-react";
 import NotificationBell from "@/components/notifications/NotificationBell";
-import GlobalChatPanel from "@/components/chat/GlobalChatPanel";
+import SubscriptionGate from "@/components/subscription/SubscriptionGate";
+import PastDueBanner from "@/components/subscription/PastDueBanner";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
@@ -63,9 +64,10 @@ export default function Layout({ children, currentPageName }) {
   const [companies, setCompanies] = useState([]);
   const [activeCompany, setActiveCompany] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [subscription, setSubscription] = useState(null);
   const location = useLocation();
 
-  const isCustomerPortal = currentPageName === "CustomerPortal";
+  const isCustomerPortalCheck = currentPageName === "CustomerPortal";
   const isSuperAdminUser = user?.role === "super_admin" || user?.role === "admin";
   const pendingRequestCount = useAccessRequestCount(isSuperAdminUser);
 
@@ -76,6 +78,14 @@ export default function Layout({ children, currentPageName }) {
   useEffect(() => {
     if (user && !isCustomerPortal) loadCompanies();
   }, [user]);
+
+  useEffect(() => {
+    if (activeCompany?.id) {
+      base44.entities.Subscription.filter({ company_id: activeCompany.id })
+        .then(subs => setSubscription(subs[0] || null))
+        .catch(() => {});
+    }
+  }, [activeCompany?.id]);
 
   async function loadUser() {
     try {
@@ -276,7 +286,10 @@ export default function Layout({ children, currentPageName }) {
 
           {/* Content */}
           <main className="flex-1 overflow-y-auto relative">
-            {children}
+            <PastDueBanner subscription={subscription} company={activeCompany} />
+            <SubscriptionGate company={activeCompany} user={user}>
+              {children}
+            </SubscriptionGate>
           </main>
         </div>
 

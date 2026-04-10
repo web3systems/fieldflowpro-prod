@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue
 } from "@/components/ui/select";
+import UsageLimitBanner from "@/components/subscription/UsageLimitBanner";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel,
   AlertDialogContent, AlertDialogDescription, AlertDialogFooter,
@@ -32,6 +33,7 @@ const defaultForm = {
 export default function Team() {
   const { activeCompany } = useApp();
   const [techs, setTechs] = useState([]);
+  const [subscription, setSubscription] = useState(null);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState(null);
@@ -41,8 +43,12 @@ export default function Team() {
   const [skillInput, setSkillInput] = useState("");
 
   useEffect(() => {
-    if (activeCompany) loadTechs();
-  }, [activeCompany]);
+    if (activeCompany) {
+      loadTechs();
+      base44.entities.Subscription.filter({ company_id: activeCompany.id })
+        .then(subs => setSubscription(subs[0] || null)).catch(() => {});
+    }
+  }, [activeCompany?.id]);
 
   async function loadTechs() {
     setLoading(true);
@@ -103,6 +109,7 @@ export default function Team() {
 
   return (
     <div className="p-4 md:p-6 pb-24 lg:pb-6 space-y-5 max-w-5xl mx-auto">
+      <UsageLimitBanner subscription={subscription} metric="users" currentCount={techs.length} />
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Team</h1>

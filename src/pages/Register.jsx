@@ -170,7 +170,10 @@ export default function Register() {
                 {loading ? "Setting up..." : "Start Free Trial →"}
               </Button>
               <p className="text-blue-300 text-xs text-center">
-                By signing up you agree to our Terms of Service. No credit card needed to start.
+                By signing up you agree to our{" "}
+                <a href="/TermsOfService" target="_blank" className="underline hover:text-white">Terms of Service</a>{" "}and{" "}
+                <a href="/PrivacyPolicy" target="_blank" className="underline hover:text-white">Privacy Policy</a>.
+                No credit card needed to start.
               </p>
             </div>
           </div>

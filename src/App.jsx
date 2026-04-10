@@ -27,6 +27,8 @@ import SaaSAdminDashboard from './pages/SaaSAdminDashboard';
 import EmailTemplateEditor from './pages/EmailTemplateEditor';
 import AIEstimator from './pages/AIEstimator';
 import ReleaseNotes from './pages/ReleaseNotes';
+import TermsOfService from './pages/TermsOfService';
+import PrivacyPolicy from './pages/PrivacyPolicy';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 
@@ -122,6 +124,8 @@ const AuthenticatedApp = () => {
       <Route path="/EmailTemplateEditor" element={<LayoutWrapper currentPageName="EmailTemplateEditor"><EmailTemplateEditor /></LayoutWrapper>} />
       <Route path="/AIEstimator" element={<LayoutWrapper currentPageName="Estimates"><AIEstimator /></LayoutWrapper>} />
       <Route path="/ReleaseNotes" element={<LayoutWrapper currentPageName="ReleaseNotes"><ReleaseNotes /></LayoutWrapper>} />
+      <Route path="/TermsOfService" element={<TermsOfService />} />
+      <Route path="/PrivacyPolicy" element={<PrivacyPolicy />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
@@ -140,6 +144,8 @@ function App() {
             <Route path="/Register" element={<Register />} />
             <Route path="/Booking" element={<Booking />} />
             <Route path="/LeadCapture" element={<LeadCapture />} />
+            <Route path="/TermsOfService" element={<TermsOfService />} />
+            <Route path="/PrivacyPolicy" element={<PrivacyPolicy />} />
             <Route path="*" element={<AuthenticatedApp />} />
           </Routes>
         </Router>

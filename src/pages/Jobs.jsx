@@ -21,6 +21,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { format } from "date-fns";
 import CustomerNotesSection from "../components/jobs/CustomerNotesSection";
+import UsageLimitBanner from "@/components/subscription/UsageLimitBanner";
 
 const STATUS_OPTIONS = [
   { value: "new", label: "New", color: "bg-blue-100 text-blue-700 border-blue-200" },
@@ -68,10 +69,15 @@ export default function Jobs() {
   const [openSection, setOpenSection] = useState(null); // which left-panel section is open
   const [tagInput, setTagInput] = useState("");
   const [checklistInput, setChecklistInput] = useState("");
+  const [subscription, setSubscription] = useState(null);
 
   useEffect(() => {
-    if (activeCompany) loadData();
-  }, [activeCompany]);
+    if (activeCompany) {
+      loadData();
+      base44.entities.Subscription.filter({ company_id: activeCompany.id })
+        .then(subs => setSubscription(subs[0] || null)).catch(() => {});
+    }
+  }, [activeCompany?.id]);
 
   useEffect(() => {
     if (activeCompany && customers.length > 0) {
@@ -259,6 +265,7 @@ export default function Jobs() {
 
   return (
     <div className="relative min-h-full p-4 md:p-6 pb-24 lg:pb-6 space-y-5 max-w-7xl mx-auto">
+      <UsageLimitBanner subscription={subscription} metric="jobs_per_month" currentCount={jobs.length} />
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Jobs</h1>
