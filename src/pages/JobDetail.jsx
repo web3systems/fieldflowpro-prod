@@ -11,12 +11,15 @@ import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 
 import JobSidebar from "@/components/jobs/JobSidebar";
+import JobWorkflowBar from "@/components/jobs/JobWorkflowBar";
 import JobAppointmentSection from "@/components/jobs/JobAppointmentSection";
 import JobFieldTechSection from "@/components/jobs/JobFieldTechSection";
 import JobLineItemsSection from "@/components/jobs/JobLineItemsSection";
 import JobInvoiceSection from "@/components/jobs/JobInvoiceSection";
 import JobNotesSection from "@/components/jobs/JobNotesSection";
 import JobPhotosSection from "@/components/jobs/JobPhotosSection";
+import JobCostingSection from "@/components/jobs/JobCostingSection";
+import JobActivityFeed from "@/components/jobs/JobActivityFeed";
 
 const STATUS_COLORS = {
   new: "bg-blue-100 text-blue-700 border-blue-200",
@@ -249,6 +252,16 @@ export default function JobDetail() {
             {form.total_amount > 0 && <p className="text-sm font-semibold text-slate-900">${form.total_amount.toLocaleString()}</p>}
           </div>
 
+          {/* Workflow Pipeline */}
+          <JobWorkflowBar
+            job={job}
+            form={form}
+            onSave={handleSave}
+            onGenerateInvoice={() => generateInvoice(false)}
+            onCollectPayment={() => generateInvoice(true)}
+            invoiceLoading={invoiceActionLoading}
+          />
+
           {/* Appointment */}
           <JobAppointmentSection form={form} setForm={setForm} onSave={handleSave} saving={saving} />
 
@@ -272,6 +285,9 @@ export default function JobDetail() {
             onSave={handleSave}
           />
 
+          {/* Job Costing Breakdown */}
+          <JobCostingSection form={form} />
+
           {/* Before & After Photos */}
           <JobPhotosSection
             job={job}
@@ -285,6 +301,9 @@ export default function JobDetail() {
             onInternalNoteAdded={(log) => setJob(j => ({ ...j, internal_notes_log: log }))}
             onCustomerNoteAdded={(notes) => setJob(j => ({ ...j, customer_notes: notes }))}
           />
+
+          {/* Activity Feed */}
+          <JobActivityFeed job={job} form={form} customer={customer} techs={techs} />
         </div>
       </div>
     </div>
