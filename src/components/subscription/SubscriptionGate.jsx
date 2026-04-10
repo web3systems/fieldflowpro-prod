@@ -11,13 +11,9 @@ export default function SubscriptionGate({ company, user, children }) {
 
   useEffect(() => {
     if (!company?.id) { setLoading(false); return; }
-    base44.asServiceRole
-      ? base44.entities.Subscription.filter({ company_id: company.id })
-          .then(subs => { setSubscription(subs[0] || null); setLoading(false); })
-          .catch(() => setLoading(false))
-      : base44.entities.Subscription.filter({ company_id: company.id })
-          .then(subs => { setSubscription(subs[0] || null); setLoading(false); })
-          .catch(() => setLoading(false));
+    base44.entities.Subscription.filter({ company_id: company.id })
+      .then(subs => { setSubscription(subs[0] || null); setLoading(false); })
+      .catch(() => setLoading(false));
   }, [company?.id]);
 
   // Super admins always get through
