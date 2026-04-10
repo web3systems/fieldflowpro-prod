@@ -8,6 +8,7 @@ import {
   Bell, LogOut, Wrench, BarChart3, Globe, Home, UsersRound, CalendarDays, ShieldCheck, CreditCard, Megaphone, Calculator, MessageCircle, Mail
 } from "lucide-react";
 import NotificationBell from "@/components/notifications/NotificationBell";
+import GlobalChatPanel from "@/components/chat/GlobalChatPanel";
 import SubscriptionGate from "@/components/subscription/SubscriptionGate";
 import PastDueBanner from "@/components/subscription/PastDueBanner";
 import { Button } from "@/components/ui/button";
