@@ -119,6 +119,38 @@ Deno.serve(async (req) => {
       }
     }
 
+    if (event.type === 'invoice.payment_failed') {
+      const invoice = event.data.object;
+      const customerId = invoice.customer;
+      // Find subscription record by stripe_customer_id
+      const existing = await base44.asServiceRole.entities.Subscription.filter({ stripe_customer_id: customerId });
+      const sub = existing[0];
+      if (sub?.owner_email) {
+        try {
+          await base44.asServiceRole.integrations.Core.SendEmail({
+            to: sub.owner_email,
+            subject: "Action Required: Payment failed for FieldFlow Pro",
+            body: `
+              <div style="font-family: sans-serif; max-width: 560px; margin: 0 auto;">
+                <h2 style="color: #dc2626;">Payment Failed</h2>
+                <p>Hi ${sub.owner_name || sub.owner_email},</p>
+                <p>We were unable to process your payment for FieldFlow Pro. Please update your payment method to avoid losing access.</p>
+                <p style="margin: 24px 0;">
+                  <a href="https://app.fieldflowpro.com/Dashboard" style="background: #dc2626; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: 600;">
+                    Update Payment Method →
+                  </a>
+                </p>
+                <p style="color: #64748b; font-size: 14px;">If you need help, reply to this email or contact support@fieldflowpro.com</p>
+              </div>
+            `
+          });
+          console.log(`Payment failed email sent to ${sub.owner_email}`);
+        } catch (emailErr) {
+          console.error(`Payment failed email error: ${emailErr.message}`);
+        }
+      }
+    }
+
     return Response.json({ received: true });
   } catch (error) {
     console.error('subscriptionWebhook error:', error.message);
