@@ -57,12 +57,13 @@ export default function Companies() {
   useEffect(() => { loadData(); }, []);
 
   async function loadData() {
-    const [list, subs] = await Promise.all([
-      base44.entities.Company.list(),
-      base44.entities.Subscription.list(),
-    ]);
+    const res = await base44.functions.invoke('getUserCompanies', {});
+    const list = res.data?.companies || [];
     setCompanies(list);
-    setSubscription(subs[0] || null);
+    if (list.length > 0) {
+      const subs = await base44.entities.Subscription.filter({ company_id: list[0].id });
+      setSubscription(subs[0] || null);
+    }
     setLoading(false);
   }
 
