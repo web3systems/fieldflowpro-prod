@@ -70,9 +70,9 @@ Deno.serve(async (req) => {
       user_name: owner_name || '',
     });
 
-    // Invite user to the platform with role 'user' (not admin)
+    // Invite user to the platform with role 'admin'
     try {
-      await base44.users.inviteUser(owner_email, 'user');
+      await base44.users.inviteUser(owner_email, 'admin');
     } catch (inviteErr) {
       // User may already exist — that's fine, continue
       console.log(`Invite note for ${owner_email}: ${inviteErr.message}`);

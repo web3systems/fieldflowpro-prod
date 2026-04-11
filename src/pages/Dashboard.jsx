@@ -62,14 +62,6 @@ export default function Dashboard() {
     }).catch(() => {});
   }, []);
 
-  // Redirect role:"user" accounts with no company access to the customer portal
-  useEffect(() => {
-    if (companiesLoading) return;
-    if (appUser?.role === "user" && companies && companies.length === 0) {
-      navigate("/CustomerPortal", { replace: true });
-    }
-  }, [companiesLoading, appUser, companies]);
-
   async function loadData() {
     setLoading(true);
     const [j, c, inv, l, b] = await Promise.all([
