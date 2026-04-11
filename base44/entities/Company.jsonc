@@ -1,0 +1,109 @@
+{
+  "name": "Company",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "slug": {
+      "type": "string"
+    },
+    "parent_company_id": {
+      "type": "string",
+      "description": "If set, this is a sub-company (location) of the parent company"
+    },
+    "industry": {
+      "type": "string",
+      "enum": [
+        "cleaning",
+        "landscaping",
+        "handyman",
+        "painting",
+        "plumbing",
+        "electrical",
+        "hvac",
+        "other"
+      ]
+    },
+    "logo_url": {
+      "type": "string"
+    },
+    "primary_color": {
+      "type": "string"
+    },
+    "phone": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string"
+    },
+    "address": {
+      "type": "string"
+    },
+    "city": {
+      "type": "string"
+    },
+    "state": {
+      "type": "string"
+    },
+    "zip": {
+      "type": "string"
+    },
+    "website": {
+      "type": "string"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    },
+    "default_tax_rate": {
+      "type": "number",
+      "default": 0
+    },
+    "google_review_url": {
+      "type": "string"
+    },
+    "settings": {
+      "type": "object",
+      "properties": {
+        "timezone": {
+          "type": "string"
+        },
+        "currency": {
+          "type": "string"
+        }
+      }
+    },
+    "portal_settings": {
+      "type": "object",
+      "description": "Customer portal configuration",
+      "properties": {
+        "auto_send_invite": {
+          "type": "boolean",
+          "default": true
+        },
+        "include_portal_link": {
+          "type": "boolean",
+          "default": true
+        },
+        "referral_enabled": {
+          "type": "boolean",
+          "default": true
+        },
+        "referral_message": {
+          "type": "string"
+        }
+      }
+    },
+    "stripe_account_id": {
+      "type": "string"
+    },
+    "stripe_onboarding_complete": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "name"
+  ]
+}

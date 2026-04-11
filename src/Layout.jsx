@@ -158,12 +158,14 @@ export default function Layout({ children, currentPageName }) {
                   {companies.map(c => (
                     <DropdownMenuItem key={c.id} onClick={() => switchCompany(c)} className="gap-2">
                       <div
-                        className="w-5 h-5 rounded flex items-center justify-center text-white text-xs font-bold"
-                        style={{ backgroundColor: c.primary_color || "#3b82f6" }}
+                        className="w-5 h-5 rounded flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
+                        style={{ backgroundColor: c.primary_color || '#3b82f6' }}
                       >
                         {c.name[0]}
                       </div>
-                      {c.name}
+                      <span className={c.parent_company_id ? 'pl-2 text-slate-600' : ''}>
+                        {c.parent_company_id ? '↳ ' : ''}{c.name}
+                      </span>
                     </DropdownMenuItem>
                   ))}
                 </DropdownMenuContent>

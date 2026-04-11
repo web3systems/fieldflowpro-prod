@@ -9,18 +9,34 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Always filter by UserCompanyAccess — no role-based fallback
+    // Get companies the user has explicit access to
     const accessRecords = await base44.asServiceRole.entities.UserCompanyAccess.filter({
       user_email: user.email
     });
 
-    if (accessRecords.length === 0) {
-      return Response.json({ companies: [] });
-    }
-
-    const companyIds = accessRecords.map(a => a.company_id);
     const allCompanies = await base44.asServiceRole.entities.Company.list();
-    const companies = allCompanies.filter(c => companyIds.includes(c.id));
+
+    const directCompanyIds = new Set(accessRecords.map(a => a.company_id));
+
+    // Also include sub-companies of any company the user has direct access to
+    const subCompanyIds = new Set(
+      allCompanies
+        .filter(c => c.parent_company_id && directCompanyIds.has(c.parent_company_id))
+        .map(c => c.id)
+    );
+
+    const allAccessibleIds = new Set([...directCompanyIds, ...subCompanyIds]);
+
+    const companies = allCompanies.filter(c => allAccessibleIds.has(c.id));
+
+    // Sort: parent companies first, then sub-companies grouped under their parent
+    companies.sort((a, b) => {
+      const aIsParent = !a.parent_company_id;
+      const bIsParent = !b.parent_company_id;
+      if (aIsParent && !bIsParent) return -1;
+      if (!aIsParent && bIsParent) return 1;
+      return a.name.localeCompare(b.name);
+    });
 
     return Response.json({ companies });
   } catch (error) {

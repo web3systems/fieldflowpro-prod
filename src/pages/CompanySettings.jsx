@@ -9,9 +9,10 @@ import CompanyBillingTab from '@/components/settings/CompanyBillingTab';
 import CustomerPortalSettingsTab from '@/components/settings/CustomerPortalSettingsTab';
 import StripeConnectCard from '@/components/settings/StripeConnectCard';
 import CompanyEmailSettingsTab from '@/components/settings/CompanyEmailSettingsTab';
+import SubCompaniesTab from '@/components/settings/SubCompaniesTab';
 
 export default function CompanySettings() {
-  const { activeCompany, user } = useApp();
+  const { activeCompany, user, refreshCompanies } = useApp();
   const [company, setCompany] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -33,7 +34,19 @@ export default function CompanySettings() {
   if (loading) return <div className="p-6">Loading...</div>;
   if (!company) return <div className="p-6">Company not found</div>;
 
-  const isOwner = user?.email === company.created_by || user?.role === 'admin';
+  const [subscription, setSubscription] = useState(null);
+
+  useEffect(() => {
+    if (company?.id) {
+      base44.entities.Subscription.filter({ company_id: company.id })
+        .then(subs => setSubscription(subs[0] || null))
+        .catch(() => {});
+    }
+  }, [company?.id]);
+
+  const isOwner = user?.email === company.created_by || user?.role === 'admin' || user?.role === 'super_admin';
+  // Only show Locations tab for parent companies (not sub-companies themselves)
+  const isParentCompany = !company.parent_company_id;
 
   return (
     <div className="min-h-screen bg-slate-50 p-6">
@@ -50,6 +63,7 @@ export default function CompanySettings() {
             <TabsTrigger value="portal">Customer Portal</TabsTrigger>
             <TabsTrigger value="payments">Payments</TabsTrigger>
             <TabsTrigger value="email">Email Settings</TabsTrigger>
+            {isOwner && isParentCompany && <TabsTrigger value="locations">Locations</TabsTrigger>}
             {isOwner && <TabsTrigger value="general">General</TabsTrigger>}
           </TabsList>
 
@@ -72,6 +86,16 @@ export default function CompanySettings() {
           <TabsContent value="email">
             <CompanyEmailSettingsTab company={company} />
           </TabsContent>
+
+          {isOwner && isParentCompany && (
+            <TabsContent value="locations">
+              <SubCompaniesTab
+                company={company}
+                subscription={subscription}
+                onSubCompanyCreated={refreshCompanies}
+              />
+            </TabsContent>
+          )}
 
           {isOwner && (
             <TabsContent value="general">
