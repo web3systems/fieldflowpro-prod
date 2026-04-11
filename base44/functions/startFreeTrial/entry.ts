@@ -13,10 +13,13 @@ const PRICE_IDS = {
 
 Deno.serve(async (req) => {
   try {
-    const { plan, company_name, company_phone, owner_email, owner_name } = await req.json();
+    const { plan, company_name, company_phone, owner_email, owner_name, password } = await req.json();
 
-    if (!plan || !owner_email || !company_name) {
-      return Response.json({ error: 'plan, owner_email, and company_name are required' }, { status: 400 });
+    if (!plan || !owner_email || !company_name || !password) {
+      return Response.json({ error: 'plan, owner_email, company_name, and password are required' }, { status: 400 });
+    }
+    if (password.length < 8) {
+      return Response.json({ error: 'Password must be at least 8 characters' }, { status: 400 });
     }
 
     const price_id = PRICE_IDS[plan];
@@ -70,12 +73,20 @@ Deno.serve(async (req) => {
       user_name: owner_name || '',
     });
 
-    // Invite user to the platform with role 'admin'
+    // Invite user and set password
     try {
       await base44.users.inviteUser(owner_email, 'admin');
+      // Get the invited user's ID and set their password
+      const users = await base44.asServiceRole.entities.User.filter({ email: owner_email });
+      if (users.length > 0) {
+        const user = users[0];
+        await base44.asServiceRole.functions.invoke('setUserPassword', {
+          userId: user.id,
+          password: password
+        });
+      }
     } catch (inviteErr) {
-      // User may already exist — that's fine, continue
-      console.log(`Invite note for ${owner_email}: ${inviteErr.message}`);
+      console.log(`Note for ${owner_email}: ${inviteErr.message}`);
     }
 
     // Send welcome email
@@ -87,7 +98,6 @@ Deno.serve(async (req) => {
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px;">
           <h2 style="color: #1e40af;">Welcome to FieldFlow Pro, ${owner_name || 'there'}!</h2>
           <p>Your <strong>${plan.charAt(0).toUpperCase() + plan.slice(1)}</strong> plan trial is now active.</p>
-          <p>You should receive a separate email shortly with a link to set your password and access your dashboard.</p>
           <p><strong>No credit card is required</strong> until your trial ends on <strong>${trialEndFormatted}</strong>.</p>
           <p>Once you've set your password, log in here:</p>
           <p style="margin: 24px 0;">

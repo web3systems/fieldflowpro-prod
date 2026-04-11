@@ -13,13 +13,17 @@ export default function Register() {
   const urlParams = new URLSearchParams(window.location.search);
   const [step, setStep] = useState(urlParams.get('welcome') === 'true' ? 'welcome' : 'plan');
   const [selectedPlan, setSelectedPlan] = useState("professional");
-  const [form, setForm] = useState({ name: "", email: "", company_name: "", phone: "" });
+  const [form, setForm] = useState({ name: "", email: "", company_name: "", phone: "", password: "" });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
   async function handleSignup() {
-    if (!form.name || !form.email || !form.company_name) {
+    if (!form.name || !form.email || !form.company_name || !form.password) {
       setError("Please fill in all required fields.");
+      return;
+    }
+    if (form.password.length < 8) {
+      setError("Password must be at least 8 characters.");
       return;
     }
     setLoading(true);
@@ -32,6 +36,7 @@ export default function Register() {
         company_phone: form.phone,
         owner_email: form.email,
         owner_name: form.name,
+        password: form.password,
       });
 
       if (res.data?.success) {
@@ -185,6 +190,10 @@ export default function Register() {
               <div>
                 <Label className="text-blue-200 text-sm">Phone (optional)</Label>
                 <Input value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} placeholder="(555) 555-5555" className="mt-1 bg-white/10 border-white/20 text-white placeholder:text-blue-300/50" />
+              </div>
+              <div>
+                <Label className="text-blue-200 text-sm">Password *</Label>
+                <Input type="password" value={form.password} onChange={e => setForm(f => ({ ...f, password: e.target.value }))} placeholder="At least 8 characters" className="mt-1 bg-white/10 border-white/20 text-white placeholder:text-blue-300/50" />
               </div>
 
               {error && (
