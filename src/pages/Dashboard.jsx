@@ -24,7 +24,7 @@ const statusColors = {
 };
 
 export default function Dashboard() {
-  const { activeCompany, companiesLoading, user: appUser } = useApp();
+  const { activeCompany, companies, companiesLoading, user: appUser } = useApp();
   const [user, setUser] = useState(null);
   const [jobs, setJobs] = useState([]);
   const [myTech, setMyTech] = useState(null);
@@ -57,17 +57,18 @@ export default function Dashboard() {
   }, [activeCompany]);
 
   useEffect(() => {
-    base44.auth.me().then(async u => {
+    base44.auth.me().then(u => {
       setUser(u);
-      // Only redirect to customer portal if they're role "user" AND have no staff access records
-      if (u?.role === "user") {
-        const accessRecords = await base44.entities.UserCompanyAccess.filter({ user_email: u.email });
-        if (accessRecords.length === 0) {
-          navigate("/CustomerPortal", { replace: true });
-        }
-      }
     }).catch(() => {});
   }, []);
+
+  // Redirect role:"user" accounts with no company access to the customer portal
+  useEffect(() => {
+    if (companiesLoading) return;
+    if (appUser?.role === "user" && companies && companies.length === 0) {
+      navigate("/CustomerPortal", { replace: true });
+    }
+  }, [companiesLoading, appUser, companies]);
 
   async function loadData() {
     setLoading(true);
