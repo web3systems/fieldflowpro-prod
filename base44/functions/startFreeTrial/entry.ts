@@ -67,24 +67,8 @@ Deno.serve(async (req) => {
       user_name: owner_name || '',
     });
 
-    // Invite user to the platform
+    // Invite user — this sends them the set-password email
     await base44.asServiceRole.users.inviteUser(owner_email, 'user');
-
-    // Send welcome email
-    await base44.asServiceRole.integrations.Core.SendEmail({
-      to: owner_email,
-      subject: `Welcome to FieldFlow Pro — Your 14-day trial has started!`,
-      body: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #1e40af;">Welcome to FieldFlow Pro, ${owner_name || 'there'}!</h2>
-          <p>Your 14-day free trial for <strong>${plan.charAt(0).toUpperCase() + plan.slice(1)}</strong> plan is now active.</p>
-          <p>You'll receive a separate email to set your password and access your dashboard.</p>
-          <p><strong>No credit card is required</strong> until your trial ends on ${trialEndsAt.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}.</p>
-          <p>If you have any questions, reply to this email or reach us at support@fieldflowpro.com</p>
-          <p style="color: #6b7280; font-size: 0.875rem;">— The FieldFlow Pro Team</p>
-        </div>
-      `
-    });
 
     console.log(`Free trial started for ${owner_email}, company ${company.id}, plan ${plan}`);
     return Response.json({ success: true });
