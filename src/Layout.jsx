@@ -65,6 +65,7 @@ export default function Layout({ children, currentPageName }) {
   const [companies, setCompanies] = useState([]);
   const [activeCompany, setActiveCompany] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [companiesLoading, setCompaniesLoading] = useState(true);
   const [subscription, setSubscription] = useState(null);
   const location = useLocation();
 
@@ -101,13 +102,17 @@ export default function Layout({ children, currentPageName }) {
   async function loadCompanies() {
     try {
       if (!user?.email) return;
+      setCompaniesLoading(true);
       const res = await base44.functions.invoke('getUserCompanies', {});
       const list = res.data?.companies || [];
       setCompanies(list);
       const saved = localStorage.getItem("activeCompanyId");
       const found = list.find(c => c.id === saved) || list[0];
       setActiveCompany(found || null);
-    } catch (e) {}
+    } catch (e) {
+    } finally {
+      setCompaniesLoading(false);
+    }
   }
 
   if (isCustomerPortal) {
@@ -118,7 +123,7 @@ export default function Layout({ children, currentPageName }) {
   const isActive = (page) => currentPageName === page;
 
   return (
-    <AppContext.Provider value={{ user, activeCompany, companies, switchCompany, refreshCompanies: loadCompanies }}>
+    <AppContext.Provider value={{ user, activeCompany, companies, companiesLoading, switchCompany, refreshCompanies: loadCompanies }}>
       <div className="flex h-screen bg-slate-50 overflow-hidden">
         {/* Sidebar */}
         <aside className={`

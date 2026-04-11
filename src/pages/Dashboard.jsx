@@ -24,7 +24,7 @@ const statusColors = {
 };
 
 export default function Dashboard() {
-  const { activeCompany, user: appUser } = useApp();
+  const { activeCompany, companiesLoading, user: appUser } = useApp();
   const [user, setUser] = useState(null);
   const [jobs, setJobs] = useState([]);
   const [myTech, setMyTech] = useState(null);
@@ -153,6 +153,14 @@ export default function Dashboard() {
       link: createPageUrl("Leads")
     },
   ];
+
+  if (companiesLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="w-8 h-8 border-4 border-slate-200 border-t-blue-500 rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   if (!activeCompany) {
     return (
