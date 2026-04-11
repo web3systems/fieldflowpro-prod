@@ -9,17 +9,12 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Get all access records for this user
+    // Always filter by UserCompanyAccess — no role-based fallback
     const accessRecords = await base44.asServiceRole.entities.UserCompanyAccess.filter({
       user_email: user.email
     });
 
     if (accessRecords.length === 0) {
-      // Admins/super admins get all companies
-      if (user.role === 'admin' || user.role === 'super_admin') {
-        const all = await base44.asServiceRole.entities.Company.list();
-        return Response.json({ companies: all });
-      }
       return Response.json({ companies: [] });
     }
 

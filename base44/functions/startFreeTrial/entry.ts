@@ -38,7 +38,7 @@ Deno.serve(async (req) => {
       is_active: true,
     });
 
-    // Create Stripe customer (no payment method required yet)
+    // Create Stripe customer
     const customer = await stripe.customers.create({
       email: owner_email,
       name: owner_name || owner_email,
@@ -50,7 +50,7 @@ Deno.serve(async (req) => {
     trialEndsAt.setDate(trialEndsAt.getDate() + 14);
     const trialEndFormatted = trialEndsAt.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
 
-    // Create subscription record (trialing, no Stripe subscription yet)
+    // Create subscription record
     await base44.asServiceRole.entities.Subscription.create({
       company_id: company.id,
       plan,
@@ -70,7 +70,15 @@ Deno.serve(async (req) => {
       user_name: owner_name || '',
     });
 
-    // Send welcome email via Resend
+    // Invite user to the platform with role 'user' (not admin)
+    try {
+      await base44.users.inviteUser(owner_email, 'user');
+    } catch (inviteErr) {
+      // User may already exist — that's fine, continue
+      console.log(`Invite note for ${owner_email}: ${inviteErr.message}`);
+    }
+
+    // Send welcome email
     await resend.emails.send({
       from: 'FieldFlow Pro <notifications@fieldflowpro.com>',
       to: owner_email,
