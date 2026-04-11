@@ -115,6 +115,11 @@ export default function Layout({ children, currentPageName }) {
     }
   }
 
+  function switchCompany(company) {
+    setActiveCompany(company);
+    localStorage.setItem("activeCompanyId", company.id);
+  }
+
   if (isCustomerPortal) {
     return <div className="min-h-screen bg-gray-50">{children}</div>;
   }
