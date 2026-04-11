@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { AlertCircle, Ticket, Users, DollarSign, TrendingUp } from 'lucide-react';
 import SupportTicketsTab from '@/components/saas-admin/SupportTicketsTab';
 import PlatformMetricsTab from '@/components/saas-admin/PlatformMetricsTab';
+import CustomersTab from '@/components/saas-admin/CustomersTab';
 
 export default function SaaSAdminDashboard() {
   const [user, setUser] = useState(null);
@@ -119,11 +120,16 @@ export default function SaaSAdminDashboard() {
         </div>
 
         {/* Main Tabs */}
-        <Tabs defaultValue="tickets" className="w-full">
+        <Tabs defaultValue="customers" className="w-full">
           <TabsList>
+            <TabsTrigger value="customers">Customers</TabsTrigger>
             <TabsTrigger value="tickets">Support Tickets</TabsTrigger>
             <TabsTrigger value="metrics">Platform Metrics</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="customers">
+            <Card><CardContent className="pt-6"><CustomersTab /></CardContent></Card>
+          </TabsContent>
 
           <TabsContent value="tickets">
             <SupportTicketsTab />

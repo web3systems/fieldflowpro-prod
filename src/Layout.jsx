@@ -101,26 +101,13 @@ export default function Layout({ children, currentPageName }) {
   async function loadCompanies() {
     try {
       if (!user?.email) return;
-      // Always filter by UserCompanyAccess — even for admins
-      const [allCompanies, access] = await Promise.all([
-        base44.entities.Company.list(),
-        base44.entities.UserCompanyAccess.filter({ user_email: user.email })
-      ]);
-      const allowedIds = access.map(a => a.company_id);
-      const list = allowedIds.length > 0
-        ? allCompanies.filter(c => allowedIds.includes(c.id))
-        : (user?.role === 'admin' || user?.role === 'super_admin' ? allCompanies : []);
+      const res = await base44.functions.invoke('getUserCompanies', {});
+      const list = res.data?.companies || [];
       setCompanies(list);
       const saved = localStorage.getItem("activeCompanyId");
       const found = list.find(c => c.id === saved) || list[0];
       setActiveCompany(found || null);
     } catch (e) {}
-  }
-
-  function switchCompany(company) {
-    setActiveCompany(company);
-    localStorage.setItem("activeCompanyId", company.id);
-    setSidebarOpen(false);
   }
 
   if (isCustomerPortal) {
