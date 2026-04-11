@@ -22,28 +22,22 @@ export default function Register() {
       setError("Please fill in all required fields.");
       return;
     }
-    if (window.self !== window.top) {
-      setError("Signup must be completed from the published app, not an embedded preview.");
-      return;
-    }
     setLoading(true);
     setError(null);
 
     try {
-      const res = await base44.functions.invoke("createSubscriptionCheckout", {
+      const res = await base44.functions.invoke("startFreeTrial", {
         plan: selectedPlan,
         company_name: form.company_name,
         company_phone: form.phone,
         owner_email: form.email,
         owner_name: form.name,
-        success_url: `${window.location.origin}/Register?welcome=true`,
-        cancel_url: `${window.location.origin}/Register`,
       });
 
-      if (res.data?.url) {
-        window.location.href = res.data.url;
+      if (res.data?.success) {
+        setStep('welcome');
       } else {
-        setError(res.data?.error || "Could not create checkout session.");
+        setError(res.data?.error || "Could not start trial. Please try again.");
       }
     } catch (e) {
       setError(e.message);
