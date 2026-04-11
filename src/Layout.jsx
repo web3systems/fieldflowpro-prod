@@ -100,17 +100,17 @@ export default function Layout({ children, currentPageName }) {
 
   async function loadCompanies() {
     try {
-      const isAdmin = user?.role === "admin" || user?.role === "super_admin" || user?.role === "manager";
-      const allCompanies = await base44.entities.Company.list();
-      let list = allCompanies;
-      if (!isAdmin && user?.email) {
-        const access = await base44.entities.UserCompanyAccess.filter({ user_email: user.email });
-        const allowedIds = access.map(a => a.company_id);
-        list = allCompanies.filter(c => allowedIds.includes(c.id));
-      }
+      if (!user?.email) return;
+      // Always filter by UserCompanyAccess — even for admins
+      const [allCompanies, access] = await Promise.all([
+        base44.entities.Company.list(),
+        base44.entities.UserCompanyAccess.filter({ user_email: user.email })
+      ]);
+      const allowedIds = access.map(a => a.company_id);
+      const list = allowedIds.length > 0
+        ? allCompanies.filter(c => allowedIds.includes(c.id))
+        : (user?.role === 'admin' || user?.role === 'super_admin' ? allCompanies : []);
       setCompanies(list);
-      // Super admins don't require a default company to be set
-      if (isAdmin && list.length === 0) return;
       const saved = localStorage.getItem("activeCompanyId");
       const found = list.find(c => c.id === saved) || list[0];
       setActiveCompany(found || null);
