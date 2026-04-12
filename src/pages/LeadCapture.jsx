@@ -14,6 +14,7 @@ export default function LeadCapture() {
   const [company, setCompany] = useState(null);
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState(null);
   const [loading, setLoading] = useState(true);
   const [form, setForm] = useState({
     first_name: "", last_name: "", email: "", phone: "",
@@ -37,9 +38,16 @@ export default function LeadCapture() {
     e.preventDefault();
     if (!companyId) return;
     setSubmitting(true);
-    await base44.functions.invoke('submitLead', { ...form, company_id: companyId });
-    setSubmitted(true);
-    setSubmitting(false);
+    setSubmitError(null);
+    try {
+      await base44.functions.invoke('submitLead', { ...form, company_id: companyId });
+      setSubmitted(true);
+    } catch (err) {
+      console.error('Lead submit error:', err);
+      setSubmitError('Something went wrong. Please try again or call us directly.');
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   const headerColor = company?.primary_color || "#1e40af";
@@ -140,6 +148,13 @@ export default function LeadCapture() {
               </div>
             </CardContent>
           </Card>
+
+          {submitError && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-start gap-2">
+              <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
+              <p className="text-red-700 text-sm">{submitError}</p>
+            </div>
+          )}
 
           <Button
             type="submit"

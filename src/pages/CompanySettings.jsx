@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useApp } from '@/layout.jsx';
@@ -15,10 +14,19 @@ export default function CompanySettings() {
   const { activeCompany, user, refreshCompanies } = useApp();
   const [company, setCompany] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [subscription, setSubscription] = useState(null);
 
   useEffect(() => {
     if (activeCompany) loadCompany();
   }, [activeCompany?.id]);
+
+  useEffect(() => {
+    if (company?.id) {
+      base44.entities.Subscription.filter({ company_id: company.id })
+        .then(subs => setSubscription(subs[0] || null))
+        .catch(() => {});
+    }
+  }, [company?.id]);
 
   async function loadCompany() {
     try {
@@ -34,18 +42,7 @@ export default function CompanySettings() {
   if (loading) return <div className="p-6">Loading...</div>;
   if (!company) return <div className="p-6">Company not found</div>;
 
-  const [subscription, setSubscription] = useState(null);
-
-  useEffect(() => {
-    if (company?.id) {
-      base44.entities.Subscription.filter({ company_id: company.id })
-        .then(subs => setSubscription(subs[0] || null))
-        .catch(() => {});
-    }
-  }, [company?.id]);
-
   const isOwner = user?.email === company.created_by || user?.role === 'admin' || user?.role === 'super_admin';
-  // Only show Locations tab for parent companies (not sub-companies themselves)
   const isParentCompany = !company.parent_company_id;
 
   return (
