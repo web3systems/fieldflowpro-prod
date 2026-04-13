@@ -9,42 +9,62 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Pencil, Trash2, Search, Wrench, Package, ChevronDown, ChevronRight } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, Wrench, Package, ChevronDown, ChevronRight, FolderOpen } from "lucide-react";
 
-const SERVICE_CATEGORIES = ["Labor", "Installation", "Maintenance", "Inspection & Consulting", "Cleaning", "Landscaping", "Painting", "Other"];
-const MATERIAL_CATEGORIES = ["Lumber & Wood", "Plumbing", "Electrical", "HVAC", "Flooring", "Paint & Supplies", "Hardware", "Roofing", "Concrete & Masonry", "Fasteners", "Other"];
+// ── Default group/section trees ──────────────────────────────────────────────
+const SERVICE_TREE = {
+  "Labor": ["General Labor", "Skilled Labor", "Supervision"],
+  "Installation": ["Flooring", "Cabinets & Millwork", "Doors & Windows", "Roofing", "Siding"],
+  "Painting": ["Interior Painting", "Exterior Painting", "Staining & Finishing"],
+  "Plumbing Services": ["Rough-In", "Finish Plumbing", "Drain & Sewer"],
+  "Electrical Services": ["Rough-In Wiring", "Panel & Service", "Finish Electrical", "Low Voltage"],
+  "HVAC Services": ["Ductwork", "Equipment Install", "Service & Repair"],
+  "Cleaning": ["Post-Construction", "Pressure Washing", "Window Cleaning"],
+  "Inspection & Consulting": ["Site Visit", "Estimate", "Code Compliance"],
+  "Other": ["Miscellaneous"],
+};
 
-const unitLabels = { flat: "Flat Rate", hourly: "Per Hour", per_sqft: "Per Sq Ft", per_unit: "Per Unit", per_lb: "Per Lb", per_ft: "Per Ft", each: "Each" };
+const MATERIAL_TREE = {
+  "Lumber": ["Plywood & Sheathing", "Posts & Beams", "Dimensional Lumber (2x4, 2x6, etc.)", "Trim & Molding", "Engineered Wood"],
+  "Concrete & Masonry": ["Concrete Mix", "Block & Brick", "Stucco & Mortar", "Rebar & Wire"],
+  "Plumbing": ["PVC Pipe & Fittings", "Copper Pipe & Fittings", "PEX Tubing", "Valves & Controls", "Fixtures"],
+  "Electrical": ["Wire & Cable", "Conduit", "Boxes & Devices", "Panels & Breakers", "Fixtures & Lighting"],
+  "HVAC": ["Ductwork", "Insulation", "Vents & Registers", "Equipment"],
+  "Roofing": ["Shingles", "Underlayment", "Flashing", "Gutters & Downspouts"],
+  "Flooring": ["Hardwood", "Tile", "Laminate & LVP", "Carpet", "Subfloor"],
+  "Drywall & Insulation": ["Drywall Sheets", "Joint Compound", "Tape & Beads", "Batt Insulation", "Rigid Foam"],
+  "Doors & Windows": ["Interior Doors", "Exterior Doors", "Windows", "Hardware"],
+  "Paint & Finishes": ["Interior Paint", "Exterior Paint", "Primer", "Stain & Sealer", "Caulk & Adhesive"],
+  "Hardware & Fasteners": ["Nails & Screws", "Anchors & Bolts", "Straps & Connectors", "Hinges & Brackets"],
+  "Landscaping": ["Soil & Mulch", "Pavers & Stone", "Plants & Sod", "Irrigation"],
+  "Other": ["Miscellaneous"],
+};
 
-const defaultServiceForm = { item_type: "service", name: "", description: "", category: "Labor", unit_price: "", unit: "hourly", sku: "", is_active: true, taxable: true };
-const defaultMaterialForm = { item_type: "material", name: "", description: "", category: "Lumber & Wood", unit_price: "", unit: "each", sku: "", is_active: true, taxable: true };
+const unitLabels = {
+  flat: "Flat Rate", hourly: "Per Hour", per_sqft: "Per Sq Ft",
+  per_unit: "Per Unit", per_lb: "Per Lb", per_ft: "Per Ft", each: "Each"
+};
 
-function PriceBookTab({ items, categories, itemType, companyId, onReload }) {
-  const [search, setSearch] = useState("");
-  const [collapsed, setCollapsed] = useState({});
-  const [sheetOpen, setSheetOpen] = useState(false);
-  const [editing, setEditing] = useState(null);
-  const [form, setForm] = useState(itemType === "service" ? defaultServiceForm : defaultMaterialForm);
+function ItemFormModal({ editing, itemType, tree, companyId, onSave, onClose, prefillGroup, prefillSection }) {
+  const groups = Object.keys(tree);
+  const [form, setForm] = useState(() => {
+    if (editing) return { ...editing, unit_price: editing.unit_price ?? "" };
+    return {
+      item_type: itemType,
+      name: "",
+      description: "",
+      category: prefillGroup || groups[0],
+      subcategory: prefillSection || Object.values(tree)[0]?.[0] || "",
+      unit_price: "",
+      unit: itemType === "service" ? "hourly" : "each",
+      sku: "",
+      is_active: true,
+      taxable: true,
+    };
+  });
   const [loading, setLoading] = useState(false);
 
-  const filtered = items.filter(s =>
-    !search ||
-    s.name.toLowerCase().includes(search.toLowerCase()) ||
-    (s.category || "").toLowerCase().includes(search.toLowerCase()) ||
-    (s.sku || "").toLowerCase().includes(search.toLowerCase())
-  );
-
-  function openNew() {
-    setEditing(null);
-    setForm(itemType === "service" ? defaultServiceForm : defaultMaterialForm);
-    setSheetOpen(true);
-  }
-
-  function openEdit(item) {
-    setEditing(item);
-    setForm({ ...item, unit_price: item.unit_price ?? "" });
-    setSheetOpen(true);
-  }
+  const sections = tree[form.category] || [];
 
   async function handleSave() {
     setLoading(true);
@@ -54,10 +74,99 @@ function PriceBookTab({ items, categories, itemType, companyId, onReload }) {
     } else {
       await base44.entities.Service.create(payload);
     }
-    onReload();
-    setSheetOpen(false);
+    onSave();
+    onClose();
     setLoading(false);
   }
+
+  return (
+    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[92vh] overflow-y-auto">
+        <div className="px-6 py-4 border-b flex items-center justify-between sticky top-0 bg-white rounded-t-2xl">
+          <h2 className="text-lg font-semibold">{editing ? "Edit" : "Add"} {itemType === "service" ? "Service" : "Material"}</h2>
+          <button onClick={onClose} className="text-slate-400 hover:text-slate-600 text-2xl leading-none">×</button>
+        </div>
+        <div className="p-6 space-y-4">
+          <div>
+            <Label>Name *</Label>
+            <Input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder={itemType === "service" ? "e.g. Framing Labor" : "e.g. 2x4x8 Stud"} />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label>Group</Label>
+              <Select value={form.category} onValueChange={v => setForm({ ...form, category: v, subcategory: tree[v]?.[0] || "" })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {groups.map(g => <SelectItem key={g} value={g}>{g}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label>Section</Label>
+              <Select value={form.subcategory} onValueChange={v => setForm({ ...form, subcategory: v })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {sections.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <div>
+            <Label>Description</Label>
+            <Textarea value={form.description || ""} onChange={e => setForm({ ...form, description: e.target.value })} rows={2} />
+          </div>
+          <div>
+            <Label>SKU / Part # (optional)</Label>
+            <Input value={form.sku || ""} onChange={e => setForm({ ...form, sku: e.target.value })} placeholder="e.g. LBR-2x4-8" />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label>Price ($)</Label>
+              <Input type="number" value={form.unit_price} onChange={e => setForm({ ...form, unit_price: e.target.value })} placeholder="0.00" />
+            </div>
+            <div>
+              <Label>Unit</Label>
+              <Select value={form.unit} onValueChange={v => setForm({ ...form, unit: v })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {Object.entries(unitLabels).map(([val, label]) => <SelectItem key={val} value={val}>{label}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <div className="flex items-center justify-between">
+            <Label>Active</Label>
+            <Switch checked={!!form.is_active} onCheckedChange={v => setForm({ ...form, is_active: v })} />
+          </div>
+          <div className="flex items-center justify-between">
+            <Label>Taxable</Label>
+            <Switch checked={!!form.taxable} onCheckedChange={v => setForm({ ...form, taxable: v })} />
+          </div>
+          <div className="flex gap-3 pt-2">
+            <Button variant="outline" onClick={onClose} className="flex-1">Cancel</Button>
+            <Button onClick={handleSave} disabled={loading || !form.name} className="flex-1 bg-blue-600 hover:bg-blue-700">
+              {loading ? "Saving..." : editing ? "Save Changes" : "Add Item"}
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PriceBookTab({ items, tree, itemType, companyId, onReload }) {
+  const [search, setSearch] = useState("");
+  const [collapsedGroups, setCollapsedGroups] = useState({});
+  const [collapsedSections, setCollapsedSections] = useState({});
+  const [modal, setModal] = useState(null); // null | { editing, prefillGroup, prefillSection }
+
+  const filtered = items.filter(s =>
+    !search ||
+    s.name.toLowerCase().includes(search.toLowerCase()) ||
+    (s.category || "").toLowerCase().includes(search.toLowerCase()) ||
+    (s.subcategory || "").toLowerCase().includes(search.toLowerCase()) ||
+    (s.sku || "").toLowerCase().includes(search.toLowerCase())
+  );
 
   async function handleDelete(id) {
     if (!confirm("Delete this item?")) return;
@@ -70,144 +179,142 @@ function PriceBookTab({ items, categories, itemType, companyId, onReload }) {
     onReload();
   }
 
-  function toggleCollapse(cat) {
-    setCollapsed(c => ({ ...c, [cat]: !c[cat] }));
+  const toggleGroup = (g) => setCollapsedGroups(c => ({ ...c, [g]: !c[g] }));
+  const toggleSection = (key) => setCollapsedSections(c => ({ ...c, [key]: !c[key] }));
+
+  // Get items that belong to a group+section, plus catch items without subcategory
+  function getItems(group, section) {
+    return filtered.filter(s =>
+      (s.category || Object.keys(tree)[0]) === group &&
+      (s.subcategory === section || (!s.subcategory && section === Object.values(tree)[0]?.[0]))
+    );
   }
+
+  // Groups that have any matching items (or show all when no search)
+  const visibleGroups = Object.keys(tree).filter(g =>
+    !search || filtered.some(s => (s.category || Object.keys(tree)[0]) === g)
+  );
 
   return (
     <div>
-      <div className="flex items-center gap-3 mb-4">
+      <div className="flex items-center gap-3 mb-5">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-          <Input placeholder={`Search ${itemType === "service" ? "services" : "materials"}...`} value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
+          <Input
+            placeholder={`Search ${itemType === "service" ? "services" : "materials"}...`}
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            className="pl-9"
+          />
         </div>
-        <Button onClick={openNew} className="gap-2 bg-blue-600 hover:bg-blue-700">
+        <Button onClick={() => setModal({ editing: null })} className="gap-2 bg-blue-600 hover:bg-blue-700 flex-shrink-0">
           <Plus className="w-4 h-4" /> Add {itemType === "service" ? "Service" : "Material"}
         </Button>
       </div>
 
-      {categories.map(cat => {
-        const catItems = filtered.filter(s => (s.category || (itemType === "service" ? "Labor" : "Other")) === cat);
-        if (catItems.length === 0 && search) return null;
-        const isCollapsed = collapsed[cat];
+      <div className="space-y-3">
+        {visibleGroups.map(group => {
+          const groupCollapsed = collapsedGroups[group];
+          const sections = tree[group] || [];
+          const groupItemCount = filtered.filter(s => (s.category || Object.keys(tree)[0]) === group).length;
 
-        return (
-          <div key={cat} className="mb-4 bg-white border border-slate-200 rounded-xl overflow-hidden">
-            <button
-              className="w-full flex items-center justify-between px-4 py-3 bg-slate-50 hover:bg-slate-100 transition-colors"
-              onClick={() => toggleCollapse(cat)}
-            >
-              <div className="flex items-center gap-2">
-                {isCollapsed ? <ChevronRight className="w-4 h-4 text-slate-400" /> : <ChevronDown className="w-4 h-4 text-slate-400" />}
-                <span className="font-semibold text-slate-700 text-sm">{cat}</span>
-                <Badge variant="secondary" className="text-xs">{catItems.length}</Badge>
-              </div>
-            </button>
+          return (
+            <div key={group} className="border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+              {/* Group header */}
+              <button
+                className="w-full flex items-center gap-3 px-4 py-3.5 bg-slate-800 hover:bg-slate-700 transition-colors text-left"
+                onClick={() => toggleGroup(group)}
+              >
+                <FolderOpen className="w-4 h-4 text-slate-300 flex-shrink-0" />
+                <span className="font-semibold text-white flex-1">{group}</span>
+                <Badge className="bg-slate-600 text-slate-200 text-xs">{groupItemCount} items</Badge>
+                {groupCollapsed ? <ChevronRight className="w-4 h-4 text-slate-400" /> : <ChevronDown className="w-4 h-4 text-slate-400" />}
+              </button>
 
-            {!isCollapsed && (
-              <div className="divide-y divide-slate-100">
-                {catItems.length === 0 ? (
-                  <p className="text-sm text-slate-400 px-4 py-3 italic">No items in this group yet.</p>
-                ) : (
-                  catItems.map(item => (
-                    <div key={item.id} className={`flex items-center gap-4 px-4 py-3 ${!item.is_active ? "opacity-50" : ""}`}>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium text-slate-800 text-sm">{item.name}</span>
-                          {item.sku && <span className="text-xs text-slate-400 font-mono">#{item.sku}</span>}
-                          {!item.is_active && <Badge variant="secondary" className="text-xs">Inactive</Badge>}
-                        </div>
-                        {item.description && <p className="text-slate-400 text-xs mt-0.5 truncate">{item.description}</p>}
-                      </div>
-                      <div className="text-right flex-shrink-0">
-                        <p className="font-semibold text-slate-900">${(item.unit_price || 0).toFixed(2)}</p>
-                        <p className="text-xs text-slate-400">{unitLabels[item.unit] || item.unit}</p>
-                      </div>
-                      <div className="flex items-center gap-1 flex-shrink-0">
+              {!groupCollapsed && (
+                <div className="divide-y divide-slate-100">
+                  {sections.map(section => {
+                    const sectionKey = `${group}::${section}`;
+                    const sectionCollapsed = collapsedSections[sectionKey];
+                    const sectionItems = getItems(group, section);
+                    if (search && sectionItems.length === 0) return null;
+
+                    return (
+                      <div key={section}>
+                        {/* Section header */}
                         <button
-                          onClick={() => toggleActive(item)}
-                          className={`text-xs px-2 py-1 rounded border transition-colors ${item.is_active ? "border-green-200 text-green-600 hover:bg-red-50 hover:text-red-500 hover:border-red-200" : "border-slate-200 text-slate-400 hover:bg-green-50 hover:text-green-600"}`}
+                          className="w-full flex items-center gap-2 px-5 py-2.5 bg-slate-50 hover:bg-slate-100 transition-colors text-left border-l-4 border-l-blue-400"
+                          onClick={() => toggleSection(sectionKey)}
                         >
-                          {item.is_active ? "Active" : "Inactive"}
+                          {sectionCollapsed ? <ChevronRight className="w-3.5 h-3.5 text-slate-400" /> : <ChevronDown className="w-3.5 h-3.5 text-slate-400" />}
+                          <span className="text-sm font-semibold text-slate-600 flex-1">{section}</span>
+                          <span className="text-xs text-slate-400">{sectionItems.length} items</span>
                         </button>
-                        <Button variant="ghost" size="icon" onClick={() => openEdit(item)}><Pencil className="w-3.5 h-3.5" /></Button>
-                        <Button variant="ghost" size="icon" onClick={() => handleDelete(item.id)} className="text-red-400 hover:text-red-600 hover:bg-red-50"><Trash2 className="w-3.5 h-3.5" /></Button>
-                      </div>
-                    </div>
-                  ))
-                )}
-                <div className="px-4 py-2">
-                  <button onClick={() => { setEditing(null); setForm({...(itemType === "service" ? defaultServiceForm : defaultMaterialForm), category: cat}); setSheetOpen(true); }} className="text-xs text-blue-600 hover:text-blue-700 flex items-center gap-1">
-                    <Plus className="w-3 h-3" /> Add to {cat}
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-        );
-      })}
 
-      {sheetOpen && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
-            <div className="px-6 py-4 border-b flex items-center justify-between sticky top-0 bg-white rounded-t-2xl">
-              <h2 className="text-lg font-semibold">{editing ? "Edit" : "New"} {itemType === "service" ? "Service" : "Material"}</h2>
-              <button onClick={() => setSheetOpen(false)} className="text-slate-400 hover:text-slate-600 text-2xl leading-none">×</button>
-            </div>
-            <div className="p-6 space-y-4">
-              <div>
-                <Label>Name *</Label>
-                <Input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder={itemType === "service" ? "e.g. Hourly Labor" : "e.g. 2x4x8 Lumber"} />
-              </div>
-              <div>
-                <Label>Group / Category</Label>
-                <Select value={form.category} onValueChange={v => setForm({ ...form, category: v })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {(itemType === "service" ? SERVICE_CATEGORIES : MATERIAL_CATEGORIES).map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label>Description</Label>
-                <Textarea value={form.description || ""} onChange={e => setForm({ ...form, description: e.target.value })} rows={2} />
-              </div>
-              <div>
-                <Label>SKU / Part # (optional)</Label>
-                <Input value={form.sku || ""} onChange={e => setForm({ ...form, sku: e.target.value })} placeholder="e.g. LBR-2x4-8" />
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <Label>Price ($)</Label>
-                  <Input type="number" value={form.unit_price} onChange={e => setForm({ ...form, unit_price: e.target.value })} placeholder="0.00" />
+                        {!sectionCollapsed && (
+                          <div>
+                            {sectionItems.length === 0 ? (
+                              <p className="text-xs text-slate-400 italic px-6 py-2">No items yet.</p>
+                            ) : (
+                              sectionItems.map(item => (
+                                <div key={item.id} className={`flex items-center gap-3 px-6 py-2.5 hover:bg-slate-50 transition-colors ${!item.is_active ? "opacity-50" : ""}`}>
+                                  <div className="flex-1 min-w-0">
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-sm font-medium text-slate-800">{item.name}</span>
+                                      {item.sku && <span className="text-xs text-slate-400 font-mono bg-slate-100 px-1.5 py-0.5 rounded">#{item.sku}</span>}
+                                      {!item.is_active && <Badge variant="secondary" className="text-xs">Inactive</Badge>}
+                                    </div>
+                                    {item.description && <p className="text-xs text-slate-400 mt-0.5 truncate">{item.description}</p>}
+                                  </div>
+                                  <div className="text-right flex-shrink-0">
+                                    <p className="font-semibold text-slate-900 text-sm">${(item.unit_price || 0).toFixed(2)}</p>
+                                    <p className="text-xs text-slate-400">{unitLabels[item.unit] || item.unit}</p>
+                                  </div>
+                                  <div className="flex items-center gap-1 flex-shrink-0">
+                                    <button
+                                      onClick={() => toggleActive(item)}
+                                      title={item.is_active ? "Deactivate" : "Activate"}
+                                      className={`text-xs px-2 py-1 rounded border transition-colors ${item.is_active ? "border-green-200 text-green-600 hover:bg-red-50 hover:text-red-500 hover:border-red-200" : "border-slate-200 text-slate-400 hover:bg-green-50 hover:text-green-600 hover:border-green-200"}`}
+                                    >
+                                      {item.is_active ? "Active" : "Inactive"}
+                                    </button>
+                                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setModal({ editing: item })}><Pencil className="w-3.5 h-3.5" /></Button>
+                                    <Button variant="ghost" size="icon" className="h-7 w-7 text-red-400 hover:text-red-600 hover:bg-red-50" onClick={() => handleDelete(item.id)}><Trash2 className="w-3.5 h-3.5" /></Button>
+                                  </div>
+                                </div>
+                              ))
+                            )}
+                            <div className="px-6 py-2 border-t border-slate-100">
+                              <button
+                                onClick={() => setModal({ editing: null, prefillGroup: group, prefillSection: section })}
+                                className="text-xs text-blue-600 hover:text-blue-700 flex items-center gap-1"
+                              >
+                                <Plus className="w-3 h-3" /> Add to {section}
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
-                <div>
-                  <Label>Unit</Label>
-                  <Select value={form.unit} onValueChange={v => setForm({ ...form, unit: v })}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      {Object.entries(unitLabels).map(([val, label]) => <SelectItem key={val} value={val}>{label}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <div className="flex items-center justify-between">
-                <Label>Active</Label>
-                <Switch checked={!!form.is_active} onCheckedChange={v => setForm({ ...form, is_active: v })} />
-              </div>
-              <div className="flex items-center justify-between">
-                <Label>Taxable</Label>
-                <Switch checked={!!form.taxable} onCheckedChange={v => setForm({ ...form, taxable: v })} />
-              </div>
-              <div className="flex gap-3 pt-2">
-                <Button variant="outline" onClick={() => setSheetOpen(false)} className="flex-1">Cancel</Button>
-                <Button onClick={handleSave} disabled={loading || !form.name} className="flex-1 bg-blue-600 hover:bg-blue-700">
-                  {loading ? "Saving..." : editing ? "Save Changes" : "Create"}
-                </Button>
-              </div>
+              )}
             </div>
-          </div>
-        </div>
+          );
+        })}
+      </div>
+
+      {modal && (
+        <ItemFormModal
+          editing={modal.editing}
+          itemType={itemType}
+          tree={tree}
+          companyId={companyId}
+          prefillGroup={modal.prefillGroup}
+          prefillSection={modal.prefillSection}
+          onSave={onReload}
+          onClose={() => setModal(null)}
+        />
       )}
     </div>
   );
@@ -232,16 +339,20 @@ export default function PriceBook() {
   const serviceItems = services.filter(s => s.item_type === "service" || !s.item_type);
   const materialItems = services.filter(s => s.item_type === "material");
 
-  if (loading) return <div className="p-8 flex justify-center"><div className="w-7 h-7 border-4 border-slate-200 border-t-blue-500 rounded-full animate-spin" /></div>;
+  if (loading) return (
+    <div className="p-8 flex justify-center">
+      <div className="w-7 h-7 border-4 border-slate-200 border-t-blue-500 rounded-full animate-spin" />
+    </div>
+  );
 
   return (
     <div className="p-6 max-w-5xl mx-auto">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-slate-900">Price Book</h1>
-        <p className="text-slate-500 text-sm mt-0.5">Manage your services and materials catalog for {activeCompany?.name}</p>
+        <p className="text-slate-500 text-sm mt-0.5">Services and materials catalog for {activeCompany?.name}</p>
       </div>
 
-      <Tabs defaultValue="services">
+      <Tabs defaultValue="materials">
         <TabsList className="mb-6">
           <TabsTrigger value="services" className="gap-2">
             <Wrench className="w-4 h-4" /> Services
@@ -254,23 +365,10 @@ export default function PriceBook() {
         </TabsList>
 
         <TabsContent value="services">
-          <PriceBookTab
-            items={serviceItems}
-            categories={SERVICE_CATEGORIES}
-            itemType="service"
-            companyId={activeCompany?.id}
-            onReload={loadAll}
-          />
+          <PriceBookTab items={serviceItems} tree={SERVICE_TREE} itemType="service" companyId={activeCompany?.id} onReload={loadAll} />
         </TabsContent>
-
         <TabsContent value="materials">
-          <PriceBookTab
-            items={materialItems}
-            categories={MATERIAL_CATEGORIES}
-            itemType="material"
-            companyId={activeCompany?.id}
-            onReload={loadAll}
-          />
+          <PriceBookTab items={materialItems} tree={MATERIAL_TREE} itemType="material" companyId={activeCompany?.id} onReload={loadAll} />
         </TabsContent>
       </Tabs>
     </div>

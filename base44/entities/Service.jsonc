@@ -22,7 +22,11 @@
     },
     "category": {
       "type": "string",
-      "description": "Group/category within the price book (e.g. Lumber, Plumbing, Labor)"
+      "description": "Top-level group (e.g. Lumber, Plumbing, Labor)"
+    },
+    "subcategory": {
+      "type": "string",
+      "description": "Section within the group (e.g. Plywood, Posts & Boards, PVC Pipe)"
     },
     "unit_price": {
       "type": "number",
