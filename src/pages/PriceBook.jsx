@@ -68,7 +68,7 @@ function ItemFormModal({ editing, itemType, tree, companyId, onSave, onClose, pr
 
   async function handleSave() {
     setLoading(true);
-    const payload = { ...form, company_id: companyId, item_type: itemType, unit_price: parseFloat(form.unit_price) || 0 };
+    const payload = { ...form, company_id: companyId, item_type: form.item_type || itemType, unit_price: parseFloat(form.unit_price) || 0 };
     if (editing) {
       await base44.entities.Service.update(editing.id, payload);
     } else {
@@ -87,6 +87,35 @@ function ItemFormModal({ editing, itemType, tree, companyId, onSave, onClose, pr
           <button onClick={onClose} className="text-slate-400 hover:text-slate-600 text-2xl leading-none">×</button>
         </div>
         <div className="p-6 space-y-4">
+          {editing && (
+            <div>
+              <Label>Type</Label>
+              <div className="flex gap-2 mt-1">
+                <button
+                  type="button"
+                  onClick={() => setForm(f => ({ ...f, item_type: 'service', unit: 'hourly' }))}
+                  className={`flex-1 py-2 rounded-lg border text-sm font-medium transition-colors ${
+                    form.item_type === 'service' || !form.item_type
+                      ? 'bg-blue-600 text-white border-blue-600'
+                      : 'bg-white text-slate-600 border-slate-200 hover:border-blue-300'
+                  }`}
+                >
+                  🔧 Service / Labor
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setForm(f => ({ ...f, item_type: 'material', unit: 'each' }))}
+                  className={`flex-1 py-2 rounded-lg border text-sm font-medium transition-colors ${
+                    form.item_type === 'material'
+                      ? 'bg-blue-600 text-white border-blue-600'
+                      : 'bg-white text-slate-600 border-slate-200 hover:border-blue-300'
+                  }`}
+                >
+                  📦 Material
+                </button>
+              </div>
+            </div>
+          )}
           <div>
             <Label>Name *</Label>
             <Input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder={itemType === "service" ? "e.g. Framing Labor" : "e.g. 2x4x8 Stud"} />
