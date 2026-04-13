@@ -53,6 +53,19 @@ Deno.serve(async (req) => {
       console.warn('inviteUser warning:', inviteErr.message);
     }
 
+    // Set the password the user entered during registration
+    try {
+      const users = await base44.asServiceRole.entities.User.filter({ email: owner_email });
+      if (users.length > 0) {
+        await base44.asServiceRole.entities.User.update(users[0].id, { password });
+        console.log('Password set for user:', owner_email);
+      } else {
+        console.warn('User not found yet for password set — they will need to use invite link');
+      }
+    } catch (pwErr) {
+      console.warn('setPassword warning:', pwErr.message);
+    }
+
     return Response.json({ success: true, company_id: company.id });
 
   } catch (error) {
