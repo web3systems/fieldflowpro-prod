@@ -168,9 +168,32 @@ function PriceBookTab({ items, tree, itemType, companyId, onReload }) {
     (s.sku || "").toLowerCase().includes(search.toLowerCase())
   );
 
-  async function handleDelete(id) {
-    if (!confirm("Delete this item?")) return;
-    await base44.entities.Service.delete(id);
+  async function handleDelete(item) {
+    // Check if referenced in any line items
+    const [jobs, estimates, invoices] = await Promise.all([
+      base44.entities.Job.filter({ company_id: companyId }),
+      base44.entities.Estimate.filter({ company_id: companyId }),
+      base44.entities.Invoice.filter({ company_id: companyId }),
+    ]);
+
+    const isUsed = [...jobs, ...estimates, ...invoices].some(doc => {
+      const lines = doc.line_items || (doc.options?.flatMap(o => o.line_items || []) ?? []);
+      return lines.some(l => l.service_id === item.id);
+    });
+
+    if (isUsed) {
+      const choice = confirm(
+        `"${item.name}" is used in existing estimates, jobs, or invoices.\n\nClick OK to deactivate it (safe — preserves all existing documents).\nClick Cancel to keep it as-is.`
+      );
+      if (choice) {
+        await base44.entities.Service.update(item.id, { is_active: false });
+        onReload();
+      }
+      return;
+    }
+
+    if (!confirm(`Delete "${item.name}"? This cannot be undone.`)) return;
+    await base44.entities.Service.delete(item.id);
     onReload();
   }
 
@@ -279,7 +302,7 @@ function PriceBookTab({ items, tree, itemType, companyId, onReload }) {
                                       {item.is_active ? "Active" : "Inactive"}
                                     </button>
                                     <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setModal({ editing: item })}><Pencil className="w-3.5 h-3.5" /></Button>
-                                    <Button variant="ghost" size="icon" className="h-7 w-7 text-red-400 hover:text-red-600 hover:bg-red-50" onClick={() => handleDelete(item.id)}><Trash2 className="w-3.5 h-3.5" /></Button>
+                                    <Button variant="ghost" size="icon" className="h-7 w-7 text-red-400 hover:text-red-600 hover:bg-red-50" onClick={() => handleDelete(item)}><Trash2 className="w-3.5 h-3.5" /></Button>
                                   </div>
                                 </div>
                               ))
