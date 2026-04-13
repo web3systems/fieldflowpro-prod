@@ -47,23 +47,18 @@ Deno.serve(async (req) => {
 
     // Invite the user with admin role so they get proper platform access
     try {
-      await base44.asServiceRole.users.inviteUser(owner_email, 'admin');
+      await base44.users.inviteUser(owner_email, 'admin');
     } catch (inviteErr) {
       // User may already exist — not a fatal error
       console.warn('inviteUser warning:', inviteErr.message);
     }
 
-    // Set the password the user entered during registration
+    // Store the password to be applied when the user record is created (via entity automation)
     try {
-      const users = await base44.asServiceRole.entities.User.filter({ email: owner_email });
-      if (users.length > 0) {
-        await base44.asServiceRole.entities.User.update(users[0].id, { password });
-        console.log('Password set for user:', owner_email);
-      } else {
-        console.warn('User not found yet for password set — they will need to use invite link');
-      }
+      await base44.asServiceRole.entities.PendingPassword.create({ email: owner_email, password });
+      console.log('Stored pending password for:', owner_email);
     } catch (pwErr) {
-      console.warn('setPassword warning:', pwErr.message);
+      console.warn('PendingPassword store warning:', pwErr.message);
     }
 
     return Response.json({ success: true, company_id: company.id });

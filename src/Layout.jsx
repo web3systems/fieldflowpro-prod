@@ -94,6 +94,8 @@ export default function Layout({ children, currentPageName }) {
     try {
       const u = await base44.auth.me();
       setUser(u);
+      // Apply any pending password from registration
+      base44.functions.invoke('applyPendingPassword', {}).catch(() => {});
     } catch (e) {
       // not logged in
     }
