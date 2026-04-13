@@ -14,23 +14,41 @@ Deno.serve(async (req) => {
       user_email: user.email
     });
 
-    const allCompanies = await base44.asServiceRole.entities.Company.list();
+    if (accessRecords.length === 0) {
+      return Response.json({ companies: [] });
+    }
 
-    const directCompanyIds = new Set(accessRecords.map(a => a.company_id));
+    const directCompanyIds = [...new Set(accessRecords.map(a => a.company_id))];
 
-    // Also include sub-companies of any company the user has direct access to
-    const subCompanyIds = new Set(
-      allCompanies
-        .filter(c => c.parent_company_id && directCompanyIds.has(c.parent_company_id))
-        .map(c => c.id)
+    // Fetch only the companies the user has direct access to (no limit issue)
+    const directCompanies = await Promise.all(
+      directCompanyIds.map(id =>
+        base44.asServiceRole.entities.Company.filter({ id }).then(r => r[0]).catch(() => null)
+      )
     );
+    const validDirectCompanies = directCompanies.filter(Boolean);
 
-    const allAccessibleIds = new Set([...directCompanyIds, ...subCompanyIds]);
+    // Find sub-companies of any parent company the user has access to
+    const parentIds = validDirectCompanies.filter(c => !c.parent_company_id).map(c => c.id);
 
-    const companies = allCompanies.filter(c => allAccessibleIds.has(c.id));
+    let subCompanies = [];
+    if (parentIds.length > 0) {
+      // Fetch sub-companies for each parent
+      const subResults = await Promise.all(
+        parentIds.map(pid =>
+          base44.asServiceRole.entities.Company.filter({ parent_company_id: pid }).catch(() => [])
+        )
+      );
+      subCompanies = subResults.flat();
+    }
 
-    // Sort: parent companies first, then sub-companies grouped under their parent
-    companies.sort((a, b) => {
+    // Merge, deduplicate
+    const allMap = new Map();
+    for (const c of [...validDirectCompanies, ...subCompanies]) {
+      allMap.set(c.id, c);
+    }
+
+    const companies = [...allMap.values()].sort((a, b) => {
       const aIsParent = !a.parent_company_id;
       const bIsParent = !b.parent_company_id;
       if (aIsParent && !bIsParent) return -1;
