@@ -59,12 +59,11 @@ export default function Register() {
           </div>
           <h1 className="text-3xl font-bold text-white mb-3">You're all set!</h1>
           <p className="text-blue-200 text-lg mb-6">
-            Your account and 14-day free trial are ready to go.
+            Your account and 14-day free trial are ready. Sign in with the email and password you just created.
           </p>
           <a href="/Dashboard" className="inline-block bg-blue-500 hover:bg-blue-400 text-white font-semibold px-8 py-3 rounded-xl transition-colors">
-            Go to Dashboard →
+            Sign In & Go to Dashboard →
           </a>
-          <p className="text-blue-400 text-xs mt-4">Didn't get an email? Check your spam folder or contact support@fieldflowpro.com</p>
         </div>
       </div>
     );

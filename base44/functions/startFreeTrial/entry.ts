@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 Deno.serve(async (req) => {
   try {
@@ -45,23 +45,40 @@ Deno.serve(async (req) => {
       user_name: owner_name || '',
     });
 
-    // Invite the user with admin role so they get proper platform access
+    // Invite the user — this creates their account immediately
     try {
       await base44.users.inviteUser(owner_email, 'admin');
     } catch (inviteErr) {
-      // User may already exist — not a fatal error
       console.warn('inviteUser warning:', inviteErr.message);
     }
 
-    // Store the password to be applied when the user record is created (via entity automation)
-    try {
-      await base44.asServiceRole.entities.PendingPassword.create({ email: owner_email, password });
-      console.log('Stored pending password for:', owner_email);
-    } catch (pwErr) {
-      console.warn('PendingPassword store warning:', pwErr.message);
+    // Wait for the user record to be created, then set their password directly
+    let passwordSet = false;
+    for (let attempt = 0; attempt < 8; attempt++) {
+      await new Promise(r => setTimeout(r, 1500));
+      const users = await base44.asServiceRole.entities.User.filter({ email: owner_email });
+      if (users.length > 0) {
+        const userId = users[0].id;
+        await base44.asServiceRole.entities.User.update(userId, { password });
+        console.log('Password set immediately for:', owner_email, 'on attempt', attempt + 1);
+        passwordSet = true;
+
+        // Clean up any pending password record
+        const pending = await base44.asServiceRole.entities.PendingPassword.filter({ email: owner_email });
+        for (const p of pending) {
+          await base44.asServiceRole.entities.PendingPassword.delete(p.id);
+        }
+        break;
+      }
     }
 
-    return Response.json({ success: true, company_id: company.id });
+    if (!passwordSet) {
+      // Fallback: store for applyPendingPassword to handle on first login
+      console.warn('Could not set password immediately, storing as pending for:', owner_email);
+      await base44.asServiceRole.entities.PendingPassword.create({ email: owner_email, password });
+    }
+
+    return Response.json({ success: true, company_id: company.id, password_set: passwordSet });
 
   } catch (error) {
     console.error('startFreeTrial error:', error.message);
