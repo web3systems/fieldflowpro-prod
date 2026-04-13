@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Pencil, Trash2, Search, Wrench, Package, ChevronDown, ChevronRight, FolderOpen } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, Wrench, Package, ChevronDown, ChevronRight, FolderOpen, Wand2 } from "lucide-react";
 
 // ── Default group/section trees ──────────────────────────────────────────────
 const SERVICE_TREE = {
@@ -347,10 +347,24 @@ export default function PriceBook() {
   const { activeCompany } = useApp();
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [migrating, setMigrating] = useState(false);
 
   useEffect(() => {
     if (activeCompany?.id) loadAll();
   }, [activeCompany]);
+
+  async function handleMigrate() {
+    if (!confirm("This will use AI to auto-categorize any items that don't have a group/section yet. Continue?")) return;
+    setMigrating(true);
+    try {
+      const res = await base44.functions.invoke('migratePriceBookItems', { company_id: activeCompany.id });
+      alert(`Done! ${res.data?.migrated || 0} item(s) categorized.`);
+      await loadAll();
+    } catch (e) {
+      alert('Migration failed: ' + e.message);
+    }
+    setMigrating(false);
+  }
 
   async function loadAll() {
     setLoading(true);
@@ -370,9 +384,15 @@ export default function PriceBook() {
 
   return (
     <div className="p-6 max-w-5xl mx-auto">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-slate-900">Price Book</h1>
-        <p className="text-slate-500 text-sm mt-0.5">Services and materials catalog for {activeCompany?.name}</p>
+      <div className="mb-6 flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900">Price Book</h1>
+          <p className="text-slate-500 text-sm mt-0.5">Services and materials catalog for {activeCompany?.name}</p>
+        </div>
+        <Button variant="outline" onClick={handleMigrate} disabled={migrating} className="gap-2 flex-shrink-0">
+          <Wand2 className="w-4 h-4" />
+          {migrating ? "Categorizing..." : "Auto-Categorize Items"}
+        </Button>
       </div>
 
       <Tabs defaultValue="materials">
