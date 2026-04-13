@@ -386,7 +386,11 @@ export default function PriceBook() {
   const [showImport, setShowImport] = useState(false);
 
   useEffect(() => {
-    if (activeCompany?.id) loadAll();
+    if (activeCompany?.id) {
+      loadAll();
+    } else if (activeCompany === null) {
+      setLoading(false);
+    }
   }, [activeCompany]);
 
   async function handleMigrate() {
