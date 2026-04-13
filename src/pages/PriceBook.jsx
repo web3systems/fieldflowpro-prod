@@ -9,7 +9,8 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Pencil, Trash2, Search, Wrench, Package, ChevronDown, ChevronRight, FolderOpen, Wand2 } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, Wrench, Package, ChevronDown, ChevronRight, FolderOpen, Wand2, Upload } from "lucide-react";
+import PriceBookImport from "@/components/services/PriceBookImport";
 
 // ── Default group/section trees ──────────────────────────────────────────────
 const SERVICE_TREE = {
@@ -382,6 +383,7 @@ export default function PriceBook() {
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [migrating, setMigrating] = useState(false);
+  const [showImport, setShowImport] = useState(false);
 
   useEffect(() => {
     if (activeCompany?.id) loadAll();
@@ -423,11 +425,24 @@ export default function PriceBook() {
           <h1 className="text-2xl font-bold text-slate-900">Price Book</h1>
           <p className="text-slate-500 text-sm mt-0.5">Services and materials catalog for {activeCompany?.name}</p>
         </div>
-        <Button variant="outline" onClick={handleMigrate} disabled={migrating} className="gap-2 flex-shrink-0">
-          <Wand2 className="w-4 h-4" />
-          {migrating ? "Categorizing..." : "Auto-Categorize Items"}
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => setShowImport(true)} className="gap-2 flex-shrink-0">
+            <Upload className="w-4 h-4" /> Import CSV
+          </Button>
+          <Button variant="outline" onClick={handleMigrate} disabled={migrating} className="gap-2 flex-shrink-0">
+            <Wand2 className="w-4 h-4" />
+            {migrating ? "Categorizing..." : "Auto-Categorize"}
+          </Button>
+        </div>
       </div>
+
+      {showImport && (
+        <PriceBookImport
+          companyId={activeCompany?.id}
+          onDone={loadAll}
+          onClose={() => setShowImport(false)}
+        />
+      )}
 
       <Tabs defaultValue="materials">
         <TabsList className="mb-6">
