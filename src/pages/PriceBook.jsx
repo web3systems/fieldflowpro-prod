@@ -46,25 +46,30 @@ const unitLabels = {
 };
 
 function ItemFormModal({ editing, itemType, tree, companyId, onSave, onClose, prefillGroup, prefillSection }) {
-  const groups = Object.keys(tree);
   const [form, setForm] = useState(() => {
-    if (editing) return { ...editing, unit_price: editing.unit_price ?? "" };
-    return {
-      item_type: itemType,
-      name: "",
-      description: "",
-      category: prefillGroup || groups[0],
-      subcategory: prefillSection || Object.values(tree)[0]?.[0] || "",
-      unit_price: "",
-      unit: itemType === "service" ? "hourly" : "each",
-      sku: "",
-      is_active: true,
-      taxable: true,
-    };
+    const resolvedType = editing?.item_type || itemType;
+    const activeTree = resolvedType === 'material' ? MATERIAL_TREE : SERVICE_TREE;
+    const groups = Object.keys(activeTree);
+    return editing
+      ? { ...editing, unit_price: editing.unit_price ?? "" }
+      : {
+          item_type: itemType,
+          name: "",
+          description: "",
+          category: prefillGroup || groups[0],
+          subcategory: prefillSection || Object.values(activeTree)[0]?.[0] || "",
+          unit_price: "",
+          unit: itemType === "service" ? "hourly" : "each",
+          sku: "",
+          is_active: true,
+          taxable: true,
+        };
   });
   const [loading, setLoading] = useState(false);
 
-  const sections = tree[form.category] || [];
+  const activeTree = (form.item_type || itemType) === 'material' ? MATERIAL_TREE : SERVICE_TREE;
+  const groups = Object.keys(activeTree);
+  const sections = activeTree[form.category] || [];
 
   async function handleSave() {
     setLoading(true);
@@ -93,7 +98,7 @@ function ItemFormModal({ editing, itemType, tree, companyId, onSave, onClose, pr
               <div className="flex gap-2 mt-1">
                 <button
                   type="button"
-                  onClick={() => setForm(f => ({ ...f, item_type: 'service', unit: 'hourly' }))}
+                  onClick={() => setForm(f => ({ ...f, item_type: 'service', unit: 'hourly', category: 'Other', subcategory: 'Miscellaneous' }))}
                   className={`flex-1 py-2 rounded-lg border text-sm font-medium transition-colors ${
                     form.item_type === 'service' || !form.item_type
                       ? 'bg-blue-600 text-white border-blue-600'
@@ -104,7 +109,7 @@ function ItemFormModal({ editing, itemType, tree, companyId, onSave, onClose, pr
                 </button>
                 <button
                   type="button"
-                  onClick={() => setForm(f => ({ ...f, item_type: 'material', unit: 'each' }))}
+                  onClick={() => setForm(f => ({ ...f, item_type: 'material', unit: 'each', category: 'Other', subcategory: 'Miscellaneous' }))}
                   className={`flex-1 py-2 rounded-lg border text-sm font-medium transition-colors ${
                     form.item_type === 'material'
                       ? 'bg-blue-600 text-white border-blue-600'
@@ -123,7 +128,7 @@ function ItemFormModal({ editing, itemType, tree, companyId, onSave, onClose, pr
           <div className="grid grid-cols-2 gap-3">
             <div>
               <Label>Group</Label>
-              <Select value={form.category} onValueChange={v => setForm({ ...form, category: v, subcategory: tree[v]?.[0] || "" })}>
+              <Select value={form.category} onValueChange={v => setForm({ ...form, category: v, subcategory: activeTree[v]?.[0] || "" })}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {groups.map(g => <SelectItem key={g} value={g}>{g}</SelectItem>)}
