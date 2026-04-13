@@ -37,21 +37,9 @@ Deno.serve(async (req) => {
       owner_name: owner_name || '',
     });
 
-    await base44.users.inviteUser(owner_email, 'user');
-    await new Promise(resolve => setTimeout(resolve, 1500));
-
-    let newUserId = null;
-    try {
-      const users = await base44.asServiceRole.users.list();
-      const match = users.find(u => u.email === owner_email);
-      if (match) newUserId = match.id;
-    } catch (err) {
-      console.warn('Could not look up user_id:', err.message);
-    }
-
     await base44.asServiceRole.entities.UserCompanyAccess.create({
       user_email: owner_email,
-      user_id: newUserId,
+      user_id: null,
       company_id: company.id,
       role: 'admin',
       user_name: owner_name || '',
