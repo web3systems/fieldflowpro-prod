@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { ChevronDown, ChevronUp, Plus, Lock, MessageSquare, Send, User } from "lucide-react";
+import { ChevronDown, ChevronUp, Plus, Lock, MessageSquare, Send, User, Sparkles } from "lucide-react";
+import AIAssistantPanel from "@/components/ai/AIAssistantPanel";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { format } from "date-fns";
@@ -27,6 +28,7 @@ export default function JobNotesSection({ job, customer, onInternalNoteAdded, on
   const [customerNote, setCustomerNote] = useState("");
   const [savingInternal, setSavingInternal] = useState(false);
   const [savingCustomer, setSavingCustomer] = useState(false);
+  const [showAI, setShowAI] = useState(false);
 
   const internalLog = job?.internal_notes_log || [];
   const legacyNote = (!internalLog.length && job?.internal_notes)
@@ -66,8 +68,27 @@ export default function JobNotesSection({ job, customer, onInternalNoteAdded, on
     if (onCustomerNoteAdded) onCustomerNoteAdded(updated);
   }
 
+  async function handleAINote(noteText) {
+    if (!noteText) return;
+    setSavingInternal(true);
+    const user = await base44.auth.me();
+    const entry = { content: noteText, created_at: new Date().toISOString(), created_by: (user?.full_name || user?.email || "AI Assistant") + " (AI)" };
+    const updated = [...internalLog, entry];
+    await base44.entities.Job.update(job.id, { internal_notes_log: updated });
+    setSavingInternal(false);
+    if (onInternalNoteAdded) onInternalNoteAdded(updated);
+  }
+
   return (
     <>
+      {showAI && (
+        <AIAssistantPanel
+          mode="job_notes"
+          context={{ job, customer }}
+          onApplyNotes={handleAINote}
+          onClose={() => setShowAI(false)}
+        />
+      )}
       {/* Internal Notes */}
       <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
         <div className="flex items-center justify-between px-5 py-4 cursor-pointer hover:bg-slate-50" onClick={() => setInternalExpanded(!internalExpanded)}>
@@ -76,7 +97,12 @@ export default function JobNotesSection({ job, customer, onInternalNoteAdded, on
             <h3 className="font-semibold text-slate-800">Private notes</h3>
             <span className="text-xs text-slate-400">(not visible to customer)</span>
           </div>
+          <div className="flex items-center gap-2">
+            <button onClick={e => { e.stopPropagation(); setShowAI(true); }} className="flex items-center gap-1 text-xs text-violet-600 hover:text-violet-700 font-medium bg-violet-50 px-2.5 py-1 rounded-lg border border-violet-200">
+              <Sparkles className="w-3 h-3" /> AI Notes
+            </button>
           {internalExpanded ? <ChevronUp className="w-4 h-4 text-slate-400" /> : <ChevronDown className="w-4 h-4 text-slate-400" />}
+          </div>
         </div>
         {internalExpanded && (
           <div className="border-t border-slate-100 px-5 py-4 space-y-3">

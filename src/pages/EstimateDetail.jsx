@@ -1,12 +1,13 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import AIAssistantPanel from "@/components/ai/AIAssistantPanel";
 import { base44 } from "@/api/base44Client";
 import { useApp } from "../Layout";
 import { createPageUrl } from "@/utils";
 import {
   ArrowLeft, Download, Copy, CheckCircle, XCircle, Briefcase,
   Plus, Save, User, Calendar, DollarSign, FileText, Edit2, X,
-  Mail, Phone, MapPin
+  Mail, Phone, MapPin, Sparkles
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -63,6 +64,7 @@ export default function EstimateDetail() {
   const [activeOptionIdx, setActiveOptionIdx] = useState(0);
   const [sendingEmail, setSendingEmail] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
+  const [showAI, setShowAI] = useState(false);
 
   const normalizeLineItems = (items) => {
     return (items || []).map(item => ({ ...defaultItem, ...item }));
@@ -250,6 +252,12 @@ export default function EstimateDetail() {
     navigate(createPageUrl("Estimates"));
   }
 
+  function handleApplyAIEstimate(lineItems) {
+    if (!lineItems || lineItems.length === 0) return;
+    const opt = getOption();
+    recalcOption(lineItems, opt);
+  }
+
   function handleDownloadPdf() {
     const customer = customers.find(c => c.id === form.customer_id);
     downloadEstimatePdf({ ...form, id }, customer, activeCompany);
@@ -282,6 +290,14 @@ export default function EstimateDetail() {
 
   return (
     <div className="p-4 md:p-6 pb-24 lg:pb-6 max-w-7xl mx-auto">
+      {showAI && (
+        <AIAssistantPanel
+          mode="estimate"
+          context={{ estimate: form, customer: customers.find(c => c.id === form?.customer_id) }}
+          onApplyEstimate={handleApplyAIEstimate}
+          onClose={() => setShowAI(false)}
+        />
+      )}
       {/* Header */}
       <div className="flex items-center gap-3 mb-5">
         <Button variant="ghost" size="sm" onClick={() => navigate(createPageUrl("Estimates"))} className="gap-1 text-slate-500">
@@ -301,6 +317,9 @@ export default function EstimateDetail() {
           </div>
         </div>
         <div className="flex gap-2 flex-shrink-0">
+          <Button size="sm" onClick={() => setShowAI(true)} className="gap-1 text-xs bg-violet-600 hover:bg-violet-700">
+            <Sparkles className="w-3.5 h-3.5" /> AI Estimate
+          </Button>
           <Button size="sm" variant="outline" onClick={handleDownloadPdf} className="gap-1 text-xs hidden sm:flex">
             <Download className="w-3.5 h-3.5" /> PDF
           </Button>
