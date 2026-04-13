@@ -12,7 +12,8 @@ export default function ServicePicker({ companyId, onSelect }) {
 
   useEffect(() => {
     if (open && companyId) {
-      base44.entities.Service.filter({ company_id: companyId, is_active: true }).then(setServices);
+      base44.entities.Service.filter({ company_id: companyId, is_active: true })
+        .then(all => setServices(all.filter(s => s.item_type === 'service' || !s.item_type)));
     }
   }, [open, companyId]);
 

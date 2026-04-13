@@ -1,0 +1,61 @@
+{
+  "name": "Service",
+  "type": "object",
+  "properties": {
+    "company_id": {
+      "type": "string"
+    },
+    "item_type": {
+      "type": "string",
+      "enum": [
+        "service",
+        "material"
+      ],
+      "default": "service",
+      "description": "Whether this is a service or a material"
+    },
+    "name": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string",
+      "description": "Group/category within the price book (e.g. Lumber, Plumbing, Labor)"
+    },
+    "unit_price": {
+      "type": "number",
+      "default": 0
+    },
+    "unit": {
+      "type": "string",
+      "enum": [
+        "flat",
+        "hourly",
+        "per_sqft",
+        "per_unit",
+        "per_lb",
+        "per_ft",
+        "each"
+      ],
+      "default": "flat"
+    },
+    "sku": {
+      "type": "string",
+      "description": "Optional SKU or part number"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    },
+    "taxable": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "company_id",
+    "name"
+  ]
+}

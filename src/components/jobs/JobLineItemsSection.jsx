@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import PriceBookPicker from "@/components/services/PriceBookPicker";
 import { base44 } from "@/api/base44Client";
 import { Plus, ChevronDown, ChevronUp, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -10,6 +11,7 @@ const emptyItem = { description: "", quantity: 1, unit_price: 0, total: 0, categ
 export default function JobLineItemsSection({ form, setForm, companyId, onSave }) {
   const [services, setServices] = useState([]);
   const [expanded, setExpanded] = useState(true);
+  const [pickerType, setPickerType] = useState(null); // "service" | "material"
 
   useEffect(() => {
     if (companyId) {
@@ -74,8 +76,9 @@ export default function JobLineItemsSection({ form, setForm, companyId, onSave }
           </div>
 
           {/* Services */}
-          <div className="px-5 pt-3 pb-1">
+          <div className="px-5 pt-3 pb-1 flex items-center justify-between">
             <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Services</p>
+            <button onClick={() => setPickerType("service")} className="text-xs text-blue-600 hover:text-blue-700 font-medium">Service Price Book</button>
           </div>
           <div className="px-5 space-y-2 pb-2">
             {serviceItems.map(({ item, idx }) => (
@@ -98,8 +101,9 @@ export default function JobLineItemsSection({ form, setForm, companyId, onSave }
           </div>
 
           {/* Materials */}
-          <div className="px-5 pt-3 pb-1">
+          <div className="px-5 pt-3 pb-1 flex items-center justify-between">
             <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Materials</p>
+            <button onClick={() => setPickerType("material")} className="text-xs text-blue-600 hover:text-blue-700 font-medium">Material Price Book</button>
           </div>
           <div className="px-5 space-y-2 pb-2">
             {materialItems.map(({ item, idx }) => (
@@ -159,6 +163,24 @@ export default function JobLineItemsSection({ form, setForm, companyId, onSave }
             </Button>
           </div>
         </div>
+      )}
+
+      {pickerType && (
+        <PriceBookPicker
+          companyId={companyId}
+          itemType={pickerType}
+          onSelect={item => {
+            addItem(pickerType);
+            // Replace last item with the picked one
+            setForm(f => {
+              const items = [...(f.line_items || [])];
+              items[items.length - 1] = { ...item, category: pickerType };
+              const subtotal = items.reduce((s, i) => s + (i.total || 0), 0);
+              return { ...f, line_items: items, total_amount: subtotal };
+            });
+          }}
+          onClose={() => setPickerType(null)}
+        />
       )}
     </div>
   );
