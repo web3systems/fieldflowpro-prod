@@ -45,6 +45,14 @@ Deno.serve(async (req) => {
       user_name: owner_name || '',
     });
 
+    // Invite the user with admin role so they get proper platform access
+    try {
+      await base44.asServiceRole.users.inviteUser(owner_email, 'admin');
+    } catch (inviteErr) {
+      // User may already exist — not a fatal error
+      console.warn('inviteUser warning:', inviteErr.message);
+    }
+
     return Response.json({ success: true, company_id: company.id });
 
   } catch (error) {
