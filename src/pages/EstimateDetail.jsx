@@ -154,9 +154,9 @@ export default function EstimateDetail() {
     recalcOption(items, opt);
   }
 
-  function addItem() {
+  function addItem(category = "labor") {
     const opt = getOption();
-    const items = [...opt.line_items, { ...defaultItem }];
+    const items = [...opt.line_items, { ...defaultItem, category }];
     updateOption({ ...opt, line_items: items });
   }
 
@@ -613,7 +613,7 @@ export default function EstimateDetail() {
                     <h3 className="text-sm font-semibold text-slate-700">Materials</h3>
                     <div className="flex items-center gap-2">
                       <ServicePicker companyId={activeCompany?.id} onSelect={addServiceAsItem} category="materials" />
-                      <Button variant="outline" size="sm" onClick={addItem} className="gap-1 text-xs"><Plus className="w-3 h-3" /> Add</Button>
+                      <Button variant="outline" size="sm" onClick={() => addItem("materials")} className="gap-1 text-xs"><Plus className="w-3 h-3" /> Add</Button>
                     </div>
                   </div>
 
