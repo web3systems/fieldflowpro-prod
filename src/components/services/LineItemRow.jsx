@@ -44,9 +44,10 @@ export default function LineItemRow({ item, idx, companyId, services = [], onSer
   }
 
   const serviceExists = item.service_id && services.some(s => s.id === item.service_id);
-  // If service_id is set but not in the list yet (services still loading), keep showing the id
-  // so the select doesn't flash to __custom__ while services load
-  const selectValue = item.service_id ? item.service_id : "__custom__";
+  // Only show the service_id if services have actually loaded (list is non-empty)
+  // This prevents flashing to __custom__ while services are still loading
+  const servicesLoaded = services.length > 0;
+  const selectValue = (item.service_id && (!servicesLoaded || serviceExists)) ? item.service_id : "__custom__";
 
   const laborServices = useMemo(() => services.filter(s => s.category === "Labor" || s.category === "labor"), [services]);
   const materialServices = useMemo(() => services.filter(s => s.category === "Materials" || s.category === "materials"), [services]);

@@ -212,6 +212,8 @@ export default function EstimateDetail() {
       status: "new",
       total_amount: opt?.total || form.total,
       service_type: "",
+      line_items: opt?.line_items || [],
+      tax_rate: opt?.tax_rate || 0,
     });
     setApproving(false);
     navigate(createPageUrl("Jobs"));
