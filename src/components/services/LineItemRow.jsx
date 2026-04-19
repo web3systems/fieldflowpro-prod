@@ -44,10 +44,9 @@ export default function LineItemRow({ item, idx, companyId, services = [], onSer
   }
 
   const serviceExists = item.service_id && services.some(s => s.id === item.service_id);
-  // Only show the service_id if services have actually loaded (list is non-empty)
-  // This prevents flashing to __custom__ while services are still loading
-  const servicesLoaded = services.length > 0;
-  const selectValue = (item.service_id && (!servicesLoaded || serviceExists)) ? item.service_id : "__custom__";
+  // If a service_id is set, always show it — never revert to __custom__
+  // The hidden SelectItem below ensures the select renders correctly even if the service isn't in the list
+  const selectValue = item.service_id ? item.service_id : "__custom__";
 
   const laborServices = useMemo(() => services.filter(s => s.category === "Labor" || s.category === "labor"), [services]);
   const materialServices = useMemo(() => services.filter(s => s.category === "Materials" || s.category === "materials"), [services]);
@@ -71,8 +70,8 @@ export default function LineItemRow({ item, idx, companyId, services = [], onSer
             <SelectContent>
               <SelectItem value="__add_new__" className="text-blue-600 font-medium">+ Add New Service</SelectItem>
               <SelectItem value="__custom__">-- Custom --</SelectItem>
-              {/* Hidden option keeps the select valid when service_id is set but not yet in the list */}
-              {item.service_id && !serviceExists && (
+              {/* Ensures the select always has a valid matching option when service_id is set */}
+              {item.service_id && (
                 <SelectItem value={item.service_id} className="hidden">{item.description || item.service_id}</SelectItem>
               )}
               {laborServices.length > 0 && (
@@ -101,7 +100,7 @@ export default function LineItemRow({ item, idx, companyId, services = [], onSer
               )}
             </SelectContent>
           </Select>
-          {(!item.service_id || !serviceExists) && (
+          {!item.service_id && (
             <Input
               value={item.description}
               onChange={e => onUpdate(idx, "description", e.target.value)}
