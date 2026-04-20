@@ -48,9 +48,16 @@ export default function LineItemRow({ item, idx, companyId, services = [], onSer
   // The hidden SelectItem below ensures the select renders correctly even if the service isn't in the list
   const selectValue = item.service_id ? item.service_id : "__custom__";
 
+  const isMaterialRow = item.category === "materials";
+
   const laborServices = useMemo(() => services.filter(s => s.category === "Labor" || s.category === "labor"), [services]);
   const materialServices = useMemo(() => services.filter(s => s.category === "Materials" || s.category === "materials"), [services]);
   const otherServices = useMemo(() => services.filter(s => !["Labor", "labor", "Materials", "materials"].includes(s.category)), [services]);
+
+  // Only show relevant services based on the row's category
+  const visibleLabor = isMaterialRow ? [] : laborServices;
+  const visibleMaterials = isMaterialRow ? materialServices : [];
+  const visibleOther = isMaterialRow ? [] : otherServices;
 
   return (
     <>
@@ -74,26 +81,26 @@ export default function LineItemRow({ item, idx, companyId, services = [], onSer
               {item.service_id && (
                 <SelectItem value={item.service_id} className="hidden">{item.description || item.service_id}</SelectItem>
               )}
-              {laborServices.length > 0 && (
+              {visibleLabor.length > 0 && (
                 <SelectGroup>
                   <SelectLabel>Labor</SelectLabel>
-                  {laborServices.map(svc => (
+                  {visibleLabor.map(svc => (
                     <SelectItem key={svc.id} value={svc.id}>{svc.name}</SelectItem>
                   ))}
                 </SelectGroup>
               )}
-              {materialServices.length > 0 && (
+              {visibleMaterials.length > 0 && (
                 <SelectGroup>
                   <SelectLabel>Materials</SelectLabel>
-                  {materialServices.map(svc => (
+                  {visibleMaterials.map(svc => (
                     <SelectItem key={svc.id} value={svc.id}>{svc.name}</SelectItem>
                   ))}
                 </SelectGroup>
               )}
-              {otherServices.length > 0 && (
+              {visibleOther.length > 0 && (
                 <SelectGroup>
                   <SelectLabel>Other</SelectLabel>
-                  {otherServices.map(svc => (
+                  {visibleOther.map(svc => (
                     <SelectItem key={svc.id} value={svc.id}>{svc.name}</SelectItem>
                   ))}
                 </SelectGroup>
