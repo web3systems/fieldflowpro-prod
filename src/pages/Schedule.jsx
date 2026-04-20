@@ -1,6 +1,8 @@
 import { useState, useEffect, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { useApp } from "../Layout";
+import { useNavigate } from "react-router-dom";
+import { createPageUrl } from "@/utils";
 import { Calendar, momentLocalizer, Views } from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
@@ -42,6 +44,7 @@ function convertTimeTo24(time12h) {
 
 export default function Schedule() {
   const { activeCompany } = useApp();
+  const navigate = useNavigate();
   const [jobs, setJobs] = useState([]);
   const [customers, setCustomers] = useState([]);
   const [techs, setTechs] = useState([]);
@@ -111,9 +114,7 @@ export default function Schedule() {
 
   function handleSelectEvent(event) {
     const job = event.resource;
-    setEditing(job);
-    setForm({ ...defaultJob, ...job, assigned_techs: job.assigned_techs || [] });
-    setSheetOpen(true);
+    navigate(`/JobDetail/${job.id}`);
   }
 
   function handleSelectSlot(slot) {
@@ -188,7 +189,7 @@ export default function Schedule() {
     }));
   };
 
-  const navigate = (direction) => {
+  const navigateCalendar = (direction) => {
     const unit = view === Views.MONTH ? 'month' : view === Views.WEEK ? 'week' : 'day';
     setDate(d => moment(d).add(direction, unit).toDate());
   };
@@ -245,8 +246,8 @@ export default function Schedule() {
         <div className="flex items-center justify-between mb-3 flex-wrap gap-2 flex-shrink-0">
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" className="h-8" onClick={() => setDate(new Date())}>Today</Button>
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigate(-1)}><ChevronLeft className="w-4 h-4" /></Button>
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigate(1)}><ChevronRight className="w-4 h-4" /></Button>
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigateCalendar(-1)}><ChevronLeft className="w-4 h-4" /></Button>
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigateCalendar(1)}><ChevronRight className="w-4 h-4" /></Button>
             <h2 className="text-base font-semibold text-slate-800">{dateLabel()}</h2>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
