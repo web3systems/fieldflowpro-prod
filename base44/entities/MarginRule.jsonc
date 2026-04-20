@@ -1,0 +1,39 @@
+{
+  "name": "MarginRule",
+  "type": "object",
+  "properties": {
+    "company_id": {
+      "type": "string"
+    },
+    "min_markup_pct": {
+      "type": "number",
+      "default": 30,
+      "description": "Default minimum markup % over cost for all items"
+    },
+    "labor_markup_pct": {
+      "type": "number",
+      "description": "Override markup % for labor items (leave blank to use default)"
+    },
+    "materials_markup_pct": {
+      "type": "number",
+      "description": "Override markup % for material items (leave blank to use default)"
+    },
+    "min_total_amount": {
+      "type": "number",
+      "default": 0,
+      "description": "Minimum total dollar amount for an estimate to be valid"
+    },
+    "auto_approve": {
+      "type": "boolean",
+      "default": false,
+      "description": "If true, estimates that pass margin review are auto-approved for sending without manual review"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Internal notes about these rules"
+    }
+  },
+  "required": [
+    "company_id"
+  ]
+}

@@ -21,6 +21,7 @@ import LineItemRow from "@/components/services/LineItemRow";
 import ServicePicker from "@/components/services/ServicePicker";
 import { downloadEstimatePdf } from "../components/documents/generatePdf";
 import InvoiceEstimatePreview from "@/components/documents/InvoiceEstimatePreview";
+import EstimateMarginReview from "@/components/estimates/EstimateMarginReview";
 
 const STATUS_STYLES = {
   draft: "bg-gray-100 text-gray-600",
@@ -448,10 +449,12 @@ export default function EstimateDetail() {
                     <CheckCircle className="w-4 h-4" />
                     {approving ? "Creating Job..." : "Approve & Create Job"}
                   </Button>
-                  <div className="space-y-2 pt-2 border-t border-slate-200">
-                    <Button onClick={handleSendEmail} disabled={sendingEmail} variant="outline" className="w-full gap-2 border-blue-200 text-blue-600 hover:bg-blue-50">
-                      <Mail className="w-4 h-4" /> {sendingEmail ? "Sending..." : "Send via Email"}
-                    </Button>
+                  <div className="pt-2 border-t border-slate-200">
+                    <EstimateMarginReview
+                      estimate={form}
+                      company={activeCompany}
+                      onApprovedForSending={handleSendEmail}
+                    />
                   </div>
                 </>
               )}
