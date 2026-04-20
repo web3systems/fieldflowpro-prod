@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { useApp } from "../Layout";
 import { createPageUrl } from "@/utils";
-import { ArrowLeft, Briefcase, Star, CreditCard, FileText, Phone, Mail, MapPin, ExternalLink } from "lucide-react";
+import { ArrowLeft, Briefcase, Star, CreditCard, FileText, Phone, Mail, MapPin, ExternalLink, ChevronRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
@@ -55,6 +55,7 @@ export default function JobDetail() {
   const [form, setForm] = useState(defaultJob);
   const [showInvoicePrompt, setShowInvoicePrompt] = useState(false);
   const [existingInvoices, setExistingInvoices] = useState([]);
+  const [linkedEstimate, setLinkedEstimate] = useState(null);
   const [showAttachModal, setShowAttachModal] = useState(false);
   const { toast } = useToast();
 
@@ -65,10 +66,15 @@ export default function JobDetail() {
       activeCompany ? base44.entities.Technician.filter({ company_id: activeCompany.id }) : Promise.resolve([]),
     ]);
     if (jobs.length > 0) {
-      setJob(jobs[0]);
-      setForm({ ...defaultJob, ...jobs[0] });
+      const j = jobs[0];
+      setJob(j);
+      setForm({ ...defaultJob, ...j });
       const invs = await base44.entities.Invoice.filter({ job_id: id });
       setExistingInvoices(invs);
+      if (j.estimate_id) {
+        const ests = await base44.entities.Estimate.filter({ id: j.estimate_id });
+        if (ests[0]) setLinkedEstimate(ests[0]);
+      }
     }
     setCustomers(c);
     setTechs(t);
@@ -291,19 +297,31 @@ export default function JobDetail() {
           {/* Estimate Section */}
           {job?.estimate_id && (
             <div className="bg-white border border-slate-200 rounded-xl p-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <FileText className="w-4 h-4 text-purple-500" />
-                  <h3 className="text-sm font-semibold text-slate-700">Estimate</h3>
-                </div>
-                <Link
-                  to={`/EstimateDetail/${job.estimate_id}`}
-                  className="flex items-center gap-1 text-xs text-blue-600 hover:underline font-medium"
-                >
-                  View Estimate <ExternalLink className="w-3 h-3" />
-                </Link>
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-semibold text-slate-700 flex items-center gap-1.5">
+                  <FileText className="w-4 h-4 text-slate-500" /> Estimate
+                </h3>
               </div>
-              <p className="text-xs text-slate-500 mt-1">This job was created from an estimate.</p>
+              {linkedEstimate ? (
+                <div
+                  onClick={() => navigate(`/EstimateDetail/${linkedEstimate.id}`)}
+                  className="flex items-center justify-between p-2.5 rounded-lg border border-slate-100 hover:bg-slate-50 cursor-pointer"
+                >
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-slate-800 truncate">{linkedEstimate.title || linkedEstimate.estimate_number || "Estimate"}</p>
+                    <p className="text-xs text-slate-400">{format(new Date(linkedEstimate.created_date), "MMM d, yyyy")}</p>
+                  </div>
+                  <div className="flex items-center gap-2 ml-2">
+                    <Badge className={`text-xs ${linkedEstimate.status === "approved" ? "bg-green-100 text-green-700" : linkedEstimate.status === "declined" ? "bg-red-100 text-red-700" : linkedEstimate.status === "sent" ? "bg-blue-100 text-blue-700" : "bg-gray-100 text-gray-600"}`}>
+                      {linkedEstimate.status}
+                    </Badge>
+                    {linkedEstimate.total > 0 && <span className="text-xs font-semibold text-slate-700">${linkedEstimate.total.toLocaleString()}</span>}
+                    <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
+                  </div>
+                </div>
+              ) : (
+                <p className="text-sm text-slate-400 text-center py-2">Loading estimate...</p>
+              )}
             </div>
           )}
 
