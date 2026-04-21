@@ -21,6 +21,7 @@ import JobPhotosSection from "@/components/jobs/JobPhotosSection";
 import JobCostingSection from "@/components/jobs/JobCostingSection";
 import JobActivityFeed from "@/components/jobs/JobActivityFeed";
 import AttachDocumentModal from "@/components/jobs/AttachDocumentModal";
+import DepositRequestModal from "@/components/jobs/DepositRequestModal";
 
 const STATUS_COLORS = {
   new: "bg-blue-100 text-blue-700 border-blue-200",
@@ -57,6 +58,7 @@ export default function JobDetail() {
   const [existingInvoices, setExistingInvoices] = useState([]);
   const [linkedEstimate, setLinkedEstimate] = useState(null);
   const [showAttachModal, setShowAttachModal] = useState(false);
+  const [showDepositModal, setShowDepositModal] = useState(false);
   const { toast } = useToast();
 
   const loadData = useCallback(async () => {
@@ -229,6 +231,19 @@ export default function JobDetail() {
         }}
       />
 
+      {/* Deposit Modal */}
+      {showDepositModal && (
+        <DepositRequestModal
+          job={job}
+          jobTotal={form.total_amount || linkedEstimate?.total || 0}
+          onClose={() => setShowDepositModal(false)}
+          onDeposited={(inv) => {
+            setExistingInvoices(prev => [...prev, inv]);
+            toast({ title: `Deposit of $${inv.total.toFixed(2)} recorded!` });
+          }}
+        />
+      )}
+
       {/* Invoice prompt banner */}
       {showInvoicePrompt && (
         <div className="mb-5 flex items-center justify-between gap-4 bg-green-50 border border-green-200 rounded-xl px-5 py-4">
@@ -301,6 +316,9 @@ export default function JobDetail() {
                 <h3 className="text-sm font-semibold text-slate-700 flex items-center gap-1.5">
                   <FileText className="w-4 h-4 text-slate-500" /> Estimate
                 </h3>
+                <Button size="sm" variant="outline" className="gap-1 text-xs text-green-700 border-green-300 hover:bg-green-50" onClick={() => setShowDepositModal(true)}>
+                  <CreditCard className="w-3 h-3" /> Request Deposit
+                </Button>
               </div>
               {linkedEstimate ? (
                 <div
