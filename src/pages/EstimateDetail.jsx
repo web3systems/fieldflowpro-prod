@@ -442,6 +442,10 @@ export default function EstimateDetail() {
 
               {canAct && (
                 <>
+                  <Button onClick={handleSendEmail} disabled={sendingEmail} className="w-full gap-2 bg-blue-600 hover:bg-blue-700">
+                    <Mail className="w-4 h-4" />
+                    {sendingEmail ? "Sending..." : "Email to Customer"}
+                  </Button>
                   <Button onClick={handleDecline} variant="outline" className="w-full gap-2 border-red-200 text-red-600 hover:bg-red-50">
                     <XCircle className="w-4 h-4" /> Decline
                   </Button>
@@ -502,9 +506,14 @@ export default function EstimateDetail() {
               </CardContent>
             </Card>
             {canAct && (
-              <div className="flex gap-2">
-                <Button onClick={handleDecline} variant="outline" className="flex-1 gap-2 border-red-200 text-red-600 hover:bg-red-50"><XCircle className="w-4 h-4" /> Decline</Button>
-                <Button onClick={handleApprove} disabled={approving} className="flex-1 gap-2 bg-green-600 hover:bg-green-700"><CheckCircle className="w-4 h-4" />{approving ? "..." : "Approve"}</Button>
+              <div className="flex flex-col gap-2">
+                <Button onClick={handleSendEmail} disabled={sendingEmail} className="w-full gap-2 bg-blue-600 hover:bg-blue-700">
+                  <Mail className="w-4 h-4" />{sendingEmail ? "Sending..." : "Email to Customer"}
+                </Button>
+                <div className="flex gap-2">
+                  <Button onClick={handleDecline} variant="outline" className="flex-1 gap-2 border-red-200 text-red-600 hover:bg-red-50"><XCircle className="w-4 h-4" /> Decline</Button>
+                  <Button onClick={handleApprove} disabled={approving} className="flex-1 gap-2 bg-green-600 hover:bg-green-700"><CheckCircle className="w-4 h-4" />{approving ? "..." : "Approve"}</Button>
+                </div>
               </div>
             )}
           </div>
