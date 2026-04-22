@@ -695,6 +695,9 @@ export default function EstimateDetail() {
           )}
 
           <div className="flex justify-end gap-2">
+            <Button onClick={handleSendEmail} disabled={sendingEmail} variant="outline" className="gap-2">
+              <Mail className="w-4 h-4" />{sendingEmail ? "Sending..." : "Email to Customer"}
+            </Button>
             <Button onClick={handleSave} disabled={saving} className="gap-2 bg-blue-600 hover:bg-blue-700">
               <Save className="w-4 h-4" />{saving ? "Saving..." : "Save Changes"}
             </Button>
