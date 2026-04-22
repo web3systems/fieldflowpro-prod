@@ -243,6 +243,13 @@ export default function Estimates() {
     await loadData();
   }
 
+  async function handleDelete(est, e) {
+    e.stopPropagation();
+    if (!window.confirm(`Delete estimate "${est.title}"? This cannot be undone.`)) return;
+    await base44.entities.Estimate.delete(est.id);
+    setEstimates(prev => prev.filter(x => x.id !== est.id));
+  }
+
   const filtered = estimates.filter(e =>
     !search || e.title?.toLowerCase().includes(search.toLowerCase())
   );
@@ -310,6 +317,12 @@ export default function Estimates() {
                   </div>
                   <div className="flex items-center gap-3 flex-shrink-0">
                     <span className="text-base font-bold text-slate-800">${(est.total || 0).toLocaleString()}</span>
+                    <button
+                      onClick={(e) => handleDelete(est, e)}
+                      className="p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
                     <ChevronRight className="w-4 h-4 text-slate-400" />
                   </div>
                 </div>
