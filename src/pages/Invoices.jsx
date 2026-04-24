@@ -5,8 +5,9 @@ import { useApp } from "../Layout";
 import {
   Plus, DollarSign, Search, ChevronRight, CheckCircle,
   Clock, AlertCircle, CreditCard, ExternalLink,
-  Download, Mail, X
+  Download, Mail, X, Banknote
 } from "lucide-react";
+import RecordPaymentModal from "@/components/invoices/RecordPaymentModal";
 import { downloadInvoicePdf } from "../components/documents/generatePdf";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -54,6 +55,7 @@ export default function Invoices() {
   const [saving, setSaving] = useState(false);
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [sendingEmail, setSendingEmail] = useState(false);
+  const [recordPaymentInvoice, setRecordPaymentInvoice] = useState(null);
 
   useEffect(() => {
     if (activeCompany) loadData();
@@ -334,7 +336,21 @@ export default function Invoices() {
                       {inv.amount_paid > 0 && inv.amount_paid < inv.total && (
                         <p className="text-xs text-slate-400">${inv.amount_paid} paid</p>
                       )}
+                      {inv.status === "paid" && (
+                        <span className="inline-flex items-center gap-0.5 text-xs text-green-600 font-medium mt-0.5">
+                          <CheckCircle className="w-3 h-3" /> Paid
+                        </span>
+                      )}
                     </div>
+                    {!["paid", "void"].includes(inv.status) && (
+                      <button
+                        onClick={e => { e.stopPropagation(); setRecordPaymentInvoice(inv); }}
+                        className="p-1.5 text-slate-300 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors flex-shrink-0"
+                        title="Record payment"
+                      >
+                        <Banknote className="w-4 h-4" />
+                      </button>
+                    )}
                     <ChevronRight className="w-4 h-4 text-slate-400 flex-shrink-0" />
                   </div>
                 </CardContent>
@@ -342,6 +358,14 @@ export default function Invoices() {
             );
           })}
         </div>
+      )}
+
+      {recordPaymentInvoice && (
+        <RecordPaymentModal
+          invoice={recordPaymentInvoice}
+          onClose={() => setRecordPaymentInvoice(null)}
+          onSaved={() => { setRecordPaymentInvoice(null); loadData(); }}
+        />
       )}
 
       {sheetOpen && (
@@ -524,8 +548,8 @@ export default function Invoices() {
             )}
 
             {editing && !["paid", "void"].includes(form.status) && (
-              <div className="border-t pt-4">
-                <p className="text-xs text-slate-500 mb-2 font-medium">Collect Payment</p>
+              <div className="border-t pt-4 space-y-2">
+                <p className="text-xs text-slate-500 font-medium">Collect Payment</p>
                 <Button
                   onClick={handleStripePayment}
                   disabled={paymentLoading}
@@ -535,7 +559,26 @@ export default function Invoices() {
                   {paymentLoading ? "Redirecting..." : `Pay $${((form.total || 0) - (form.amount_paid || 0)).toFixed(2)} via Stripe`}
                   <ExternalLink className="w-3.5 h-3.5 ml-auto" />
                 </Button>
-                <p className="text-xs text-slate-400 mt-1.5 text-center">Customer will be redirected to a secure Stripe checkout page</p>
+                <Button
+                  variant="outline"
+                  onClick={() => setRecordPaymentInvoice(editing)}
+                  className="w-full gap-2 border-green-200 text-green-700 hover:bg-green-50"
+                >
+                  <Banknote className="w-4 h-4" />
+                  Record Manual Payment
+                </Button>
+                <p className="text-xs text-slate-400 text-center">Cash, check, Zelle, or any other method</p>
+              </div>
+            )}
+            {editing && form.status === "paid" && (
+              <div className="border-t pt-4">
+                <div className="flex items-center gap-2 p-3 bg-green-50 rounded-lg text-green-700">
+                  <CheckCircle className="w-4 h-4 flex-shrink-0" />
+                  <div>
+                    <p className="text-sm font-medium">Paid in full</p>
+                    {form.paid_date && <p className="text-xs text-green-600">{format(new Date(form.paid_date), "MMM d, yyyy")} · {form.payment_method || ""}</p>}
+                  </div>
+                </div>
               </div>
             )}
 

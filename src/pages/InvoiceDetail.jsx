@@ -6,8 +6,9 @@ import { createPageUrl } from "@/utils";
 import {
   ArrowLeft, DollarSign, User, Calendar, CreditCard, Mail,
   Download, Save, Edit2, Plus, Trash2, CheckCircle, AlertCircle, Clock, ExternalLink,
-  Phone, MapPin
+  Phone, MapPin, Banknote
 } from "lucide-react";
+import RecordPaymentModal from "@/components/invoices/RecordPaymentModal";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -51,6 +52,7 @@ export default function InvoiceDetail() {
   const [form, setForm] = useState(defaultForm);
   const [editingInfo, setEditingInfo] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
+  const [showRecordPayment, setShowRecordPayment] = useState(false);
 
   const loadData = useCallback(async () => {
     const [invs, c] = await Promise.all([
@@ -170,6 +172,13 @@ export default function InvoiceDetail() {
 
   return (
     <div className="p-4 md:p-6 pb-24 lg:pb-6 max-w-7xl mx-auto">
+      {showRecordPayment && invoice && (
+        <RecordPaymentModal
+          invoice={invoice}
+          onClose={() => setShowRecordPayment(false)}
+          onSaved={() => { setShowRecordPayment(false); loadData(); }}
+        />
+      )}
       {/* Header */}
       <div className="flex items-center gap-3 mb-5">
         <Button variant="ghost" size="sm" onClick={() => navigate(createPageUrl("Invoices"))} className="gap-1 text-slate-500">
@@ -275,8 +284,20 @@ export default function InvoiceDetail() {
                     {paymentLoading ? "Redirecting..." : `Pay $${amountDue.toFixed(2)} via Stripe`}
                     <ExternalLink className="w-3.5 h-3.5 ml-auto" />
                   </Button>
-                  <p className="text-xs text-slate-400 text-center">Customer redirected to secure Stripe checkout</p>
+                  <Button variant="outline" onClick={() => setShowRecordPayment(true)} className="w-full gap-2 border-green-200 text-green-700 hover:bg-green-50">
+                    <Banknote className="w-4 h-4" /> Record Manual Payment
+                  </Button>
+                  <p className="text-xs text-slate-400 text-center">Cash, check, Zelle, or any other method</p>
                 </>
+              )}
+              {form.status === "paid" && (
+                <div className="flex items-center gap-2 p-3 bg-green-50 rounded-lg text-green-700">
+                  <CheckCircle className="w-4 h-4 flex-shrink-0" />
+                  <div>
+                    <p className="text-sm font-medium">Paid in full</p>
+                    {form.paid_date && <p className="text-xs text-green-600">{format(new Date(form.paid_date), "MMM d, yyyy")} · {form.payment_method || ""}</p>}
+                  </div>
+                </div>
               )}
               {customer?.email && (
                 <Button variant="outline" onClick={handleSendEmail} disabled={sendingEmail} className="w-full gap-2 border-blue-200 text-blue-600 hover:bg-blue-50">
@@ -333,10 +354,21 @@ export default function InvoiceDetail() {
                   <span className="font-bold text-slate-900">${(form.total || 0).toLocaleString()}</span>
                 </div>
                 {canPay && (
-                  <Button onClick={handleStripePayment} disabled={paymentLoading} className="w-full gap-2 bg-violet-600 hover:bg-violet-700 mt-1">
-                    <CreditCard className="w-4 h-4" />
-                    {paymentLoading ? "Redirecting..." : `Pay $${amountDue.toFixed(2)} via Stripe`}
-                  </Button>
+                  <>
+                    <Button onClick={handleStripePayment} disabled={paymentLoading} className="w-full gap-2 bg-violet-600 hover:bg-violet-700 mt-1">
+                      <CreditCard className="w-4 h-4" />
+                      {paymentLoading ? "Redirecting..." : `Pay $${amountDue.toFixed(2)} via Stripe`}
+                    </Button>
+                    <Button variant="outline" onClick={() => setShowRecordPayment(true)} className="w-full gap-2 border-green-200 text-green-700 hover:bg-green-50 mt-1">
+                      <Banknote className="w-4 h-4" /> Record Manual Payment
+                    </Button>
+                  </>
+                )}
+                {form.status === "paid" && (
+                  <div className="flex items-center gap-2 p-2 bg-green-50 rounded-lg text-green-700 mt-1">
+                    <CheckCircle className="w-4 h-4 flex-shrink-0" />
+                    <p className="text-sm font-medium">Paid in full {form.paid_date ? `· ${format(new Date(form.paid_date), "MMM d")}` : ""}</p>
+                  </div>
                 )}
                 {customer?.email && (
                   <Button variant="outline" onClick={handleSendEmail} disabled={sendingEmail} className="w-full gap-2 border-blue-200 text-blue-600 hover:bg-blue-50 mt-1">
