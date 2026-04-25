@@ -698,7 +698,7 @@ export default function Jobs() {
                           <Select value="" onValueChange={v => selectServiceForItem(realIdx, v)}>
                             <SelectTrigger className="flex-1 h-8 text-xs"><SelectValue placeholder={item.description || "Select service"} /></SelectTrigger>
                             <SelectContent>
-                              {services.filter(s => s.category !== "Materials").map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
+                                {services.filter(s => s.item_type === "service" || !s.item_type).map(s => <SelectItem key={s.id} value={s.id}>{s.name} {s.unit_price > 0 ? `— $${s.unit_price.toFixed(2)}` : ""}</SelectItem>)}
                             </SelectContent>
                           </Select>
                           <Input type="number" value={item.quantity} onChange={e => updateLineItem(realIdx, "quantity", e.target.value)} className="w-14 h-8 text-xs" placeholder="Qty" />
@@ -726,7 +726,7 @@ export default function Jobs() {
                           <Select value="" onValueChange={v => selectServiceForItem(realIdx, v)}>
                             <SelectTrigger className="flex-1 h-8 text-xs"><SelectValue placeholder={item.description || "Select material"} /></SelectTrigger>
                             <SelectContent>
-                              {services.filter(s => s.category === "Materials").map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
+                                {services.filter(s => s.item_type === "material").map(s => <SelectItem key={s.id} value={s.id}>{s.name} {s.unit_price > 0 ? `— $${s.unit_price.toFixed(2)}` : ""}</SelectItem>)}
                             </SelectContent>
                           </Select>
                           <Input type="number" value={item.quantity} onChange={e => updateLineItem(realIdx, "quantity", e.target.value)} className="w-14 h-8 text-xs" placeholder="Qty" />

@@ -9,7 +9,6 @@ export default function LineItemRow({ item, idx, companyId, services = [], onSer
 
   function handleCreated(svc) {
     if (onServicesUpdate) onServicesUpdate(svc);
-    // Update all fields at once to avoid stale state issues
     onUpdate(idx, null, {
       ...item,
       service_id: svc.id,
@@ -43,21 +42,33 @@ export default function LineItemRow({ item, idx, companyId, services = [], onSer
     }
   }
 
-  const serviceExists = item.service_id && services.some(s => s.id === item.service_id);
-  // If a service_id is set, always show it — never revert to __custom__
-  // The hidden SelectItem below ensures the select renders correctly even if the service isn't in the list
   const selectValue = item.service_id ? item.service_id : "__custom__";
+  // Support both 'category' (invoices/jobs) and '_category' (estimates) for material detection
+  const isMaterialRow = item.category === "materials" || item._category === "Materials";
 
-  const isMaterialRow = item.category === "materials";
+  // Group all services by item_type then category — mirrors the price book structure
+  const { serviceGroups, materialGroups } = useMemo(() => {
+    const svcItems = services.filter(s => s.item_type === "service" || !s.item_type);
+    const matItems = services.filter(s => s.item_type === "material");
 
-  const laborServices = useMemo(() => services.filter(s => s.category === "Labor" || s.category === "labor"), [services]);
-  const materialServices = useMemo(() => services.filter(s => s.category === "Materials" || s.category === "materials"), [services]);
-  const otherServices = useMemo(() => services.filter(s => !["Labor", "labor", "Materials", "materials"].includes(s.category)), [services]);
+    function groupByCategory(items) {
+      const map = {};
+      items.forEach(s => {
+        const cat = s.category || "Other";
+        if (!map[cat]) map[cat] = [];
+        map[cat].push(s);
+      });
+      return map;
+    }
 
-  // Only show relevant services based on the row's category
-  const visibleLabor = isMaterialRow ? [] : laborServices;
-  const visibleMaterials = isMaterialRow ? materialServices : [];
-  const visibleOther = isMaterialRow ? [] : otherServices;
+    return {
+      serviceGroups: groupByCategory(svcItems),
+      materialGroups: groupByCategory(matItems),
+    };
+  }, [services]);
+
+  // For material rows show materials; for service rows show services
+  const groupsToShow = isMaterialRow ? materialGroups : serviceGroups;
 
   return (
     <>
@@ -72,39 +83,26 @@ export default function LineItemRow({ item, idx, companyId, services = [], onSer
         <div className="col-span-5 space-y-1">
           <Select value={selectValue} onValueChange={handleServiceSelect}>
             <SelectTrigger className="bg-white text-sm h-9">
-              <SelectValue placeholder="Select a service..." />
+              <SelectValue placeholder="Select from price book..." />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="__add_new__" className="text-blue-600 font-medium">+ Add New Service</SelectItem>
-              <SelectItem value="__custom__">-- Custom --</SelectItem>
-              {/* Ensures the select always has a valid matching option when service_id is set */}
-              {item.service_id && (
+              <SelectItem value="__add_new__" className="text-blue-600 font-medium">+ Add to Price Book</SelectItem>
+              <SelectItem value="__custom__">-- Custom / Manual --</SelectItem>
+              {/* Ensures the select always renders the current value even if service is no longer in list */}
+              {item.service_id && !services.some(s => s.id === item.service_id) && (
                 <SelectItem value={item.service_id} className="hidden">{item.description || item.service_id}</SelectItem>
               )}
-              {visibleLabor.length > 0 && (
-                <SelectGroup>
-                  <SelectLabel>Labor</SelectLabel>
-                  {visibleLabor.map(svc => (
-                    <SelectItem key={svc.id} value={svc.id}>{svc.name}</SelectItem>
+              {Object.entries(groupsToShow).map(([cat, items]) => (
+                <SelectGroup key={cat}>
+                  <SelectLabel>{cat}</SelectLabel>
+                  {items.map(svc => (
+                    <SelectItem key={svc.id} value={svc.id}>
+                      {svc.name}
+                      {svc.unit_price > 0 ? ` — $${svc.unit_price.toFixed(2)}` : ""}
+                    </SelectItem>
                   ))}
                 </SelectGroup>
-              )}
-              {visibleMaterials.length > 0 && (
-                <SelectGroup>
-                  <SelectLabel>Materials</SelectLabel>
-                  {visibleMaterials.map(svc => (
-                    <SelectItem key={svc.id} value={svc.id}>{svc.name}</SelectItem>
-                  ))}
-                </SelectGroup>
-              )}
-              {visibleOther.length > 0 && (
-                <SelectGroup>
-                  <SelectLabel>Other</SelectLabel>
-                  {visibleOther.map(svc => (
-                    <SelectItem key={svc.id} value={svc.id}>{svc.name}</SelectItem>
-                  ))}
-                </SelectGroup>
-              )}
+              ))}
             </SelectContent>
           </Select>
           {!item.service_id && (

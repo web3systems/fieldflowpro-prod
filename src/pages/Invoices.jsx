@@ -423,7 +423,7 @@ export default function Invoices() {
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-sm font-semibold text-slate-700">Labor</h3>
                 <div className="flex items-center gap-2">
-                  <ServicePicker companyId={activeCompany?.id} onSelect={addServiceAsItem} category="labor" />
+                  <ServicePicker companyId={activeCompany?.id} onSelect={addServiceAsItem} itemType="service" />
                   <Button variant="outline" size="sm" onClick={addItem} className="gap-1 text-xs"><Plus className="w-3 h-3" /> Add</Button>
                 </div>
               </div>
@@ -462,7 +462,7 @@ export default function Invoices() {
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-sm font-semibold text-slate-700">Materials</h3>
                 <div className="flex items-center gap-2">
-                  <ServicePicker companyId={activeCompany?.id} onSelect={addServiceAsItem} category="materials" />
+                  <ServicePicker companyId={activeCompany?.id} onSelect={addServiceAsItem} itemType="material" />
                   <Button variant="outline" size="sm" onClick={addItem} className="gap-1 text-xs"><Plus className="w-3 h-3" /> Add</Button>
                 </div>
               </div>
