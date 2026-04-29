@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { useApp } from "../Layout";
 import { createPageUrl } from "@/utils";
-import { ArrowLeft, Briefcase, Star, CreditCard, FileText, Phone, Mail, MapPin, ExternalLink, ChevronRight } from "lucide-react";
+import { ArrowLeft, Briefcase, Star, CreditCard, FileText, Phone, Mail, MapPin, ExternalLink, ChevronRight, Trash2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
@@ -96,6 +96,12 @@ export default function JobDetail() {
     if (statusOverride === "completed" && existingInvoices.length === 0) {
       setShowInvoicePrompt(true);
     }
+  }
+
+  async function handleDelete() {
+    if (!window.confirm(`Delete "${form.title}"? This cannot be undone.`)) return;
+    await base44.entities.Job.delete(id);
+    navigate(createPageUrl("Jobs"));
   }
 
   async function sendReviewRequest() {
@@ -200,6 +206,9 @@ export default function JobDetail() {
           </div>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
+          <Button size="sm" variant="outline" className="gap-1 text-xs text-red-500 hover:text-red-700 hover:bg-red-50 border-red-200" onClick={handleDelete}>
+            <Trash2 className="w-3.5 h-3.5" /> Delete
+          </Button>
           <Button size="sm" variant="outline" className="gap-1 text-xs" onClick={() => setShowAttachModal(true)}>
             <FileText className="w-3.5 h-3.5" /> Attach
           </Button>
