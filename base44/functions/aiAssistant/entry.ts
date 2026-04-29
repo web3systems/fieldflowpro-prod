@@ -95,38 +95,75 @@ ${conversationText}
 
 Respond with valid JSON only. No markdown, no code blocks.`;
 
-    const response = await base44.asServiceRole.integrations.Core.InvokeLLM({
-      prompt,
-      file_urls: file_urls?.length > 0 ? file_urls : undefined,
-      response_json_schema: {
-        type: 'object',
-        properties: {
-          reply: { type: 'string' },
-          result: {
-            type: 'object',
-            properties: {
-              note: { type: 'string' },
-              line_items: {
-                type: 'array',
-                items: {
-                  type: 'object',
-                  properties: {
-                    description: { type: 'string' },
-                    quantity: { type: 'number' },
-                    unit_price: { type: 'number' },
-                    total: { type: 'number' },
-                    category: { type: 'string' }
+    const hasImages = file_urls?.length > 0;
+
+    let rawResponse;
+    if (hasImages) {
+      // Use gemini which supports both vision and structured output
+      rawResponse = await base44.asServiceRole.integrations.Core.InvokeLLM({
+        prompt,
+        file_urls,
+        model: 'gemini_3_flash',
+        response_json_schema: {
+          type: 'object',
+          properties: {
+            reply: { type: 'string' },
+            result: {
+              type: 'object',
+              properties: {
+                note: { type: 'string' },
+                line_items: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      description: { type: 'string' },
+                      quantity: { type: 'number' },
+                      unit_price: { type: 'number' },
+                      total: { type: 'number' },
+                      category: { type: 'string' }
+                    }
                   }
                 }
               }
             }
-          }
-        },
-        required: ['reply']
-      }
-    });
+          },
+          required: ['reply']
+        }
+      });
+    } else {
+      rawResponse = await base44.asServiceRole.integrations.Core.InvokeLLM({
+        prompt,
+        response_json_schema: {
+          type: 'object',
+          properties: {
+            reply: { type: 'string' },
+            result: {
+              type: 'object',
+              properties: {
+                note: { type: 'string' },
+                line_items: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      description: { type: 'string' },
+                      quantity: { type: 'number' },
+                      unit_price: { type: 'number' },
+                      total: { type: 'number' },
+                      category: { type: 'string' }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          required: ['reply']
+        }
+      });
+    }
 
-    return Response.json({ reply: response.reply, result: response.result || null });
+    return Response.json({ reply: rawResponse.reply, result: rawResponse.result || null });
 
   } catch (error) {
     console.error('aiAssistant error:', error.message);
