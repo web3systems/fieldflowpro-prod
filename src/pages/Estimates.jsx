@@ -66,19 +66,14 @@ export default function Estimates() {
   }, [activeCompany]);
 
   useEffect(() => {
-    if (activeCompany && customers.length > 0) {
+    if (activeCompany) {
       const params = new URLSearchParams(window.location.search);
       const customerId = params.get("customer_id");
       if (customerId) {
-        const num = `EST-${String(estimates.length + 1).padStart(4, "0")}`;
-        const tax_rate = activeCompany?.default_tax_rate || 0;
-        setEditing(null);
-        setForm({ ...defaultForm, estimate_number: num, customer_id: customerId, line_items: normalizeLineItems([{ ...defaultItem }]), tax_rate });
-        setSheetOpen(true);
-        window.history.replaceState({}, "", window.location.pathname);
+        navigate(`/NewEstimate?customer_id=${customerId}`);
       }
     }
-  }, [activeCompany, customers]);
+  }, [activeCompany]);
 
   async function loadData() {
     setLoading(true);
@@ -144,11 +139,7 @@ export default function Estimates() {
   }
 
   function openCreate() {
-    setEditing(null);
-    const num = `EST-${String(estimates.length + 1).padStart(4, "0")}`;
-    const tax_rate = activeCompany?.default_tax_rate || 0;
-    setForm({ ...defaultForm, estimate_number: num, line_items: normalizeLineItems([{ ...defaultItem }]), tax_rate });
-    setSheetOpen(true);
+    navigate("/NewEstimate");
   }
 
   function openEdit(est) {

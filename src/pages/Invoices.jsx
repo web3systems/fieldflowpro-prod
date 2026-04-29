@@ -72,12 +72,7 @@ export default function Invoices() {
       base44.entities.Invoice.update(paidInvoiceId, { status: "paid", paid_date: new Date().toISOString().split("T")[0], payment_method: "stripe" }).then(() => loadData());
       window.history.replaceState({}, "", window.location.pathname);
     } else if (customerId) {
-      const num = `INV-${String(invoices.length + 1).padStart(4, "0")}`;
-      const tax_rate = activeCompany?.default_tax_rate || 0;
-      setEditing(null);
-      setForm({ ...defaultForm, invoice_number: num, customer_id: customerId, line_items: [{ ...defaultItem }], tax_rate });
-      setSheetOpen(true);
-      window.history.replaceState({}, "", window.location.pathname);
+      navigate(`/NewInvoice?customer_id=${customerId}`);
     }
   }, [activeCompany, invoices.length]);
 
@@ -139,18 +134,11 @@ export default function Invoices() {
   }
 
   function openCreate() {
-    setEditing(null);
-    const num = `INV-${String(invoices.length + 1).padStart(4, "0")}`;
-    const tax_rate = activeCompany?.default_tax_rate || 0;
-    setForm({ ...defaultForm, invoice_number: num, line_items: [{ ...defaultItem }], tax_rate });
-    setSheetOpen(true);
+    navigate("/NewInvoice");
   }
 
   function openEdit(inv) {
-    setEditing(inv);
-    const tax_rate = activeCompany?.default_tax_rate || 0;
-    setForm({ ...defaultForm, ...inv, tax_rate: inv.tax_rate ?? tax_rate });
-    setSheetOpen(true);
+    navigate(`/InvoiceDetail/${inv.id}`);
   }
 
   function openDetail(inv) {

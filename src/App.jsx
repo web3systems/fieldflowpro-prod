@@ -28,6 +28,9 @@ import EmailTemplateEditor from './pages/EmailTemplateEditor';
 import AIEstimator from './pages/AIEstimator';
 import ReleaseNotes from './pages/ReleaseNotes';
 import PriceBook from './pages/PriceBook';
+import NewJob from './pages/NewJob';
+import NewEstimate from './pages/NewEstimate';
+import NewInvoice from './pages/NewInvoice';
 import TermsOfService from './pages/TermsOfService';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
@@ -126,6 +129,9 @@ const AuthenticatedApp = () => {
       <Route path="/AIEstimator" element={<LayoutWrapper currentPageName="Estimates"><AIEstimator /></LayoutWrapper>} />
       <Route path="/ReleaseNotes" element={<LayoutWrapper currentPageName="ReleaseNotes"><ReleaseNotes /></LayoutWrapper>} />
       <Route path="/PriceBook" element={<LayoutWrapper currentPageName="PriceBook"><PriceBook /></LayoutWrapper>} />
+      <Route path="/NewJob" element={<LayoutWrapper currentPageName="Jobs"><NewJob /></LayoutWrapper>} />
+      <Route path="/NewEstimate" element={<LayoutWrapper currentPageName="Estimates"><NewEstimate /></LayoutWrapper>} />
+      <Route path="/NewInvoice" element={<LayoutWrapper currentPageName="Invoices"><NewInvoice /></LayoutWrapper>} />
       <Route path="/TermsOfService" element={<TermsOfService />} />
       <Route path="/PrivacyPolicy" element={<PrivacyPolicy />} />
       <Route path="*" element={<PageNotFound />} />

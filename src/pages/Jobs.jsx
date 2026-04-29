@@ -80,20 +80,14 @@ export default function Jobs() {
   }, [activeCompany?.id]);
 
   useEffect(() => {
-    if (activeCompany && customers.length > 0) {
+    if (activeCompany) {
       const params = new URLSearchParams(window.location.search);
       const customerId = params.get("customer_id");
       if (customerId) {
-        setEditing(null);
-        const now = new Date(); now.setMinutes(0,0,0); now.setHours(now.getHours()+1);
-        const pad = n => String(n).padStart(2,"0");
-        const fmt = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-        setForm({ ...defaultJob, customer_id: customerId, scheduled_start: fmt(now), scheduled_end: fmt(new Date(now.getTime()+3600000)) });
-        setSheetOpen(true);
-        window.history.replaceState({}, "", window.location.pathname);
+        navigate(`/NewJob?customer_id=${customerId}`);
       }
     }
-  }, [activeCompany, customers]);
+  }, [activeCompany]);
 
   async function loadData() {
     setLoading(true);
@@ -150,19 +144,7 @@ export default function Jobs() {
   }
 
   function openCreate() {
-    setEditing(null);
-    setOpenSection(null);
-    setTagInput("");
-    setChecklistInput("");
-    const now = new Date();
-    now.setMinutes(0, 0, 0);
-    now.setHours(now.getHours() + 1);
-    const pad = n => String(n).padStart(2, "0");
-    const fmt = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-    const start = fmt(now);
-    const end = fmt(new Date(now.getTime() + 60 * 60 * 1000));
-    setForm({ ...defaultJob, scheduled_start: start, scheduled_end: end });
-    setSheetOpen(true);
+    navigate("/NewJob");
   }
 
   function openEdit(job) {
