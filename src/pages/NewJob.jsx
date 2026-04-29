@@ -6,6 +6,7 @@ import {
   ArrowLeft, Plus, Briefcase, User, Calendar, FileText,
   List, Tag, Clock, Trash2, X, Pencil, UserCircle
 } from "lucide-react";
+import LineItemRow from "@/components/services/LineItemRow";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -79,31 +80,32 @@ export default function NewJob() {
     if (customerId) setForm(f => ({ ...f, customer_id: customerId }));
   }, [activeCompany]);
 
-  function addLineItem(type) {
-    const items = [...(form.line_items || []), { type, description: "", quantity: 1, unit_price: 0, total: 0 }];
-    recalcTotals(items);
-  }
-
-  function updateLineItem(idx, field, value) {
-    const items = (form.line_items || []).map((item, i) => {
-      if (i !== idx) return item;
-      const updated = { ...item, [field]: value };
+  function updateLineItem(index, field, value) {
+    const items = [...(form.line_items || [])];
+    if (field === null && typeof value === "object") {
+      items[index] = value;
+    } else {
+      items[index] = { ...items[index], [field]: value };
       if (field === "quantity" || field === "unit_price") {
-        updated.total = (parseFloat(updated.quantity) || 0) * (parseFloat(updated.unit_price) || 0);
+        items[index].total = (items[index].quantity || 0) * (items[index].unit_price || 0);
       }
-      return updated;
-    });
-    recalcTotals(items);
+    }
+    const subtotal = items.reduce((s, i) => s + (i.total || 0), 0);
+    const tax = subtotal * ((parseFloat(form.tax_rate) || 0) / 100);
+    setForm(prev => ({ ...prev, line_items: items, subtotal, total_amount: subtotal + tax }));
   }
 
   function removeLineItem(idx) {
-    recalcTotals((form.line_items || []).filter((_, i) => i !== idx));
-  }
-
-  function recalcTotals(items) {
-    const subtotal = items.reduce((sum, i) => sum + (parseFloat(i.total) || 0), 0);
+    const items = (form.line_items || []).filter((_, i) => i !== idx);
+    const subtotal = items.reduce((s, i) => s + (i.total || 0), 0);
     const tax = subtotal * ((parseFloat(form.tax_rate) || 0) / 100);
     setForm(prev => ({ ...prev, line_items: items, subtotal, total_amount: subtotal + tax }));
+  }
+
+  function addLineItem(type) {
+    const items = [...(form.line_items || []), { type, description: "", quantity: 1, unit_price: 0, total: 0 }];
+    const subtotal = items.reduce((s, i) => s + (i.total || 0), 0);
+    setForm(prev => ({ ...prev, line_items: items, subtotal, total_amount: subtotal }));
   }
 
   function selectServiceForItem(idx, serviceId) {
@@ -111,9 +113,12 @@ export default function NewJob() {
     if (!svc) return;
     const items = (form.line_items || []).map((item, i) => {
       if (i !== idx) return item;
-      return { ...item, description: svc.name, unit_price: svc.unit_price || 0, total: (parseFloat(item.quantity) || 1) * (svc.unit_price || 0) };
+      const qty = parseFloat(item.quantity) || 1;
+      return { ...item, description: svc.name, unit_price: svc.unit_price || 0, total: qty * (svc.unit_price || 0) };
     });
-    recalcTotals(items);
+    const subtotal = items.reduce((s, i) => s + (i.total || 0), 0);
+    const tax = subtotal * ((parseFloat(form.tax_rate) || 0) / 100);
+    setForm(prev => ({ ...prev, line_items: items, subtotal, total_amount: subtotal + tax }));
   }
 
   const getCustomerName = (id) => {

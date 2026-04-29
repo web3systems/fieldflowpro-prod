@@ -95,73 +95,40 @@ ${conversationText}
 
 Respond with valid JSON only. No markdown, no code blocks.`;
 
-    const hasImages = file_urls?.length > 0;
+    const jsonSchema = {
+      type: 'object',
+      properties: {
+        reply: { type: 'string' },
+        result: {
+          type: 'object',
+          properties: {
+            note: { type: 'string' },
+            line_items: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  description: { type: 'string' },
+                  quantity: { type: 'number' },
+                  unit_price: { type: 'number' },
+                  total: { type: 'number' },
+                  category: { type: 'string' }
+                }
+              }
+            }
+          }
+        }
+      },
+      required: ['reply']
+    };
 
-    let rawResponse;
-    if (hasImages) {
-      // Use gemini which supports both vision and structured output
-      rawResponse = await base44.asServiceRole.integrations.Core.InvokeLLM({
-        prompt,
-        file_urls,
-        model: 'gemini_3_flash',
-        response_json_schema: {
-          type: 'object',
-          properties: {
-            reply: { type: 'string' },
-            result: {
-              type: 'object',
-              properties: {
-                note: { type: 'string' },
-                line_items: {
-                  type: 'array',
-                  items: {
-                    type: 'object',
-                    properties: {
-                      description: { type: 'string' },
-                      quantity: { type: 'number' },
-                      unit_price: { type: 'number' },
-                      total: { type: 'number' },
-                      category: { type: 'string' }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          required: ['reply']
-        }
-      });
-    } else {
-      rawResponse = await base44.asServiceRole.integrations.Core.InvokeLLM({
-        prompt,
-        response_json_schema: {
-          type: 'object',
-          properties: {
-            reply: { type: 'string' },
-            result: {
-              type: 'object',
-              properties: {
-                note: { type: 'string' },
-                line_items: {
-                  type: 'array',
-                  items: {
-                    type: 'object',
-                    properties: {
-                      description: { type: 'string' },
-                      quantity: { type: 'number' },
-                      unit_price: { type: 'number' },
-                      total: { type: 'number' },
-                      category: { type: 'string' }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          required: ['reply']
-        }
-      });
-    }
+    // Always use gemini_3_flash — supports vision, conversation history, and JSON schema
+    const rawResponse = await base44.asServiceRole.integrations.Core.InvokeLLM({
+      prompt,
+      model: 'gemini_3_flash',
+      file_urls: file_urls?.length > 0 ? file_urls : undefined,
+      response_json_schema: jsonSchema
+    });
 
     return Response.json({ reply: rawResponse.reply, result: rawResponse.result || null });
 
