@@ -46,7 +46,6 @@ const navItems = [
   { label: "Accounting", icon: Calculator, page: "Accounting" },
   { label: "Team", icon: Wrench, page: "Team" },
   { label: "Price Book", icon: BookOpen, page: "PriceBook" },
-  { label: "Services", icon: Wrench, page: "Services" },
   { label: "Settings", icon: Settings, page: "CompanySettings" },
   { label: "Email Templates", icon: Mail, page: "EmailTemplateEditor" },
 ];
