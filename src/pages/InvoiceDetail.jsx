@@ -53,6 +53,9 @@ export default function InvoiceDetail() {
   const [editingInfo, setEditingInfo] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [showRecordPayment, setShowRecordPayment] = useState(false);
+  const [showDepositModal, setShowDepositModal] = useState(false);
+  const [depositAmount, setDepositAmount] = useState("");
+  const [depositLoading, setDepositLoading] = useState(false);
 
   const loadData = useCallback(async () => {
     const [invs, c] = await Promise.all([
@@ -65,6 +68,38 @@ export default function InvoiceDetail() {
   }, [id, activeCompany]);
 
   useEffect(() => { loadData(); }, [loadData]);
+
+  // Handle return from deposit checkout
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("deposit_success") === "true") {
+      const amount = parseFloat(params.get("deposit_amount") || "0");
+      if (amount > 0 && invoice) {
+        const newAmountPaid = (invoice.amount_paid || 0) + amount;
+        const newStatus = newAmountPaid >= invoice.total ? "paid" : "partial";
+        base44.entities.Invoice.update(id, { amount_paid: newAmountPaid, status: newStatus })
+          .then(loadData);
+        window.history.replaceState({}, "", window.location.pathname);
+      }
+    }
+  }, [invoice]);
+
+  async function handleDepositCheckout() {
+    if (window.self !== window.top) { alert("Payment checkout only works from the published app, not from the preview."); return; }
+    const amount = parseFloat(depositAmount);
+    if (!amount || amount <= 0) return;
+    setDepositLoading(true);
+    const currentUrl = window.location.href.split("?")[0];
+    const response = await base44.functions.invoke("createInvoiceDepositCheckout", {
+      invoice_id: id,
+      deposit_amount: amount,
+      success_url: currentUrl,
+      cancel_url: currentUrl,
+    });
+    setDepositLoading(false);
+    if (response.data?.url) window.location.href = response.data.url;
+    else alert(response.data?.error || "Failed to create deposit session.");
+  }
 
   function updateItem(index, field, value) {
     const items = [...form.line_items];
@@ -184,6 +219,34 @@ export default function InvoiceDetail() {
           onClose={() => setShowRecordPayment(false)}
           onSaved={() => { setShowRecordPayment(false); loadData(); }}
         />
+      )}
+
+      {showDepositModal && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6">
+            <h2 className="text-lg font-semibold text-slate-800 mb-1">Collect Deposit</h2>
+            <p className="text-sm text-slate-500 mb-4">Invoice total: <strong>${(form.total || 0).toFixed(2)}</strong>. Enter the deposit amount to charge via Stripe.</p>
+            <Label className="text-sm">Deposit Amount ($)</Label>
+            <Input
+              type="number"
+              className="mt-1 mb-4"
+              placeholder="e.g. 500"
+              value={depositAmount}
+              onChange={e => setDepositAmount(e.target.value)}
+              autoFocus
+            />
+            <div className="flex gap-3">
+              <Button variant="outline" className="flex-1" onClick={() => setShowDepositModal(false)}>Cancel</Button>
+              <Button
+                className="flex-1 bg-amber-500 hover:bg-amber-600 text-white"
+                disabled={depositLoading || !depositAmount || parseFloat(depositAmount) <= 0}
+                onClick={handleDepositCheckout}
+              >
+                {depositLoading ? "Redirecting..." : "Charge via Stripe"}
+              </Button>
+            </div>
+          </div>
+        </div>
       )}
       {/* Header */}
       <div className="flex items-center gap-3 mb-5">
@@ -307,6 +370,11 @@ export default function InvoiceDetail() {
                     {form.paid_date && <p className="text-xs text-green-600">{format(new Date(form.paid_date), "MMM d, yyyy")} · {form.payment_method || ""}</p>}
                   </div>
                 </div>
+              )}
+              {canPay && (
+                <Button variant="outline" onClick={() => { setDepositAmount(""); setShowDepositModal(true); }} className="w-full gap-2 border-amber-200 text-amber-700 hover:bg-amber-50">
+                  <DollarSign className="w-4 h-4" /> Collect Deposit
+                </Button>
               )}
               {customer?.email && (
                 <Button variant="outline" onClick={handleSendEmail} disabled={sendingEmail} className="w-full gap-2 border-blue-200 text-blue-600 hover:bg-blue-50">
