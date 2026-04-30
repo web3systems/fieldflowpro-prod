@@ -103,6 +103,12 @@ export default function InvoiceDetail() {
     recalc(items);
   }
 
+  async function handleDelete() {
+    if (!confirm("Delete this invoice? This cannot be undone.")) return;
+    await base44.entities.Invoice.delete(id);
+    navigate(createPageUrl("Invoices"));
+  }
+
   async function handleSave() {
     setSaving(true);
     await base44.entities.Invoice.update(id, form);
@@ -205,6 +211,9 @@ export default function InvoiceDetail() {
               <Mail className="w-3.5 h-3.5" />{sendingEmail ? "Sending..." : "Send Email"}
             </Button>
           )}
+          <Button size="sm" variant="outline" onClick={handleDelete} className="gap-1 text-xs border-red-200 text-red-600 hover:bg-red-50">
+            <Trash2 className="w-3.5 h-3.5" /> Delete
+          </Button>
         </div>
       </div>
 
