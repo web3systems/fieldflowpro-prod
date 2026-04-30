@@ -121,7 +121,8 @@ export default function InvoiceDetail() {
 
   function recalc(items) {
     const subtotal = items.reduce((s, i) => s + (i.total || 0), 0);
-    const tax_amount = subtotal * ((form.tax_rate || 0) / 100);
+    const taxableSubtotal = items.filter(i => i.category === "materials").reduce((s, i) => s + (i.total || 0), 0);
+    const tax_amount = taxableSubtotal * ((form.tax_rate || 0) / 100);
     const total = subtotal + tax_amount - (form.discount || 0);
     setForm(f => ({ ...f, line_items: items, subtotal, tax_amount, total }));
   }
@@ -515,10 +516,11 @@ export default function InvoiceDetail() {
                 <div className="flex items-center gap-2">
                   <span className="text-sm text-slate-600 flex-1">Tax Rate (%)</span>
                   <Input type="number" value={form.tax_rate} onChange={e => {
-                    const tax_rate = parseFloat(e.target.value) || 0;
-                    const tax_amount = form.subtotal * (tax_rate / 100);
-                    const total = form.subtotal + tax_amount - (form.discount || 0);
-                    setForm(f => ({ ...f, tax_rate, tax_amount, total }));
+                   const tax_rate = parseFloat(e.target.value) || 0;
+                   const taxableSubtotal = (form.line_items || []).filter(i => i.category === "materials").reduce((s, i) => s + (i.total || 0), 0);
+                   const tax_amount = taxableSubtotal * (tax_rate / 100);
+                   const total = form.subtotal + tax_amount - (form.discount || 0);
+                   setForm(f => ({ ...f, tax_rate, tax_amount, total }));
                   }} className="w-20 h-7 text-sm bg-white" />
                   <span className="text-sm text-slate-500">${(form.tax_amount || 0).toFixed(2)}</span>
                 </div>
