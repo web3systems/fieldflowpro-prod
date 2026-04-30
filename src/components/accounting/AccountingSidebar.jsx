@@ -1,9 +1,11 @@
 import { Link, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { LayoutDashboard, BookOpen, ArrowLeftRight, BarChart3, Building2, X } from "lucide-react";
+import { LayoutDashboard, BookOpen, ArrowLeftRight, BarChart3, Building2, X, TrendingDown, Percent } from "lucide-react";
 
 const navItems = [
   { label: "Overview", icon: LayoutDashboard, page: "Accounting" },
+  { label: "Expenses", icon: TrendingDown, page: "Expenses" },
+  { label: "Profit Margin", icon: Percent, page: "ProfitMargin" },
   { label: "Transactions", icon: ArrowLeftRight, page: "AccountingTransactions" },
   { label: "Chart of Accounts", icon: BookOpen, page: "AccountingAccounts" },
   { label: "Reports", icon: BarChart3, page: "AccountingReports" },

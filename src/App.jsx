@@ -28,6 +28,8 @@ import EmailTemplateEditor from './pages/EmailTemplateEditor';
 import AIEstimator from './pages/AIEstimator';
 import ReleaseNotes from './pages/ReleaseNotes';
 import PriceBook from './pages/PriceBook';
+import Expenses from './pages/Expenses';
+import ProfitMargin from './pages/ProfitMargin';
 import NewJob from './pages/NewJob';
 import NewEstimate from './pages/NewEstimate';
 import NewInvoice from './pages/NewInvoice';
@@ -134,6 +136,8 @@ const AuthenticatedApp = () => {
       <Route path="/NewInvoice" element={<LayoutWrapper currentPageName="Invoices"><NewInvoice /></LayoutWrapper>} />
       <Route path="/TermsOfService" element={<TermsOfService />} />
       <Route path="/PrivacyPolicy" element={<PrivacyPolicy />} />
+      <Route path="/Expenses" element={<LayoutWrapper currentPageName="Expenses"><Expenses /></LayoutWrapper>} />
+      <Route path="/ProfitMargin" element={<LayoutWrapper currentPageName="ProfitMargin"><ProfitMargin /></LayoutWrapper>} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
