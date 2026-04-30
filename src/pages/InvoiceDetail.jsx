@@ -127,6 +127,10 @@ export default function InvoiceDetail() {
     setForm(f => ({ ...f, line_items: items, subtotal, tax_amount, total }));
   }
 
+  function addItemWithCategory(category) {
+    setForm(f => ({ ...f, line_items: [...f.line_items, { ...defaultItem, category }] }));
+  }
+
   function addItem() {
     setForm(f => ({ ...f, line_items: [...f.line_items, { ...defaultItem }] }));
   }
@@ -471,22 +475,22 @@ export default function InvoiceDetail() {
                 materialCategory="materials"
                 onReorder={newItems => recalc(newItems)}
                 renderLaborHeader={() => (
-                  <div className="flex items-center justify-between mb-2">
-                    <CardTitle className="text-base">Labor</CardTitle>
-                    <div className="flex items-center gap-2">
-                      <ServicePicker companyId={activeCompany?.id} onSelect={addServiceAsItem} category="labor" />
-                      <Button variant="outline" size="sm" onClick={addItem} className="gap-1"><Plus className="w-3 h-3" /> Add</Button>
-                    </div>
+                <div className="flex items-center justify-between mb-2">
+                  <CardTitle className="text-base">Labor</CardTitle>
+                  <div className="flex items-center gap-2">
+                    <ServicePicker companyId={activeCompany?.id} onSelect={addServiceAsItem} category="labor" />
+                    <Button variant="outline" size="sm" onClick={() => addItemWithCategory("labor")} className="gap-1"><Plus className="w-3 h-3" /> Add</Button>
                   </div>
+                </div>
                 )}
                 renderMaterialHeader={() => (
-                  <div className="flex items-center justify-between mt-4 mb-2 pt-4 border-t border-slate-200">
-                    <CardTitle className="text-base">Materials</CardTitle>
-                    <div className="flex items-center gap-2">
-                      <ServicePicker companyId={activeCompany?.id} onSelect={addServiceAsItem} category="materials" />
-                      <Button variant="outline" size="sm" onClick={addItem} className="gap-1"><Plus className="w-3 h-3" /> Add</Button>
-                    </div>
+                <div className="flex items-center justify-between mt-4 mb-2 pt-4 border-t border-slate-200">
+                  <CardTitle className="text-base">Materials</CardTitle>
+                  <div className="flex items-center gap-2">
+                    <ServicePicker companyId={activeCompany?.id} onSelect={addServiceAsItem} category="materials" />
+                    <Button variant="outline" size="sm" onClick={() => addItemWithCategory("materials")} className="gap-1"><Plus className="w-3 h-3" /> Add</Button>
                   </div>
+                </div>
                 )}
                 renderItem={(item, origIdx) => (
                   <LineItemRow
@@ -509,7 +513,7 @@ export default function InvoiceDetail() {
 
 
               {(() => {
-                const laborSubtotal = (form.line_items || []).filter(i => i.category === "labor").reduce((s, i) => s + (i.total || 0), 0);
+                const laborSubtotal = (form.line_items || []).filter(i => i.category !== "materials").reduce((s, i) => s + (i.total || 0), 0);
                 const materialsSubtotal = (form.line_items || []).filter(i => i.category === "materials").reduce((s, i) => s + (i.total || 0), 0);
                 return (
                 <div className="mt-3 p-3 bg-slate-50 rounded-lg space-y-1.5">
