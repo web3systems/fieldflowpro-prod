@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 import Stripe from 'npm:stripe@14.21.0';
 
 const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY"));
@@ -19,6 +19,7 @@ Deno.serve(async (req) => {
   if (event.type === "checkout.session.completed") {
     const session = event.data.object;
     const invoice_id = session.metadata?.invoice_id;
+    const isDeposit = session.metadata?.deposit === 'true';
 
     if (invoice_id) {
       try {
@@ -28,13 +29,37 @@ Deno.serve(async (req) => {
         const [month, day, year] = etDate.split("/");
         const paid_date = `${year}-${month}-${day}`;
 
-        await base44.asServiceRole.entities.Invoice.update(invoice_id, {
-          status: "paid",
-          amount_paid: (session.amount_total || 0) / 100,
-          paid_date,
-          payment_method: "stripe",
-        });
-        console.log(`Invoice ${invoice_id} marked as paid via Stripe webhook`);
+        const sessionAmount = (session.amount_total || 0) / 100;
+
+        if (isDeposit) {
+          // Fetch current invoice to add to existing amount_paid
+          const invoices = await base44.asServiceRole.entities.Invoice.filter({ id: invoice_id });
+          const invoice = invoices[0];
+          if (!invoice) {
+            console.error(`Invoice ${invoice_id} not found for deposit webhook`);
+            return Response.json({ received: true });
+          }
+
+          const newAmountPaid = (invoice.amount_paid || 0) + sessionAmount;
+          const newStatus = newAmountPaid >= invoice.total ? "paid" : "partial";
+
+          await base44.asServiceRole.entities.Invoice.update(invoice_id, {
+            amount_paid: newAmountPaid,
+            status: newStatus,
+            payment_method: "stripe",
+            ...(newStatus === "paid" ? { paid_date } : {}),
+          });
+          console.log(`Deposit of $${sessionAmount} recorded on invoice ${invoice_id}. New amount paid: $${newAmountPaid}, status: ${newStatus}`);
+        } else {
+          // Full payment — mark as fully paid
+          await base44.asServiceRole.entities.Invoice.update(invoice_id, {
+            status: "paid",
+            amount_paid: sessionAmount,
+            paid_date,
+            payment_method: "stripe",
+          });
+          console.log(`Invoice ${invoice_id} marked as paid via Stripe webhook ($${sessionAmount})`);
+        }
       } catch (err) {
         console.error("Failed to update invoice:", err.message);
       }
