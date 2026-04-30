@@ -19,6 +19,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { format } from "date-fns";
 import ServicePicker from "@/components/services/ServicePicker";
 import DraggableLineItemsSection from "@/components/services/DraggableLineItemsSection";
+import LineItemRow from "@/components/services/LineItemRow";
 import { downloadInvoicePdf } from "../components/documents/generatePdf";
 import InvoiceEstimatePreview from "@/components/documents/InvoiceEstimatePreview";
 
@@ -57,12 +58,15 @@ export default function InvoiceDetail() {
   const [showDepositModal, setShowDepositModal] = useState(false);
   const [depositAmount, setDepositAmount] = useState("");
   const [depositLoading, setDepositLoading] = useState(false);
+  const [services, setServices] = useState([]);
 
   const loadData = useCallback(async () => {
-    const [invs, c] = await Promise.all([
+    const [invs, c, svcs] = await Promise.all([
       base44.entities.Invoice.filter({ id }),
       activeCompany ? base44.entities.Customer.filter({ company_id: activeCompany.id }) : Promise.resolve([]),
+      activeCompany ? base44.entities.Service.filter({ company_id: activeCompany.id, is_active: true }) : Promise.resolve([]),
     ]);
+    setServices(svcs);
     if (invs.length > 0) { setInvoice(invs[0]); setForm({ ...defaultForm, ...invs[0] }); }
     setCustomers(c);
     setLoading(false);
@@ -484,21 +488,15 @@ export default function InvoiceDetail() {
                   </div>
                 )}
                 renderItem={(item, origIdx) => (
-                  <div className="grid grid-cols-12 gap-2 items-center p-3 bg-slate-50 rounded-lg">
-                    <div className="col-span-5">
-                      <Input value={item.description} onChange={e => updateItem(origIdx, "description", e.target.value)} placeholder="Description" className="bg-white text-sm" />
-                    </div>
-                    <div className="col-span-2">
-                      <Input type="number" value={item.quantity} onChange={e => updateItem(origIdx, "quantity", parseFloat(e.target.value) || 0)} placeholder="Qty" className="bg-white text-sm text-center" />
-                    </div>
-                    <div className="col-span-2">
-                      <Input type="number" value={item.unit_price} onChange={e => updateItem(origIdx, "unit_price", parseFloat(e.target.value) || 0)} placeholder="Price" className="bg-white text-sm" />
-                    </div>
-                    <div className="col-span-2 text-right text-sm font-medium">${(item.total || 0).toFixed(2)}</div>
-                    <div className="col-span-1 flex justify-end">
-                      <button onClick={() => removeItem(origIdx)} className="text-red-400 hover:text-red-600"><Trash2 className="w-3.5 h-3.5" /></button>
-                    </div>
-                  </div>
+                  <LineItemRow
+                    item={item}
+                    idx={origIdx}
+                    companyId={activeCompany?.id}
+                    services={services}
+                    onServicesUpdate={svc => setServices(prev => [...prev, svc])}
+                    onUpdate={updateItem}
+                    onRemove={removeItem}
+                  />
                 )}
               />
             </CardContent>
