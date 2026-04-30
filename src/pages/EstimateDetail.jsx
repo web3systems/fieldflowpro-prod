@@ -19,6 +19,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { format } from "date-fns";
 import LineItemRow from "@/components/services/LineItemRow";
 import ServicePicker from "@/components/services/ServicePicker";
+import DraggableLineItemsSection from "@/components/services/DraggableLineItemsSection";
 import { downloadEstimatePdf } from "../components/documents/generatePdf";
 import InvoiceEstimatePreview from "@/components/documents/InvoiceEstimatePreview";
 import EstimateMarginReview from "@/components/estimates/EstimateMarginReview";
@@ -582,79 +583,41 @@ export default function EstimateDetail() {
             {/* Active option content */}
             {opt && (
               <CardContent className="pt-4 space-y-4">
-                {/* Labor Section */}
-                <div>
-                  <div className="flex items-center justify-between mb-3">
-                    <h3 className="text-sm font-semibold text-slate-700">Labor</h3>
-                    <div className="flex items-center gap-2">
-                      <ServicePicker companyId={activeCompany?.id} onSelect={addServiceAsItem} category="labor" />
-                      <Button variant="outline" size="sm" onClick={addItem} className="gap-1 text-xs"><Plus className="w-3 h-3" /> Add</Button>
-                    </div>
-                  </div>
-
-                  {opt.line_items?.map((item, origIdx) => ({ item, origIdx })).filter(({ item }) => !item.category || item.category === 'labor').length > 0 ? (
-                    <>
-                      <div className="grid grid-cols-12 gap-2 px-3 text-xs font-medium text-slate-400 uppercase tracking-wide mb-2">
-                        <div className="col-span-5">Service / Description</div>
-                        <div className="col-span-2 text-center">Qty</div>
-                        <div className="col-span-2">Price</div>
-                        <div className="col-span-2 text-right">Total</div>
-                        <div className="col-span-1" />
+                <DraggableLineItemsSection
+                  items={opt.line_items || []}
+                  laborCategory="labor"
+                  materialCategory="materials"
+                  onReorder={newItems => recalcOption(newItems, opt)}
+                  renderLaborHeader={() => (
+                    <div className="flex items-center justify-between mb-2">
+                      <h3 className="text-sm font-semibold text-slate-700">Labor</h3>
+                      <div className="flex items-center gap-2">
+                        <ServicePicker companyId={activeCompany?.id} onSelect={addServiceAsItem} category="labor" />
+                        <Button variant="outline" size="sm" onClick={() => addItem("labor")} className="gap-1 text-xs"><Plus className="w-3 h-3" /> Add</Button>
                       </div>
-                      {opt.line_items?.map((item, origIdx) => ({ item, origIdx })).filter(({ item }) => !item.category || item.category === 'labor').map(({ item, origIdx }) => (
-                          <LineItemRow
-                            key={origIdx}
-                            item={item}
-                            idx={origIdx}
-                            companyId={activeCompany?.id}
-                            services={services}
-                            onServicesUpdate={svc => setServices(prev => [...prev, svc])}
-                            onUpdate={updateItem}
-                            onRemove={removeItem}
-                          />
-                        ))}
-                    </>
-                  ) : (
-                    <p className="text-xs text-slate-400 px-3 py-2">No labor items added</p>
-                  )}
-                </div>
-
-                {/* Materials Section */}
-                <div className="border-t border-slate-200 pt-4">
-                  <div className="flex items-center justify-between mb-3">
-                    <h3 className="text-sm font-semibold text-slate-700">Materials</h3>
-                    <div className="flex items-center gap-2">
-                      <ServicePicker companyId={activeCompany?.id} onSelect={addServiceAsItem} category="materials" />
-                      <Button variant="outline" size="sm" onClick={() => addItem("materials")} className="gap-1 text-xs"><Plus className="w-3 h-3" /> Add</Button>
                     </div>
-                  </div>
-
-                  {opt.line_items?.map((item, origIdx) => ({ item, origIdx })).filter(({ item }) => item.category === 'materials').length > 0 ? (
-                    <>
-                      <div className="grid grid-cols-12 gap-2 px-3 text-xs font-medium text-slate-400 uppercase tracking-wide mb-2">
-                        <div className="col-span-5">Service / Description</div>
-                        <div className="col-span-2 text-center">Qty</div>
-                        <div className="col-span-2">Price</div>
-                        <div className="col-span-2 text-right">Total</div>
-                        <div className="col-span-1" />
-                      </div>
-                      {opt.line_items?.map((item, origIdx) => ({ item, origIdx })).filter(({ item }) => item.category === 'materials').map(({ item, origIdx }) => (
-                          <LineItemRow
-                            key={origIdx}
-                            item={item}
-                            idx={origIdx}
-                            companyId={activeCompany?.id}
-                            services={services}
-                            onServicesUpdate={svc => setServices(prev => [...prev, svc])}
-                            onUpdate={updateItem}
-                            onRemove={removeItem}
-                          />
-                        ))}
-                    </>
-                  ) : (
-                    <p className="text-xs text-slate-400 px-3 py-2">No material items added</p>
                   )}
-                </div>
+                  renderMaterialHeader={() => (
+                    <div className="flex items-center justify-between mt-4 mb-2 pt-4 border-t border-slate-200">
+                      <h3 className="text-sm font-semibold text-slate-700">Materials</h3>
+                      <div className="flex items-center gap-2">
+                        <ServicePicker companyId={activeCompany?.id} onSelect={addServiceAsItem} category="materials" />
+                        <Button variant="outline" size="sm" onClick={() => addItem("materials")} className="gap-1 text-xs"><Plus className="w-3 h-3" /> Add</Button>
+                      </div>
+                    </div>
+                  )}
+                  renderItem={(item, origIdx) => (
+                    <LineItemRow
+                      item={item}
+                      idx={origIdx}
+                      companyId={activeCompany?.id}
+                      services={services}
+                      onServicesUpdate={svc => setServices(prev => [...prev, svc])}
+                      onUpdate={updateItem}
+                      onRemove={removeItem}
+                    />
+                  )}
+                />
 
                 {/* Totals */}
                 <div className="mt-3 p-3 bg-slate-50 rounded-lg space-y-1.5">

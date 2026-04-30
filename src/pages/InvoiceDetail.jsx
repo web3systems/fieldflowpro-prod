@@ -18,6 +18,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { format } from "date-fns";
 import ServicePicker from "@/components/services/ServicePicker";
+import DraggableLineItemsSection from "@/components/services/DraggableLineItemsSection";
 import { downloadInvoicePdf } from "../components/documents/generatePdf";
 import InvoiceEstimatePreview from "@/components/documents/InvoiceEstimatePreview";
 
@@ -456,83 +457,52 @@ export default function InvoiceDetail() {
             </Card>
           </div>
 
-          {/* Labor Section */}
-           <Card className="border-0 shadow-sm">
-             <CardHeader className="pb-3">
-               <div className="flex items-center justify-between">
-                 <CardTitle className="text-base">Labor</CardTitle>
-                 <div className="flex items-center gap-2">
-                   <ServicePicker companyId={activeCompany?.id} onSelect={addServiceAsItem} category="labor" />
-                   <Button variant="outline" size="sm" onClick={addItem} className="gap-1"><Plus className="w-3 h-3" /> Add</Button>
-                 </div>
-               </div>
-             </CardHeader>
-             <CardContent className="space-y-2">
-               {form.line_items?.filter(item => !item.category || item.category === 'labor').length > 0 ? (
-                 form.line_items?.filter(item => !item.category || item.category === 'labor').map((item, idx) => {
-                   const origIdx = form.line_items.indexOf(item);
-                   return (
-                     <div key={origIdx} className="grid grid-cols-12 gap-2 items-center p-3 bg-slate-50 rounded-lg">
-                       <div className="col-span-5">
-                         <Input value={item.description} onChange={e => updateItem(origIdx, "description", e.target.value)} placeholder="Description" className="bg-white text-sm" />
-                       </div>
-                       <div className="col-span-2">
-                         <Input type="number" value={item.quantity} onChange={e => updateItem(origIdx, "quantity", parseFloat(e.target.value) || 0)} placeholder="Qty" className="bg-white text-sm text-center" />
-                       </div>
-                       <div className="col-span-2">
-                         <Input type="number" value={item.unit_price} onChange={e => updateItem(origIdx, "unit_price", parseFloat(e.target.value) || 0)} placeholder="Price" className="bg-white text-sm" />
-                       </div>
-                       <div className="col-span-2 text-right text-sm font-medium">${(item.total || 0).toFixed(2)}</div>
-                       <div className="col-span-1 flex justify-end">
-                         <button onClick={() => removeItem(origIdx)} className="text-red-400 hover:text-red-600"><Trash2 className="w-3.5 h-3.5" /></button>
-                       </div>
-                     </div>
-                   );
-                 })
-               ) : (
-                 <p className="text-sm text-slate-400 py-2">No labor items added</p>
-               )}
-             </CardContent>
-           </Card>
-
-           {/* Materials Section */}
-           <Card className="border-0 shadow-sm">
-             <CardHeader className="pb-3">
-               <div className="flex items-center justify-between">
-                 <CardTitle className="text-base">Materials</CardTitle>
-                 <div className="flex items-center gap-2">
-                   <ServicePicker companyId={activeCompany?.id} onSelect={addServiceAsItem} category="materials" />
-                   <Button variant="outline" size="sm" onClick={addItem} className="gap-1"><Plus className="w-3 h-3" /> Add</Button>
-                 </div>
-               </div>
-             </CardHeader>
-             <CardContent className="space-y-2">
-               {form.line_items?.filter(item => item.category === 'materials').length > 0 ? (
-                 form.line_items?.filter(item => item.category === 'materials').map((item, idx) => {
-                   const origIdx = form.line_items.indexOf(item);
-                   return (
-                     <div key={origIdx} className="grid grid-cols-12 gap-2 items-center p-3 bg-slate-50 rounded-lg">
-                       <div className="col-span-5">
-                         <Input value={item.description} onChange={e => updateItem(origIdx, "description", e.target.value)} placeholder="Description" className="bg-white text-sm" />
-                       </div>
-                       <div className="col-span-2">
-                         <Input type="number" value={item.quantity} onChange={e => updateItem(origIdx, "quantity", parseFloat(e.target.value) || 0)} placeholder="Qty" className="bg-white text-sm text-center" />
-                       </div>
-                       <div className="col-span-2">
-                         <Input type="number" value={item.unit_price} onChange={e => updateItem(origIdx, "unit_price", parseFloat(e.target.value) || 0)} placeholder="Price" className="bg-white text-sm" />
-                       </div>
-                       <div className="col-span-2 text-right text-sm font-medium">${(item.total || 0).toFixed(2)}</div>
-                       <div className="col-span-1 flex justify-end">
-                         <button onClick={() => removeItem(origIdx)} className="text-red-400 hover:text-red-600"><Trash2 className="w-3.5 h-3.5" /></button>
-                       </div>
-                     </div>
-                   );
-                 })
-               ) : (
-                 <p className="text-sm text-slate-400 py-2">No material items added</p>
-               )}
-             </CardContent>
-           </Card>
+          {/* Labor & Materials with drag-and-drop */}
+          <Card className="border-0 shadow-sm">
+            <CardContent className="pt-4">
+              <DraggableLineItemsSection
+                items={form.line_items || []}
+                laborCategory="labor"
+                materialCategory="materials"
+                onReorder={newItems => recalc(newItems)}
+                renderLaborHeader={() => (
+                  <div className="flex items-center justify-between mb-2">
+                    <CardTitle className="text-base">Labor</CardTitle>
+                    <div className="flex items-center gap-2">
+                      <ServicePicker companyId={activeCompany?.id} onSelect={addServiceAsItem} category="labor" />
+                      <Button variant="outline" size="sm" onClick={addItem} className="gap-1"><Plus className="w-3 h-3" /> Add</Button>
+                    </div>
+                  </div>
+                )}
+                renderMaterialHeader={() => (
+                  <div className="flex items-center justify-between mt-4 mb-2 pt-4 border-t border-slate-200">
+                    <CardTitle className="text-base">Materials</CardTitle>
+                    <div className="flex items-center gap-2">
+                      <ServicePicker companyId={activeCompany?.id} onSelect={addServiceAsItem} category="materials" />
+                      <Button variant="outline" size="sm" onClick={addItem} className="gap-1"><Plus className="w-3 h-3" /> Add</Button>
+                    </div>
+                  </div>
+                )}
+                renderItem={(item, origIdx) => (
+                  <div className="grid grid-cols-12 gap-2 items-center p-3 bg-slate-50 rounded-lg">
+                    <div className="col-span-5">
+                      <Input value={item.description} onChange={e => updateItem(origIdx, "description", e.target.value)} placeholder="Description" className="bg-white text-sm" />
+                    </div>
+                    <div className="col-span-2">
+                      <Input type="number" value={item.quantity} onChange={e => updateItem(origIdx, "quantity", parseFloat(e.target.value) || 0)} placeholder="Qty" className="bg-white text-sm text-center" />
+                    </div>
+                    <div className="col-span-2">
+                      <Input type="number" value={item.unit_price} onChange={e => updateItem(origIdx, "unit_price", parseFloat(e.target.value) || 0)} placeholder="Price" className="bg-white text-sm" />
+                    </div>
+                    <div className="col-span-2 text-right text-sm font-medium">${(item.total || 0).toFixed(2)}</div>
+                    <div className="col-span-1 flex justify-end">
+                      <button onClick={() => removeItem(origIdx)} className="text-red-400 hover:text-red-600"><Trash2 className="w-3.5 h-3.5" /></button>
+                    </div>
+                  </div>
+                )}
+              />
+            </CardContent>
+          </Card>
 
            {/* Summary */}
            <Card className="border-0 shadow-sm">
