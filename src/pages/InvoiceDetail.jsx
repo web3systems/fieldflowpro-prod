@@ -508,27 +508,36 @@ export default function InvoiceDetail() {
              <CardContent className="pt-6">
 
 
-              <div className="mt-3 p-3 bg-slate-50 rounded-lg space-y-1.5">
-                <div className="flex justify-between text-sm">
-                  <span className="text-slate-600">Subtotal</span>
-                  <span className="font-medium">${(form.subtotal || 0).toFixed(2)}</span>
+              {(() => {
+                const laborSubtotal = (form.line_items || []).filter(i => i.category === "labor").reduce((s, i) => s + (i.total || 0), 0);
+                const materialsSubtotal = (form.line_items || []).filter(i => i.category === "materials").reduce((s, i) => s + (i.total || 0), 0);
+                return (
+                <div className="mt-3 p-3 bg-slate-50 rounded-lg space-y-1.5">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-slate-600">Labor Subtotal <span className="text-xs text-slate-400">(not taxed)</span></span>
+                    <span className="font-medium">${laborSubtotal.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-slate-600">Materials Subtotal <span className="text-xs text-slate-400">(taxed)</span></span>
+                    <span className="font-medium">${materialsSubtotal.toFixed(2)}</span>
+                  </div>
+                  <div className="flex items-center gap-2 pt-1 border-t border-slate-200">
+                    <span className="text-sm text-slate-600 flex-1">Tax Rate (%)</span>
+                    <Input type="number" value={form.tax_rate} onChange={e => {
+                      const tax_rate = parseFloat(e.target.value) || 0;
+                      const tax_amount = materialsSubtotal * (tax_rate / 100);
+                      const total = form.subtotal + tax_amount - (form.discount || 0);
+                      setForm(f => ({ ...f, tax_rate, tax_amount, total }));
+                    }} className="w-20 h-7 text-sm bg-white" />
+                    <span className="text-sm text-slate-500">${(form.tax_amount || 0).toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between text-base font-bold pt-1 border-t border-slate-200">
+                    <span>Total</span>
+                    <span>${(form.total || 0).toFixed(2)}</span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-slate-600 flex-1">Tax Rate (%)</span>
-                  <Input type="number" value={form.tax_rate} onChange={e => {
-                   const tax_rate = parseFloat(e.target.value) || 0;
-                   const taxableSubtotal = (form.line_items || []).filter(i => i.category === "materials").reduce((s, i) => s + (i.total || 0), 0);
-                   const tax_amount = taxableSubtotal * (tax_rate / 100);
-                   const total = form.subtotal + tax_amount - (form.discount || 0);
-                   setForm(f => ({ ...f, tax_rate, tax_amount, total }));
-                  }} className="w-20 h-7 text-sm bg-white" />
-                  <span className="text-sm text-slate-500">${(form.tax_amount || 0).toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between text-base font-bold pt-1 border-t border-slate-200">
-                   <span>Total</span>
-                   <span>${(form.total || 0).toFixed(2)}</span>
-                 </div>
-                </div>
+                );
+              })()}
                 </CardContent>
                 </Card>
 
