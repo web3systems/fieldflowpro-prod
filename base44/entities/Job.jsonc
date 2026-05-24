@@ -136,6 +136,60 @@
       },
       "description": "Photos taken after the job is completed"
     },
+    "receipts": {
+      "type": "array",
+      "description": "Receipt photos with OCR-extracted data",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "image_url": {
+            "type": "string"
+          },
+          "uploaded_at": {
+            "type": "string"
+          },
+          "uploaded_by": {
+            "type": "string"
+          },
+          "vendor": {
+            "type": "string"
+          },
+          "date": {
+            "type": "string"
+          },
+          "total": {
+            "type": "number"
+          },
+          "category": {
+            "type": "string"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "description": {
+                  "type": "string"
+                },
+                "amount": {
+                  "type": "number"
+                }
+              }
+            }
+          },
+          "notes": {
+            "type": "string"
+          },
+          "ocr_processed": {
+            "type": "boolean",
+            "default": false
+          }
+        }
+      }
+    },
     "checklist": {
       "type": "array",
       "items": {

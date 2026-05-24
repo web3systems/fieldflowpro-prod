@@ -19,6 +19,7 @@ import JobInvoiceSection from "@/components/jobs/JobInvoiceSection";
 import JobNotesSection from "@/components/jobs/JobNotesSection";
 import JobPhotosSection from "@/components/jobs/JobPhotosSection";
 import JobCostingSection from "@/components/jobs/JobCostingSection";
+import JobReceiptsSection from "@/components/jobs/JobReceiptsSection";
 import JobActivityFeed from "@/components/jobs/JobActivityFeed";
 import AttachDocumentModal from "@/components/jobs/AttachDocumentModal";
 import DepositRequestModal from "@/components/jobs/DepositRequestModal";
@@ -370,7 +371,13 @@ export default function JobDetail() {
           />
 
           {/* Job Costing Breakdown */}
-          <JobCostingSection form={form} />
+          <JobCostingSection form={form} receipts={job?.receipts || []} />
+
+          {/* Receipts & Expenses */}
+          <JobReceiptsSection
+            job={job}
+            onReceiptsUpdated={(receipts) => setJob(j => ({ ...j, receipts }))}
+          />
 
           {/* Before & After Photos */}
           <JobPhotosSection

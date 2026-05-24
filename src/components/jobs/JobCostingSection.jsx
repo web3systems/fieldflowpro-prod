@@ -2,14 +2,15 @@ import { useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
 
-export default function JobCostingSection({ form }) {
+export default function JobCostingSection({ form, receipts = [] }) {
   const [expanded, setExpanded] = useState(false);
 
   const lineItems = form.line_items || [];
   const serviceTotal = lineItems.filter(i => i.category !== "material").reduce((s, i) => s + (i.total || 0), 0);
   const materialTotal = lineItems.filter(i => i.category === "material").reduce((s, i) => s + (i.total || 0), 0);
+  const receiptTotal = receipts.reduce((s, r) => s + (r.total || 0), 0);
   const totalRevenue = form.total_amount || 0;
-  const totalJobCost = serviceTotal + materialTotal;
+  const totalJobCost = serviceTotal + materialTotal + receiptTotal;
   const grossProfit = totalRevenue - totalJobCost;
   const profitMargin = totalRevenue > 0 ? Math.round((grossProfit / totalRevenue) * 100) : 0;
 
@@ -21,6 +22,7 @@ export default function JobCostingSection({ form }) {
   const costData = [
     { name: "Services", value: serviceTotal, color: "#94a3b8" },
     { name: "Materials", value: materialTotal, color: "#cbd5e1" },
+    ...(receiptTotal > 0 ? [{ name: "Receipts", value: receiptTotal, color: "#f59e0b" }] : []),
   ];
 
   return (
@@ -37,6 +39,12 @@ export default function JobCostingSection({ form }) {
         <div className="border-t border-slate-100 px-5 py-4">
           {/* Summary row */}
           <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">Actual costs</p>
+          {receiptTotal > 0 && (
+            <div className="mb-4 p-2.5 bg-amber-50 border border-amber-100 rounded-lg flex items-center justify-between text-sm">
+              <span className="text-amber-700 font-medium">Receipt expenses included</span>
+              <span className="text-amber-800 font-bold">${receiptTotal.toFixed(2)}</span>
+            </div>
+          )}
           <div className="grid grid-cols-4 gap-4 mb-6">
             <div>
               <p className="text-xs text-slate-500">Profit margin</p>
