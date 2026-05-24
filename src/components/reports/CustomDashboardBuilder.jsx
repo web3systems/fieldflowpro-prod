@@ -5,8 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { ALL_WIDGETS, WidgetRenderer } from "./ReportWidgets";
-import { Plus, Trash2, Edit2, LayoutDashboard, X } from "lucide-react";
+import { WIDGET_CATEGORIES, WidgetRenderer } from "./ReportWidgets";
+import { Plus, Trash2, Edit2, LayoutDashboard, ArrowLeft, GripVertical } from "lucide-react";
 
 export default function CustomDashboardBuilder({ companyId, data }) {
   const [dashboards, setDashboards] = useState([]);
@@ -33,11 +33,11 @@ export default function CustomDashboardBuilder({ companyId, data }) {
     setBuilderOpen(true);
   }
 
-  function toggleWidget(type) {
+  function toggleWidget(type, label) {
     setForm(f => {
       const exists = f.widgets.find(w => w.type === type);
       if (exists) return { ...f, widgets: f.widgets.filter(w => w.type !== type) };
-      return { ...f, widgets: [...f.widgets, { id: `${type}_${Date.now()}`, type, title: ALL_WIDGETS.find(w => w.type === type)?.label || type }] };
+      return { ...f, widgets: [...f.widgets, { id: `${type}_${Date.now()}`, type, title: label }] };
     });
   }
 
@@ -52,10 +52,13 @@ export default function CustomDashboardBuilder({ companyId, data }) {
     const updated = await base44.entities.CustomDashboard.filter({ company_id: companyId });
     setDashboards(updated);
     setBuilderOpen(false);
-    setActiveDash(null);
+    if (editingDash) {
+      setActiveDash(updated.find(d => d.id === editingDash.id) || null);
+    }
   }
 
   async function deleteDash(id) {
+    if (!confirm("Delete this dashboard?")) return;
     await base44.entities.CustomDashboard.delete(id);
     setDashboards(d => d.filter(x => x.id !== id));
     if (activeDash?.id === id) setActiveDash(null);
@@ -64,24 +67,46 @@ export default function CustomDashboardBuilder({ companyId, data }) {
   if (activeDash) {
     return (
       <div className="space-y-4">
-        <div className="flex items-center gap-3">
-          <Button variant="outline" size="sm" onClick={() => setActiveDash(null)}>← Back</Button>
-          <div>
+        <div className="flex items-center gap-3 flex-wrap">
+          <Button variant="outline" size="sm" onClick={() => setActiveDash(null)} className="gap-1">
+            <ArrowLeft className="w-3.5 h-3.5" /> All Dashboards
+          </Button>
+          <div className="flex-1 min-w-0">
             <h2 className="font-bold text-slate-900">{activeDash.name}</h2>
             {activeDash.description && <p className="text-sm text-slate-500">{activeDash.description}</p>}
           </div>
-          <div className="ml-auto flex gap-2">
-            <Button variant="outline" size="sm" onClick={() => openEdit(activeDash)}><Edit2 className="w-4 h-4 mr-1" />Edit</Button>
+          <Button variant="outline" size="sm" onClick={() => openEdit(activeDash)} className="gap-1">
+            <Edit2 className="w-3.5 h-3.5" /> Edit Widgets
+          </Button>
+        </div>
+
+        {(!activeDash.widgets || activeDash.widgets.length === 0) ? (
+          <Card className="border-dashed border-2 border-slate-200 shadow-none">
+            <CardContent className="py-16 text-center">
+              <LayoutDashboard className="w-10 h-10 text-slate-300 mx-auto mb-3" />
+              <p className="text-slate-500 font-medium">No widgets yet</p>
+              <p className="text-slate-400 text-sm mb-4">Edit this dashboard to add charts</p>
+              <Button onClick={() => openEdit(activeDash)} className="bg-blue-600 hover:bg-blue-700"><Edit2 className="w-4 h-4 mr-1" />Add Widgets</Button>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="grid lg:grid-cols-2 gap-6">
+            {activeDash.widgets.map(w => (
+              <WidgetRenderer key={w.id} type={w.type} data={data} />
+            ))}
           </div>
-        </div>
-        {activeDash.widgets?.length === 0 && (
-          <div className="text-center py-16 text-slate-400">No widgets added yet. Edit this dashboard to add widgets.</div>
         )}
-        <div className="grid lg:grid-cols-2 gap-6">
-          {activeDash.widgets?.map(w => (
-            <WidgetRenderer key={w.id} type={w.type} data={data} />
-          ))}
-        </div>
+
+        {/* Builder Sheet */}
+        <BuilderSheet
+          open={builderOpen}
+          onOpenChange={setBuilderOpen}
+          form={form}
+          setForm={setForm}
+          editingDash={editingDash}
+          toggleWidget={toggleWidget}
+          saveDashboard={saveDashboard}
+        />
       </div>
     );
   }
@@ -119,11 +144,11 @@ export default function CustomDashboardBuilder({ companyId, data }) {
                     <button className="p-1 text-slate-400 hover:text-red-500" onClick={() => deleteDash(dash.id)}><Trash2 className="w-3.5 h-3.5" /></button>
                   </div>
                 </div>
-                {dash.description && <p className="text-xs text-slate-500">{dash.description}</p>}
+                {dash.description && <p className="text-xs text-slate-500 mt-0.5">{dash.description}</p>}
               </CardHeader>
               <CardContent>
-                <p className="text-xs text-slate-400">{dash.widgets?.length || 0} widget{dash.widgets?.length !== 1 ? "s" : ""}</p>
-                <div className="flex flex-wrap gap-1 mt-2">
+                <p className="text-xs text-slate-400 mb-2">{dash.widgets?.length || 0} widget{dash.widgets?.length !== 1 ? "s" : ""}</p>
+                <div className="flex flex-wrap gap-1">
                   {dash.widgets?.slice(0, 3).map(w => (
                     <span key={w.id} className="text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full">{w.title}</span>
                   ))}
@@ -137,44 +162,71 @@ export default function CustomDashboardBuilder({ companyId, data }) {
         </div>
       )}
 
-      {/* Builder Sheet */}
-      <Sheet open={builderOpen} onOpenChange={setBuilderOpen}>
-        <SheetContent className="w-full sm:max-w-lg overflow-y-auto">
-          <SheetHeader>
-            <SheetTitle>{editingDash ? "Edit Dashboard" : "New Dashboard"}</SheetTitle>
-          </SheetHeader>
-          <div className="space-y-4 mt-4">
-            <div>
-              <label className="text-sm font-medium text-slate-700 mb-1 block">Name *</label>
-              <Input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="e.g. Revenue Overview" />
-            </div>
-            <div>
-              <label className="text-sm font-medium text-slate-700 mb-1 block">Description</label>
-              <Input value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} placeholder="Optional description" />
-            </div>
-            <div>
-              <label className="text-sm font-medium text-slate-700 mb-2 block">Select Widgets</label>
-              <div className="space-y-2">
-                {ALL_WIDGETS.map(w => (
-                  <label key={w.type} className="flex items-center gap-3 p-3 rounded-lg border border-slate-200 cursor-pointer hover:bg-slate-50">
-                    <Checkbox
-                      checked={!!form.widgets.find(fw => fw.type === w.type)}
-                      onCheckedChange={() => toggleWidget(w.type)}
-                    />
-                    <span className="text-sm text-slate-700">{w.label}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-            <div className="flex gap-2 pt-2">
-              <Button onClick={saveDashboard} className="bg-blue-600 hover:bg-blue-700 flex-1" disabled={!form.name.trim()}>
-                {editingDash ? "Save Changes" : "Create Dashboard"}
-              </Button>
-              <Button variant="outline" onClick={() => setBuilderOpen(false)}>Cancel</Button>
+      <BuilderSheet
+        open={builderOpen}
+        onOpenChange={setBuilderOpen}
+        form={form}
+        setForm={setForm}
+        editingDash={editingDash}
+        toggleWidget={toggleWidget}
+        saveDashboard={saveDashboard}
+      />
+    </div>
+  );
+}
+
+function BuilderSheet({ open, onOpenChange, form, setForm, editingDash, toggleWidget, saveDashboard }) {
+  return (
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent className="w-full sm:max-w-lg overflow-y-auto">
+        <SheetHeader>
+          <SheetTitle>{editingDash ? "Edit Dashboard" : "New Dashboard"}</SheetTitle>
+        </SheetHeader>
+        <div className="space-y-5 mt-4">
+          <div>
+            <label className="text-sm font-medium text-slate-700 mb-1 block">Dashboard Name *</label>
+            <Input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="e.g. Revenue Overview" />
+          </div>
+          <div>
+            <label className="text-sm font-medium text-slate-700 mb-1 block">Description</label>
+            <Input value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} placeholder="Optional description" />
+          </div>
+
+          <div>
+            <label className="text-sm font-medium text-slate-700 mb-3 block">
+              Select Widgets
+              {form.widgets.length > 0 && (
+                <span className="ml-2 text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">{form.widgets.length} selected</span>
+              )}
+            </label>
+            <div className="space-y-4">
+              {WIDGET_CATEGORIES.map(cat => (
+                <div key={cat.label}>
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">{cat.label}</p>
+                  <div className="space-y-1.5">
+                    {cat.widgets.map(w => (
+                      <label key={w.type} className={`flex items-center gap-3 p-2.5 rounded-lg border cursor-pointer transition-colors ${form.widgets.find(fw => fw.type === w.type) ? "border-blue-200 bg-blue-50" : "border-slate-200 hover:bg-slate-50"}`}>
+                        <Checkbox
+                          checked={!!form.widgets.find(fw => fw.type === w.type)}
+                          onCheckedChange={() => toggleWidget(w.type, w.label)}
+                        />
+                        <span className="text-sm text-slate-700">{w.label}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
-        </SheetContent>
-      </Sheet>
-    </div>
+
+          <div className="flex gap-2 pt-2 pb-4">
+            <Button onClick={saveDashboard} className="bg-blue-600 hover:bg-blue-700 flex-1" disabled={!form.name.trim()}>
+              {editingDash ? "Save Changes" : "Create Dashboard"}
+            </Button>
+            <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
+          </div>
+        </div>
+      </SheetContent>
+    </Sheet>
   );
 }
