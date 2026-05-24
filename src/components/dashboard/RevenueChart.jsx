@@ -11,10 +11,14 @@ export default function RevenueChart({ invoices }) {
     const revenue = invoices
       .filter(inv => inv.status === "paid")
       .filter(inv => {
-        const d = new Date(inv.paid_date || inv.updated_date || inv.created_date);
+        // paid_date is "YYYY-MM-DD" — parse with time component to avoid UTC midnight shifting into wrong month
+        const rawDate = inv.paid_date || inv.updated_date || inv.created_date;
+        if (!rawDate) return false;
+        // If it's a plain date string (YYYY-MM-DD), append time to treat as local
+        const d = rawDate.length <= 10 ? new Date(`${rawDate}T00:00:00`) : new Date(rawDate);
         return d >= start && d <= end;
       })
-      .reduce((s, inv) => s + (inv.total || 0), 0);
+      .reduce((s, inv) => s + (inv.amount_paid > 0 ? inv.amount_paid : (inv.total || 0)), 0);
     return { month: format(date, "MMM"), revenue };
   });
 
