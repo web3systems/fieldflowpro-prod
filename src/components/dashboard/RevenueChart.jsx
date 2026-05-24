@@ -9,7 +9,7 @@ export default function RevenueChart({ invoices }) {
     const start = startOfMonth(date);
     const end = endOfMonth(date);
     const revenue = invoices
-      .filter(inv => inv.status === "paid")
+      .filter(inv => inv.status === "paid" || inv.status === "partial")
       .filter(inv => {
         // paid_date is "YYYY-MM-DD" — parse with time component to avoid UTC midnight shifting into wrong month
         const rawDate = inv.paid_date || inv.updated_date || inv.created_date;

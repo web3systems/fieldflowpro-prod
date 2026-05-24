@@ -24,7 +24,7 @@ export default function RecordPaymentModal({ invoice, onClose, onSaved }) {
     await base44.entities.Invoice.update(invoice.id, {
       amount_paid: newAmountPaid,
       status: newStatus,
-      paid_date: newStatus === "paid" ? paidDate : invoice.paid_date,
+      paid_date: paidDate,
       payment_method: method,
       notes: note ? `${invoice.notes || ""}\n[Payment ${paidDate}]: ${note}`.trim() : invoice.notes,
     });
