@@ -67,11 +67,7 @@ export default function CustomerPortal() {
     const paymentSuccess = params.get("payment_success");
     const paidInvoiceId = params.get("invoice_id");
     if (paymentSuccess === "true" && paidInvoiceId) {
-      base44.entities.Invoice.update(paidInvoiceId, {
-        status: "paid",
-        paid_date: new Date().toISOString().split("T")[0],
-        payment_method: "stripe",
-      }).catch(() => {});
+      // Webhook handles the actual update; just refresh UI and show invoices tab
       window.history.replaceState({}, "", window.location.pathname);
       setActiveTab("invoices");
     } else if (params.has("estimate_id")) {
@@ -473,13 +469,18 @@ export default function CustomerPortal() {
                                   onClick={async () => {
                                     const isInIframe = window.self !== window.top;
                                     if (isInIframe) { alert("Payment only works from the published app."); return; }
-                                    const res = await base44.functions.invoke("createStripeCheckout", {
-                                      invoice_id: inv.id,
-                                      success_url: window.location.href.split("?")[0] + "?invoice_id=" + inv.id,
-                                      cancel_url: window.location.href.split("?")[0],
-                                    });
-                                    if (res.data?.url) window.location.href = res.data.url;
-                                    else alert(res.data?.error || "Failed to start checkout.");
+                                    try {
+                                      const base = window.location.href.split("?")[0];
+                                      const res = await base44.functions.invoke("createStripeCheckout", {
+                                        invoice_id: inv.id,
+                                        success_url: `${base}?payment_success=true&invoice_id=${inv.id}`,
+                                        cancel_url: `${base}?invoice_id=${inv.id}`,
+                                      });
+                                      if (res.data?.url) window.location.href = res.data.url;
+                                      else alert(res.data?.error || "Failed to start checkout.");
+                                    } catch (err) {
+                                      alert("Failed to start checkout. Please try again.");
+                                    }
                                   }}
                                   className="text-xs px-3 py-1.5 rounded-md font-semibold text-white"
                                   style={{ backgroundColor: accentColor }}
