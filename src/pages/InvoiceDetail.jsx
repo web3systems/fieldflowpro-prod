@@ -9,6 +9,7 @@ import {
   Phone, MapPin, Banknote
 } from "lucide-react";
 import RecordPaymentModal from "@/components/invoices/RecordPaymentModal";
+import ManualChargeModal from "@/components/invoices/ManualChargeModal";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -55,6 +56,7 @@ export default function InvoiceDetail() {
   const [editingInfo, setEditingInfo] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [showRecordPayment, setShowRecordPayment] = useState(false);
+  const [showManualCharge, setShowManualCharge] = useState(false);
   const [showDepositModal, setShowDepositModal] = useState(false);
   const [depositAmount, setDepositAmount] = useState("");
   const [depositLoading, setDepositLoading] = useState(false);
@@ -231,6 +233,15 @@ export default function InvoiceDetail() {
         />
       )}
 
+      {showManualCharge && invoice && (
+        <ManualChargeModal
+          invoice={invoice}
+          amountDue={amountDue}
+          onSuccess={() => { setShowManualCharge(false); loadData(); }}
+          onClose={() => setShowManualCharge(false)}
+        />
+      )}
+
       {showDepositModal && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6">
@@ -363,8 +374,11 @@ export default function InvoiceDetail() {
                 <>
                   <Button onClick={handleStripePayment} disabled={paymentLoading} className="w-full gap-2 bg-violet-600 hover:bg-violet-700">
                     <CreditCard className="w-4 h-4" />
-                    {paymentLoading ? "Redirecting..." : `Pay $${amountDue.toFixed(2)} via Stripe`}
+                    {paymentLoading ? "Redirecting..." : `Send Payment Link`}
                     <ExternalLink className="w-3.5 h-3.5 ml-auto" />
+                  </Button>
+                  <Button onClick={() => setShowManualCharge(true)} className="w-full gap-2 bg-blue-600 hover:bg-blue-700">
+                    <CreditCard className="w-4 h-4" /> Charge Card Manually
                   </Button>
                   <Button variant="outline" onClick={() => setShowRecordPayment(true)} className="w-full gap-2 border-green-200 text-green-700 hover:bg-green-50">
                     <Banknote className="w-4 h-4" /> Record Manual Payment
@@ -444,7 +458,10 @@ export default function InvoiceDetail() {
                   <>
                     <Button onClick={handleStripePayment} disabled={paymentLoading} className="w-full gap-2 bg-violet-600 hover:bg-violet-700 mt-1">
                       <CreditCard className="w-4 h-4" />
-                      {paymentLoading ? "Redirecting..." : `Pay $${amountDue.toFixed(2)} via Stripe`}
+                      {paymentLoading ? "Redirecting..." : `Send Payment Link`}
+                    </Button>
+                    <Button onClick={() => setShowManualCharge(true)} className="w-full gap-2 bg-blue-600 hover:bg-blue-700 mt-1">
+                      <CreditCard className="w-4 h-4" /> Charge Card Manually
                     </Button>
                     <Button variant="outline" onClick={() => setShowRecordPayment(true)} className="w-full gap-2 border-green-200 text-green-700 hover:bg-green-50 mt-1">
                       <Banknote className="w-4 h-4" /> Record Manual Payment
