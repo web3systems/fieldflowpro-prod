@@ -1,15 +1,10 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 import Stripe from 'npm:stripe@14.21.0';
-
-const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY"));
 
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
-    if (!user) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY"));
 
     const { invoice_id, success_url, cancel_url } = await req.json();
 
@@ -17,6 +12,7 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'invoice_id is required' }, { status: 400 });
     }
 
+    // Use service role so portal customers (who may not be fully authenticated) can pay
     const invoices = await base44.asServiceRole.entities.Invoice.filter({ id: invoice_id });
     const invoice = invoices[0];
     if (!invoice) {
