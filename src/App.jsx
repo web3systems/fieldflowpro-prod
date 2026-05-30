@@ -35,6 +35,7 @@ import NewEstimate from './pages/NewEstimate';
 import NewInvoice from './pages/NewInvoice';
 import TermsOfService from './pages/TermsOfService';
 import PrivacyPolicy from './pages/PrivacyPolicy';
+import CustomerPortal from './pages/CustomerPortal';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 
@@ -158,6 +159,7 @@ function App() {
             <Route path="/LeadCapture" element={<LeadCapture />} />
             <Route path="/TermsOfService" element={<TermsOfService />} />
             <Route path="/PrivacyPolicy" element={<PrivacyPolicy />} />
+            <Route path="/CustomerPortal" element={<CustomerPortal />} />
             <Route path="*" element={<AuthenticatedApp />} />
           </Routes>
         </Router>
