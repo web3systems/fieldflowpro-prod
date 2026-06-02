@@ -70,7 +70,7 @@ export default function Layout({ children, currentPageName }) {
   const location = useLocation();
 
   const isCustomerPortalCheck = currentPageName === "CustomerPortal";
-  const isCustomerPortal = isCustomerPortalCheck || user?.role === "customer";
+  const isCustomerPortal = isCustomerPortalCheck;
   const isSuperAdminUser = user?.role === "super_admin" || user?.role === "admin";
   const pendingRequestCount = useAccessRequestCount(isSuperAdminUser);
 
@@ -107,6 +107,17 @@ export default function Layout({ children, currentPageName }) {
       setCompaniesLoading(true);
       const res = await base44.functions.invoke('getUserCompanies', {});
       const list = res.data?.companies || [];
+
+      // If this user has NO company access, check if they're a customer → redirect to portal
+      if (list.length === 0 && !isCustomerPortal) {
+        const portalRes = await base44.functions.invoke('getCustomerPortalData', { action: 'init' });
+        const portalData = portalRes.data;
+        if (portalData?.customers?.length > 0) {
+          window.location.href = '/CustomerPortal';
+          return;
+        }
+      }
+
       setCompanies(list);
       const saved = localStorage.getItem("activeCompanyId");
       const found = list.find(c => c.id === saved) || list[0];
@@ -120,12 +131,6 @@ export default function Layout({ children, currentPageName }) {
   function switchCompany(company) {
     setActiveCompany(company);
     localStorage.setItem("activeCompanyId", company.id);
-  }
-
-  // Redirect customer-role users to their portal
-  if (user?.role === "customer" && !isCustomerPortalCheck) {
-    window.location.href = "/CustomerPortal";
-    return null;
   }
 
   if (isCustomerPortal) {
