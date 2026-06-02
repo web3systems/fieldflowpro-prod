@@ -8,7 +8,31 @@ Deno.serve(async (req) => {
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const { action, payload } = await req.json();
+    const { action, payload, preview_customer_id } = await req.json();
+
+    // Staff preview mode: if preview_customer_id is passed, verify the user is staff and load that customer directly
+    if (preview_customer_id) {
+      const accessRecords = await base44.asServiceRole.entities.UserCompanyAccess.filter({ user_email: user.email });
+      const isStaff = accessRecords.length > 0 || (user.role && !['user', 'customer'].includes(user.role));
+      if (!isStaff) return Response.json({ error: 'Forbidden' }, { status: 403 });
+
+      const previewCustomers = await base44.asServiceRole.entities.Customer.filter({ id: preview_customer_id });
+      if (!previewCustomers[0]) return Response.json({ error: 'Customer not found' }, { status: 404 });
+
+      const previewCustomer = previewCustomers[0];
+      const companyList = await base44.asServiceRole.entities.Company.filter({ id: previewCustomer.company_id });
+      const company = companyList[0];
+      const safeCompany = company ? {
+        id: company.id, name: company.name, logo_url: company.logo_url, primary_color: company.primary_color,
+        phone: company.phone, email: company.email, google_review_url: company.google_review_url, portal_settings: company.portal_settings,
+      } : null;
+      const safeCustomer = {
+        id: previewCustomer.id, first_name: previewCustomer.first_name, last_name: previewCustomer.last_name,
+        email: previewCustomer.email, phone: previewCustomer.phone, address: previewCustomer.address,
+        city: previewCustomer.city, state: previewCustomer.state, zip: previewCustomer.zip, company_id: previewCustomer.company_id,
+      };
+      return Response.json({ customers: [safeCustomer], companies: safeCompany ? [safeCompany] : [], is_preview: true });
+    }
 
     // Find all customer records linked to this user (by portal_user_id or email)
     const allCustomers = await base44.asServiceRole.entities.Customer.list();
@@ -69,9 +93,17 @@ Deno.serve(async (req) => {
     if (action === 'load_account') {
       const { customer_id } = payload || {};
 
-      // Verify this customer_id belongs to the authenticated user
-      const customer = myCustomers.find(c => c.id === customer_id);
-      if (!customer) return Response.json({ error: 'Forbidden' }, { status: 403 });
+      // In preview mode, staff can load any customer's data directly
+      let customer;
+      if (preview_customer_id) {
+        const found = await base44.asServiceRole.entities.Customer.filter({ id: customer_id });
+        customer = found[0];
+        if (!customer) return Response.json({ error: 'Not found' }, { status: 404 });
+      } else {
+        // Verify this customer_id belongs to the authenticated user
+        customer = myCustomers.find(c => c.id === customer_id);
+        if (!customer) return Response.json({ error: 'Forbidden' }, { status: 403 });
+      }
 
       const [jobs, invoices, estimates, services] = await Promise.all([
         base44.asServiceRole.entities.Job.filter({ customer_id: customer.id }),

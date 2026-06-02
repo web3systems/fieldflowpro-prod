@@ -3,10 +3,9 @@ import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Phone, Mail, MapPin, Edit2, Check, X, Tag, Plus, ExternalLink, Bell, MessageSquare } from "lucide-react";
+import { Phone, Mail, MapPin, Edit2, Check, X, Tag, Plus, ExternalLink, Bell, MessageSquare, Eye, CheckCircle } from "lucide-react";
 import { format } from "date-fns";
-
-export default function CustomerSidebar({ customer, invoices, onUpdate, onPortalInvite, sendingInvite }) {
+export default function CustomerSidebar({ customer, invoices, onUpdate, onPortalInvite, sendingInvite, onPreviewPortal }) {
   const [editingContact, setEditingContact] = useState(false);
   const [contactForm, setContactForm] = useState({});
   const [newTag, setNewTag] = useState("");
@@ -108,9 +107,24 @@ export default function CustomerSidebar({ customer, invoices, onUpdate, onPortal
             </div>
             <div className="pt-1">
               <p className="text-xs text-slate-400 mb-1">Customer portal</p>
-              <Button variant="outline" size="sm" className="h-7 text-xs gap-1" onClick={onPortalInvite} disabled={!customer.email || sendingInvite}>
-                <ExternalLink className="w-3 h-3" />{sendingInvite ? "Sending..." : "Send invite"}
-              </Button>
+              <div className="space-y-1.5">
+                {customer.portal_invite_sent && (
+                  <div className="flex items-center gap-1 text-xs text-green-600">
+                    <CheckCircle className="w-3 h-3" />
+                    <span>Invite sent {customer.portal_invite_sent_at ? format(new Date(customer.portal_invite_sent_at), "MMM d, yyyy") : ""}</span>
+                  </div>
+                )}
+                <div className="flex gap-1.5">
+                  <Button variant="outline" size="sm" className="h-7 text-xs gap-1 flex-1" onClick={onPortalInvite} disabled={!customer.email || sendingInvite}>
+                    <ExternalLink className="w-3 h-3" />{sendingInvite ? "Sending..." : customer.portal_invite_sent ? "Resend" : "Send invite"}
+                  </Button>
+                  {customer.email && (
+                    <Button variant="outline" size="sm" className="h-7 text-xs gap-1 flex-1" onClick={onPreviewPortal} title="Preview portal as this customer">
+                      <Eye className="w-3 h-3" /> Preview
+                    </Button>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         )}

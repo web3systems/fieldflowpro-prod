@@ -65,8 +65,15 @@ export default function CustomerDetail() {
     setSendingInvite(true);
     const portalUrl = window.location.origin + "/CustomerPortal";
     await base44.functions.invoke("sendPortalInvite", { customer_id: id, portal_url: portalUrl });
+    const now = new Date().toISOString();
+    await base44.entities.Customer.update(id, { portal_invite_sent: true, portal_invite_sent_at: now });
+    setCustomer(prev => ({ ...prev, portal_invite_sent: true, portal_invite_sent_at: now }));
     setSendingInvite(false);
     alert("Portal invite sent to " + customer.email);
+  }
+
+  function handlePreviewPortal() {
+    window.open(`/CustomerPortal?preview_customer_id=${id}`, "_blank");
   }
 
   if (loading) return (
@@ -124,6 +131,7 @@ export default function CustomerDetail() {
             onUpdate={handleUpdate}
             onPortalInvite={handlePortalInvite}
             sendingInvite={sendingInvite}
+            onPreviewPortal={handlePreviewPortal}
           />
         </div>
 
@@ -137,6 +145,7 @@ export default function CustomerDetail() {
               onUpdate={handleUpdate}
               onPortalInvite={handlePortalInvite}
               sendingInvite={sendingInvite}
+              onPreviewPortal={handlePreviewPortal}
             />
           </div>
 

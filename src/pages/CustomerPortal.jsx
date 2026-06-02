@@ -10,9 +10,11 @@ import PortalInvoices from "@/components/portal/PortalInvoices";
 import PortalAccount from "@/components/portal/PortalAccount";
 
 export default function CustomerPortal() {
+  const previewCustomerId = new URLSearchParams(window.location.search).get("preview_customer_id");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [accounts, setAccounts] = useState([]);
+  const [isPreview, setIsPreview] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
   const [jobs, setJobs] = useState([]);
   const [invoices, setInvoices] = useState([]);
@@ -44,10 +46,15 @@ export default function CustomerPortal() {
 
   async function init() {
     try {
-      const res = await base44.functions.invoke("getCustomerPortalData", { action: "init" });
+      const res = await base44.functions.invoke("getCustomerPortalData", {
+        action: "init",
+        ...(previewCustomerId ? { preview_customer_id: previewCustomerId } : {}),
+      });
       const data = res.data;
 
-      if (data.is_staff) {
+      if (data.is_preview) setIsPreview(true);
+
+      if (data.is_staff && !previewCustomerId) {
         window.location.href = "/Dashboard";
         return;
       }
@@ -73,6 +80,7 @@ export default function CustomerPortal() {
       const res = await base44.functions.invoke("getCustomerPortalData", {
         action: "load_account",
         payload: { customer_id: customerId },
+        ...(previewCustomerId ? { preview_customer_id: previewCustomerId } : {}),
       });
       const d = res.data;
       setJobs(d.jobs || []);
@@ -148,15 +156,23 @@ export default function CustomerPortal() {
   );
 
   return (
-    <PortalLayout
-      activeTab={activeTab}
-      setActiveTab={setActiveTab}
-      customer={customer}
-      company={company}
-      sidebarOpen={sidebarOpen}
-      setSidebarOpen={setSidebarOpen}
-    >
-      {tabContent}
-    </PortalLayout>
+    <div>
+      {isPreview && (
+        <div className="bg-amber-500 text-white text-sm px-4 py-2 flex items-center justify-between gap-4 sticky top-0 z-50">
+          <span>👁 <strong>Staff Preview Mode</strong> — You're viewing the portal as <strong>{customer.first_name} {customer.last_name}</strong>. Changes are real.</span>
+          <button onClick={() => window.close()} className="text-white underline text-xs hover:opacity-80">Close</button>
+        </div>
+      )}
+      <PortalLayout
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        customer={customer}
+        company={company}
+        sidebarOpen={sidebarOpen}
+        setSidebarOpen={setSidebarOpen}
+      >
+        {tabContent}
+      </PortalLayout>
+    </div>
   );
 }

@@ -77,6 +77,15 @@
     "portal_user_id": {
       "type": "string"
     },
+    "portal_invite_sent": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether a customer portal invite email has been sent to this customer"
+    },
+    "portal_invite_sent_at": {
+      "type": "string",
+      "description": "Timestamp when the portal invite was last sent"
+    },
     "service_addresses": {
       "type": "array",
       "items": {
