@@ -21,6 +21,7 @@ import JobPhotosSection from "@/components/jobs/JobPhotosSection";
 import JobCostingSection from "@/components/jobs/JobCostingSection";
 import JobReceiptsSection from "@/components/jobs/JobReceiptsSection";
 import JobActivityFeed from "@/components/jobs/JobActivityFeed";
+import JobTasksSection from "@/components/jobs/JobTasksSection";
 import AttachDocumentModal from "@/components/jobs/AttachDocumentModal";
 import DepositRequestModal from "@/components/jobs/DepositRequestModal";
 
@@ -311,6 +312,13 @@ export default function JobDetail() {
             onGenerateInvoice={() => generateInvoice(false)}
             onCollectPayment={() => generateInvoice(true)}
             invoiceLoading={invoiceActionLoading}
+          />
+
+          {/* Internal Task Board */}
+          <JobTasksSection
+            job={job}
+            techs={techs}
+            onTasksUpdated={(checklist) => setJob(j => ({ ...j, checklist }))}
           />
 
           {/* Appointment */}
