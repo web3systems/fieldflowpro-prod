@@ -79,7 +79,7 @@ export default function Layout({ children, currentPageName }) {
   }, []);
 
   useEffect(() => {
-    if (user && !isCustomerPortal) loadCompanies();
+    if (user) loadCompanies();
   }, [user]);
 
   useEffect(() => {
@@ -105,17 +105,22 @@ export default function Layout({ children, currentPageName }) {
     try {
       if (!user?.email) return;
       setCompaniesLoading(true);
-      const res = await base44.functions.invoke('getUserCompanies', {});
-      const list = res.data?.companies || [];
 
-      // If this user has NO company access, check if they're a customer → redirect to portal
-      if (list.length === 0 && !isCustomerPortal) {
-        const portalRes = await base44.functions.invoke('getCustomerPortalData', { action: 'init' });
-        const portalData = portalRes.data;
-        if (portalData?.customers?.length > 0) {
-          window.location.href = '/CustomerPortal';
-          return;
-        }
+      // Run company access check and customer portal check in parallel
+      const [companyRes, portalRes] = await Promise.all([
+        base44.functions.invoke('getUserCompanies', {}),
+        window.location.pathname !== '/CustomerPortal'
+          ? base44.functions.invoke('getCustomerPortalData', { action: 'init' }).catch(() => null)
+          : Promise.resolve(null),
+      ]);
+
+      const list = companyRes.data?.companies || [];
+      const portalData = portalRes?.data;
+
+      // If user has customer records but NO staff company access → send to portal
+      if (list.length === 0 && portalData?.customers?.length > 0) {
+        window.location.href = '/CustomerPortal';
+        return;
       }
 
       setCompanies(list);
@@ -123,6 +128,7 @@ export default function Layout({ children, currentPageName }) {
       const found = list.find(c => c.id === saved) || list[0];
       setActiveCompany(found || null);
     } catch (e) {
+      console.error('loadCompanies error:', e);
     } finally {
       setCompaniesLoading(false);
     }
