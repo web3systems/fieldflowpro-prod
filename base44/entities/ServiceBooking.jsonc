@@ -1,0 +1,58 @@
+{
+  "name": "ServiceBooking",
+  "type": "object",
+  "properties": {
+    "company_id": {
+      "type": "string"
+    },
+    "customer_id": {
+      "type": "string"
+    },
+    "first_name": {
+      "type": "string"
+    },
+    "last_name": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string"
+    },
+    "phone": {
+      "type": "string"
+    },
+    "address": {
+      "type": "string"
+    },
+    "service_type": {
+      "type": "string"
+    },
+    "preferred_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "preferred_time": {
+      "type": "string"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "confirmed",
+        "converted",
+        "cancelled"
+      ],
+      "default": "pending"
+    },
+    "job_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "company_id",
+    "first_name",
+    "last_name"
+  ]
+}

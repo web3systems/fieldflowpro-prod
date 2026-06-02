@@ -1,0 +1,39 @@
+{
+  "name": "CampaignIdea",
+  "type": "object",
+  "properties": {
+    "company_id": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string",
+      "description": "Campaign idea name"
+    },
+    "description": {
+      "type": "string",
+      "description": "Brief description / notes about the idea"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "idea",
+        "in_review",
+        "approved",
+        "archived"
+      ],
+      "default": "idea"
+    },
+    "html_content_url": {
+      "type": "string",
+      "description": "URL to the uploaded HTML file for the campaign landing page preview"
+    },
+    "is_confidential": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "company_id",
+    "name"
+  ]
+}

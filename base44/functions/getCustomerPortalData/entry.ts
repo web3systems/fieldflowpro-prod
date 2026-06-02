@@ -19,7 +19,9 @@ Deno.serve(async (req) => {
     if (myCustomers.length === 0) {
       // Check if this is a staff user who should be redirected
       const accessRecords = await base44.asServiceRole.entities.UserCompanyAccess.filter({ user_email: user.email });
-      if (accessRecords.length > 0 || (user.role && user.role !== 'user')) {
+      const isCustomer = user.role === 'customer';
+      const isStaff = !isCustomer && (accessRecords.length > 0 || (user.role && !['user', 'customer'].includes(user.role)));
+      if (isStaff) {
         return Response.json({ is_staff: true });
       }
       return Response.json({ customers: [], companies: [] });

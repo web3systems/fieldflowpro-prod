@@ -1,0 +1,48 @@
+{
+  "name": "Activity",
+  "type": "object",
+  "properties": {
+    "company_id": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "note",
+        "call",
+        "email",
+        "sms",
+        "status_change",
+        "payment",
+        "file_upload"
+      ]
+    },
+    "related_to_type": {
+      "type": "string",
+      "enum": [
+        "customer",
+        "job",
+        "lead",
+        "invoice",
+        "estimate"
+      ]
+    },
+    "related_to_id": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "content": {
+      "type": "string"
+    },
+    "created_by_name": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "company_id",
+    "type",
+    "related_to_id"
+  ]
+}

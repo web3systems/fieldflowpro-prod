@@ -1,0 +1,96 @@
+{
+  "name": "NotificationSetting",
+  "type": "object",
+  "properties": {
+    "user_email": {
+      "type": "string"
+    },
+    "user_id": {
+      "type": "string"
+    },
+    "user_name": {
+      "type": "string"
+    },
+    "company_id": {
+      "type": "string"
+    },
+    "is_enabled": {
+      "type": "boolean",
+      "default": true
+    },
+    "channels": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "boolean",
+          "default": true
+        },
+        "sms": {
+          "type": "boolean",
+          "default": false
+        },
+        "in_app": {
+          "type": "boolean",
+          "default": true
+        },
+        "slack": {
+          "type": "boolean",
+          "default": false
+        },
+        "whatsapp": {
+          "type": "boolean",
+          "default": false
+        }
+      }
+    },
+    "events": {
+      "type": "object",
+      "properties": {
+        "new_job_assigned": {
+          "type": "boolean",
+          "default": true
+        },
+        "job_status_change": {
+          "type": "boolean",
+          "default": true
+        },
+        "job_reminder": {
+          "type": "boolean",
+          "default": true
+        },
+        "new_booking": {
+          "type": "boolean",
+          "default": true
+        },
+        "new_lead": {
+          "type": "boolean",
+          "default": true
+        },
+        "new_customer": {
+          "type": "boolean",
+          "default": false
+        },
+        "invoice_paid": {
+          "type": "boolean",
+          "default": true
+        },
+        "invoice_overdue": {
+          "type": "boolean",
+          "default": true
+        },
+        "payment_received": {
+          "type": "boolean",
+          "default": true
+        },
+        "estimate_approved": {
+          "type": "boolean",
+          "default": true
+        }
+      }
+    }
+  },
+  "required": [
+    "user_email",
+    "company_id"
+  ]
+}

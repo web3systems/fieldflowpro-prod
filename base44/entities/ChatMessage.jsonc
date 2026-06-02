@@ -1,0 +1,57 @@
+{
+  "name": "ChatMessage",
+  "type": "object",
+  "properties": {
+    "company_id": {
+      "type": "string"
+    },
+    "customer_id": {
+      "type": "string"
+    },
+    "job_id": {
+      "type": "string"
+    },
+    "sender_type": {
+      "type": "string",
+      "enum": [
+        "customer",
+        "technician",
+        "ai",
+        "system"
+      ],
+      "description": "Who sent the message"
+    },
+    "sender_name": {
+      "type": "string"
+    },
+    "sender_email": {
+      "type": "string"
+    },
+    "message": {
+      "type": "string"
+    },
+    "is_read_by_staff": {
+      "type": "boolean",
+      "default": false
+    },
+    "is_read_by_customer": {
+      "type": "boolean",
+      "default": false
+    },
+    "message_type": {
+      "type": "string",
+      "enum": [
+        "text",
+        "system_event",
+        "ai"
+      ],
+      "default": "text"
+    }
+  },
+  "required": [
+    "company_id",
+    "customer_id",
+    "sender_type",
+    "message"
+  ]
+}

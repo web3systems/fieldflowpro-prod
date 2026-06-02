@@ -1,0 +1,91 @@
+{
+  "name": "CustomerNotificationSetting",
+  "type": "object",
+  "properties": {
+    "company_id": {
+      "type": "string"
+    },
+    "is_enabled": {
+      "type": "boolean",
+      "default": true
+    },
+    "channels": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "boolean",
+          "default": true
+        },
+        "sms": {
+          "type": "boolean",
+          "default": false
+        }
+      }
+    },
+    "events": {
+      "type": "object",
+      "properties": {
+        "booking_confirmed": {
+          "type": "boolean",
+          "default": true
+        },
+        "booking_reminder": {
+          "type": "boolean",
+          "default": true
+        },
+        "job_scheduled": {
+          "type": "boolean",
+          "default": true
+        },
+        "job_on_the_way": {
+          "type": "boolean",
+          "default": false
+        },
+        "job_completed": {
+          "type": "boolean",
+          "default": true
+        },
+        "estimate_sent": {
+          "type": "boolean",
+          "default": true
+        },
+        "invoice_sent": {
+          "type": "boolean",
+          "default": true
+        },
+        "invoice_reminder": {
+          "type": "boolean",
+          "default": true
+        },
+        "payment_receipt": {
+          "type": "boolean",
+          "default": true
+        },
+        "review_request": {
+          "type": "boolean",
+          "default": false
+        }
+      }
+    },
+    "custom_messages": {
+      "type": "object",
+      "properties": {
+        "booking_confirmed": {
+          "type": "string"
+        },
+        "job_scheduled": {
+          "type": "string"
+        },
+        "job_completed": {
+          "type": "string"
+        },
+        "invoice_sent": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "required": [
+    "company_id"
+  ]
+}

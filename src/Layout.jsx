@@ -70,7 +70,7 @@ export default function Layout({ children, currentPageName }) {
   const location = useLocation();
 
   const isCustomerPortalCheck = currentPageName === "CustomerPortal";
-  const isCustomerPortal = isCustomerPortalCheck;
+  const isCustomerPortal = isCustomerPortalCheck || user?.role === "customer";
   const isSuperAdminUser = user?.role === "super_admin" || user?.role === "admin";
   const pendingRequestCount = useAccessRequestCount(isSuperAdminUser);
 
@@ -120,6 +120,12 @@ export default function Layout({ children, currentPageName }) {
   function switchCompany(company) {
     setActiveCompany(company);
     localStorage.setItem("activeCompanyId", company.id);
+  }
+
+  // Redirect customer-role users to their portal
+  if (user?.role === "customer" && !isCustomerPortalCheck) {
+    window.location.href = "/CustomerPortal";
+    return null;
   }
 
   if (isCustomerPortal) {

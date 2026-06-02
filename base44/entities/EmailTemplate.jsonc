@@ -1,0 +1,57 @@
+{
+  "name": "EmailTemplate",
+  "type": "object",
+  "properties": {
+    "company_id": {
+      "type": "string"
+    },
+    "template_type": {
+      "type": "string",
+      "enum": [
+        "estimate",
+        "invoice"
+      ],
+      "description": "Type of template"
+    },
+    "header_color": {
+      "type": "string",
+      "default": "#FFC107",
+      "description": "Primary header color (hex)"
+    },
+    "accent_color": {
+      "type": "string",
+      "default": "#2C3E50",
+      "description": "Accent color for text and borders"
+    },
+    "logo_url": {
+      "type": "string",
+      "description": "Company logo URL"
+    },
+    "company_name": {
+      "type": "string",
+      "description": "Company name to display"
+    },
+    "company_phone": {
+      "type": "string"
+    },
+    "company_email": {
+      "type": "string"
+    },
+    "footer_text": {
+      "type": "string",
+      "description": "Custom footer text"
+    },
+    "show_logo": {
+      "type": "boolean",
+      "default": true
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "company_id",
+    "template_type"
+  ]
+}

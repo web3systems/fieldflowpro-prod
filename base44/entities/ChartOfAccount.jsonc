@@ -1,0 +1,52 @@
+{
+  "name": "ChartOfAccount",
+  "type": "object",
+  "properties": {
+    "company_id": {
+      "type": "string"
+    },
+    "code": {
+      "type": "string",
+      "description": "Account code e.g. 1000"
+    },
+    "name": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "asset",
+        "liability",
+        "equity",
+        "revenue",
+        "expense"
+      ],
+      "description": "Account type"
+    },
+    "subtype": {
+      "type": "string",
+      "description": "e.g. current_asset, fixed_asset, accounts_receivable, etc."
+    },
+    "description": {
+      "type": "string"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    },
+    "is_system": {
+      "type": "boolean",
+      "default": false,
+      "description": "System accounts cannot be deleted"
+    },
+    "balance": {
+      "type": "number",
+      "default": 0
+    }
+  },
+  "required": [
+    "company_id",
+    "name",
+    "type"
+  ]
+}

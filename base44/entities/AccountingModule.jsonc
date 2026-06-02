@@ -1,0 +1,35 @@
+{
+  "name": "AccountingModule",
+  "type": "object",
+  "properties": {
+    "company_id": {
+      "type": "string"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": false
+    },
+    "activated_by": {
+      "type": "string"
+    },
+    "activated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "fiscal_year_start": {
+      "type": "string",
+      "default": "01-01",
+      "description": "MM-DD format"
+    },
+    "currency": {
+      "type": "string",
+      "default": "USD"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "company_id"
+  ]
+}

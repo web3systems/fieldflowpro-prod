@@ -1,0 +1,30 @@
+{
+  "name": "UserCompanyAccess",
+  "type": "object",
+  "properties": {
+    "user_email": {
+      "type": "string"
+    },
+    "user_id": {
+      "type": "string"
+    },
+    "user_name": {
+      "type": "string"
+    },
+    "company_id": {
+      "type": "string"
+    },
+    "role": {
+      "type": "string",
+      "enum": [
+        "standard",
+        "manager"
+      ],
+      "default": "standard"
+    }
+  },
+  "required": [
+    "user_email",
+    "company_id"
+  ]
+}
