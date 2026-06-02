@@ -287,7 +287,10 @@ export default function Landing() {
           </nav>
 
           <div className="hidden md:flex items-center gap-3">
-            <Button variant="ghost" size="sm" onClick={handleSignIn}>Sign In</Button>
+            <Link to="/CustomerPortal">
+              <Button variant="ghost" size="sm" className="text-slate-500 hover:text-slate-900">Customer Portal</Button>
+            </Link>
+            <Button variant="ghost" size="sm" onClick={handleSignIn}>Business Sign In</Button>
             <Link to="/Register">
               <Button size="sm" className="bg-blue-600 hover:bg-blue-700">Get Started Free</Button>
             </Link>
@@ -305,8 +308,9 @@ export default function Landing() {
             <a href="#pricing" className="block text-sm text-slate-600" onClick={() => setMobileMenuOpen(false)}>Pricing</a>
             <a href="#testimonials" className="block text-sm text-slate-600" onClick={() => setMobileMenuOpen(false)}>Reviews</a>
             <a href="#faq" className="block text-sm text-slate-600" onClick={() => setMobileMenuOpen(false)}>FAQ</a>
+            <Link to="/CustomerPortal" className="block text-sm text-blue-600 font-medium" onClick={() => setMobileMenuOpen(false)}>Customer Portal →</Link>
             <div className="flex gap-2 pt-2">
-              <Button variant="outline" className="flex-1 w-full" size="sm" onClick={() => { setMobileMenuOpen(false); handleSignIn(); }}>Sign In</Button>
+              <Button variant="outline" className="flex-1 w-full" size="sm" onClick={() => { setMobileMenuOpen(false); handleSignIn(); }}>Business Sign In</Button>
               <Link to="/Register" className="flex-1"><Button className="w-full bg-blue-600 hover:bg-blue-700" size="sm">Get Started</Button></Link>
             </div>
           </div>
@@ -511,6 +515,30 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* CUSTOMER PORTAL CTA */}
+      <section className="py-16 bg-emerald-50 border-y border-emerald-100">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center gap-8">
+          <div className="flex-1 text-left">
+            <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200 mb-3">For Customers</Badge>
+            <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-3">Are you a customer looking for your portal?</h2>
+            <p className="text-slate-500 text-base leading-relaxed mb-2">
+              If your service provider uses FieldFlow Pro, you can log in to view your jobs, approve estimates, pay invoices, and request new services — anytime, from any device.
+            </p>
+            <p className="text-slate-400 text-sm">
+              <strong>Sign in with your email.</strong> If you've forgotten your password, use the "Forgot password" link on the login page to reset it instantly.
+            </p>
+          </div>
+          <div className="flex-shrink-0 flex flex-col items-center gap-3">
+            <Link to="/CustomerPortal">
+              <Button size="lg" className="bg-emerald-600 hover:bg-emerald-700 text-white gap-2 px-8 w-full">
+                Go to Customer Portal <ArrowRight className="w-4 h-4" />
+              </Button>
+            </Link>
+            <p className="text-slate-400 text-xs text-center">Use your email address to sign in.<br />Password reset is available on the login page.</p>
+          </div>
+        </div>
+      </section>
+
       {/* CTA */}
       <section className="py-24 bg-gradient-to-br from-blue-600 to-violet-700 text-white text-center">
         <div className="max-w-3xl mx-auto px-4 sm:px-6">
@@ -532,11 +560,12 @@ export default function Landing() {
             <div className="flex items-center gap-2.5">
               <img src="https://media.base44.com/images/public/69b20e4261ce8a3e5bf093b0/408bce6f6_LGipynfh-removebg-preview.png" alt="FieldFlow Pro" className="h-8 w-auto brightness-0 invert" />
             </div>
-            <div className="flex gap-6 text-sm">
+            <div className="flex gap-6 text-sm flex-wrap justify-center">
               <a href="#features" className="hover:text-white transition-colors">Features</a>
               <a href="#pricing" className="hover:text-white transition-colors">Pricing</a>
               <a href="#faq" className="hover:text-white transition-colors">FAQ</a>
               <Link to="/Register" className="hover:text-white transition-colors">Sign Up</Link>
+              <Link to="/CustomerPortal" className="text-blue-400 hover:text-blue-300 transition-colors font-medium">Customer Portal</Link>
             </div>
             <p className="text-xs text-slate-600">© 2026 FieldFlow Pro. All rights reserved.</p>
           </div>
