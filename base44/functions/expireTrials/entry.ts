@@ -10,8 +10,24 @@ Deno.serve(async (req) => {
     const now = new Date();
     let expired = 0;
 
+    const EXEMPT_COMPANIES = [
+      'parrow enterprises',
+      'honey-do crew',
+      'honey-do cleaning',
+      'kiss my grass',
+      'pretty little polishers',
+    ];
+
     for (const sub of trialingSubs) {
       if (!sub.trial_ends_at) continue;
+
+      // Check if company is exempt
+      const company = await base44.asServiceRole.entities.Company.filter({ id: sub.company_id });
+      const companyName = (company[0]?.name || '').toLowerCase().trim();
+      if (EXEMPT_COMPANIES.some(e => companyName.includes(e))) {
+        console.log(`Skipping exempt company: ${company[0]?.name}`);
+        continue;
+      }
       const trialEnd = new Date(sub.trial_ends_at);
       
       // If trial has ended and no active Stripe subscription (not yet converted)
