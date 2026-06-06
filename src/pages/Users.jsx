@@ -257,7 +257,7 @@ export default function Users() {
                     <div className="flex items-center gap-2 flex-shrink-0">
                       {(() => {
                         const userRole = accessRecords.find(a => a.user_email === email)?.role || "standard";
-                        const ri = ROLE_LABELS[userRole];
+                        const ri = ROLE_LABELS[userRole] || ROLE_LABELS.standard;
                         return <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${ri.color}`}>{ri.label}</span>;
                       })()}
                       <Badge variant="secondary" className="gap-1"><Building2 className="w-3 h-3" />{userCompanies.length} {userCompanies.length === 1 ? "company" : "companies"}</Badge>
