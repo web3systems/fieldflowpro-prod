@@ -36,6 +36,8 @@ import NewInvoice from './pages/NewInvoice';
 import TermsOfService from './pages/TermsOfService';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import CustomerPortal from './pages/CustomerPortal';
+import Documentation from './pages/Documentation';
+import ProductOverview from './pages/ProductOverview';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 
@@ -139,6 +141,7 @@ const AuthenticatedApp = () => {
       <Route path="/PrivacyPolicy" element={<PrivacyPolicy />} />
       <Route path="/Expenses" element={<LayoutWrapper currentPageName="Expenses"><Expenses /></LayoutWrapper>} />
       <Route path="/ProfitMargin" element={<LayoutWrapper currentPageName="ProfitMargin"><ProfitMargin /></LayoutWrapper>} />
+      <Route path="/Documentation" element={<LayoutWrapper currentPageName="Documentation"><Documentation /></LayoutWrapper>} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
@@ -160,6 +163,7 @@ function App() {
             <Route path="/TermsOfService" element={<TermsOfService />} />
             <Route path="/PrivacyPolicy" element={<PrivacyPolicy />} />
             <Route path="/CustomerPortal" element={<CustomerPortal />} />
+            <Route path="/ProductOverview" element={<ProductOverview />} />
             <Route path="*" element={<AuthenticatedApp />} />
           </Routes>
         </Router>

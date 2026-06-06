@@ -48,6 +48,7 @@ const navItems = [
   { label: "Price Book", icon: BookOpen, page: "PriceBook" },
   { label: "Settings", icon: Settings, page: "CompanySettings" },
   { label: "Email Templates", icon: Mail, page: "EmailTemplateEditor" },
+  { label: "Documentation", icon: BookOpen, page: "Documentation" },
 ];
 
 const adminItems = [
