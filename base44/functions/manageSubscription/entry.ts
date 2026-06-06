@@ -36,7 +36,8 @@ Deno.serve(async (req) => {
       await stripe.subscriptions.update(sub.stripe_subscription_id, {
         cancel_at_period_end: true,
       });
-      await base44.asServiceRole.entities.Subscription.update(sub.id, { status: 'cancelled' });
+      // Don't mark cancelled yet — keep active until period ends; webhook handles final cancellation
+      console.log(`Subscription set to cancel at period end for company ${company_id}`);
       return Response.json({ success: true });
     }
 

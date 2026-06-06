@@ -41,7 +41,7 @@ Deno.serve(async (req) => {
       user_email: owner_email,
       user_id: null,
       company_id: company.id,
-      role: 'admin',
+      role: 'manager',
       user_name: owner_name || '',
     });
 

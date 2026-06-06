@@ -51,7 +51,7 @@ Deno.serve(async (req) => {
       // Auto-invite the owner so they can log in
       if (owner_email) {
         try {
-          await base44.asServiceRole.users.inviteUser(owner_email, "user");
+          await base44.users.inviteUser(owner_email, "user");
           console.log(`Invited owner ${owner_email} to the app`);
         } catch (inviteErr) {
           // User may already exist — not a fatal error
@@ -68,6 +68,16 @@ Deno.serve(async (req) => {
               role: 'manager',
               user_name: owner_name || '',
             });
+            // Also update user_id if user exists
+            try {
+              const users = await base44.asServiceRole.entities.User.filter({ email: owner_email });
+              if (users[0]) {
+                await base44.asServiceRole.entities.UserCompanyAccess.update(
+                  (await base44.asServiceRole.entities.UserCompanyAccess.filter({ user_email: owner_email, company_id }))[0]?.id,
+                  { user_id: users[0].id }
+                );
+              }
+            } catch (e) { /* non-fatal */ }
             console.log(`UserCompanyAccess created for ${owner_email} on company ${company_id}`);
           }
         } catch (accessErr) {
