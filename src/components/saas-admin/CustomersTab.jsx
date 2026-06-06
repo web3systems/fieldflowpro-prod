@@ -19,8 +19,8 @@ export default function CustomersTab() {
 
   useEffect(() => {
     Promise.all([
-      base44.asServiceRole.entities.Company.list('-created_date'),
-      base44.asServiceRole.entities.Subscription.list(),
+      base44.entities.Company.list('-created_date'),
+      base44.entities.Subscription.list(),
     ]).then(([cos, subs]) => {
       setCompanies(cos);
       setSubscriptions(subs);

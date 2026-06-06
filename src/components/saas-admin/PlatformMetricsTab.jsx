@@ -15,9 +15,9 @@ export default function PlatformMetricsTab() {
   async function loadMetrics() {
     try {
       const [companies, subscriptions, tickets] = await Promise.all([
-        base44.asServiceRole.entities.Company.list(),
-        base44.asServiceRole.entities.Subscription.list(),
-        base44.asServiceRole.entities.Ticket.list()
+        base44.entities.Company.list(),
+        base44.entities.Subscription.list(),
+        base44.entities.Ticket.list()
       ]);
 
       // Plan distribution

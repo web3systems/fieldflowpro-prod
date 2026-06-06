@@ -38,7 +38,7 @@ export default function SupportTicketsTab() {
   async function loadTickets() {
     try {
       const query = filterStatus === 'all' ? {} : { status: filterStatus };
-      const list = await base44.asServiceRole.entities.Ticket.filter(query);
+      const list = await base44.entities.Ticket.filter(query);
       setTickets(list.sort((a, b) => new Date(b.created_date) - new Date(a.created_date)));
     } catch (e) {
       console.error('Error loading tickets:', e);
@@ -62,7 +62,7 @@ export default function SupportTicketsTab() {
         }
       ];
 
-      await base44.asServiceRole.entities.Ticket.update(selectedTicket.id, {
+      await base44.entities.Ticket.update(selectedTicket.id, {
         responses: newResponses,
         status: 'in_progress'
       });
@@ -204,7 +204,7 @@ export default function SupportTicketsTab() {
                 <Select
                   value={selectedTicket.status}
                   onValueChange={(status) => {
-                    base44.asServiceRole.entities.Ticket.update(selectedTicket.id, { status });
+                    base44.entities.Ticket.update(selectedTicket.id, { status });
                     setSelectedTicket({ ...selectedTicket, status });
                   }}
                 >

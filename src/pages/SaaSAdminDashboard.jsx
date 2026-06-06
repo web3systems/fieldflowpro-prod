@@ -30,10 +30,10 @@ export default function SaaSAdminDashboard() {
 
       // Load stats
       const [companies, subscriptions, tickets, users] = await Promise.all([
-        base44.asServiceRole.entities.Company.list(),
-        base44.asServiceRole.entities.Subscription.list(),
-        base44.asServiceRole.entities.Ticket.list(),
-        base44.asServiceRole.entities.User.list()
+        base44.entities.Company.list(),
+        base44.entities.Subscription.list(),
+        base44.entities.Ticket.list(),
+        base44.entities.User.list()
       ]);
 
       const activeCompanies = companies.filter(c => c.is_active).length;
