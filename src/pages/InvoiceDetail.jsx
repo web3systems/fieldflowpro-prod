@@ -44,7 +44,8 @@ const defaultForm = {
 export default function InvoiceDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { activeCompany } = useApp();
+  const { activeCompany, user } = useApp();
+  const isAdmin = user?.role === "admin" || user?.role === "super_admin" || user?.role === "manager";
 
   const [invoice, setInvoice] = useState(null);
   const [customers, setCustomers] = useState([]);
@@ -151,6 +152,10 @@ export default function InvoiceDetail() {
   }
 
   async function handleDelete() {
+    if (!isAdmin) {
+      alert("Only admins or managers can delete invoices. Please contact your administrator.");
+      return;
+    }
     if (!confirm("Delete this invoice? This cannot be undone.")) return;
     await base44.entities.Invoice.delete(id);
     navigate(createPageUrl("Invoices"));
@@ -295,7 +300,14 @@ export default function InvoiceDetail() {
               <Mail className="w-3.5 h-3.5" />{sendingEmail ? "Sending..." : "Send Email"}
             </Button>
           )}
-          <Button size="sm" variant="outline" onClick={handleDelete} className="gap-1 text-xs border-red-200 text-red-600 hover:bg-red-50">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={handleDelete}
+            disabled={!isAdmin}
+            title={!isAdmin ? "Only admins can delete invoices" : "Delete invoice"}
+            className={`gap-1 text-xs ${isAdmin ? "border-red-200 text-red-600 hover:bg-red-50" : "border-slate-200 text-slate-400 cursor-not-allowed"}`}
+          >
             <Trash2 className="w-3.5 h-3.5" /> Delete
           </Button>
         </div>
