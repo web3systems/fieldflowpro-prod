@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import OnboardingBanner from "../components/dashboard/OnboardingBanner";
 import RevenueChart from "../components/dashboard/RevenueChart";
+import OnboardingWizard from "../components/onboarding/OnboardingWizard";
 
 const statusColors = {
   new: "bg-blue-100 text-blue-700",
@@ -33,10 +34,18 @@ export default function Dashboard() {
   const [leads, setLeads] = useState([]);
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showOnboarding, setShowOnboarding] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (activeCompany) loadData();
+    if (activeCompany) {
+      loadData();
+      // Show onboarding wizard on first login for this company
+      const key = `onboarding_done_${activeCompany.id}`;
+      if (!localStorage.getItem(key)) {
+        setShowOnboarding(true);
+      }
+    }
   }, [activeCompany]);
 
   useEffect(() => {
@@ -169,6 +178,12 @@ export default function Dashboard() {
 
   return (
     <div className="p-4 md:p-6 pb-20 lg:pb-6 space-y-6 max-w-7xl mx-auto">
+      {showOnboarding && activeCompany && (
+        <OnboardingWizard
+          company={activeCompany}
+          onComplete={() => setShowOnboarding(false)}
+        />
+      )}
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
