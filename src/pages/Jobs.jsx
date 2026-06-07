@@ -234,7 +234,9 @@ export default function Jobs() {
   }
 
   const filtered = jobs.filter(j => {
-    const matchSearch = !search || j.title?.toLowerCase().includes(search.toLowerCase());
+    const q = search.toLowerCase();
+    const customerName = getCustomerName(j.customer_id).toLowerCase();
+    const matchSearch = !search || j.title?.toLowerCase().includes(q) || customerName.includes(q);
     const matchStatus = filterStatus === "all" || j.status === filterStatus;
     return matchSearch && matchStatus;
   });

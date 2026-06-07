@@ -241,9 +241,16 @@ export default function Estimates() {
     setEstimates(prev => prev.filter(x => x.id !== est.id));
   }
 
-  const filtered = estimates.filter(e =>
-    !search || e.title?.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = estimates.filter(e => {
+    if (!search) return true;
+    const q = search.toLowerCase();
+    const customerName = getCustomerName(e.customer_id).toLowerCase();
+    return (
+      e.title?.toLowerCase().includes(q) ||
+      customerName.includes(q) ||
+      e.estimate_number?.toLowerCase().includes(q)
+    );
+  });
 
   const getCustomerName = (id) => {
     const c = customers.find(c => c.id === id);
@@ -272,7 +279,7 @@ export default function Estimates() {
 
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-        <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search estimates..." className="pl-9 bg-white" />
+        <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by customer, title, or estimate #..." className="pl-9 bg-white" />
       </div>
 
       {loading ? (
