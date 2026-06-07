@@ -40,11 +40,6 @@ export default function Dashboard() {
   useEffect(() => {
     if (activeCompany) {
       loadData();
-      // Show onboarding wizard on first login for this company
-      const key = `onboarding_done_${activeCompany.id}`;
-      if (!localStorage.getItem(key)) {
-        setShowOnboarding(true);
-      }
     }
   }, [activeCompany]);
 
@@ -85,6 +80,18 @@ export default function Dashboard() {
     setInvoices(inv);
     setLeads(l);
     setBookings(b);
+
+    // Only show onboarding wizard if company has no real data yet
+    const key = `onboarding_done_${activeCompany.id}`;
+    const alreadyDone = localStorage.getItem(key);
+    const hasExistingData = j.length > 0 || c.length > 0 || inv.length > 0;
+    if (!alreadyDone && !hasExistingData) {
+      setShowOnboarding(true);
+    } else if (hasExistingData && !alreadyDone) {
+      // Mark as done so wizard never shows for established companies
+      localStorage.setItem(key, "1");
+    }
+
     // Find if current user is a technician
     const techs = await base44.entities.Technician.filter({ company_id: activeCompany.id });
     const me = await base44.auth.me();
