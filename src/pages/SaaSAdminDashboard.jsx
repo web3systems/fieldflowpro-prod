@@ -3,10 +3,11 @@ import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { AlertCircle, Ticket, Users, DollarSign, TrendingUp } from 'lucide-react';
+import { AlertCircle, Ticket, Users, DollarSign, TrendingUp, BookOpen } from 'lucide-react';
 import SupportTicketsTab from '@/components/saas-admin/SupportTicketsTab';
 import PlatformMetricsTab from '@/components/saas-admin/PlatformMetricsTab';
 import CustomersTab from '@/components/saas-admin/CustomersTab';
+import DocManagerTab from '@/components/saas-admin/DocManagerTab';
 
 export default function SaaSAdminDashboard() {
   const [user, setUser] = useState(null);
@@ -125,6 +126,9 @@ export default function SaaSAdminDashboard() {
             <TabsTrigger value="customers">Customers</TabsTrigger>
             <TabsTrigger value="tickets">Support Tickets</TabsTrigger>
             <TabsTrigger value="metrics">Platform Metrics</TabsTrigger>
+            <TabsTrigger value="docs" className="flex items-center gap-1.5">
+              <BookOpen className="w-3.5 h-3.5" /> Documentation
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="customers">
@@ -137,6 +141,10 @@ export default function SaaSAdminDashboard() {
 
           <TabsContent value="metrics">
             <PlatformMetricsTab />
+          </TabsContent>
+
+          <TabsContent value="docs">
+            <Card><CardContent className="pt-6"><DocManagerTab /></CardContent></Card>
           </TabsContent>
         </Tabs>
       </div>

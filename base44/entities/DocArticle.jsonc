@@ -1,0 +1,70 @@
+{
+  "name": "DocArticle",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Article title"
+    },
+    "slug": {
+      "type": "string",
+      "description": "URL-friendly identifier (auto-generated from title)"
+    },
+    "section_id": {
+      "type": "string",
+      "description": "Which doc section this belongs to (e.g. dashboard, jobs, estimates)"
+    },
+    "section_label": {
+      "type": "string",
+      "description": "Display label for the section"
+    },
+    "tag": {
+      "type": "string",
+      "enum": [
+        "All Users",
+        "Managers & Admins",
+        "Admins Only",
+        "Customers"
+      ],
+      "default": "All Users",
+      "description": "Audience tag"
+    },
+    "summary": {
+      "type": "string",
+      "description": "Short one-line summary shown in the doc index"
+    },
+    "body_html": {
+      "type": "string",
+      "description": "Rich HTML content of the article"
+    },
+    "is_published": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether this article is visible in the documentation"
+    },
+    "sort_order": {
+      "type": "number",
+      "default": 0,
+      "description": "Display order within the section"
+    },
+    "article_type": {
+      "type": "string",
+      "enum": [
+        "guide",
+        "faq",
+        "reference",
+        "changelog"
+      ],
+      "default": "guide"
+    },
+    "featured_image_url": {
+      "type": "string",
+      "description": "Optional hero image URL"
+    }
+  },
+  "required": [
+    "title",
+    "section_id",
+    "tag"
+  ]
+}
