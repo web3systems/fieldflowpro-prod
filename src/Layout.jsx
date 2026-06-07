@@ -59,6 +59,7 @@ const adminItems = [
   { label: "Companies", icon: Building2, page: "Companies" },
   { label: "Employees", icon: UsersRound, page: "Users" },
   { label: "Reports", icon: BarChart3, page: "Reports" },
+  { label: "Audit Log", icon: ShieldCheck, page: "AuditLog" },
 ];
 
 export default function Layout({ children, currentPageName }) {

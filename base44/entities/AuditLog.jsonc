@@ -1,0 +1,51 @@
+{
+  "name": "AuditLog",
+  "type": "object",
+  "properties": {
+    "company_id": {
+      "type": "string"
+    },
+    "action": {
+      "type": "string",
+      "enum": [
+        "delete",
+        "create",
+        "update",
+        "status_change"
+      ],
+      "description": "What action was performed"
+    },
+    "entity_type": {
+      "type": "string",
+      "description": "Which entity type was affected (Invoice, Estimate, Job, etc.)"
+    },
+    "entity_id": {
+      "type": "string"
+    },
+    "entity_snapshot": {
+      "type": "object",
+      "description": "Full copy of the record at the time of the action"
+    },
+    "performed_by_id": {
+      "type": "string"
+    },
+    "performed_by_name": {
+      "type": "string"
+    },
+    "performed_by_email": {
+      "type": "string"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "ip_address": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "company_id",
+    "action",
+    "entity_type",
+    "entity_id"
+  ]
+}

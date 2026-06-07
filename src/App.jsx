@@ -37,6 +37,7 @@ import TermsOfService from './pages/TermsOfService';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import CustomerPortal from './pages/CustomerPortal';
 import Documentation from './pages/Documentation';
+import AuditLog from './pages/AuditLog';
 import ProductOverview from './pages/ProductOverview';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
@@ -142,6 +143,7 @@ const AuthenticatedApp = () => {
       <Route path="/Expenses" element={<LayoutWrapper currentPageName="Expenses"><Expenses /></LayoutWrapper>} />
       <Route path="/ProfitMargin" element={<LayoutWrapper currentPageName="ProfitMargin"><ProfitMargin /></LayoutWrapper>} />
       <Route path="/Documentation" element={<LayoutWrapper currentPageName="Documentation"><Documentation /></LayoutWrapper>} />
+      <Route path="/AuditLog" element={<LayoutWrapper currentPageName="AuditLog"><AuditLog /></LayoutWrapper>} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
