@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useApp } from "../Layout";
 import AccountingLayout from "../components/accounting/AccountingLayout";
+import UpgradeNudge from "@/components/subscription/UpgradeNudge";
+import { canAccessFeature } from "@/lib/subscription";
 import AIInsightsPanel from "../components/accounting/AIInsightsPanel";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TrendingUp, TrendingDown, DollarSign, AlertCircle, RefreshCw } from "lucide-react";
@@ -11,13 +13,18 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 
 export default function Accounting() {
   const { activeCompany } = useApp();
+  const [subscription, setSubscription] = useState(null);
   const [transactions, setTransactions] = useState([]);
   const [accounts, setAccounts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
 
   useEffect(() => {
-    if (activeCompany) loadData();
+    if (activeCompany) {
+      loadData();
+      base44.entities.Subscription.filter({ company_id: activeCompany.id })
+        .then(subs => setSubscription(subs[0] || null)).catch(() => {});
+    }
   }, [activeCompany]);
 
   async function loadData() {
@@ -94,9 +101,19 @@ export default function Accounting() {
     </AccountingLayout>
   );
 
+  const hasAccess = canAccessFeature(subscription, 'accounting');
+
   return (
     <AccountingLayout companyId={activeCompany?.id}>
       <div className="p-4 md:p-6 space-y-6">
+      {!hasAccess && (
+        <UpgradeNudge
+          feature="Accounting Module"
+          description="Track income, expenses, and profit with a full chart of accounts, P&L reports, and AI-powered insights."
+          requiredPlan="Professional"
+          company={activeCompany}
+        />
+      )}
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>

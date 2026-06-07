@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import UpgradeNudge from "@/components/subscription/UpgradeNudge";
+import { canAccessFeature } from "@/lib/subscription";
 import { base44 } from "@/api/base44Client";
 import { useApp } from "../Layout";
 import { Button } from "@/components/ui/button";
@@ -33,6 +35,7 @@ const AUDIENCE_LABELS = {
 export default function Marketing() {
   const { activeCompany } = useApp();
   const { toast } = useToast();
+  const [subscription, setSubscription] = useState(null);
   const [campaigns, setCampaigns] = useState([]);
   const [loading, setLoading] = useState(true);
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -44,7 +47,11 @@ export default function Marketing() {
   const [mainTab, setMainTab] = useState("campaigns");
 
   useEffect(() => {
-    if (activeCompany) load();
+    if (activeCompany) {
+      load();
+      base44.entities.Subscription.filter({ company_id: activeCompany.id })
+        .then(subs => setSubscription(subs[0] || null)).catch(() => {});
+    }
   }, [activeCompany]);
 
   async function load() {
@@ -90,8 +97,18 @@ export default function Marketing() {
 
   const filtered = tab === "all" ? campaigns : campaigns.filter(c => c.status === tab);
 
+  const hasAccess = canAccessFeature(subscription, 'marketing');
+
   return (
     <div className="p-6 max-w-6xl mx-auto space-y-6">
+      {!hasAccess && (
+        <UpgradeNudge
+          feature="Marketing Campaigns"
+          description="Send targeted email and SMS campaigns to re-engage customers, promote services, and drive repeat business."
+          requiredPlan="Professional"
+          company={activeCompany}
+        />
+      )}
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
