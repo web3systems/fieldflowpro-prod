@@ -319,8 +319,8 @@ export default function Layout({ children, currentPageName }) {
         <GlobalChatPanel user={user} company={activeCompany} />
 
         {/* Mobile Bottom Nav */}
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-30 lg:hidden">
-          <div className="flex items-center justify-around py-2">
+        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-30 lg:hidden safe-area-inset-bottom">
+          <div className="flex items-center justify-around py-1 pb-2">
             {[
               { label: "Home", icon: Home, page: "Dashboard" },
               { label: "Jobs", icon: Briefcase, page: "Jobs" },
@@ -332,20 +332,20 @@ export default function Layout({ children, currentPageName }) {
                 <Link
                   key={label}
                   to={createPageUrl(page)}
-                  className={`flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg ${
+                  className={`flex flex-col items-center gap-0.5 px-4 py-2 rounded-lg min-w-[60px] ${
                     isActive(page) ? "text-blue-600" : "text-slate-400"
                   }`}
                 >
-                  <Icon className="w-5 h-5" />
+                  <Icon className="w-6 h-6" />
                   <span className="text-xs">{label}</span>
                 </Link>
               ) : (
                 <button
                   key={label}
                   onClick={() => setSidebarOpen(true)}
-                  className="flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg text-slate-400"
+                  className="flex flex-col items-center gap-0.5 px-4 py-2 rounded-lg text-slate-400 min-w-[60px]"
                 >
-                  <Icon className="w-5 h-5" />
+                  <Icon className="w-6 h-6" />
                   <span className="text-xs">{label}</span>
                 </button>
               )

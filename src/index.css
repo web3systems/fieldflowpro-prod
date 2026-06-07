@@ -84,5 +84,11 @@
 
   body {
     @apply bg-background text-foreground;
+    -webkit-text-size-adjust: 100%;
   }
+}
+
+/* Safe area support for iPhone notch / home indicator */
+.safe-area-inset-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 8px);
 }

@@ -192,30 +192,30 @@ function HeroCarousel() {
       ))}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-blue-600/20 via-transparent to-transparent" />
 
-      <div className="relative max-w-6xl mx-auto px-4 sm:px-6 py-24 md:py-32 text-center">
-        <Badge className="bg-blue-600/20 text-blue-300 border-blue-500/30 mb-6 text-xs px-3 py-1">
+      <div className="relative max-w-6xl mx-auto px-4 sm:px-6 py-16 sm:py-24 md:py-32 text-center">
+        <Badge className="bg-blue-600/20 text-blue-300 border-blue-500/30 mb-4 sm:mb-6 text-xs px-3 py-1">
           {slide.badge}
         </Badge>
-        <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold leading-tight mb-6 tracking-tight">
+        <h1 className="text-3xl sm:text-5xl md:text-6xl font-extrabold leading-tight mb-4 sm:mb-6 tracking-tight">
           {slide.title}<br className="hidden sm:block" />
           <span className="text-blue-400"> {slide.titleHighlight}</span>
         </h1>
-        <p className="text-lg sm:text-xl text-slate-300 max-w-2xl mx-auto mb-10 leading-relaxed">
+        <p className="text-base sm:text-xl text-slate-300 max-w-2xl mx-auto mb-8 sm:mb-10 leading-relaxed">
           {slide.subtitle}
         </p>
-        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+        <div className="flex flex-col gap-3 justify-center px-2 sm:px-0 sm:flex-row sm:gap-4">
           <Link to="/Register">
-            <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white gap-2 px-8 w-full sm:w-auto">
+            <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white gap-2 px-8 w-full sm:w-auto text-base py-6 sm:py-4">
               Start Free Trial <ArrowRight className="w-4 h-4" />
             </Button>
           </Link>
-          <a href="#features">
-            <Button size="lg" variant="outline" className="border-slate-600 text-slate-300 hover:bg-slate-800 hover:text-white w-full sm:w-auto">
+          <a href="#features" className="w-full sm:w-auto">
+            <Button size="lg" variant="outline" className="border-slate-600 text-slate-300 hover:bg-slate-800 hover:text-white w-full sm:w-auto text-base py-6 sm:py-4">
               See How It Works
             </Button>
           </a>
         </div>
-        <p className="text-slate-500 text-sm mt-6">No credit card required · Cancel anytime</p>
+        <p className="text-slate-500 text-sm mt-5">No credit card required · Cancel anytime</p>
 
         {/* Carousel Controls */}
         <div className="flex items-center justify-center gap-4 mt-10">
@@ -249,15 +249,15 @@ function HeroCarousel() {
 function FAQItem({ q, a }) {
   const [open, setOpen] = useState(false);
   return (
-    <div className="border-b border-slate-200 py-4">
+    <div className="border-b border-slate-200">
       <button
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between text-left gap-4"
+        className="w-full flex items-center justify-between text-left gap-4 py-5"
       >
-        <span className="font-medium text-slate-800">{q}</span>
-        <ChevronDown className={`w-4 h-4 text-slate-400 flex-shrink-0 transition-transform ${open ? "rotate-180" : ""}`} />
+        <span className="font-medium text-slate-800 text-base">{q}</span>
+        <ChevronDown className={`w-5 h-5 text-slate-400 flex-shrink-0 transition-transform ${open ? "rotate-180" : ""}`} />
       </button>
-      {open && <p className="mt-3 text-slate-500 text-sm leading-relaxed">{a}</p>}
+      {open && <p className="pb-5 text-slate-500 text-sm leading-relaxed">{a}</p>}
     </div>
   );
 }
@@ -303,15 +303,19 @@ export default function Landing() {
         </div>
 
         {mobileMenuOpen && (
-          <div className="md:hidden border-t border-slate-100 bg-white px-4 py-4 space-y-3">
-            <a href="#features" className="block text-sm text-slate-600" onClick={() => setMobileMenuOpen(false)}>Features</a>
-            <a href="#pricing" className="block text-sm text-slate-600" onClick={() => setMobileMenuOpen(false)}>Pricing</a>
-            <a href="#testimonials" className="block text-sm text-slate-600" onClick={() => setMobileMenuOpen(false)}>Reviews</a>
-            <a href="#faq" className="block text-sm text-slate-600" onClick={() => setMobileMenuOpen(false)}>FAQ</a>
-            <Link to="/CustomerPortal" className="block text-sm text-blue-600 font-medium" onClick={() => setMobileMenuOpen(false)}>Customer Portal →</Link>
-            <div className="flex gap-2 pt-2">
-              <Button variant="outline" className="flex-1 w-full" size="sm" onClick={() => { setMobileMenuOpen(false); handleSignIn(); }}>Business Sign In</Button>
-              <Link to="/Register" className="flex-1"><Button className="w-full bg-blue-600 hover:bg-blue-700" size="sm">Get Started</Button></Link>
+          <div className="md:hidden border-t border-slate-100 bg-white px-4 py-4 space-y-1">
+            {[
+              { href: "#features", label: "Features" },
+              { href: "#pricing", label: "Pricing" },
+              { href: "#testimonials", label: "Reviews" },
+              { href: "#faq", label: "FAQ" },
+            ].map(({ href, label }) => (
+              <a key={label} href={href} className="block px-2 py-3 text-base text-slate-700 border-b border-slate-50 active:bg-slate-50" onClick={() => setMobileMenuOpen(false)}>{label}</a>
+            ))}
+            <Link to="/CustomerPortal" className="block px-2 py-3 text-base text-blue-600 font-medium border-b border-slate-50" onClick={() => setMobileMenuOpen(false)}>Customer Portal →</Link>
+            <div className="flex flex-col gap-2 pt-3">
+              <Button variant="outline" className="w-full" size="default" onClick={() => { setMobileMenuOpen(false); handleSignIn(); }}>Business Sign In</Button>
+              <Link to="/Register"><Button className="w-full bg-blue-600 hover:bg-blue-700" size="default">Get Started Free</Button></Link>
             </div>
           </div>
         )}
@@ -346,9 +350,9 @@ export default function Landing() {
       </section>
 
       {/* HANDYMAN PAIN POINT SECTION */}
-      <section className="py-20 bg-white border-b border-slate-100">
+      <section className="py-12 sm:py-20 bg-white border-b border-slate-100">
         <div className="max-w-5xl mx-auto px-4 sm:px-6">
-          <div className="text-center mb-12">
+          <div className="text-center mb-8 sm:mb-12">
             <Badge className="bg-amber-50 text-amber-700 border-amber-200 mb-4">🔨 For Handymen, By Design</Badge>
             <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-4">
               "There's no good software for handymen."<br />
@@ -358,7 +362,7 @@ export default function Landing() {
               Generic service software is built for large companies with office staff. FieldFlow Pro is built for the person doing the work — solo operators, small crews, and growing handyman businesses.
             </p>
           </div>
-          <div className="grid sm:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
             {[
               {
                 before: "Texting quotes back and forth",
@@ -376,7 +380,7 @@ export default function Landing() {
                 icon: "📋",
               },
             ].map(({ before, after, icon }) => (
-              <div key={before} className="bg-slate-50 border border-slate-100 rounded-2xl p-6">
+              <div key={before} className="bg-slate-50 border border-slate-100 rounded-2xl p-5 sm:p-6">
                 <div className="text-3xl mb-4">{icon}</div>
                 <div className="mb-3">
                   <p className="text-xs font-semibold uppercase tracking-wide text-red-400 mb-1">Before</p>
@@ -394,13 +398,13 @@ export default function Landing() {
       </section>
 
       {/* FEATURES */}
-      <section id="features" className="py-24 max-w-6xl mx-auto px-4 sm:px-6">
-        <div className="text-center mb-16">
+      <section id="features" className="py-14 sm:py-24 max-w-6xl mx-auto px-4 sm:px-6">
+        <div className="text-center mb-10 sm:mb-16">
           <Badge className="bg-blue-50 text-blue-600 border-blue-100 mb-4">Features</Badge>
           <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-4">Everything a handyman business needs</h2>
           <p className="text-slate-500 text-lg max-w-xl mx-auto">From the first inquiry to the final payment — FieldFlow Pro handles the entire job lifecycle so you can stay on the tools.</p>
         </div>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {FEATURES.map(({ icon: Icon, title, desc, color }) => (
             <div key={title} className="bg-white border border-slate-100 rounded-2xl p-6 hover:shadow-md transition-shadow">
               <div className={`w-11 h-11 rounded-xl flex items-center justify-center mb-4 ${color}`}>
@@ -413,7 +417,7 @@ export default function Landing() {
         </div>
 
         {/* Extra highlights */}
-        <div className="mt-12 grid sm:grid-cols-3 gap-4 text-center">
+        <div className="mt-8 sm:mt-12 grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 text-center">
           {[
             { icon: Zap, label: "Lightning fast setup", sub: "Get running in under 10 minutes" },
             { icon: Shield, label: "Secure & reliable", sub: "Enterprise-grade data security" },
@@ -429,18 +433,18 @@ export default function Landing() {
       </section>
 
       {/* PRICING */}
-      <section id="pricing" className="py-24 bg-slate-50">
+      <section id="pricing" className="py-14 sm:py-24 bg-slate-50">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
-          <div className="text-center mb-16">
+          <div className="text-center mb-10 sm:mb-16">
             <Badge className="bg-violet-50 text-violet-600 border-violet-100 mb-4">Pricing</Badge>
             <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-4">Simple, transparent pricing</h2>
             <p className="text-slate-500 text-lg">Start free. Upgrade as you grow. No hidden fees.</p>
           </div>
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {PLANS.map((plan) => (
               <div
                 key={plan.name}
-                className={`relative bg-white rounded-2xl border-2 ${plan.color} p-8 flex flex-col ${plan.badge ? "shadow-xl scale-105" : "shadow-sm"}`}
+                className={`relative bg-white rounded-2xl border-2 ${plan.color} p-6 sm:p-8 flex flex-col ${plan.badge ? "shadow-xl md:scale-105" : "shadow-sm"}`}
               >
                 {plan.badge && (
                   <div className="absolute -top-3.5 left-1/2 -translate-x-1/2">
@@ -478,13 +482,13 @@ export default function Landing() {
       </section>
 
       {/* TESTIMONIALS */}
-      <section id="testimonials" className="py-24 max-w-6xl mx-auto px-4 sm:px-6">
-        <div className="text-center mb-16">
+      <section id="testimonials" className="py-14 sm:py-24 max-w-6xl mx-auto px-4 sm:px-6">
+        <div className="text-center mb-10 sm:mb-16">
           <Badge className="bg-emerald-50 text-emerald-600 border-emerald-100 mb-4">Reviews</Badge>
           <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-4">Real handymen. Real results.</h2>
           <p className="text-slate-500 text-lg">From solo operators to growing crews — here's what they're saying.</p>
         </div>
-        <div className="grid md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-6">
           {TESTIMONIALS.map(({ name, company, quote, rating }) => (
             <div key={name} className="bg-white border border-slate-100 rounded-2xl p-6 shadow-sm">
               <div className="flex gap-0.5 mb-4">
@@ -503,9 +507,9 @@ export default function Landing() {
       </section>
 
       {/* FAQ */}
-      <section id="faq" className="py-24 bg-slate-50">
+      <section id="faq" className="py-14 sm:py-24 bg-slate-50">
         <div className="max-w-2xl mx-auto px-4 sm:px-6">
-          <div className="text-center mb-12">
+          <div className="text-center mb-10 sm:mb-12">
             <Badge className="bg-orange-50 text-orange-600 border-orange-100 mb-4">FAQ</Badge>
             <h2 className="text-3xl font-bold text-slate-900">Frequently asked questions</h2>
           </div>
@@ -516,8 +520,8 @@ export default function Landing() {
       </section>
 
       {/* CUSTOMER PORTAL CTA */}
-      <section className="py-16 bg-emerald-50 border-y border-emerald-100">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center gap-8">
+      <section className="py-12 sm:py-16 bg-emerald-50 border-y border-emerald-100">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center gap-6 sm:gap-8">
           <div className="flex-1 text-left">
             <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200 mb-3">For Customers</Badge>
             <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-3">Are you a customer looking for your portal?</h2>
@@ -528,9 +532,9 @@ export default function Landing() {
               <strong>Sign in with your email.</strong> If you've forgotten your password, use the "Forgot password" link on the login page to reset it instantly.
             </p>
           </div>
-          <div className="flex-shrink-0 flex flex-col items-center gap-3">
-            <Link to="/CustomerPortal">
-              <Button size="lg" className="bg-emerald-600 hover:bg-emerald-700 text-white gap-2 px-8 w-full">
+          <div className="flex-shrink-0 flex flex-col items-center gap-3 w-full sm:w-auto">
+            <Link to="/CustomerPortal" className="w-full sm:w-auto">
+              <Button size="lg" className="bg-emerald-600 hover:bg-emerald-700 text-white gap-2 px-8 w-full sm:w-auto">
                 Go to Customer Portal <ArrowRight className="w-4 h-4" />
               </Button>
             </Link>
@@ -540,12 +544,12 @@ export default function Landing() {
       </section>
 
       {/* CTA */}
-      <section className="py-24 bg-gradient-to-br from-blue-600 to-violet-700 text-white text-center">
+      <section className="py-16 sm:py-24 bg-gradient-to-br from-blue-600 to-violet-700 text-white text-center">
         <div className="max-w-3xl mx-auto px-4 sm:px-6">
-          <h2 className="text-3xl sm:text-4xl font-extrabold mb-4">Finally — software that works the way you do.</h2>
-          <p className="text-blue-100 text-lg mb-10">Handymen and field service pros across every trade are using FieldFlow Pro to win more jobs, get paid faster, and stop drowning in admin work.</p>
-          <Link to="/Register">
-            <Button size="lg" className="bg-white text-blue-700 hover:bg-blue-50 gap-2 px-10 font-semibold">
+          <h2 className="text-2xl sm:text-4xl font-extrabold mb-4">Finally — software that works the way you do.</h2>
+          <p className="text-blue-100 text-base sm:text-lg mb-8 sm:mb-10">Handymen and field service pros across every trade are using FieldFlow Pro to win more jobs, get paid faster, and stop drowning in admin work.</p>
+          <Link to="/Register" className="block sm:inline-block">
+            <Button size="lg" className="bg-white text-blue-700 hover:bg-blue-50 gap-2 px-10 font-semibold w-full sm:w-auto py-6 sm:py-4 text-base">
               Start Free Trial <ArrowRight className="w-4 h-4" />
             </Button>
           </Link>
