@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
-import { useApp } from "../layout.jsx";
+import { useApp } from "../Layout";
 import { createPageUrl } from "@/utils";
 import {
   Plus, Search, Filter, MapPin, User, ChevronRight,
