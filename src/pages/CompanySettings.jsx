@@ -10,6 +10,7 @@ import StripeConnectCard from '@/components/settings/StripeConnectCard';
 import CompanyEmailSettingsTab from '@/components/settings/CompanyEmailSettingsTab';
 import SubCompaniesTab from '@/components/settings/SubCompaniesTab';
 import MarginRulesTab from '@/components/settings/MarginRulesTab';
+import ConnectorsTab from '@/components/settings/ConnectorsTab';
 
 export default function CompanySettings() {
   const { activeCompany, user, refreshCompanies } = useApp();
@@ -63,6 +64,7 @@ export default function CompanySettings() {
             <TabsTrigger value="email">Email Settings</TabsTrigger>
             {isOwner && isParentCompany && <TabsTrigger value="locations">Locations</TabsTrigger>}
             <TabsTrigger value="margins">Margin Rules</TabsTrigger>
+            <TabsTrigger value="connectors">Connectors</TabsTrigger>
             {isOwner && <TabsTrigger value="general">General</TabsTrigger>}
           </TabsList>
 
@@ -88,6 +90,10 @@ export default function CompanySettings() {
 
           <TabsContent value="margins">
             <MarginRulesTab company={company} />
+          </TabsContent>
+
+          <TabsContent value="connectors">
+            <ConnectorsTab company={company} />
           </TabsContent>
 
           {isOwner && isParentCompany && (
