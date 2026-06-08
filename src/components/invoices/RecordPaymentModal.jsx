@@ -14,6 +14,7 @@ export default function RecordPaymentModal({ invoice, onClose, onSaved }) {
   const [method, setMethod] = useState("cash");
   const [paidDate, setPaidDate] = useState(new Date().toISOString().split("T")[0]);
   const [note, setNote] = useState("");
+  const [checkNumber, setCheckNumber] = useState("");
   const [saving, setSaving] = useState(false);
 
   async function handleSave() {
@@ -26,7 +27,13 @@ export default function RecordPaymentModal({ invoice, onClose, onSaved }) {
       status: newStatus,
       paid_date: paidDate,
       payment_method: method,
-      notes: note ? `${invoice.notes || ""}\n[Payment ${paidDate}]: ${note}`.trim() : invoice.notes,
+      notes: (() => {
+        const parts = [];
+        if (method === "check" && checkNumber) parts.push(`Check #${checkNumber}`);
+        if (note) parts.push(note);
+        const detail = parts.join(" — ");
+        return detail ? `${invoice.notes || ""}\n[Payment ${paidDate}]: ${detail}`.trim() : invoice.notes;
+      })(),
     });
     setSaving(false);
     onSaved();
@@ -87,9 +94,21 @@ export default function RecordPaymentModal({ invoice, onClose, onSaved }) {
             <Input type="date" value={paidDate} onChange={e => setPaidDate(e.target.value)} className="mt-1" />
           </div>
 
+          {method === "check" && (
+            <div>
+              <Label className="text-xs font-medium text-slate-600">Check Number</Label>
+              <Input
+                value={checkNumber}
+                onChange={e => setCheckNumber(e.target.value)}
+                placeholder="e.g. 1042"
+                className="mt-1"
+              />
+            </div>
+          )}
+
           <div>
-            <Label className="text-xs font-medium text-slate-600">Note (optional)</Label>
-            <Input value={note} onChange={e => setNote(e.target.value)} placeholder="e.g. Check #1234" className="mt-1" />
+            <Label className="text-xs font-medium text-slate-600">Notes (optional)</Label>
+            <Input value={note} onChange={e => setNote(e.target.value)} placeholder="Any additional notes..." className="mt-1" />
           </div>
 
           <div className="flex gap-2 pt-1">
