@@ -5,7 +5,7 @@ import { createPageUrl } from "@/utils";
 import {
   LayoutDashboard, Users, Briefcase, FileText, DollarSign,
   UserPlus, Settings, Building2, Menu, X, ChevronDown,
-  Bell, LogOut, Wrench, BarChart3, Globe, Home, UsersRound, CalendarDays, ShieldCheck, CreditCard, Megaphone, Calculator, MessageCircle, Mail, BookOpen
+  Bell, LogOut, Wrench, BarChart3, Globe, Home, UsersRound, CalendarDays, ShieldCheck, CreditCard, Megaphone, Calculator, MessageCircle, Mail, BookOpen, CheckSquare
 } from "lucide-react";
 import NotificationBell from "@/components/notifications/NotificationBell";
 import GlobalChatPanel from "@/components/chat/GlobalChatPanel";
@@ -46,6 +46,7 @@ const navItems = [
   { label: "Accounting", icon: Calculator, page: "Accounting" },
   { label: "Team", icon: Wrench, page: "Team" },
   { label: "Price Book", icon: BookOpen, page: "PriceBook" },
+  { label: "Tasks", icon: CheckSquare, page: "Tasks" },
   { label: "Settings", icon: Settings, page: "CompanySettings" },
   { label: "Email Templates", icon: Mail, page: "EmailTemplateEditor" },
   { label: "Documentation", icon: BookOpen, page: "Documentation" },
