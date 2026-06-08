@@ -80,11 +80,16 @@ export default function RecordPaymentModal({ invoice, onClose, onSaved }) {
           <div>
             <Label className="text-xs font-medium text-slate-600">Payment Method</Label>
             <Select value={method} onValueChange={setMethod}>
-              <SelectTrigger className="mt-1 capitalize"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                {PAYMENT_METHODS.map(m => (
-                  <SelectItem key={m} value={m} className="capitalize">{m.replace("_", " ")}</SelectItem>
-                ))}
+              <SelectTrigger className="mt-1">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="z-[200]">
+                <SelectItem value="cash">Cash</SelectItem>
+                <SelectItem value="check">Check</SelectItem>
+                <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
+                <SelectItem value="venmo">Venmo</SelectItem>
+                <SelectItem value="zelle">Zelle</SelectItem>
+                <SelectItem value="other">Other</SelectItem>
               </SelectContent>
             </Select>
           </div>
