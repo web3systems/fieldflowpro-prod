@@ -1,0 +1,47 @@
+{
+  "name": "CompanyModule",
+  "type": "object",
+  "properties": {
+    "company_id": {
+      "type": "string"
+    },
+    "module_key": {
+      "type": "string"
+    },
+    "module_name": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "cancelled",
+        "past_due"
+      ],
+      "default": "active"
+    },
+    "stripe_subscription_id": {
+      "type": "string"
+    },
+    "stripe_customer_id": {
+      "type": "string"
+    },
+    "activated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "cancelled_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "granted_by_admin": {
+      "type": "boolean",
+      "default": false,
+      "description": "If true, this was granted free by a super admin (no Stripe billing)"
+    }
+  },
+  "required": [
+    "company_id",
+    "module_key"
+  ]
+}

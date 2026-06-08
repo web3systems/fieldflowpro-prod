@@ -506,6 +506,42 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* MODULE MARKETPLACE */}
+      <section id="marketplace" className="py-14 sm:py-24 bg-white border-b border-slate-100">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+          <div className="text-center mb-10 sm:mb-16">
+            <Badge className="bg-purple-50 text-purple-600 border-purple-100 mb-4">🧩 Module Marketplace</Badge>
+            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-4">Power up your platform with add-on modules</h2>
+            <p className="text-slate-500 text-lg max-w-2xl mx-auto">Start with your core plan and add only the features you need. Each module unlocks powerful new capabilities — pay only for what you use.</p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {[
+              { icon: "🤖", name: "AI Estimator", price: 29, desc: "Auto-generate accurate estimates using AI — just describe the project.", color: "from-purple-50 to-purple-100 border-purple-200" },
+              { icon: "📊", name: "Advanced Reports", price: 19, desc: "Custom dashboards, revenue trends, and deep performance analytics.", color: "from-blue-50 to-blue-100 border-blue-200" },
+              { icon: "📣", name: "Marketing & Campaigns", price: 19, desc: "Email campaigns, announcements, and customer re-engagement tools.", color: "from-orange-50 to-orange-100 border-orange-200" },
+              { icon: "🧾", name: "Accounting", price: 29, desc: "Full accounting suite with chart of accounts and bank reconciliation.", color: "from-green-50 to-green-100 border-green-200" },
+              { icon: "📷", name: "Receipt Scanner", price: 9, desc: "Scan receipts on the job — AI extracts and logs expenses automatically.", color: "from-pink-50 to-pink-100 border-pink-200" },
+              { icon: "🔄", name: "Recurring Jobs", price: 19, desc: "Schedule recurring service visits with automatic job generation.", color: "from-cyan-50 to-cyan-100 border-cyan-200" },
+              { icon: "🌐", name: "Website Builder", price: 24, desc: "Build a professional business website with your services and pricing.", color: "from-indigo-50 to-indigo-100 border-indigo-200" },
+              { icon: "⭐", name: "Review Automation", price: 14, desc: "Auto-send Google review requests after every completed job.", color: "from-amber-50 to-amber-100 border-amber-200" },
+            ].map(({ icon, name, price, desc, color }) => (
+              <div key={name} className={`bg-gradient-to-br ${color} border rounded-2xl p-5 flex flex-col gap-3`}>
+                <div className="text-2xl">{icon}</div>
+                <div>
+                  <h3 className="font-semibold text-slate-900 text-sm">{name}</h3>
+                  <p className="text-slate-500 text-xs mt-1 leading-relaxed">{desc}</p>
+                </div>
+                <div className="mt-auto">
+                  <span className="font-bold text-slate-900">${price}</span>
+                  <span className="text-slate-400 text-xs">/mo</span>
+                </div>
+              </div>
+            ))}
+          </div>
+          <p className="text-center text-slate-400 text-sm mt-8">Modules can be added or removed anytime from inside your account.</p>
+        </div>
+      </section>
+
       {/* FAQ */}
       <section id="faq" className="py-14 sm:py-24 bg-slate-50">
         <div className="max-w-2xl mx-auto px-4 sm:px-6">
