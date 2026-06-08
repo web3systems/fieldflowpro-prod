@@ -11,6 +11,14 @@ Deno.serve(async (req) => {
 
     const { action, company_id, return_url } = await req.json();
 
+    // Verify the user actually has access to this company (unless admin)
+    if (user.role !== 'admin' && user.role !== 'super_admin') {
+      const access = await base44.asServiceRole.entities.UserCompanyAccess.filter({ user_email: user.email, company_id });
+      if (access.length === 0) {
+        return Response.json({ error: 'Forbidden' }, { status: 403 });
+      }
+    }
+
     const subs = await base44.asServiceRole.entities.Subscription.filter({ company_id });
     const sub = subs[0];
 

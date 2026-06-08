@@ -17,7 +17,7 @@ export default function PastDueBanner({ subscription, company }) {
     : null;
 
   // Show trial banner throughout the trial, with increasing urgency
-  const isTrialing = status === "trialing" && plan === "trial";
+  const isTrialing = status === "trialing";
   const showTrialBanner = isTrialing && daysUntilTrialEnd !== null && daysUntilTrialEnd > 0;
   const showPastDue = status === "past_due";
 

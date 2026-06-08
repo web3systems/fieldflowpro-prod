@@ -9,12 +9,11 @@ Deno.serve(async (req) => {
     const sig = req.headers.get('stripe-signature');
     const webhookSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET');
 
-    let event;
-    if (webhookSecret && sig) {
-      event = await stripe.webhooks.constructEventAsync(body, sig, webhookSecret);
-    } else {
-      event = JSON.parse(body);
+    if (!webhookSecret || !sig) {
+      console.error('Missing webhook secret or signature');
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
+    const event = await stripe.webhooks.constructEventAsync(body, sig, webhookSecret);
 
     const base44 = createClientFromRequest(req);
 
