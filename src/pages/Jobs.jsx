@@ -232,6 +232,12 @@ export default function Jobs() {
     window.location.href = createPageUrl("Invoices");
   }
 
+  const getStatusStyle = (status) => STATUS_OPTIONS.find(s => s.value === status)?.color || "bg-gray-100 text-gray-600";
+  const getCustomerName = (id) => {
+    const c = customers.find(c => c.id === id);
+    return c ? `${c.first_name} ${c.last_name}` : "—";
+  };
+
   const filtered = jobs.filter(j => {
     const q = search.toLowerCase();
     const customerName = getCustomerName(j.customer_id).toLowerCase();
@@ -239,12 +245,6 @@ export default function Jobs() {
     const matchStatus = filterStatus === "all" || j.status === filterStatus;
     return matchSearch && matchStatus;
   });
-
-  const getStatusStyle = (status) => STATUS_OPTIONS.find(s => s.value === status)?.color || "bg-gray-100 text-gray-600";
-  const getCustomerName = (id) => {
-    const c = customers.find(c => c.id === id);
-    return c ? `${c.first_name} ${c.last_name}` : "—";
-  };
 
   return (
     <div className="relative min-h-full p-4 md:p-6 pb-24 lg:pb-6 space-y-5 max-w-7xl mx-auto">
