@@ -20,7 +20,6 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { format } from "date-fns";
-import CustomerNotesSection from "../components/jobs/CustomerNotesSection";
 import UsageLimitBanner from "@/components/subscription/UsageLimitBanner";
 
 const STATUS_OPTIONS = [
@@ -324,7 +323,7 @@ export default function Jobs() {
                       <p className="text-sm text-slate-500 mt-0.5">{job.title}</p>
                     )}
                     <div className="flex items-center gap-4 mt-1.5 flex-wrap">
-                      {job.scheduled_start && (
+                      {job.scheduled_start && !isNaN(new Date(job.scheduled_start)) && (
                         <span className="flex items-center gap-1 text-xs text-slate-500">
                           <Calendar className="w-3 h-3" />
                           {format(new Date(job.scheduled_start), "MMM d, h:mm a")}
