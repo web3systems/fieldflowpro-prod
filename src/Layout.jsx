@@ -47,6 +47,7 @@ const navItems = [
   { label: "Team", icon: Wrench, page: "Team" },
   { label: "Price Book", icon: BookOpen, page: "PriceBook" },
   { label: "Tasks", icon: CheckSquare, page: "Tasks" },
+  { label: "Support", icon: MessageCircle, page: "Support" },
   { label: "Settings", icon: Settings, page: "CompanySettings" },
   { label: "Email Templates", icon: Mail, page: "EmailTemplateEditor" },
   { label: "Documentation", icon: BookOpen, page: "Documentation" },
