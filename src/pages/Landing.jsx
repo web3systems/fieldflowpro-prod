@@ -4,7 +4,8 @@ import { base44 } from "@/api/base44Client";
 import {
   Globe, CheckCircle, ArrowRight, Menu, X, Star,
   Briefcase, Users, DollarSign, Calendar, BarChart3,
-  MessageSquare, Zap, Shield, Smartphone, ChevronDown, ChevronLeft, ChevronRight
+  MessageSquare, Zap, Shield, Smartphone, ChevronDown, ChevronLeft, ChevronRight,
+  Brain, Sparkles, FileText, Camera, Bot
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -166,6 +167,13 @@ const HERO_SLIDES = [
     titleHighlight: "any trade, one platform.",
     subtitle: "Whether you're a handyman, plumber, painter, HVAC tech, or cleaner — FieldFlow Pro runs your entire operation from scheduling to invoicing.",
   },
+  {
+    image: "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=1600&auto=format&fit=crop&q=80",
+    badge: "🤖 Powered by AI — Built for the Field",
+    title: "Your AI-powered",
+    titleHighlight: "business assistant.",
+    subtitle: "FieldFlow Pro uses AI to write estimates, scan receipts, automate follow-ups, and give you business insights — so you can focus on the work, not the paperwork.",
+  },
 ];
 
 function HeroCarousel() {
@@ -276,6 +284,7 @@ export default function Landing() {
 
           {/* Desktop Nav */}
           <nav className="hidden md:flex items-center gap-8 text-sm text-slate-600">
+            <a href="#ai" className="hover:text-purple-700 transition-colors font-semibold text-purple-600 flex items-center gap-1"><Sparkles className="w-3.5 h-3.5" /> AI Features</a>
             <a href="#features" className="hover:text-slate-900 transition-colors">Features</a>
             <a href="#pricing" className="hover:text-slate-900 transition-colors">Pricing</a>
             <a href="#testimonials" className="hover:text-slate-900 transition-colors">Reviews</a>
@@ -387,6 +396,91 @@ export default function Landing() {
                   <p className="text-xs font-semibold uppercase tracking-wide text-green-600 mb-1">After FieldFlow Pro</p>
                   <p className="text-slate-700 text-sm font-medium">{after}</p>
                 </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* AI SECTION */}
+      <section id="ai" className="py-14 sm:py-24 bg-gradient-to-br from-slate-900 via-purple-950 to-slate-900 text-white overflow-hidden relative">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-purple-600/20 via-transparent to-transparent pointer-events-none" />
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 relative">
+          <div className="text-center mb-12 sm:mb-16">
+            <div className="inline-flex items-center gap-2 bg-purple-500/20 border border-purple-500/30 text-purple-300 text-xs font-semibold px-4 py-2 rounded-full mb-5">
+              <Sparkles className="w-3.5 h-3.5" /> AI-Powered Features
+            </div>
+            <h2 className="text-3xl sm:text-5xl font-extrabold mb-4 leading-tight">
+              Stop doing admin work.<br />
+              <span className="text-purple-400">Let AI handle it.</span>
+            </h2>
+            <p className="text-slate-300 text-lg max-w-2xl mx-auto">
+              FieldFlow Pro has AI built right into your workflow — not bolted on as an afterthought. It works while you work.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6 mb-12">
+            {[
+              {
+                icon: Brain,
+                title: "AI Estimator",
+                description: "Describe a job in plain English and the AI generates a full, itemized estimate in seconds. No more guessing or starting from scratch.",
+                tag: "Most Popular",
+                tagColor: "bg-purple-500/30 text-purple-300 border-purple-500/30",
+                accent: "border-purple-500/40",
+              },
+              {
+                icon: Camera,
+                title: "Receipt Scanner",
+                description: "Snap a photo of any receipt on the job. AI reads it, extracts vendor, amount, and line items, and logs the expense automatically.",
+                tag: "Save Hours Weekly",
+                tagColor: "bg-pink-500/20 text-pink-300 border-pink-500/30",
+                accent: "border-pink-500/30",
+              },
+              {
+                icon: Bot,
+                title: "AI Business Insights",
+                description: "Ask your business questions in plain language — 'What was my revenue last month?' or 'Which jobs are most profitable?' Get instant answers.",
+                tag: "Like Having a CFO",
+                tagColor: "bg-blue-500/20 text-blue-300 border-blue-500/30",
+                accent: "border-blue-500/30",
+              },
+              {
+                icon: FileText,
+                title: "Smart Follow-Ups",
+                description: "AI-drafted email and SMS follow-ups for unsent estimates, overdue invoices, and completed jobs — reviewed by you, sent in one click.",
+                tag: "Win More Jobs",
+                tagColor: "bg-emerald-500/20 text-emerald-300 border-emerald-500/30",
+                accent: "border-emerald-500/30",
+              },
+            ].map(({ icon: Icon, title, description, tag, tagColor, accent }) => (
+              <div key={title} className={`bg-white/5 border ${accent} rounded-2xl p-6 hover:bg-white/10 transition-colors`}>
+                <div className="flex items-start gap-4">
+                  <div className="w-11 h-11 rounded-xl bg-white/10 flex items-center justify-center flex-shrink-0">
+                    <Icon className="w-5 h-5 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-2 flex-wrap">
+                      <h3 className="font-bold text-white text-base">{title}</h3>
+                      <span className={`text-xs border px-2 py-0.5 rounded-full font-medium ${tagColor}`}>{tag}</span>
+                    </div>
+                    <p className="text-slate-300 text-sm leading-relaxed">{description}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Bottom stat bar */}
+          <div className="grid grid-cols-3 gap-4 border-t border-white/10 pt-10 text-center">
+            {[
+              { stat: "< 2 min", label: "Average time to generate an AI estimate" },
+              { stat: "~5 hrs", label: "Admin time saved per week on average" },
+              { stat: "100%", label: "Built-in — no separate AI subscription needed" },
+            ].map(({ stat, label }) => (
+              <div key={stat}>
+                <div className="text-2xl sm:text-3xl font-extrabold text-purple-300 mb-1">{stat}</div>
+                <div className="text-slate-400 text-xs leading-snug">{label}</div>
               </div>
             ))}
           </div>
