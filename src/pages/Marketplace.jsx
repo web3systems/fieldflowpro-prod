@@ -6,12 +6,12 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import {
   Brain, BarChart3, Megaphone, Calculator, Camera, RefreshCw,
-  Globe, Star, CheckCircle2, Loader2, Zap, Package
+  Globe, Star, CheckCircle2, Loader2, Zap, Package, Boxes
 } from "lucide-react";
 import { toast } from "sonner";
 
 const ICON_MAP = {
-  Brain, BarChart3, Megaphone, Calculator, Camera, RefreshCw, Globe, Star
+  Brain, BarChart3, Megaphone, Calculator, Camera, RefreshCw, Globe, Star, Boxes, Package
 };
 
 const CATEGORY_LABELS = {
