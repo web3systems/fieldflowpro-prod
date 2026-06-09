@@ -9,18 +9,42 @@
       "type": "string",
       "enum": [
         "estimate",
-        "invoice"
+        "invoice",
+        "job_scheduled",
+        "job_completed",
+        "estimate_approved",
+        "estimate_declined",
+        "payment_received",
+        "appointment_reminder",
+        "follow_up",
+        "custom"
       ],
       "description": "Type of template"
     },
+    "name": {
+      "type": "string",
+      "description": "Display name for this template"
+    },
+    "subject": {
+      "type": "string",
+      "description": "Email subject line (supports {{variables}})"
+    },
+    "body_html": {
+      "type": "string",
+      "description": "Full HTML body of the email"
+    },
+    "body_text": {
+      "type": "string",
+      "description": "Plain text fallback body"
+    },
     "header_color": {
       "type": "string",
-      "default": "#FFC107",
+      "default": "#3B82F6",
       "description": "Primary header color (hex)"
     },
     "accent_color": {
       "type": "string",
-      "default": "#2C3E50",
+      "default": "#1E293B",
       "description": "Accent color for text and borders"
     },
     "logo_url": {
@@ -48,10 +72,16 @@
     "is_active": {
       "type": "boolean",
       "default": true
+    },
+    "is_default": {
+      "type": "boolean",
+      "default": false,
+      "description": "If true this is the system default template (seeded)"
     }
   },
   "required": [
     "company_id",
-    "template_type"
+    "template_type",
+    "name"
   ]
 }
