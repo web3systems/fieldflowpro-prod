@@ -209,11 +209,7 @@ function HeroCarousel() {
               Start Free Trial <ArrowRight className="w-4 h-4" />
             </Button>
           </Link>
-          <a href="#features" className="w-full sm:w-auto">
-            <Button size="lg" variant="outline" className="border-slate-600 text-slate-300 hover:bg-slate-800 hover:text-white w-full sm:w-auto text-base py-6 sm:py-4">
-              See How It Works
-            </Button>
-          </a>
+
         </div>
         <p className="text-slate-500 text-sm mt-5">No credit card required · Cancel anytime</p>
 
