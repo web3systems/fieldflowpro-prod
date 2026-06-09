@@ -1,5 +1,5 @@
 import { format } from "date-fns";
-import { Briefcase, FileText, DollarSign, MessageCircle, PlusCircle, ChevronRight, AlertCircle, CheckCircle, Clock } from "lucide-react";
+import { Briefcase, FileText, DollarSign, MessageCircle, PlusCircle, ChevronRight, AlertCircle, Phone, Mail, HelpCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 const JOB_STATUS = {
@@ -130,6 +130,35 @@ export default function PortalHome({ customer, company, jobs, invoices, estimate
           <ChevronRight className="w-4 h-4 text-red-500" />
         </button>
       )}
+      {/* Support Box */}
+      <div className="bg-slate-50 border border-slate-200 rounded-2xl p-5">
+        <div className="flex items-center gap-2 mb-3">
+          <HelpCircle className="w-5 h-5 text-slate-500" />
+          <h2 className="text-sm font-semibold text-slate-700">Need Help?</h2>
+        </div>
+        <p className="text-xs text-slate-500 mb-4">Get in touch with {company?.name || "us"} and we'll get back to you as soon as possible.</p>
+        <div className="flex flex-col gap-2">
+          {company?.phone && (
+            <a
+              href={`tel:${company.phone}`}
+              className="flex items-center gap-3 bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors"
+            >
+              <Phone className="w-4 h-4 text-slate-400" />
+              {company.phone}
+            </a>
+          )}
+          {company?.email && (
+            <a
+              href={`mailto:${company.email}`}
+              className="flex items-center gap-3 bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors"
+            >
+              <Mail className="w-4 h-4 text-slate-400" />
+              {company.email}
+            </a>
+          )}
+        </div>
+      </div>
+
     </div>
   );
 }
