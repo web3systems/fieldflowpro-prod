@@ -61,9 +61,15 @@ export default function Register() {
           <p className="text-blue-200 text-lg mb-6">
             Your account and 14-day free trial are ready. Sign in with the email and password you just created.
           </p>
-          <a href="/Dashboard" className="inline-block bg-blue-500 hover:bg-blue-400 text-white font-semibold px-8 py-3 rounded-xl transition-colors">
+          <button
+            onClick={() => base44.auth.redirectToLogin(`${window.location.origin}/Dashboard`)}
+            className="inline-block bg-blue-500 hover:bg-blue-400 text-white font-semibold px-8 py-3 rounded-xl transition-colors cursor-pointer"
+          >
             Sign In & Go to Dashboard →
-          </a>
+          </button>
+          <p className="text-blue-400 text-sm mt-4">
+            Use the email and password you just entered to log in.
+          </p>
         </div>
       </div>
     );
