@@ -57,10 +57,11 @@ export default function JobNotesSection({ job, customer, onInternalNoteAdded, on
     const updated = [...customerNotes, note];
     await base44.entities.Job.update(job.id, { customer_notes: updated });
     if (customer?.email) {
-      await base44.integrations.Core.SendEmail({
-        to: customer.email,
-        subject: `Update on your job: ${job.title}`,
-        body: `Hi ${customer.first_name},\n\nNew update on your job "${job.title}":\n\n"${customerNote.trim()}"\n\nThank you!`,
+      await base44.functions.invoke("sendJobNote", {
+        job_id: job.id,
+        customer_id: customer.id,
+        note_content: customerNote.trim(),
+        company_id: job.company_id,
       });
     }
     setCustomerNote("");
