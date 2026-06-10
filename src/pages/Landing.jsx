@@ -571,6 +571,57 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* MODULE MARKETPLACE */}
+      <section id="marketplace" className="py-16 sm:py-28 bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50 border-b border-slate-200 relative overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-blue-200/30 via-transparent to-transparent pointer-events-none" />
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 relative">
+          <div className="text-center mb-12 sm:mb-16">
+            <Badge className="bg-blue-100 text-blue-700 border-blue-200 mb-4 text-xs font-semibold">🧩 Expand Your Power</Badge>
+            <h2 className="text-3xl sm:text-5xl font-extrabold text-slate-900 mb-5 leading-tight">
+              Modular add-ons to fit<br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">your exact needs</span>
+            </h2>
+            <p className="text-slate-600 text-lg max-w-2xl mx-auto leading-relaxed">
+              Start lean with core features. Add advanced modules only when you need them. Pay for what you use. Upgrade or downgrade anytime.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 mb-10">
+            {[
+              { icon: "🤖", name: "AI Estimator", price: 29, desc: "Auto-generate accurate estimates using AI — just describe the project.", color: "from-purple-100 to-purple-50 border-purple-300 shadow-md hover:shadow-lg" },
+              { icon: "📊", name: "Advanced Reports", price: 19, desc: "Custom dashboards, revenue trends, and deep performance analytics.", color: "from-blue-100 to-blue-50 border-blue-300 shadow-md hover:shadow-lg" },
+              { icon: "📣", name: "Marketing & Campaigns", price: 19, desc: "Email campaigns, announcements, and customer re-engagement tools.", color: "from-orange-100 to-orange-50 border-orange-300 shadow-md hover:shadow-lg" },
+              { icon: "🧾", name: "Accounting", price: 29, desc: "Full accounting suite with chart of accounts and bank reconciliation.", color: "from-green-100 to-green-50 border-green-300 shadow-md hover:shadow-lg" },
+              { icon: "📷", name: "Receipt Scanner", price: 9, desc: "Scan receipts on the job — AI extracts and logs expenses automatically.", color: "from-pink-100 to-pink-50 border-pink-300 shadow-md hover:shadow-lg" },
+              { icon: "🔄", name: "Recurring Jobs", price: 19, desc: "Schedule recurring service visits with automatic job generation.", color: "from-cyan-100 to-cyan-50 border-cyan-300 shadow-md hover:shadow-lg" },
+              { icon: "🌐", name: "Website Builder", price: 24, desc: "Build a professional business website with your services and pricing.", color: "from-indigo-100 to-indigo-50 border-indigo-300 shadow-md hover:shadow-lg" },
+              { icon: "⭐", name: "Review Automation", price: 14, desc: "Auto-send Google review requests after every completed job.", color: "from-amber-100 to-amber-50 border-amber-300 shadow-md hover:shadow-lg" },
+            ].map(({ icon, name, price, desc, color }) => (
+              <div key={name} className={`bg-gradient-to-br ${color} border rounded-2xl p-6 flex flex-col gap-4 transition-all hover:scale-105`}>
+                <div className="text-3xl">{icon}</div>
+                <div>
+                  <h3 className="font-bold text-slate-900 text-base mb-2">{name}</h3>
+                  <p className="text-slate-600 text-sm leading-relaxed">{desc}</p>
+                </div>
+                <div className="mt-auto pt-3 border-t border-white/40">
+                  <div className="flex items-baseline gap-1">
+                    <span className="font-extrabold text-lg text-slate-900">${price}</span>
+                    <span className="text-slate-500 text-xs">/month</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="text-center flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
+            <Link to="/Register" className="block sm:inline-block">
+              <Button size="lg" className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white gap-2 px-8 font-semibold">
+                See Marketplace <ArrowRight className="w-4 h-4" />
+              </Button>
+            </Link>
+            <p className="text-slate-500 text-sm">Try all modules free during your trial</p>
+          </div>
+        </div>
+      </section>
+
       {/* TESTIMONIALS */}
       <section id="testimonials" className="py-14 sm:py-24 max-w-6xl mx-auto px-4 sm:px-6">
         <div className="text-center mb-10 sm:mb-16">
@@ -596,41 +647,7 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* MODULE MARKETPLACE */}
-      <section id="marketplace" className="py-14 sm:py-24 bg-white border-b border-slate-100">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6">
-          <div className="text-center mb-10 sm:mb-16">
-            <Badge className="bg-purple-50 text-purple-600 border-purple-100 mb-4">🧩 Module Marketplace</Badge>
-            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-4">Power up your platform with add-on modules</h2>
-            <p className="text-slate-500 text-lg max-w-2xl mx-auto">Start with your core plan and add only the features you need. Each module unlocks powerful new capabilities — pay only for what you use.</p>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {[
-              { icon: "🤖", name: "AI Estimator", price: 29, desc: "Auto-generate accurate estimates using AI — just describe the project.", color: "from-purple-50 to-purple-100 border-purple-200" },
-              { icon: "📊", name: "Advanced Reports", price: 19, desc: "Custom dashboards, revenue trends, and deep performance analytics.", color: "from-blue-50 to-blue-100 border-blue-200" },
-              { icon: "📣", name: "Marketing & Campaigns", price: 19, desc: "Email campaigns, announcements, and customer re-engagement tools.", color: "from-orange-50 to-orange-100 border-orange-200" },
-              { icon: "🧾", name: "Accounting", price: 29, desc: "Full accounting suite with chart of accounts and bank reconciliation.", color: "from-green-50 to-green-100 border-green-200" },
-              { icon: "📷", name: "Receipt Scanner", price: 9, desc: "Scan receipts on the job — AI extracts and logs expenses automatically.", color: "from-pink-50 to-pink-100 border-pink-200" },
-              { icon: "🔄", name: "Recurring Jobs", price: 19, desc: "Schedule recurring service visits with automatic job generation.", color: "from-cyan-50 to-cyan-100 border-cyan-200" },
-              { icon: "🌐", name: "Website Builder", price: 24, desc: "Build a professional business website with your services and pricing.", color: "from-indigo-50 to-indigo-100 border-indigo-200" },
-              { icon: "⭐", name: "Review Automation", price: 14, desc: "Auto-send Google review requests after every completed job.", color: "from-amber-50 to-amber-100 border-amber-200" },
-            ].map(({ icon, name, price, desc, color }) => (
-              <div key={name} className={`bg-gradient-to-br ${color} border rounded-2xl p-5 flex flex-col gap-3`}>
-                <div className="text-2xl">{icon}</div>
-                <div>
-                  <h3 className="font-semibold text-slate-900 text-sm">{name}</h3>
-                  <p className="text-slate-500 text-xs mt-1 leading-relaxed">{desc}</p>
-                </div>
-                <div className="mt-auto">
-                  <span className="font-bold text-slate-900">${price}</span>
-                  <span className="text-slate-400 text-xs">/mo</span>
-                </div>
-              </div>
-            ))}
-          </div>
-          <p className="text-center text-slate-400 text-sm mt-8">Modules can be added or removed anytime from inside your account.</p>
-        </div>
-      </section>
+
 
       {/* FAQ */}
       <section id="faq" className="py-14 sm:py-24 bg-slate-50">
