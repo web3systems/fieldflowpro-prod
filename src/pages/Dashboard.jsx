@@ -15,6 +15,7 @@ import { format } from "date-fns";
 import OnboardingBanner from "../components/dashboard/OnboardingBanner";
 import RevenueChart from "../components/dashboard/RevenueChart";
 import OnboardingWizard from "../components/onboarding/OnboardingWizard";
+import GlobalSearch from "../components/dashboard/GlobalSearch";
 
 const statusColors = {
   new: "bg-blue-100 text-blue-700",
@@ -33,6 +34,7 @@ export default function Dashboard() {
   const [invoices, setInvoices] = useState([]);
   const [leads, setLeads] = useState([]);
   const [bookings, setBookings] = useState([]);
+  const [estimates, setEstimates] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const navigate = useNavigate();
@@ -68,18 +70,20 @@ export default function Dashboard() {
 
   async function loadData() {
     setLoading(true);
-    const [j, c, inv, l, b] = await Promise.all([
+    const [j, c, inv, l, b, est] = await Promise.all([
       base44.entities.Job.filter({ company_id: activeCompany.id }),
       base44.entities.Customer.filter({ company_id: activeCompany.id }),
       base44.entities.Invoice.filter({ company_id: activeCompany.id }),
       base44.entities.Lead.filter({ company_id: activeCompany.id }),
       base44.entities.ServiceBooking.filter({ company_id: activeCompany.id, status: "pending" }, "-created_date"),
+      base44.entities.Estimate.filter({ company_id: activeCompany.id }),
     ]);
     setJobs(j);
     setCustomers(c);
     setInvoices(inv);
     setLeads(l);
     setBookings(b);
+    setEstimates(est);
 
     // Only show onboarding wizard if company has no real data yet
     const key = `onboarding_done_${activeCompany.id}`;
@@ -191,6 +195,16 @@ export default function Dashboard() {
           onComplete={() => setShowOnboarding(false)}
         />
       )}
+
+      {/* Global Search */}
+      <GlobalSearch
+        jobs={jobs}
+        customers={customers}
+        invoices={invoices}
+        leads={leads}
+        estimates={estimates}
+      />
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
