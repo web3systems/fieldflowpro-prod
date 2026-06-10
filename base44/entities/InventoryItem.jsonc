@@ -1,0 +1,59 @@
+{
+  "name": "InventoryItem",
+  "type": "object",
+  "properties": {
+    "company_id": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "item_type": {
+      "type": "string",
+      "enum": [
+        "internal",
+        "customer",
+        "digital"
+      ],
+      "default": "internal"
+    },
+    "category": {
+      "type": "string"
+    },
+    "sku": {
+      "type": "string"
+    },
+    "quantity": {
+      "type": "number",
+      "default": 1
+    },
+    "quantity_min": {
+      "type": "number",
+      "default": 1,
+      "description": "Low stock alert threshold"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "available",
+        "in_use",
+        "maintenance",
+        "retired"
+      ],
+      "default": "available"
+    },
+    "assigned_to": {
+      "type": "string"
+    },
+    "unit_cost": {
+      "type": "number"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "company_id",
+    "name"
+  ]
+}
