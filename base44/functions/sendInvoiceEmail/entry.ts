@@ -1,7 +1,34 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
+import { Resend } from 'npm:resend@4.0.0';
+
+// Central mail resolver (inlined — no local imports in Deno functions)
+async function resolveMailSettings(base44, companyId) {
+  const PLATFORM_FROM = 'FieldFlow Pro <notifications@fieldflowpro.com>';
+  const PLATFORM_REPLY_TO = 'notifications@fieldflowpro.com';
+  if (!companyId) return { error: 'No company_id', blocked: true };
+  const settings = await base44.asServiceRole.entities.CompanyEmailSettings.filter({ company_id: companyId });
+  const cfg = settings[0];
+  if (!cfg || !cfg.mail_enabled) {
+    // Fall back to platform sender if not configured
+    return { from: PLATFORM_FROM, replyTo: PLATFORM_REPLY_TO, method: 'resend', enabled: true, fallbackUsed: true };
+  }
+  if (cfg.mail_method === 'smtp') {
+    if (!cfg.smtp_host || !cfg.smtp_username) return { error: 'SMTP not fully configured', blocked: true };
+    return { from: `${cfg.mail_from_name} <${cfg.mail_from_address}>`, replyTo: cfg.mail_reply_to || cfg.mail_from_address, method: 'smtp', enabled: true, fallbackUsed: false };
+  }
+  if (cfg.mail_domain_verified) {
+    return { from: `${cfg.mail_from_name} <${cfg.mail_from_address}>`, replyTo: cfg.mail_reply_to || cfg.mail_from_address, method: 'resend', enabled: true, fallbackUsed: false };
+  }
+  if (cfg.mail_fallback_allowed !== false) {
+    console.warn(`[MailResolver] Company ${companyId} using platform fallback`);
+    return { from: PLATFORM_FROM, replyTo: PLATFORM_REPLY_TO, method: 'resend', enabled: true, fallbackUsed: true };
+  }
+  return { error: `Domain not verified and fallback not allowed for company ${companyId}`, blocked: true };
+}
 
 Deno.serve(async (req) => {
   try {
+    const resend = new Resend(Deno.env.get('RESEND_API_KEY'));
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
@@ -14,7 +41,7 @@ Deno.serve(async (req) => {
     if (!invoice) return Response.json({ error: 'Invoice not found' }, { status: 404 });
 
     // Verify user has access to this invoice's company
-    if (user.role !== 'admin') {
+    if (user.role !== 'admin' && user.role !== 'super_admin') {
       const access = await base44.asServiceRole.entities.UserCompanyAccess.filter({
         user_email: user.email,
         company_id: invoice.company_id
@@ -29,6 +56,16 @@ Deno.serve(async (req) => {
     const companies = await base44.asServiceRole.entities.Company.filter({ id: invoice.company_id });
     const company = companies[0];
 
+    // Resolve mail settings via standard resolver
+    const mailSettings = await resolveMailSettings(base44, invoice.company_id);
+    if (mailSettings.blocked) {
+      console.error(`[sendInvoiceEmail] Blocked: ${mailSettings.error}`);
+      return Response.json({ error: mailSettings.error }, { status: 400 });
+    }
+
+    const companyName = company?.name || 'FieldFlow Pro';
+    const primaryColor = company?.primary_color || '#2563eb';
+
     const lineItemsHtml = (invoice.line_items || []).length > 0 ? `
       <table style="width:100%;border-collapse:collapse;margin:16px 0;">
         <tr style="background:#f1f5f9;">
@@ -37,59 +74,41 @@ Deno.serve(async (req) => {
         </tr>
         ${(invoice.line_items || []).map(item => `
           <tr style="border-bottom:1px solid #f1f5f9;">
-            <td style="padding:8px 12px;color:#334155;">${item.description || ""}</td>
+            <td style="padding:8px 12px;color:#334155;">${item.description || ''}</td>
             <td style="padding:8px 12px;color:#334155;text-align:right;">$${(item.total || 0).toFixed(2)}</td>
           </tr>
-        `).join("")}
-      </table>` : "";
+        `).join('')}
+      </table>` : '';
 
-    const companyName = company?.name || "FieldFlow Pro";
-    const VERIFIED_DOMAINS = ['honeydocrew.co', 'honeydoclean.com', 'prettylittlepolishers.com'];
-    const companyDomain = company?.email ? company.email.split('@')[1] : null;
-    const fromDomain = (companyDomain && VERIFIED_DOMAINS.includes(companyDomain)) ? companyDomain : 'fieldflowpro.com';
-    const resendApiKey = Deno.env.get('RESEND_API_KEY');
-
-    const emailResponse = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${resendApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        from: `${companyName} <noreply@${fromDomain}>`,
-        to: customer.email,
-        subject: `Invoice ${invoice.invoice_number} from ${companyName}`,
-        html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;">
-          <h2 style="color:#1e293b;margin:0 0 8px;">Invoice ${invoice.invoice_number}</h2>
-          <p style="color:#475569;">Hi ${customer.first_name},</p>
-          <p style="color:#475569;">You have a new invoice from <strong>${companyName}</strong>.</p>
-          <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:20px;margin:20px 0;">
-            <div style="font-size:28px;font-weight:700;color:#1e293b;">$${(invoice.total || 0).toFixed(2)}</div>
-            ${invoice.due_date ? `<div style="color:#64748b;margin-top:4px;">Due ${new Date(invoice.due_date).toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"})}</div>` : ""}
-          </div>
-          ${lineItemsHtml}
-          ${portal_url ? `<div style="text-align:center;margin:24px 0;"><a href="${portal_url}" style="display:inline-block;background:#2563eb;color:white;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:600;font-size:15px;">View &amp; Pay Invoice →</a></div>` : ""}
-          ${invoice.notes ? `<p style="color:#64748b;font-size:14px;background:#f8fafc;padding:12px;border-radius:6px;border-left:3px solid #e2e8f0;">${invoice.notes}</p>` : ""}
-          <p style="color:#94a3b8;font-size:12px;margin-top:24px;">Questions? Contact ${company?.email || company?.phone || "us"}.</p>
-        </div>`
-      }),
+    await resend.emails.send({
+      from: mailSettings.from,
+      reply_to: mailSettings.replyTo,
+      to: customer.email,
+      subject: `Invoice ${invoice.invoice_number} from ${companyName}`,
+      html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;">
+        <h2 style="color:#1e293b;margin:0 0 8px;">Invoice ${invoice.invoice_number}</h2>
+        <p style="color:#475569;">Hi ${customer.first_name || 'there'},</p>
+        <p style="color:#475569;">You have a new invoice from <strong>${companyName}</strong>.</p>
+        <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:20px;margin:20px 0;">
+          <div style="font-size:28px;font-weight:700;color:#1e293b;">$${(invoice.total || 0).toFixed(2)}</div>
+          ${invoice.due_date ? `<div style="color:#64748b;margin-top:4px;">Due ${new Date(invoice.due_date).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})}</div>` : ''}
+        </div>
+        ${lineItemsHtml}
+        ${portal_url ? `<div style="text-align:center;margin:24px 0;"><a href="${portal_url}" style="display:inline-block;background:${primaryColor};color:white;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:600;font-size:15px;">View &amp; Pay Invoice →</a></div>` : ''}
+        ${invoice.notes ? `<p style="color:#64748b;font-size:14px;background:#f8fafc;padding:12px;border-radius:6px;border-left:3px solid #e2e8f0;">${invoice.notes}</p>` : ''}
+        <p style="color:#94a3b8;font-size:12px;margin-top:24px;">Questions? Contact ${company?.email || company?.phone || 'us'}.</p>
+      </div>`
     });
 
-    if (!emailResponse.ok) {
-      const errorData = await emailResponse.json();
-      console.error('Resend API error:', errorData);
-      throw new Error(`Resend API error: ${JSON.stringify(errorData)}`);
-    }
-
     // Auto-advance draft invoices to "sent"
-    if (invoice.status === "draft") {
-      await base44.asServiceRole.entities.Invoice.update(invoice_id, { status: "sent" });
+    if (invoice.status === 'draft') {
+      await base44.asServiceRole.entities.Invoice.update(invoice_id, { status: 'sent' });
     }
 
-    console.log(`Invoice email sent to ${customer.email} for invoice ${invoice_id}`);
+    console.log(`[sendInvoiceEmail] Sent to ${customer.email} for invoice ${invoice_id} from ${mailSettings.from} (fallback: ${mailSettings.fallbackUsed})`);
     return Response.json({ success: true });
   } catch (error) {
-    console.error("Error sending invoice email:", error.message);
+    console.error('Error sending invoice email:', error.message);
     return Response.json({ error: error.message }, { status: 500 });
   }
 });

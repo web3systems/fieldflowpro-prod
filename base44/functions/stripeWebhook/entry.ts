@@ -1,7 +1,5 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 import Stripe from 'npm:stripe@14.21.0';
-
-const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY"));
 
 Deno.serve(async (req) => {
   const base44 = createClientFromRequest(req);
@@ -10,6 +8,7 @@ Deno.serve(async (req) => {
 
   let event;
   try {
+    const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY"));
     event = await stripe.webhooks.constructEventAsync(body, signature, Deno.env.get("STRIPE_WEBHOOK_SECRET"));
   } catch (err) {
     console.error("Webhook signature verification failed:", err.message);
@@ -32,7 +31,6 @@ Deno.serve(async (req) => {
         const sessionAmount = (session.amount_total || 0) / 100;
 
         if (isDeposit) {
-          // Fetch current invoice to add to existing amount_paid
           const invoices = await base44.asServiceRole.entities.Invoice.filter({ id: invoice_id });
           const invoice = invoices[0];
           if (!invoice) {
@@ -51,7 +49,6 @@ Deno.serve(async (req) => {
           });
           console.log(`Deposit of $${sessionAmount} recorded on invoice ${invoice_id}. New amount paid: $${newAmountPaid}, status: ${newStatus}`);
         } else {
-          // Full payment — mark as fully paid
           await base44.asServiceRole.entities.Invoice.update(invoice_id, {
             status: "paid",
             amount_paid: sessionAmount,

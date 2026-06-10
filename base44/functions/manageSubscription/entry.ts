@@ -1,7 +1,5 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 import Stripe from 'npm:stripe@14.21.0';
-
-const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY'));
 
 Deno.serve(async (req) => {
   try {
@@ -19,6 +17,7 @@ Deno.serve(async (req) => {
       }
     }
 
+    const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY'));
     const subs = await base44.asServiceRole.entities.Subscription.filter({ company_id });
     const sub = subs[0];
 
@@ -44,7 +43,6 @@ Deno.serve(async (req) => {
       await stripe.subscriptions.update(sub.stripe_subscription_id, {
         cancel_at_period_end: true,
       });
-      // Don't mark cancelled yet — keep active until period ends; webhook handles final cancellation
       console.log(`Subscription set to cancel at period end for company ${company_id}`);
       return Response.json({ success: true });
     }

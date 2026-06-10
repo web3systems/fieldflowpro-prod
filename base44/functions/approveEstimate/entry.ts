@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 
 Deno.serve(async (req) => {
   try {
@@ -16,7 +16,11 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
-    // Update estimate status
+    // Only allow action on pending estimates
+    if (!['sent', 'viewed'].includes(estimate.status)) {
+      return Response.json({ error: 'Estimate cannot be updated at this stage' }, { status: 400 });
+    }
+
     await base44.asServiceRole.entities.Estimate.update(estimate_id, { status: 'approved' });
 
     return Response.json({ success: true, message: 'Estimate approved' });

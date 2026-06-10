@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 
 Deno.serve(async (req) => {
   try {
@@ -35,10 +35,14 @@ Deno.serve(async (req) => {
     }
 
     // Find all customer records linked to this user (by portal_user_id or email)
-    const allCustomers = await base44.asServiceRole.entities.Customer.list();
-    const myCustomers = allCustomers.filter(
-      c => c.portal_user_id === user.id || c.email === user.email
-    );
+    const [byUserId, byEmail] = await Promise.all([
+      base44.asServiceRole.entities.Customer.filter({ portal_user_id: user.id }),
+      base44.asServiceRole.entities.Customer.filter({ email: user.email }),
+    ]);
+    // Deduplicate by id
+    const customerMap = new Map();
+    for (const c of [...byUserId, ...byEmail]) customerMap.set(c.id, c);
+    const myCustomers = [...customerMap.values()];
 
     if (myCustomers.length === 0) {
       // Check if this is a staff user who should be redirected
