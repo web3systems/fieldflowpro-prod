@@ -6,12 +6,12 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import {
   Brain, BarChart3, Megaphone, Calculator, Camera, RefreshCw,
-  Globe, Star, CheckCircle2, Loader2, Zap, Package, Boxes
+  Globe, Star, CheckCircle2, Loader2, Zap, Package, Boxes, TrendingUp
 } from "lucide-react";
 import { toast } from "sonner";
 
 const ICON_MAP = {
-  Brain, BarChart3, Megaphone, Calculator, Camera, RefreshCw, Globe, Star, Boxes, Package
+  Brain, BarChart3, Megaphone, Calculator, Camera, RefreshCw, Globe, Star, Boxes, Package, TrendingUp
 };
 
 const CATEGORY_LABELS = {
@@ -212,19 +212,31 @@ export default function Marketplace() {
 
                   <div className="mt-auto pt-2 flex items-center justify-between border-t border-slate-100">
                     <div>
-                      <span className="text-xl font-bold text-slate-900">${mod.price_monthly}</span>
-                      <span className="text-slate-400 text-sm">/mo</span>
+                      {mod.price_monthly === 0 ? (
+                        <span className="text-xl font-bold text-green-600">Free</span>
+                      ) : (
+                        <>
+                          <span className="text-xl font-bold text-slate-900">${mod.price_monthly}</span>
+                          <span className="text-slate-400 text-sm">/mo</span>
+                        </>
+                      )}
                     </div>
                     {active ? (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="text-red-500 border-red-200 hover:bg-red-50"
-                        onClick={() => handleCancel(mod)}
-                        disabled={isLoading}
-                      >
-                        {isLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : "Cancel"}
-                      </Button>
+                      mod.price_monthly === 0 ? (
+                        <span className="text-xs text-green-600 font-medium flex items-center gap-1">
+                          <CheckCircle2 className="w-3.5 h-3.5" /> Included
+                        </span>
+                      ) : (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="text-red-500 border-red-200 hover:bg-red-50"
+                          onClick={() => handleCancel(mod)}
+                          disabled={isLoading}
+                        >
+                          {isLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : "Cancel"}
+                        </Button>
+                      )
                     ) : (
                       <Button
                         size="sm"

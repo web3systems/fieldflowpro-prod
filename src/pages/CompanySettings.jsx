@@ -11,6 +11,7 @@ import CompanyEmailSettingsTab from '@/components/settings/CompanyEmailSettingsT
 import SubCompaniesTab from '@/components/settings/SubCompaniesTab';
 import MarginRulesTab from '@/components/settings/MarginRulesTab';
 import ConnectorsTab from '@/components/settings/ConnectorsTab';
+import SeoAnalyticsTab from '@/components/settings/SeoAnalyticsTab';
 
 export default function CompanySettings() {
   const { activeCompany, user, refreshCompanies } = useApp();
@@ -65,6 +66,7 @@ export default function CompanySettings() {
             {isOwner && isParentCompany && <TabsTrigger value="locations">Locations</TabsTrigger>}
             <TabsTrigger value="margins">Margin Rules</TabsTrigger>
             <TabsTrigger value="connectors">Connectors</TabsTrigger>
+            <TabsTrigger value="seo">SEO & Analytics</TabsTrigger>
             {isOwner && <TabsTrigger value="general">General</TabsTrigger>}
           </TabsList>
 
@@ -94,6 +96,10 @@ export default function CompanySettings() {
 
           <TabsContent value="connectors">
             <ConnectorsTab company={company} />
+          </TabsContent>
+
+          <TabsContent value="seo">
+            <SeoAnalyticsTab company={company} onSave={loadCompany} />
           </TabsContent>
 
           {isOwner && isParentCompany && (

@@ -8,6 +8,7 @@ import {
   Bell, LogOut, Wrench, BarChart3, Globe, Home, UsersRound, CalendarDays, ShieldCheck, CreditCard, Megaphone, Calculator, MessageCircle, Mail, BookOpen, CheckSquare, Package
 } from "lucide-react";
 import NotificationBell from "@/components/notifications/NotificationBell";
+import SeoHead from "@/components/seo/SeoHead";
 import GlobalChatPanel from "@/components/chat/GlobalChatPanel";
 import SubscriptionGate from "@/components/subscription/SubscriptionGate";
 import PastDueBanner from "@/components/subscription/PastDueBanner";
@@ -320,6 +321,9 @@ export default function Layout({ children, currentPageName }) {
 
         {/* Global Chat Panel */}
         <GlobalChatPanel user={user} company={activeCompany} />
+
+        {/* SEO & Analytics injection */}
+        <SeoHead company={activeCompany} />
 
         {/* Mobile Bottom Nav */}
         <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-30 lg:hidden safe-area-inset-bottom">

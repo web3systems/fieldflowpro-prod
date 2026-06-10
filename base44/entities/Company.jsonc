@@ -95,6 +95,79 @@
         }
       }
     },
+    "seo_settings": {
+      "type": "object",
+      "description": "SEO and analytics configuration",
+      "properties": {
+        "google_analytics_id": {
+          "type": "string",
+          "description": "Google Analytics 4 Measurement ID (G-XXXXXXXXXX)"
+        },
+        "google_tag_manager_id": {
+          "type": "string",
+          "description": "Google Tag Manager container ID (GTM-XXXXXXX)"
+        },
+        "google_search_console_verification": {
+          "type": "string",
+          "description": "Google Search Console meta verification code"
+        },
+        "meta_title": {
+          "type": "string",
+          "description": "Custom page title for SEO"
+        },
+        "meta_description": {
+          "type": "string",
+          "description": "Meta description for search engines (150-160 chars)"
+        },
+        "meta_keywords": {
+          "type": "string",
+          "description": "Comma-separated keywords"
+        },
+        "og_title": {
+          "type": "string",
+          "description": "Open Graph title for social sharing"
+        },
+        "og_description": {
+          "type": "string",
+          "description": "Open Graph description for social sharing"
+        },
+        "og_image_url": {
+          "type": "string",
+          "description": "Open Graph image URL for social sharing"
+        },
+        "canonical_url": {
+          "type": "string",
+          "description": "Canonical URL for the business website"
+        },
+        "schema_type": {
+          "type": "string",
+          "enum": [
+            "LocalBusiness",
+            "HomeAndConstructionBusiness",
+            "LandscapingService",
+            "HVACBusiness",
+            "Plumber",
+            "Electrician",
+            "CleaningService",
+            "GeneralContractor"
+          ],
+          "default": "LocalBusiness",
+          "description": "JSON-LD schema type for rich search results"
+        },
+        "schema_enabled": {
+          "type": "boolean",
+          "default": true
+        },
+        "facebook_pixel_id": {
+          "type": "string",
+          "description": "Facebook/Meta Pixel ID for ad tracking"
+        },
+        "bing_uet_id": {
+          "type": "string",
+          "description": "Bing UET tag ID"
+        }
+      }
+    },
     "stripe_account_id": {
       "type": "string"
     },
