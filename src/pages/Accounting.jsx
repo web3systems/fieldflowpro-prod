@@ -8,6 +8,7 @@ import AIInsightsPanel from "../components/accounting/AIInsightsPanel";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TrendingUp, TrendingDown, DollarSign, AlertCircle, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import SyncModal from "@/components/accounting/SyncModal";
 import { format, subMonths, startOfMonth, endOfMonth } from "date-fns";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from "recharts";
 
@@ -17,7 +18,7 @@ export default function Accounting() {
   const [transactions, setTransactions] = useState([]);
   const [accounts, setAccounts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [syncing, setSyncing] = useState(false);
+  const [showSync, setShowSync] = useState(false);
 
   useEffect(() => {
     if (activeCompany) {
@@ -38,30 +39,7 @@ export default function Accounting() {
     setLoading(false);
   }
 
-  async function syncFromFieldFlow() {
-    setSyncing(true);
-    const [invoices, bankAccts] = await Promise.all([
-      base44.entities.Invoice.filter({ company_id: activeCompany.id }),
-      base44.entities.AccountingTransaction.filter({ company_id: activeCompany.id, source: "invoice" }),
-    ]);
-    const existingSourceIds = new Set(bankAccts.map(t => t.source_id));
-    const toSync = invoices.filter(inv => inv.status === "paid" && !existingSourceIds.has(inv.id));
-    for (const inv of toSync) {
-      await base44.entities.AccountingTransaction.create({
-        company_id: activeCompany.id,
-        date: inv.paid_date || inv.updated_date?.slice(0, 10) || format(new Date(), "yyyy-MM-dd"),
-        description: `Invoice ${inv.invoice_number || inv.id}`,
-        amount: inv.total || 0,
-        type: "income",
-        category: "Service Revenue",
-        source: "invoice",
-        source_id: inv.id,
-        status: "cleared",
-      });
-    }
-    await loadData();
-    setSyncing(false);
-  }
+
 
   const income = transactions.filter(t => t.type === "income").reduce((s, t) => s + (t.amount || 0), 0);
   const expenses = transactions.filter(t => t.type === "expense").reduce((s, t) => s + (t.amount || 0), 0);
@@ -120,9 +98,9 @@ export default function Accounting() {
             <h1 className="text-2xl font-bold text-slate-900">Financial Overview</h1>
             <p className="text-slate-500 text-sm mt-0.5">All time summary for {activeCompany?.name}</p>
           </div>
-          <Button onClick={syncFromFieldFlow} disabled={syncing} variant="outline" size="sm" className="gap-2">
-            <RefreshCw className={`w-3.5 h-3.5 ${syncing ? "animate-spin" : ""}`} />
-            {syncing ? "Syncing..." : "Sync from Field Flow"}
+          <Button onClick={() => setShowSync(true)} variant="outline" size="sm" className="gap-2">
+            <RefreshCw className="w-3.5 h-3.5" />
+            Sync from FieldFlow
           </Button>
         </div>
 
@@ -221,6 +199,13 @@ export default function Accounting() {
         {/* AI Insights */}
         <AIInsightsPanel companyId={activeCompany?.id} transactions={transactions} accounts={accounts} />
       </div>
+
+      <SyncModal
+        open={showSync}
+        onClose={() => setShowSync(false)}
+        companyId={activeCompany?.id}
+        onSynced={loadData}
+      />
     </AccountingLayout>
   );
 }
