@@ -188,33 +188,39 @@ Be extremely thorough and flag anything that could indicate bookkeeping errors, 
     if (!chatInput.trim() || chatLoading) return;
     const userMsg = chatInput.trim();
     setChatInput("");
-    setMessages(prev => [...prev, { role: "user", content: userMsg }]);
+    const updatedMessages = [...messages, { role: "user", content: userMsg }];
+    setMessages(updatedMessages);
     setChatLoading(true);
 
-    // Build context for the AI
-    const context = auditResults
-      ? `Current audit results: ${JSON.stringify(auditResults)}`
-      : extractedBankData
-      ? `Bank statement uploaded (${extractedBankData.transactions?.length || 0} transactions). Audit not yet run.`
-      : "No bank statement uploaded yet.";
+    // Build a lean context summary (avoid huge JSON blobs)
+    let contextSummary = "No bank statement uploaded yet.";
+    if (auditResults) {
+      contextSummary = `Audit completed. Risk: ${auditResults.risk_rating}. ${auditResults.reconciliation_summary} Bank credits: $${auditResults.bank_total_credits}, FieldFlow income: $${auditResults.fieldflow_total_income}. Unmatched credits: ${auditResults.unmatched_bank_credits?.length || 0}, unmatched debits: ${auditResults.unmatched_bank_debits?.length || 0}, suspicious: ${auditResults.suspicious_transactions?.length || 0}. Assessment: ${auditResults.overall_assessment}`;
+    } else if (extractedBankData) {
+      contextSummary = `Bank statement uploaded from ${extractedBankData.bank_name || "unknown bank"}. Period: ${extractedBankData.statement_period_start} to ${extractedBankData.statement_period_end}. ${extractedBankData.transactions?.length || 0} transactions. Closing balance: $${extractedBankData.closing_balance}. Audit not yet run.`;
+    }
+
+    // Keep last 6 messages for history to avoid token limits
+    const recentHistory = updatedMessages.slice(-6).map(m =>
+      `${m.role === "user" ? "User" : "Forensic Accountant"}: ${m.content}`
+    ).join("\n");
 
     try {
-      const res = await base44.integrations.Core.InvokeLLM({
-        prompt: `You are a CPA-trained forensic accountant assistant for a field service business using FieldFlow Pro. You are helpful, precise, and professional. You speak clearly to business owners who may not be accounting experts.
+      const reply = await base44.integrations.Core.InvokeLLM({
+        prompt: `You are a CPA-trained forensic accountant assistant for a field service business. Be helpful, precise, and professional.
 
-Context: ${context}
+Business context: ${contextSummary}
 
-Conversation so far:
-${messages.map(m => `${m.role === "user" ? "User" : "Forensic Accountant"}: ${m.content}`).join("\n")}
+Recent conversation:
+${recentHistory}
 
-User: ${userMsg}
+User just asked: ${userMsg}
 
-Respond as the forensic accountant. Be specific, cite numbers when available, and give actionable advice. Keep responses concise but thorough.`,
-        response_json_schema: { type: "object", properties: { reply: { type: "string" } } }
+Reply as the forensic accountant. Be specific with numbers when available. Keep it concise (2-4 sentences max).`
       });
-      setMessages(prev => [...prev, { role: "assistant", content: res.reply || "I couldn't generate a response. Please try again." }]);
+      setMessages(prev => [...prev, { role: "assistant", content: typeof reply === "string" ? reply : (reply?.reply || String(reply)) }]);
     } catch (err) {
-      setMessages(prev => [...prev, { role: "assistant", content: `Error: ${err?.message || "Unknown error. Please try again."}` }]);
+      setMessages(prev => [...prev, { role: "assistant", content: `Error: ${err?.message || "Request failed. Please try again."}` }]);
     }
     setChatLoading(false);
     setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
