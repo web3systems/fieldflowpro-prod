@@ -106,7 +106,6 @@ export default function AccountingAudit() {
 
     try {
       const res = await base44.integrations.Core.InvokeLLM({
-        model: "claude_sonnet_4_6",
         prompt: `You are a CPA-trained forensic accountant conducting a formal financial audit. Analyze the following data carefully and produce a detailed audit report.
 
 BANK STATEMENT DATA:
@@ -201,7 +200,6 @@ Be extremely thorough and flag anything that could indicate bookkeeping errors, 
 
     try {
       const res = await base44.integrations.Core.InvokeLLM({
-        model: "claude_sonnet_4_6",
         prompt: `You are a CPA-trained forensic accountant assistant for a field service business using FieldFlow Pro. You are helpful, precise, and professional. You speak clearly to business owners who may not be accounting experts.
 
 Context: ${context}
@@ -214,9 +212,9 @@ User: ${userMsg}
 Respond as the forensic accountant. Be specific, cite numbers when available, and give actionable advice. Keep responses concise but thorough.`,
         response_json_schema: { type: "object", properties: { reply: { type: "string" } } }
       });
-      setMessages(prev => [...prev, { role: "assistant", content: res.reply || "I couldn't process that. Please try again." }]);
-    } catch {
-      setMessages(prev => [...prev, { role: "assistant", content: "Sorry, I encountered an error. Please try again." }]);
+      setMessages(prev => [...prev, { role: "assistant", content: res.reply || "I couldn't generate a response. Please try again." }]);
+    } catch (err) {
+      setMessages(prev => [...prev, { role: "assistant", content: `Error: ${err?.message || "Unknown error. Please try again."}` }]);
     }
     setChatLoading(false);
     setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
