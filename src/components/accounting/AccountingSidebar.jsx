@@ -1,6 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { LayoutDashboard, BookOpen, ArrowLeftRight, BarChart3, Building2, X, TrendingDown, Percent } from "lucide-react";
+import { LayoutDashboard, BookOpen, ArrowLeftRight, BarChart3, Building2, X, TrendingDown, Percent, ShieldCheck } from "lucide-react";
 
 const navItems = [
   { label: "Overview", icon: LayoutDashboard, page: "Accounting" },
@@ -10,6 +10,7 @@ const navItems = [
   { label: "Chart of Accounts", icon: BookOpen, page: "AccountingAccounts" },
   { label: "Reports", icon: BarChart3, page: "AccountingReports" },
   { label: "Bank Accounts", icon: Building2, page: "AccountingBanks" },
+  { label: "Forensic Audit", icon: ShieldCheck, page: "AccountingAudit" },
 ];
 
 export default function AccountingSidebar({ onClose }) {

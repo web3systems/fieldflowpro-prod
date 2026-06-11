@@ -42,6 +42,7 @@ import Tasks from './pages/Tasks';
 import Support from './pages/Support';
 import Marketplace from './pages/Marketplace';
 import Inventory from './pages/Inventory';
+import AccountingAudit from './pages/AccountingAudit';
 import ProductOverview from './pages/ProductOverview';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
@@ -152,6 +153,7 @@ const AuthenticatedApp = () => {
       <Route path="/Support" element={<LayoutWrapper currentPageName="Support"><Support /></LayoutWrapper>} />
       <Route path="/Marketplace" element={<LayoutWrapper currentPageName="Marketplace"><Marketplace /></LayoutWrapper>} />
       <Route path="/Inventory" element={<LayoutWrapper currentPageName="Inventory"><Inventory /></LayoutWrapper>} />
+      <Route path="/AccountingAudit" element={<LayoutWrapper currentPageName="AccountingAudit"><AccountingAudit /></LayoutWrapper>} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
