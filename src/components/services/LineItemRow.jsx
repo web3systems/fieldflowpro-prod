@@ -97,7 +97,7 @@ export default function LineItemRow({ item, idx, companyId, services = [], onSer
                   <SelectLabel>{cat}</SelectLabel>
                   {items.map(svc => (
                     <SelectItem key={svc.id} value={svc.id}>
-                      {svc.name}
+                      {svc.name || "(unnamed)"}
                       {svc.unit_price > 0 ? ` — $${svc.unit_price.toFixed(2)}` : ""}
                     </SelectItem>
                   ))}

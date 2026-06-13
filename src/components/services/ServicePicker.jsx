@@ -24,7 +24,7 @@ export default function ServicePicker({ companyId, onSelect, itemType, category:
     if (!search) return items;
     const q = search.toLowerCase();
     return items.filter(s =>
-      s.name.toLowerCase().includes(q) ||
+      (s.name || "").toLowerCase().includes(q) ||
       (s.category || "").toLowerCase().includes(q) ||
       (s.subcategory || "").toLowerCase().includes(q) ||
       (s.sku || "").toLowerCase().includes(q)
