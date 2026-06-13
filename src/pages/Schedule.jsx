@@ -27,6 +27,13 @@ const STATUS_OPTIONS = [
   { value: "on_hold", label: "On Hold", color: "#6b7280" },
 ];
 
+const APPOINTMENT_STATUS_COLORS = {
+  upcoming: "#3b82f6",
+  in_progress: "#f59e0b",
+  completed: "#10b981",
+  cancelled: "#ef4444",
+};
+
 const defaultJob = {
   title: "", description: "", status: "scheduled", priority: "medium",
   address: "", scheduled_start: "", scheduled_end: "",
@@ -76,16 +83,22 @@ export default function Schedule() {
 
   const filteredJobs = useMemo(() => {
     if (filterTech === "all") return jobs;
-    return jobs.filter(j => j.assigned_techs?.includes(filterTech));
+    return jobs.filter(j =>
+      j.assigned_techs?.includes(filterTech) ||
+      (j.appointments || []).some(a => (a.assigned_techs || []).includes(filterTech))
+    );
   }, [jobs, filterTech]);
 
   const events = useMemo(() => {
-    return filteredJobs
-      .filter(j => j.scheduled_start)
-      .map(j => {
-        const cust = customers.find(c => c.id === j.customer_id);
-        const customerName = cust ? `${cust.first_name} ${cust.last_name}` : "";
-        return {
+    const result = [];
+
+    filteredJobs.forEach(j => {
+      const cust = customers.find(c => c.id === j.customer_id);
+      const customerName = cust ? `${cust.first_name} ${cust.last_name}` : "";
+
+      // Legacy single appointment (scheduled_start)
+      if (j.scheduled_start) {
+        result.push({
           id: j.id,
           title: customerName ? `${j.title} · ${customerName}` : j.title,
           start: new Date(j.scheduled_start),
@@ -93,18 +106,45 @@ export default function Schedule() {
             ? new Date(j.scheduled_end)
             : new Date(new Date(j.scheduled_start).getTime() + 60 * 60 * 1000),
           resource: j,
-        };
+          isAppointment: false,
+        });
+      }
+
+      // Individual appointments from the appointments array
+      (j.appointments || []).forEach((apt, idx) => {
+        if (!apt.scheduled_start || apt.status === "cancelled") return;
+        const aptLabel = `${customerName || j.title}${j.appointments?.length > 1 ? ` · Visit ${idx + 1}` : ""}`;
+        result.push({
+          id: `${j.id}_apt_${apt.id || idx}`,
+          title: aptLabel,
+          start: new Date(apt.scheduled_start),
+          end: apt.scheduled_end
+            ? new Date(apt.scheduled_end)
+            : new Date(new Date(apt.scheduled_start).getTime() + 60 * 60 * 1000),
+          resource: j,
+          aptStatus: apt.status,
+          isAppointment: true,
+        });
       });
+    });
+
+    return result;
   }, [filteredJobs, customers]);
 
   const eventStyleGetter = (event) => {
-    const statusOption = STATUS_OPTIONS.find(s => s.value === event.resource?.status);
+    let backgroundColor = '#3b82f6';
+    if (event.isAppointment && event.aptStatus) {
+      backgroundColor = APPOINTMENT_STATUS_COLORS[event.aptStatus] || '#3b82f6';
+    } else {
+      const statusOption = STATUS_OPTIONS.find(s => s.value === event.resource?.status);
+      backgroundColor = statusOption?.color || '#3b82f6';
+    }
     return {
       style: {
-        backgroundColor: statusOption?.color || '#3b82f6',
+        backgroundColor,
         borderRadius: '5px',
         color: 'white',
-        border: 'none',
+        border: event.isAppointment ? '1px dashed rgba(255,255,255,0.4)' : 'none',
         padding: '2px 5px',
         fontSize: '12px',
         fontWeight: '500',
