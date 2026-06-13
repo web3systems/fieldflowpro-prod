@@ -1,4 +1,4 @@
-import { LogOut, Home, Briefcase, FileText, DollarSign, User, Menu, X } from "lucide-react";
+import { LogOut, Home, Briefcase, FileText, DollarSign, User, Menu, X, Headphones } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 
 const NAV_ITEMS = [
@@ -7,6 +7,7 @@ const NAV_ITEMS = [
   { id: "estimates", label: "Estimates", icon: FileText },
   { id: "invoices", label: "Invoices", icon: DollarSign },
   { id: "account", label: "Account", icon: User },
+  { id: "support", label: "Support", icon: Headphones },
 ];
 
 export default function PortalLayout({ activeTab, setActiveTab, customer, company, children, sidebarOpen, setSidebarOpen }) {

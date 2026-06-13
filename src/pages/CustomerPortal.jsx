@@ -8,6 +8,7 @@ import PortalJobs from "@/components/portal/PortalJobs";
 import PortalEstimates from "@/components/portal/PortalEstimates";
 import PortalInvoices from "@/components/portal/PortalInvoices";
 import PortalAccount from "@/components/portal/PortalAccount";
+import PortalSupport from "@/components/portal/PortalSupport";
 
 export default function CustomerPortal() {
   const previewCustomerId = new URLSearchParams(window.location.search).get("preview_customer_id");
@@ -151,6 +152,9 @@ export default function CustomerPortal() {
       {activeTab === "invoices" && <PortalInvoices invoices={invoices} company={company} />}
       {activeTab === "account" && (
         <PortalAccount customer={customer} company={company} services={services} />
+      )}
+      {activeTab === "support" && (
+        <PortalSupport customer={customer} company={company} />
       )}
     </>
   );

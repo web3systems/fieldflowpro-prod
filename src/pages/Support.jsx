@@ -61,7 +61,7 @@ function AIChat({ user, activeCompany }) {
 
   async function initConversation() {
     const conv = await base44.agents.createConversation({
-      agent_name: "support_agent",
+      agent_name: "staff_support_agent",
       metadata: { name: "Support Chat" },
     });
     setConversation(conv);
