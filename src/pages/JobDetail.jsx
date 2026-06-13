@@ -115,13 +115,23 @@ export default function JobDetail() {
 
   async function generateInvoice(collectPayment = false) {
     setInvoiceActionLoading(true);
+
+    // Prevent duplicate invoices — check if an unsent/draft invoice already exists for this job
+    const existingForJob = await base44.entities.Invoice.filter({ job_id: id });
+    const hasActiveInvoice = existingForJob.some(inv => inv.status !== "void");
+    if (hasActiveInvoice && !collectPayment) {
+      setInvoiceActionLoading(false);
+      const latest = existingForJob[existingForJob.length - 1];
+      toast({ title: "Invoice already exists", description: `Invoice #${latest.invoice_number || latest.id.slice(-4)} is already linked to this job.`, variant: "destructive" });
+      return;
+    }
+
     let line_items = form.line_items || [];
     let subtotal = form.total_amount || 0;
     if (job.estimate_id && line_items.length === 0) {
       const ests = await base44.entities.Estimate.filter({ id: job.estimate_id });
       if (ests[0]) {
         const est = ests[0];
-        // Support both multi-option and legacy flat structure
         const opt = est.options?.[0];
         line_items = opt?.line_items || est.line_items || [];
         subtotal = opt?.subtotal || est.subtotal || opt?.total || est.total || 0;

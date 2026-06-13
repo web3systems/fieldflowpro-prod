@@ -176,7 +176,7 @@ export default function NewInvoice() {
             <div className="col-span-1" />
           </div>
           <div className="space-y-2">
-            {form.line_items.filter(item => !item.category || item.category === 'labor').map((item) => {
+            {form.line_items.filter(item => !item.category || item.category === 'service').map((item) => {
               const origIdx = form.line_items.indexOf(item);
               return (
                 <LineItemRow key={origIdx} item={item} idx={origIdx} companyId={activeCompany?.id} services={services}
@@ -192,7 +192,7 @@ export default function NewInvoice() {
             <h3 className="text-sm font-semibold text-slate-700">Materials</h3>
             <div className="flex items-center gap-2">
               <ServicePicker companyId={activeCompany?.id} onSelect={addServiceAsItem} itemType="material" />
-              <Button variant="outline" size="sm" onClick={() => setForm(f => ({ ...f, line_items: [...f.line_items, { ...defaultItem, category: "materials" }] }))} className="gap-1 text-xs"><Plus className="w-3 h-3" /> Add</Button>
+              <Button variant="outline" size="sm" onClick={() => setForm(f => ({ ...f, line_items: [...f.line_items, { ...defaultItem, category: "material" }] }))} className="gap-1 text-xs"><Plus className="w-3 h-3" /> Add</Button>
             </div>
           </div>
           <div className="grid grid-cols-12 gap-2 px-3 text-xs font-medium text-slate-400 uppercase tracking-wide mb-2">
@@ -203,7 +203,7 @@ export default function NewInvoice() {
             <div className="col-span-1" />
           </div>
           <div className="space-y-2">
-            {form.line_items.filter(item => item.category === 'materials').map((item) => {
+            {form.line_items.filter(item => item.category === 'material').map((item) => {
               const origIdx = form.line_items.indexOf(item);
               return (
                 <LineItemRow key={origIdx} item={item} idx={origIdx} companyId={activeCompany?.id} services={services}

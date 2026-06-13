@@ -103,7 +103,7 @@ export default function NewJob() {
   }
 
   function addLineItem(type) {
-    const items = [...(form.line_items || []), { type, description: "", quantity: 1, unit_price: 0, total: 0 }];
+    const items = [...(form.line_items || []), { category: type, description: "", quantity: 1, unit_price: 0, total: 0 }];
     const subtotal = items.reduce((s, i) => s + (i.total || 0), 0);
     setForm(prev => ({ ...prev, line_items: items, subtotal, total_amount: subtotal }));
   }
@@ -334,7 +334,7 @@ export default function NewJob() {
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm font-medium text-slate-600">Services</span>
               </div>
-              {(form.line_items || []).filter(i => i.type === "service").map((item, idx) => {
+              {(form.line_items || []).filter(i => i.category === "service").map((item, idx) => {
                 const realIdx = (form.line_items || []).indexOf(item);
                 return (
                   <div key={realIdx} className="flex items-center gap-2 mb-2">
@@ -361,7 +361,7 @@ export default function NewJob() {
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm font-medium text-slate-600">Materials</span>
               </div>
-              {(form.line_items || []).filter(i => i.type === "material").map((item, idx) => {
+              {(form.line_items || []).filter(i => i.category === "material").map((item, idx) => {
                 const realIdx = (form.line_items || []).indexOf(item);
                 return (
                   <div key={realIdx} className="flex items-center gap-2 mb-2">

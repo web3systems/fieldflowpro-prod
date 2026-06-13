@@ -276,14 +276,14 @@ export default function NewEstimate() {
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm font-medium text-slate-600">Services</span>
                 <button
-                  onClick={() => setForm(f => ({ ...f, line_items: [...f.line_items, { ...defaultItem, _category: "Labor" }] }))}
+                  onClick={() => setForm(f => ({ ...f, line_items: [...f.line_items, { ...defaultItem, category: "service" }] }))}
                   className="flex items-center gap-1 text-blue-600 hover:text-blue-700 text-sm font-medium"
                 >
                   <Plus className="w-4 h-4" /> Add service
                 </button>
               </div>
               <div className="space-y-2">
-                {form.line_items.map((item, idx) => item._category !== "Materials" ? (
+                {form.line_items.map((item, idx) => item.category !== "material" ? (
                   <LineItemRow key={idx} item={item} idx={idx} companyId={activeCompany?.id} services={services} onServicesUpdate={svc => setServices(prev => [...prev, svc])} onUpdate={updateItem} onRemove={removeItem} />
                 ) : null)}
               </div>
@@ -294,14 +294,14 @@ export default function NewEstimate() {
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm font-medium text-slate-600">Materials</span>
                 <button
-                  onClick={() => setForm(f => ({ ...f, line_items: [...f.line_items, { ...defaultItem, _category: "Materials" }] }))}
+                  onClick={() => setForm(f => ({ ...f, line_items: [...f.line_items, { ...defaultItem, category: "material" }] }))}
                   className="flex items-center gap-1 text-blue-600 hover:text-blue-700 text-sm font-medium"
                 >
                   <Plus className="w-4 h-4" /> Add material
                 </button>
               </div>
               <div className="space-y-2">
-                {form.line_items.map((item, idx) => item._category === "Materials" ? (
+                {form.line_items.map((item, idx) => item.category === "material" ? (
                   <LineItemRow key={idx} item={item} idx={idx} companyId={activeCompany?.id} services={services} onServicesUpdate={svc => setServices(prev => [...prev, svc])} onUpdate={updateItem} onRemove={removeItem} />
                 ) : null)}
               </div>
