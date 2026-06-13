@@ -51,6 +51,43 @@
     "actual_end": {
       "type": "string"
     },
+    "appointments": {
+      "type": "array",
+      "description": "Multiple scheduled visits for this job. Each has its own start/end, status, notes, and optional tech override.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "scheduled_start": {
+            "type": "string"
+          },
+          "scheduled_end": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "upcoming",
+              "in_progress",
+              "completed",
+              "cancelled"
+            ],
+            "default": "upcoming"
+          },
+          "notes": {
+            "type": "string"
+          },
+          "assigned_techs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
     "assigned_techs": {
       "type": "array",
       "items": {

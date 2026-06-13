@@ -40,7 +40,7 @@ const defaultJob = {
   scheduled_start: "", scheduled_end: "",
   customer_id: "", service_type: "", notes: "", internal_notes: "",
   total_amount: 0, line_items: [], tax_rate: 0, discount: 0,
-  assigned_techs: [], tags: [],
+  assigned_techs: [], tags: [], appointments: [],
 };
 
 export default function JobDetail() {
@@ -331,8 +331,8 @@ export default function JobDetail() {
             onTasksUpdated={(checklist) => setJob(j => ({ ...j, checklist }))}
           />
 
-          {/* Appointment */}
-          <JobAppointmentSection form={form} setForm={setForm} onSave={handleSave} saving={saving} />
+          {/* Appointments */}
+          <JobAppointmentSection form={form} setForm={setForm} techs={techs} onSave={handleSave} saving={saving} />
 
           {/* Field Tech Status */}
           <JobFieldTechSection form={form} setForm={setForm} techs={techs} onSave={handleSave} />
