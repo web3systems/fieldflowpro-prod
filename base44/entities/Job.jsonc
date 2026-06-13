@@ -112,6 +112,41 @@
         }
       }
     },
+    "line_items": {
+      "type": "array",
+      "description": "Line items transferred from the estimate (labor & materials)",
+      "items": {
+        "type": "object",
+        "properties": {
+          "service_id": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "number"
+          },
+          "unit_price": {
+            "type": "number"
+          },
+          "total": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    "tax_rate": {
+      "type": "number",
+      "default": 0
+    },
+    "discount": {
+      "type": "number",
+      "default": 0
+    },
     "total_amount": {
       "type": "number",
       "default": 0
