@@ -6,7 +6,7 @@ import UpgradeNudge from "@/components/subscription/UpgradeNudge";
 import { canAccessFeature } from "@/lib/subscription";
 import AIInsightsPanel from "../components/accounting/AIInsightsPanel";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { TrendingUp, TrendingDown, DollarSign, AlertCircle, RefreshCw } from "lucide-react";
+import { TrendingUp, TrendingDown, DollarSign, AlertCircle, RefreshCw, CheckCircle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import SyncModal from "@/components/accounting/SyncModal";
 import { format, subMonths, startOfMonth, endOfMonth } from "date-fns";
@@ -19,6 +19,8 @@ export default function Accounting() {
   const [accounts, setAccounts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showSync, setShowSync] = useState(false);
+  const [importing, setImporting] = useState(false);
+  const [importResult, setImportResult] = useState(null);
 
   useEffect(() => {
     if (activeCompany) {
@@ -37,6 +39,92 @@ export default function Accounting() {
     setTransactions(txns);
     setAccounts(accts);
     setLoading(false);
+  }
+
+  async function importAllTransactions() {
+    setImporting(true);
+    setImportResult(null);
+
+    const [invoices, jobs, existingTxns] = await Promise.all([
+      base44.entities.Invoice.filter({ company_id: activeCompany.id }),
+      base44.entities.Job.filter({ company_id: activeCompany.id }),
+      base44.entities.AccountingTransaction.filter({ company_id: activeCompany.id }),
+    ]);
+
+    const existingSourceIds = new Set(existingTxns.map(t => t.source_id).filter(Boolean));
+
+    let createdCount = 0;
+    let skippedCount = 0;
+
+    // Sync paid invoices as income
+    for (const inv of invoices) {
+      if (inv.status !== "paid") continue;
+      if (existingSourceIds.has(inv.id)) { skippedCount++; continue; }
+      await base44.entities.AccountingTransaction.create({
+        company_id: activeCompany.id,
+        date: inv.paid_date || inv.updated_date?.slice(0, 10) || format(new Date(), "yyyy-MM-dd"),
+        description: `Invoice ${inv.invoice_number || inv.id.slice(0, 8)}`,
+        amount: inv.total || 0,
+        type: "income",
+        category: "Service Revenue",
+        source: "invoice",
+        source_id: inv.id,
+        status: "cleared",
+      });
+      createdCount++;
+    }
+
+    // Sync partial payments
+    for (const inv of invoices) {
+      if (inv.status !== "partial" || !inv.amount_paid) continue;
+      const key = `partial_${inv.id}`;
+      if (existingSourceIds.has(key)) { skippedCount++; continue; }
+      await base44.entities.AccountingTransaction.create({
+        company_id: activeCompany.id,
+        date: inv.updated_date?.slice(0, 10) || format(new Date(), "yyyy-MM-dd"),
+        description: `Partial Payment - Invoice ${inv.invoice_number || inv.id.slice(0, 8)}`,
+        amount: inv.amount_paid || 0,
+        type: "income",
+        category: "Service Revenue",
+        source: "payment",
+        source_id: key,
+        status: "cleared",
+      });
+      createdCount++;
+    }
+
+    // Sync job receipts as expenses
+    for (const job of jobs) {
+      if (!job.receipts?.length) continue;
+      for (const receipt of job.receipts) {
+        const receiptKey = `receipt_${receipt.id || receipt.image_url}`;
+        if (existingSourceIds.has(receiptKey)) { skippedCount++; continue; }
+        if (!receipt.total && !receipt.amount) continue;
+        await base44.entities.AccountingTransaction.create({
+          company_id: activeCompany.id,
+          date: receipt.date || job.scheduled_start?.slice(0, 10) || format(new Date(), "yyyy-MM-dd"),
+          description: `Receipt: ${receipt.vendor || "Unknown Vendor"} (Job: ${job.title})`,
+          amount: receipt.total || receipt.amount || 0,
+          type: "expense",
+          category: receipt.category || "Job Expenses",
+          source: "import",
+          source_id: receiptKey,
+          status: "cleared",
+          notes: receipt.notes || "",
+        });
+        createdCount++;
+      }
+    }
+
+    setImportResult({ created: createdCount, skipped: skippedCount });
+    setImporting(false);
+    setImportResultTimeout();
+
+    await loadData();
+  }
+
+  function setImportResultTimeout() {
+    setTimeout(() => setImportResult(null), 5000);
   }
 
 
@@ -98,10 +186,29 @@ export default function Accounting() {
             <h1 className="text-2xl font-bold text-slate-900">Financial Overview</h1>
             <p className="text-slate-500 text-sm mt-0.5">All time summary for {activeCompany?.name}</p>
           </div>
-          <Button onClick={() => setShowSync(true)} variant="outline" size="sm" className="gap-2">
-            <RefreshCw className="w-3.5 h-3.5" />
-            Sync from FieldFlow
-          </Button>
+          <div className="flex items-center gap-2">
+            {importResult && (
+              <span className="text-sm text-green-700 bg-green-50 px-3 py-1.5 rounded-lg flex items-center gap-1.5">
+                <CheckCircle className="w-3.5 h-3.5" />
+                {importResult.created > 0
+                  ? `${importResult.created} imported, ${importResult.skipped} skipped`
+                  : "Already up to date"}
+              </span>
+            )}
+            <Button
+              onClick={importAllTransactions}
+              disabled={importing}
+              size="sm"
+              className="gap-2 bg-green-600 hover:bg-green-700"
+            >
+              {importing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
+              {importing ? "Importing..." : "Import All"}
+            </Button>
+            <Button onClick={() => setShowSync(true)} variant="outline" size="sm" className="gap-2">
+              <RefreshCw className="w-3.5 h-3.5" />
+              Sync from FieldFlow
+            </Button>
+          </div>
         </div>
 
         {/* KPI Cards */}
