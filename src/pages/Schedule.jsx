@@ -6,7 +6,7 @@ import { createPageUrl } from "@/utils";
 import { Calendar, momentLocalizer, Views } from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
-import { Plus, ChevronLeft, ChevronRight, Bell, MapPin, Clock, User } from "lucide-react";
+import { Plus, ChevronLeft, ChevronRight, Bell, MapPin, Clock, User, History, CalendarDays, X, CheckCircle2, Clock4, Users2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -63,6 +63,11 @@ export default function Schedule() {
   const [editing, setEditing] = useState(null);
   const [saving, setSaving] = useState(false);
   const [filterTech, setFilterTech] = useState("all");
+  const [historyMode, setHistoryMode] = useState(false);
+  const [historyRange, setHistoryRange] = useState({
+    from: moment().subtract(1, 'month').format("YYYY-MM-DD"),
+    to: moment().format("YYYY-MM-DD"),
+  });
 
   useEffect(() => {
     if (activeCompany) loadData();
@@ -130,6 +135,29 @@ export default function Schedule() {
 
     return result;
   }, [filteredJobs, customers]);
+
+  // Filter events by history range when history mode is active
+  const displayEvents = useMemo(() => {
+    if (!historyMode) return events;
+    const from = moment(historyRange.from).startOf('day');
+    const to = moment(historyRange.to).endOf('day');
+    return events.filter(ev => {
+      const evDate = moment(ev.start);
+      return evDate.isBetween(from, to, 'day', '[]');
+    });
+  }, [events, historyMode, historyRange]);
+
+  // Summary stats for the historical period
+  const historyStats = useMemo(() => {
+    if (!historyMode) return null;
+    const filtered = displayEvents;
+    const uniqueJobs = new Set(filtered.map(e => e.resource?.id).filter(Boolean));
+    const totalEvents = filtered.length;
+    const completedEvents = filtered.filter(e =>
+      e.isAppointment ? e.aptStatus === 'completed' : e.resource?.status === 'completed'
+    ).length;
+    return { totalEvents, completedEvents, uniqueJobs: uniqueJobs.size };
+  }, [displayEvents, historyMode]);
 
   const eventStyleGetter = (event) => {
     let backgroundColor = '#3b82f6';
@@ -285,12 +313,97 @@ export default function Schedule() {
         {/* Toolbar */}
         <div className="flex items-center justify-between mb-3 flex-wrap gap-2 flex-shrink-0">
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" className="h-8" onClick={() => setDate(new Date())}>Today</Button>
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigateCalendar(-1)}><ChevronLeft className="w-4 h-4" /></Button>
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigateCalendar(1)}><ChevronRight className="w-4 h-4" /></Button>
-            <h2 className="text-base font-semibold text-slate-800">{dateLabel()}</h2>
+            <Button variant="outline" size="sm" className="h-8" onClick={() => { setDate(new Date()); setHistoryMode(false); }}>Today</Button>
+            {!historyMode ? (
+              <>
+                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigateCalendar(-1)}><ChevronLeft className="w-4 h-4" /></Button>
+                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigateCalendar(1)}><ChevronRight className="w-4 h-4" /></Button>
+                <h2 className="text-base font-semibold text-slate-800">{dateLabel()}</h2>
+              </>
+            ) : (
+              <>
+                <div className="h-6 w-px bg-slate-200 mx-1" />
+                <span className="text-xs text-slate-500 font-medium uppercase tracking-wider">History</span>
+                <div className="flex items-center gap-1.5">
+                  <Input
+                    type="date"
+                    value={historyRange.from}
+                    onChange={e => {
+                      const from = e.target.value;
+                      setHistoryRange(r => ({ ...r, from }));
+                      if (from) setDate(new Date(from));
+                    }}
+                    className="h-8 w-36 text-xs bg-white"
+                  />
+                  <span className="text-xs text-slate-400">–</span>
+                  <Input
+                    type="date"
+                    value={historyRange.to}
+                    onChange={e => setHistoryRange(r => ({ ...r, to: e.target.value }))}
+                    className="h-8 w-36 text-xs bg-white"
+                  />
+                  {historyRange.from !== moment().subtract(1, 'month').format("YYYY-MM-DD") ||
+                   historyRange.to !== moment().format("YYYY-MM-DD") ? (
+                    <button
+                      onClick={() => setHistoryRange({ from: moment().subtract(1, 'month').format("YYYY-MM-DD"), to: moment().format("YYYY-MM-DD") })}
+                      className="text-xs text-blue-600 hover:text-blue-700 font-medium flex-shrink-0"
+                    >
+                      Reset
+                    </button>
+                  ) : null}
+                </div>
+              </>
+            )}
           </div>
           <div className="flex items-center gap-2 flex-wrap">
+            {/* History / Live toggle */}
+            <Button
+              variant={historyMode ? "default" : "outline"}
+              size="sm"
+              className={`h-8 gap-1.5 text-xs ${historyMode ? 'bg-amber-600 hover:bg-amber-700' : ''}`}
+              onClick={() => {
+                const nextMode = !historyMode;
+                setHistoryMode(nextMode);
+                if (nextMode) {
+                  setDate(new Date(historyRange.from));
+                  setView(Views.MONTH);
+                } else {
+                  setDate(new Date());
+                }
+              }}
+            >
+              <History className="w-3.5 h-3.5" />
+              {historyMode ? "Live" : "History"}
+            </Button>
+            {historyMode && (
+              <Select
+                value=""
+                onValueChange={(v) => {
+                  if (!v) return;
+                  const now = moment();
+                  let from, to;
+                  if (v === "last_week") { from = now.clone().subtract(1, 'week').startOf('week'); to = now.clone().subtract(1, 'week').endOf('week'); }
+                  else if (v === "last_month") { from = now.clone().subtract(1, 'month').startOf('month'); to = now.clone().subtract(1, 'month').endOf('month'); }
+                  else if (v === "last_30") { from = now.clone().subtract(30, 'days'); to = now; }
+                  else if (v === "last_quarter") { from = now.clone().subtract(3, 'months').startOf('month'); to = now.clone().subtract(1, 'month').endOf('month'); }
+                  else if (v === "this_month") { from = now.clone().startOf('month'); to = now; }
+                  setHistoryRange({ from: from.format("YYYY-MM-DD"), to: to.format("YYYY-MM-DD") });
+                  setDate(from.toDate());
+                }}
+              >
+                <SelectTrigger className="w-32 h-8 text-xs">
+                  <Clock4 className="w-3 h-3 mr-1" />
+                  <SelectValue placeholder="Quick range" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="last_week">Last Week</SelectItem>
+                  <SelectItem value="last_month">Last Month</SelectItem>
+                  <SelectItem value="last_30">Last 30 Days</SelectItem>
+                  <SelectItem value="last_quarter">Last Quarter</SelectItem>
+                  <SelectItem value="this_month">This Month</SelectItem>
+                </SelectContent>
+              </Select>
+            )}
             {techs.length > 0 && (
               <Select value={filterTech} onValueChange={setFilterTech}>
                 <SelectTrigger className="w-40 h-8 text-xs">
@@ -337,11 +450,31 @@ export default function Schedule() {
           ))}
         </div>
 
+        {/* History stats bar */}
+        {historyMode && historyStats && (
+          <div className="flex items-center gap-4 px-3 py-2 bg-amber-50 border border-amber-200 rounded-lg mb-2 flex-shrink-0 text-xs">
+            <div className="flex items-center gap-1.5 text-amber-800">
+              <CalendarDays className="w-3.5 h-3.5" />
+              <span className="font-medium">{historyStats.totalEvents}</span> appointments
+            </div>
+            <div className="w-px h-4 bg-amber-200" />
+            <div className="flex items-center gap-1.5 text-green-700">
+              <CheckCircle2 className="w-3.5 h-3.5" />
+              <span className="font-medium">{historyStats.completedEvents}</span> completed
+            </div>
+            <div className="w-px h-4 bg-amber-200" />
+            <div className="flex items-center gap-1.5 text-amber-700">
+              <Users2 className="w-3.5 h-3.5" />
+              <span className="font-medium">{historyStats.uniqueJobs}</span> unique jobs
+            </div>
+          </div>
+        )}
+
         {/* Calendar */}
         <div className="flex-1 min-h-0">
           <Calendar
             localizer={localizer}
-            events={events}
+            events={displayEvents}
             view={view}
             date={date}
             onNavigate={setDate}
