@@ -4,7 +4,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Input } from "@/components/ui/input";
 import { ListPlus, Search } from "lucide-react";
 
-export default function ServicePicker({ companyId, onSelect, itemType }) {
+export default function ServicePicker({ companyId, onSelect, itemType, category: outputCategory }) {
   const [services, setServices] = useState([]);
   const [search, setSearch] = useState("");
   const [open, setOpen] = useState(false);
@@ -49,6 +49,7 @@ export default function ServicePicker({ companyId, onSelect, itemType }) {
       unit_price: service.unit_price || 0,
       quantity: 1,
       total: service.unit_price || 0,
+      category: outputCategory || (itemType === "material" ? "material" : "service"),
     });
     setOpen(false);
     setSearch("");

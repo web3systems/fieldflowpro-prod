@@ -507,7 +507,7 @@ export default function InvoiceDetail() {
                 <div className="flex items-center justify-between mb-2">
                   <CardTitle className="text-base">Labor</CardTitle>
                   <div className="flex items-center gap-2">
-                    <ServicePicker companyId={activeCompany?.id} onSelect={addServiceAsItem} category="labor" />
+                    <ServicePicker companyId={activeCompany?.id} onSelect={addServiceAsItem} itemType="service" category="labor" />
                     <Button variant="outline" size="sm" onClick={() => addItemWithCategory("labor")} className="gap-1"><Plus className="w-3 h-3" /> Add</Button>
                   </div>
                 </div>
@@ -516,7 +516,7 @@ export default function InvoiceDetail() {
                 <div className="flex items-center justify-between mt-4 mb-2 pt-4 border-t border-slate-200">
                   <CardTitle className="text-base">Materials</CardTitle>
                   <div className="flex items-center gap-2">
-                    <ServicePicker companyId={activeCompany?.id} onSelect={addServiceAsItem} category="materials" />
+                    <ServicePicker companyId={activeCompany?.id} onSelect={addServiceAsItem} itemType="material" category="materials" />
                     <Button variant="outline" size="sm" onClick={() => addItemWithCategory("materials")} className="gap-1"><Plus className="w-3 h-3" /> Add</Button>
                   </div>
                 </div>
