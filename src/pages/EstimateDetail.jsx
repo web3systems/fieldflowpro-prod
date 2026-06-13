@@ -204,18 +204,38 @@ export default function EstimateDetail() {
   async function handleApprove() {
     setApproving(true);
     const opt = getOption();
+    const customer = getCustomer(form.customer_id);
+
+    // Normalize line item categories: estimate uses "labor"/"materials", job uses "service"/"material"
+    const lineItems = (opt?.line_items || []).map(item => ({
+      ...item,
+      category: item.category === "labor" ? "service"
+              : item.category === "materials" ? "material"
+              : item.category || "service",
+    }));
+
     await base44.entities.Estimate.update(id, { ...form, status: "approved" });
     await base44.entities.Job.create({
       company_id: activeCompany.id,
       customer_id: form.customer_id,
       estimate_id: id,
       title: form.title,
-      description: opt?.notes || "",
+      description: form.description || "",
       status: "new",
       total_amount: opt?.total || form.total,
-      service_type: "",
-      line_items: opt?.line_items || [],
       tax_rate: opt?.tax_rate || 0,
+      service_type: form.service_type || "",
+      line_items: lineItems,
+      address: customer?.address || "",
+      city: customer?.city || "",
+      state: customer?.state || "",
+      zip: customer?.zip || "",
+      notes: form.notes || "",
+      internal_notes: form.internal_notes || "",
+      assigned_techs: form.assigned_techs || [],
+      checklist: form.checklist || [],
+      scheduled_start: form.scheduled_start || "",
+      scheduled_end: form.scheduled_end || "",
     });
     setApproving(false);
     navigate(createPageUrl("Jobs"));
