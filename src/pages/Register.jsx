@@ -40,6 +40,7 @@ export default function Register() {
       });
 
       if (res.data?.success) {
+        base44.auth.redirectToLogin(`${window.location.origin}/Dashboard`);
         setStep('welcome');
       } else {
         setError(res.data?.error || "Could not start trial. Please try again.");
@@ -51,6 +52,7 @@ export default function Register() {
   }
 
   if (step === 'welcome') {
+    const loginUrl = `${window.location.origin}/Dashboard`;
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 flex flex-col items-center justify-center px-4">
         <div className="text-center max-w-md">
@@ -58,18 +60,18 @@ export default function Register() {
             <Check className="w-8 h-8 text-white" />
           </div>
           <h1 className="text-3xl font-bold text-white mb-3">You're all set!</h1>
-          <p className="text-blue-200 text-lg mb-6">
-            Your account and 14-day free trial are ready. Sign in with the email and password you just created.
+          <p className="text-blue-200 text-lg mb-2">
+            Your 14-day free trial is ready. Redirecting you to sign in...
+          </p>
+          <p className="text-blue-400 text-sm mb-6">
+            Use the email <strong className="text-white">{form.email}</strong> and the password you just created to log in.
           </p>
           <button
-            onClick={() => base44.auth.redirectToLogin(`${window.location.origin}/Dashboard`)}
+            onClick={() => base44.auth.redirectToLogin(loginUrl)}
             className="inline-block bg-blue-500 hover:bg-blue-400 text-white font-semibold px-8 py-3 rounded-xl transition-colors cursor-pointer"
           >
             Sign In & Go to Dashboard →
           </button>
-          <p className="text-blue-400 text-sm mt-4">
-            Use the email and password you just entered to log in.
-          </p>
         </div>
       </div>
     );

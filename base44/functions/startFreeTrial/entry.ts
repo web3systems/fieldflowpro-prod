@@ -45,17 +45,18 @@ Deno.serve(async (req) => {
       user_name: owner_name || '',
     });
 
-    // Invite the user — this creates their account immediately
+    // Invite the user — this creates their account in the auth system
     try {
       await base44.users.inviteUser(owner_email, 'admin');
     } catch (inviteErr) {
-      console.warn('inviteUser warning:', inviteErr.message);
+      console.error('inviteUser failed:', inviteErr.message);
+      return Response.json({ error: 'Could not create user account. ' + inviteErr.message }, { status: 500 });
     }
 
     // Wait for the user record to be created, then set their password directly
     let passwordSet = false;
-    for (let attempt = 0; attempt < 8; attempt++) {
-      await new Promise(r => setTimeout(r, 1500));
+    for (let attempt = 0; attempt < 12; attempt++) {
+      if (attempt > 0) await new Promise(r => setTimeout(r, 1000));
       const users = await base44.asServiceRole.entities.User.filter({ email: owner_email });
       if (users.length > 0) {
         const userId = users[0].id;
