@@ -6,8 +6,9 @@ import { createPageUrl } from "@/utils";
 import {
   Plus, Search, Filter, MapPin, User, ChevronRight,
   Briefcase, Calendar, X, FileText, DollarSign, CheckCircle, CreditCard,
-  Pencil, Tag, List, Paperclip, UserCircle, Clock, Trash2, ArrowLeft
+  Pencil, Tag, List, Paperclip, UserCircle, Clock, Trash2, ArrowLeft, LayoutList, Columns
 } from "lucide-react";
+import JobKanbanBoard from "@/components/jobs/JobKanbanBoard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -69,6 +70,7 @@ export default function Jobs() {
   const [tagInput, setTagInput] = useState("");
   const [checklistInput, setChecklistInput] = useState("");
   const [subscription, setSubscription] = useState(null);
+  const [viewMode, setViewMode] = useState(() => localStorage.getItem("jobsViewMode") || "kanban");
 
   useEffect(() => {
     if (activeCompany) {
@@ -254,9 +256,25 @@ export default function Jobs() {
           <h1 className="text-2xl font-bold text-slate-900">Jobs</h1>
           <p className="text-slate-500 text-sm mt-0.5">{filtered.length} jobs</p>
         </div>
-        <Button onClick={openCreate} className="gap-2 bg-blue-600 hover:bg-blue-700">
-          <Plus className="w-4 h-4" /> New Job
-        </Button>
+        <div className="flex items-center gap-2">
+          <div className="flex rounded-lg border bg-white overflow-hidden">
+            <button
+              onClick={() => { setViewMode("kanban"); localStorage.setItem("jobsViewMode", "kanban"); }}
+              className={`px-3 py-2 text-xs font-medium transition-colors ${viewMode === "kanban" ? "bg-blue-600 text-white" : "text-slate-500 hover:bg-slate-50"}`}
+            >
+              <Columns className="w-3.5 h-3.5 inline mr-1" /> Board
+            </button>
+            <button
+              onClick={() => { setViewMode("list"); localStorage.setItem("jobsViewMode", "list"); }}
+              className={`px-3 py-2 text-xs font-medium transition-colors ${viewMode === "list" ? "bg-blue-600 text-white" : "text-slate-500 hover:bg-slate-50"}`}
+            >
+              <LayoutList className="w-3.5 h-3.5 inline mr-1" /> List
+            </button>
+          </div>
+          <Button onClick={openCreate} className="gap-2 bg-blue-600 hover:bg-blue-700">
+            <Plus className="w-4 h-4" /> New Job
+          </Button>
+        </div>
       </div>
 
       {/* Filters */}
@@ -299,6 +317,22 @@ export default function Jobs() {
             </Button>
           </CardContent>
         </Card>
+      ) : viewMode === "kanban" ? (
+        <JobKanbanBoard
+          jobs={filtered}
+          customers={customers}
+          techs={techs}
+          filterStatus={filterStatus}
+          search={search}
+          onStatusChange={async (jobId, newStatus) => {
+            await base44.entities.Job.update(jobId, { status: newStatus });
+            setJobs(jobs.map(j => j.id === jobId ? { ...j, status: newStatus } : j));
+            if (newStatus === "completed") {
+              const job = jobs.find(j => j.id === jobId);
+              if (job) setInvoicePromptJob({ ...job, status: "completed" });
+            }
+          }}
+        />
       ) : (
         <div className="space-y-3">
           {filtered.map(job => (

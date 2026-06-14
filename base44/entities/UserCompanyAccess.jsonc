@@ -17,10 +17,13 @@
     "role": {
       "type": "string",
       "enum": [
-        "standard",
-        "manager"
+        "owner",
+        "manager",
+        "dispatcher",
+        "technician",
+        "standard"
       ],
-      "default": "standard"
+      "default": "technician"
     }
   },
   "required": [
