@@ -22,7 +22,6 @@ import ServicePicker from "@/components/services/ServicePicker";
 import DraggableLineItemsSection from "@/components/services/DraggableLineItemsSection";
 import { downloadEstimatePdf } from "../components/documents/generatePdf";
 import InvoiceEstimatePreview from "@/components/documents/InvoiceEstimatePreview";
-import EstimateMarginReview from "@/components/estimates/EstimateMarginReview";
 
 const STATUS_STYLES = {
   draft: "bg-gray-100 text-gray-600",
@@ -474,13 +473,7 @@ export default function EstimateDetail() {
                     <CheckCircle className="w-4 h-4" />
                     {approving ? "Creating Job..." : "Approve & Create Job"}
                   </Button>
-                  <div className="pt-2 border-t border-slate-200">
-                    <EstimateMarginReview
-                      estimate={form}
-                      company={activeCompany}
-                      onApprovedForSending={handleSendEmail}
-                    />
-                  </div>
+                  <div className="pt-2 border-t border-slate-200" />
                 </>
               )}
               {form.status === "approved" && (

@@ -22,6 +22,7 @@ import JobCostingSection from "@/components/jobs/JobCostingSection";
 import JobReceiptsSection from "@/components/jobs/JobReceiptsSection";
 import JobActivityFeed from "@/components/jobs/JobActivityFeed";
 import JobTasksSection from "@/components/jobs/JobTasksSection";
+import JobMarginReview from "@/components/jobs/JobMarginReview";
 import AttachDocumentModal from "@/components/jobs/AttachDocumentModal";
 import DepositRequestModal from "@/components/jobs/DepositRequestModal";
 
@@ -61,6 +62,7 @@ export default function JobDetail() {
   const [linkedEstimate, setLinkedEstimate] = useState(null);
   const [showAttachModal, setShowAttachModal] = useState(false);
   const [showDepositModal, setShowDepositModal] = useState(false);
+  const [marginRule, setMarginRule] = useState(null);
   const { toast } = useToast();
 
   const loadData = useCallback(async () => {
@@ -83,6 +85,11 @@ export default function JobDetail() {
     setCustomers(c);
     setTechs(t);
     setLoading(false);
+    if (activeCompany) {
+      base44.entities.MarginRule.filter({ company_id: activeCompany.id })
+        .then(rules => setMarginRule(rules[0] || null))
+        .catch(() => {});
+    }
   }, [id, activeCompany]);
 
   useEffect(() => { loadData(); }, [loadData]);
@@ -387,6 +394,9 @@ export default function JobDetail() {
             companyId={activeCompany?.id}
             onSave={handleSave}
           />
+
+          {/* Margin Review */}
+          <JobMarginReview job={job} company={activeCompany} marginRule={marginRule} />
 
           {/* Job Costing Breakdown */}
           <JobCostingSection form={form} receipts={job?.receipts || []} />
