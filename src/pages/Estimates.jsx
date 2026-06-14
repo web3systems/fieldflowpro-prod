@@ -241,6 +241,11 @@ export default function Estimates() {
     setEstimates(prev => prev.filter(x => x.id !== est.id));
   }
 
+  const getCustomerName = (id) => {
+    const c = customers.find(c => c.id === id);
+    return c ? `${c.first_name} ${c.last_name}` : "—";
+  };
+
   const filtered = estimates.filter(e => {
     if (!search) return true;
     const q = search.toLowerCase();
@@ -251,11 +256,6 @@ export default function Estimates() {
       e.estimate_number?.toLowerCase().includes(q)
     );
   });
-
-  const getCustomerName = (id) => {
-    const c = customers.find(c => c.id === id);
-    return c ? `${c.first_name} ${c.last_name}` : "—";
-  };
 
   return (
     <div className="relative min-h-full p-4 md:p-6 pb-24 lg:pb-6 space-y-5 max-w-7xl mx-auto">
