@@ -195,6 +195,10 @@ export default function Accounting() {
                   : "Already up to date"}
               </span>
             )}
+            <Button onClick={loadData} variant="outline" size="sm" className="gap-1">
+              <RefreshCw className="w-3.5 h-3.5" />
+              Refresh
+            </Button>
             <Button
               onClick={importAllTransactions}
               disabled={importing}

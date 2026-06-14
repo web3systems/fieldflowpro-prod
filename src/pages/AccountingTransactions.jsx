@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Search, Sparkles, X, Check, Filter } from "lucide-react";
+import { Plus, Search, Sparkles, X, Check, Filter, RefreshCw } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { format } from "date-fns";
 import { base44 as b44 } from "@/api/base44Client";
@@ -43,6 +43,7 @@ export default function AccountingTransactions() {
   const [editing, setEditing] = useState(null);
   const [aiCatLoading, setAiCatLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     if (activeCompany) loadData();
@@ -57,6 +58,12 @@ export default function AccountingTransactions() {
     setTransactions(txns.sort((a, b) => new Date(b.date) - new Date(a.date)));
     setAccounts(accts);
     setLoading(false);
+  }
+
+  async function handleRefresh() {
+    setRefreshing(true);
+    await loadData();
+    setRefreshing(false);
   }
 
   async function aiCategorize() {
@@ -115,9 +122,15 @@ Respond with ONLY a short category name (2-4 words max). Examples: "Service Reve
       <div className="p-4 md:p-6 space-y-5">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold text-slate-900">Transactions</h1>
-          <Button onClick={openNew} className="gap-2 bg-indigo-600 hover:bg-indigo-700">
-            <Plus className="w-4 h-4" /> Add Transaction
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button onClick={handleRefresh} disabled={refreshing} variant="outline" size="sm" className="gap-1">
+              <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
+              Refresh
+            </Button>
+            <Button onClick={openNew} className="gap-2 bg-indigo-600 hover:bg-indigo-700">
+              <Plus className="w-4 h-4" /> Add Transaction
+            </Button>
+          </div>
         </div>
 
         {/* Filters */}

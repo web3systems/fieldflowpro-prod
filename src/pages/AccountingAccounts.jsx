@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { Plus, Layers } from "lucide-react";
+import { Plus, Layers, RefreshCw } from "lucide-react";
 
 const TYPE_COLORS = {
   asset: "bg-blue-100 text-blue-700",
@@ -48,6 +48,7 @@ export default function AccountingAccounts() {
   const [editing, setEditing] = useState(null);
   const [saving, setSaving] = useState(false);
   const [seeding, setSeeding] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     if (activeCompany) loadData();
@@ -58,6 +59,12 @@ export default function AccountingAccounts() {
     const accts = await base44.entities.ChartOfAccount.filter({ company_id: activeCompany.id });
     setAccounts(accts.sort((a, b) => (a.code || "").localeCompare(b.code || "")));
     setLoading(false);
+  }
+
+  async function handleRefresh() {
+    setRefreshing(true);
+    await loadData();
+    setRefreshing(false);
   }
 
   async function seedDefaults() {
@@ -104,6 +111,10 @@ export default function AccountingAccounts() {
         <div className="flex items-center justify-between flex-wrap gap-3">
           <h1 className="text-2xl font-bold text-slate-900">Chart of Accounts</h1>
           <div className="flex gap-2">
+            <Button onClick={handleRefresh} disabled={refreshing} variant="outline" size="sm" className="gap-1">
+              <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
+              Refresh
+            </Button>
             {accounts.length === 0 && (
               <Button onClick={seedDefaults} disabled={seeding} variant="outline" size="sm" className="gap-2">
                 <Layers className="w-3.5 h-3.5" />

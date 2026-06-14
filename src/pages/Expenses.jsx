@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue
 } from "@/components/ui/select";
-import { Plus, Trash2, TrendingDown, DollarSign, Tag, Calendar } from "lucide-react";
+import { Plus, Trash2, TrendingDown, DollarSign, Tag, Calendar, RefreshCw } from "lucide-react";
 import { format } from "date-fns";
 
 const CATEGORIES = [
@@ -49,6 +49,8 @@ export default function Expenses() {
     if (activeCompany) loadExpenses();
   }, [activeCompany]);
 
+  const [refreshing, setRefreshing] = useState(false);
+
   async function loadExpenses() {
     setLoading(true);
     const data = await base44.entities.AccountingTransaction.filter({
@@ -57,6 +59,16 @@ export default function Expenses() {
     }, "-date");
     setExpenses(data);
     setLoading(false);
+  }
+
+  async function handleRefresh() {
+    setRefreshing(true);
+    const data = await base44.entities.AccountingTransaction.filter({
+      company_id: activeCompany.id,
+      type: "expense",
+    }, "-date");
+    setExpenses(data);
+    setRefreshing(false);
   }
 
   async function handleSave() {
@@ -107,9 +119,15 @@ export default function Expenses() {
             <h1 className="text-2xl font-bold text-slate-900">Expenses</h1>
             <p className="text-slate-500 text-sm mt-0.5">Log and categorize business expenses</p>
           </div>
-          <Button onClick={() => setShowForm(true)} className="gap-2 bg-red-500 hover:bg-red-600">
-            <Plus className="w-4 h-4" /> Add Expense
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button onClick={handleRefresh} disabled={refreshing} variant="outline" size="sm" className="gap-1">
+              <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
+              Refresh
+            </Button>
+            <Button onClick={() => setShowForm(true)} className="gap-2 bg-red-500 hover:bg-red-600">
+              <Plus className="w-4 h-4" /> Add Expense
+            </Button>
+          </div>
         </div>
 
         {/* Add Expense Form */}

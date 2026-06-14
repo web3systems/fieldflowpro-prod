@@ -3,7 +3,8 @@ import { base44 } from "@/api/base44Client";
 import { useApp } from "../Layout";
 import AccountingLayout from "../components/accounting/AccountingLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { TrendingUp, TrendingDown, DollarSign, Percent } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { TrendingUp, TrendingDown, DollarSign, Percent, RefreshCw } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { format, subMonths, startOfMonth, endOfMonth } from "date-fns";
 
@@ -12,6 +13,7 @@ export default function ProfitMargin() {
   const [invoices, setInvoices] = useState([]);
   const [expenses, setExpenses] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     if (activeCompany) loadData();
@@ -26,6 +28,17 @@ export default function ProfitMargin() {
     setInvoices(inv);
     setExpenses(exp);
     setLoading(false);
+  }
+
+  async function handleRefresh() {
+    setRefreshing(true);
+    const [inv, exp] = await Promise.all([
+      base44.entities.Invoice.filter({ company_id: activeCompany.id }),
+      base44.entities.AccountingTransaction.filter({ company_id: activeCompany.id, type: "expense" }),
+    ]);
+    setInvoices(inv);
+    setExpenses(exp);
+    setRefreshing(false);
   }
 
   const totalRevenue = invoices.filter(i => ["paid", "partial"].includes(i.status)).reduce((s, i) => s + (i.amount_paid || i.total || 0), 0);
@@ -90,9 +103,15 @@ export default function ProfitMargin() {
     <AccountingLayout companyId={activeCompany?.id}>
       <div className="p-4 md:p-6 space-y-6">
         {/* Header */}
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Profit Margin</h1>
-          <p className="text-slate-500 text-sm mt-0.5">Invoice revenue minus all logged expenses</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-slate-900">Profit Margin</h1>
+            <p className="text-slate-500 text-sm mt-0.5">Invoice revenue minus all logged expenses</p>
+          </div>
+          <Button onClick={handleRefresh} disabled={refreshing} variant="outline" size="sm" className="gap-1">
+            <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
+            Refresh
+          </Button>
         </div>
 
         {/* KPI Cards */}
