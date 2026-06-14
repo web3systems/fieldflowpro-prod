@@ -34,7 +34,7 @@ const STATUS_STYLES = {
 
 const defaultItem = { description: "", quantity: 1, unit_price: 0, total: 0, service_id: null };
 const defaultForm = {
-  title: "", customer_id: "", status: "draft",
+  title: "", customer_id: null, status: "draft",
   line_items: [{ ...defaultItem }], subtotal: 0, tax_rate: 0,
   tax_amount: 0, discount: 0, total: 0,
   notes: "", valid_until: "",
@@ -350,12 +350,12 @@ export default function Estimates() {
                 <div className="flex items-center justify-between mb-1.5">
                   <Label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Customer</Label>
                   {form.customer_id && (
-                    <button onClick={() => setForm({ ...form, customer_id: "" })} className="text-xs text-red-400 hover:text-red-600 flex items-center gap-0.5">
+                    <button onClick={() => setForm({ ...form, customer_id: null })} className="text-xs text-red-400 hover:text-red-600 flex items-center gap-0.5">
                       <X className="w-3 h-3" /> Clear
                     </button>
                   )}
                 </div>
-                <Select value={form.customer_id} onValueChange={v => { setForm({ ...form, customer_id: v }); setShowNewCustomer(false); }}>
+                <Select value={form.customer_id || ""} onValueChange={v => { setForm({ ...form, customer_id: v }); setShowNewCustomer(false); }}>
                   <SelectTrigger className="bg-white text-sm"><SelectValue placeholder="Select customer..." /></SelectTrigger>
                   <SelectContent>
                     {customers.map(c => (
