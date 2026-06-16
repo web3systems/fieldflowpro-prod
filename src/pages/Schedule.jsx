@@ -6,7 +6,7 @@ import { createPageUrl } from "@/utils";
 import { Calendar, momentLocalizer, Views } from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
-import { Plus, ChevronLeft, ChevronRight, Bell, MapPin, Clock, User, History, CalendarDays, X, CheckCircle2, Clock4, Users2 } from "lucide-react";
+import { Plus, ChevronLeft, ChevronRight, Bell, MapPin, Clock, User, History, CalendarDays, X, CheckCircle2, Clock4, Users2, CheckSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -49,6 +49,23 @@ function convertTimeTo24(time12h) {
   return `${String(hours).padStart(2, '0')}:${minutes || '00'}`;
 }
 
+// Custom event renderer — jobs are colored blocks, tasks are tiny text
+function CalendarEvent({ event }) {
+  if (event.isTask) {
+    return (
+      <div className="px-1 text-[10px] leading-tight text-slate-500 truncate" title={event.title}>
+        <CheckSquare className="w-2.5 h-2.5 inline-block mr-0.5 text-slate-400 flex-shrink-0" />
+        {event.title}
+      </div>
+    );
+  }
+  return (
+    <div className="px-1 text-[11px] leading-tight text-white font-medium truncate">
+      {event.title}
+    </div>
+  );
+}
+
 export default function Schedule() {
   const { activeCompany } = useApp();
   const navigate = useNavigate();
@@ -56,6 +73,7 @@ export default function Schedule() {
   const [customers, setCustomers] = useState([]);
   const [techs, setTechs] = useState([]);
   const [bookings, setBookings] = useState([]);
+  const [tasks, setTasks] = useState([]);
   const [view, setView] = useState(Views.MONTH);
   const [date, setDate] = useState(new Date());
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -74,16 +92,18 @@ export default function Schedule() {
   }, [activeCompany]);
 
   async function loadData() {
-    const [j, c, t, b] = await Promise.all([
+    const [j, c, t, b, tk] = await Promise.all([
       base44.entities.Job.filter({ company_id: activeCompany.id }),
       base44.entities.Customer.filter({ company_id: activeCompany.id }),
       base44.entities.Technician.filter({ company_id: activeCompany.id }),
       base44.entities.ServiceBooking.filter({ company_id: activeCompany.id, status: "pending" }),
+      base44.entities.Task.filter({ company_id: activeCompany.id }),
     ]);
     setJobs(j);
     setCustomers(c);
     setTechs(t);
     setBookings(b);
+    setTasks(tk);
   }
 
   const filteredJobs = useMemo(() => {
@@ -94,10 +114,13 @@ export default function Schedule() {
     );
   }, [jobs, filterTech]);
 
+  const CALENDAR_JOB_STATUSES = new Set(["scheduled", "in_progress", "completed"]);
+
   const events = useMemo(() => {
     const result = [];
 
     filteredJobs.forEach(j => {
+      if (!CALENDAR_JOB_STATUSES.has(j.status)) return;
       const cust = customers.find(c => c.id === j.customer_id);
       const customerName = cust ? `${cust.first_name} ${cust.last_name}` : "";
 
@@ -112,6 +135,7 @@ export default function Schedule() {
             : new Date(new Date(j.scheduled_start).getTime() + 60 * 60 * 1000),
           resource: j,
           isAppointment: false,
+          isTask: false,
         });
       }
 
@@ -129,12 +153,28 @@ export default function Schedule() {
           resource: j,
           aptStatus: apt.status,
           isAppointment: true,
+          isTask: false,
         });
       });
     });
 
+    // Tasks — all-day events with minimal text styling
+    tasks.forEach(task => {
+      if (!task.due_date) return;
+      const dueDate = new Date(task.due_date + "T00:00:00");
+      result.push({
+        id: `task_${task.id}`,
+        title: task.title,
+        start: dueDate,
+        end: dueDate,
+        resource: task,
+        isTask: true,
+        isAppointment: false,
+      });
+    });
+
     return result;
-  }, [filteredJobs, customers]);
+  }, [filteredJobs, customers, tasks]);
 
   // Filter events by history range when history mode is active
   const displayEvents = useMemo(() => {
@@ -160,6 +200,20 @@ export default function Schedule() {
   }, [displayEvents, historyMode]);
 
   const eventStyleGetter = (event) => {
+    // Tasks — tiny, transparent, no block
+    if (event.isTask) {
+      return {
+        style: {
+          backgroundColor: 'transparent',
+          color: '#64748b',
+          border: 'none',
+          padding: '1px 3px',
+          fontSize: '10px',
+          fontWeight: '400',
+          borderRadius: '0',
+        }
+      };
+    }
     let backgroundColor = '#3b82f6';
     if (event.isAppointment && event.aptStatus) {
       backgroundColor = APPOINTMENT_STATUS_COLORS[event.aptStatus] || '#3b82f6';
@@ -181,6 +235,10 @@ export default function Schedule() {
   };
 
   function handleSelectEvent(event) {
+    if (event.isTask) {
+      navigate(createPageUrl("Tasks"));
+      return;
+    }
     const job = event.resource;
     navigate(`/JobDetail/${job.id}`);
   }
@@ -442,12 +500,16 @@ export default function Schedule() {
 
         {/* Legend */}
         <div className="flex gap-4 flex-wrap mb-2 flex-shrink-0">
-          {STATUS_OPTIONS.map(s => (
+          {STATUS_OPTIONS.filter(s => CALENDAR_JOB_STATUSES.has(s.value)).map(s => (
             <span key={s.value} className="flex items-center gap-1.5 text-xs text-slate-500">
               <span className="w-2.5 h-2.5 rounded-sm flex-shrink-0" style={{ backgroundColor: s.color }} />
               {s.label}
             </span>
           ))}
+          <span className="flex items-center gap-1.5 text-xs text-slate-400">
+            <CheckSquare className="w-3 h-3" />
+            Tasks
+          </span>
         </div>
 
         {/* History stats bar */}
@@ -483,6 +545,7 @@ export default function Schedule() {
             onSelectSlot={handleSelectSlot}
             selectable
             eventPropGetter={eventStyleGetter}
+            components={{ event: CalendarEvent }}
             toolbar={false}
             style={{ height: '100%' }}
           />
