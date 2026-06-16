@@ -1,18 +1,36 @@
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { Building2, Users, Briefcase, CheckCircle, ChevronRight } from "lucide-react";
+import { Building2, Users, Briefcase, CheckCircle, ChevronRight, Mail, CreditCard } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 
-export default function OnboardingBanner({ company, customers, jobs }) {
+export default function OnboardingBanner({ company, customers, jobs, emailConfigured, stripeConnected }) {
   const steps = [
     {
       done: !!(company?.phone && company?.email),
       label: "Complete company profile",
-      desc: "Add phone, email & address",
+      desc: "Add phone & email",
       page: "Settings",
       icon: Building2,
       color: "text-blue-600",
       bg: "bg-blue-50",
+    },
+    {
+      done: !!emailConfigured,
+      label: "Set up business email",
+      desc: "Send professional estimates & invoices",
+      page: "EmailTemplateEditor",
+      icon: Mail,
+      color: "text-indigo-600",
+      bg: "bg-indigo-50",
+    },
+    {
+      done: !!stripeConnected,
+      label: "Connect Stripe",
+      desc: "Accept online card payments",
+      page: "CompanySettings",
+      icon: CreditCard,
+      color: "text-purple-600",
+      bg: "bg-purple-50",
     },
     {
       done: customers.length > 0,
@@ -51,7 +69,7 @@ export default function OnboardingBanner({ company, customers, jobs }) {
             ))}
           </div>
         </div>
-        <div className="grid sm:grid-cols-3 gap-2">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-2">
           {steps.map((step, i) => {
             const Icon = step.icon;
             return (

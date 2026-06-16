@@ -63,6 +63,10 @@
     "google_review_url": {
       "type": "string"
     },
+    "onboarding_nudged_at": {
+      "type": "string",
+      "description": "Last time a daily onboarding reminder nudge was sent"
+    },
     "settings": {
       "type": "object",
       "properties": {

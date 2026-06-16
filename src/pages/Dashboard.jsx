@@ -35,6 +35,8 @@ export default function Dashboard() {
   const [leads, setLeads] = useState([]);
   const [bookings, setBookings] = useState([]);
   const [estimates, setEstimates] = useState([]);
+  const [emailConfigured, setEmailConfigured] = useState(false);
+  const [stripeConnected, setStripeConnected] = useState(false);
   const [loading, setLoading] = useState(true);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const navigate = useNavigate();
@@ -84,6 +86,15 @@ export default function Dashboard() {
     setLeads(l);
     setBookings(b);
     setEstimates(est);
+
+    // Check email settings and Stripe for onboarding banner
+    try {
+      const emailSettings = await base44.entities.CompanyEmailSettings.filter({ company_id: activeCompany.id });
+      setEmailConfigured(emailSettings.length > 0 && emailSettings[0].mail_enabled);
+    } catch (_) {
+      setEmailConfigured(false);
+    }
+    setStripeConnected(!!activeCompany.stripe_onboarding_complete);
 
     // Only show onboarding wizard if company has no real data yet
     const key = `onboarding_done_${activeCompany.id}`;
@@ -235,7 +246,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <OnboardingBanner company={activeCompany} customers={customers} jobs={jobs} />
+      <OnboardingBanner company={activeCompany} customers={customers} jobs={jobs} emailConfigured={emailConfigured} stripeConnected={stripeConnected} />
 
       {/* My Jobs (for technicians) */}
       {myTech && myJobs.length > 0 && (
