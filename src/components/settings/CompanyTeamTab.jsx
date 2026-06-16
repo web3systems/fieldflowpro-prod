@@ -18,7 +18,7 @@ import {
   AlertDialogContent, AlertDialogDescription, AlertDialogFooter,
   AlertDialogHeader, AlertDialogTitle
 } from '@/components/ui/alert-dialog';
-import { Plus, Wrench, Phone, Mail, Trash2, Pencil, RefreshCw, Eye, EyeOff, Building2, Send } from 'lucide-react';
+import { Plus, Wrench, Phone, Mail, Trash2, Pencil, RefreshCw, Eye, EyeOff, Building2, Send, KeyRound } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const ROLE_OPTIONS = [
@@ -67,6 +67,11 @@ export default function CompanyTeamTab({ company }) {
   const [showPassword, setShowPassword] = useState(false);
   const [inviteStatus, setInviteStatus] = useState(null);
   const [error, setError] = useState(null);
+  const [pwResetTarget, setPwResetTarget] = useState(null);
+  const [newPassword, setNewPassword] = useState('');
+  const [pwShowPassword, setPwShowPassword] = useState(false);
+  const [pwResetting, setPwResetting] = useState(false);
+  const [pwStatus, setPwStatus] = useState(null);
 
   const isManager = user?.role === 'admin' || user?.role === 'super_admin';
 
@@ -202,6 +207,34 @@ export default function CompanyTeamTab({ company }) {
     }
   }
 
+  function openPasswordReset(tech) {
+    setPwResetTarget(tech);
+    setNewPassword(generatePassword());
+    setPwShowPassword(true);
+    setPwStatus(null);
+  }
+
+  async function handlePasswordReset() {
+    setPwResetting(true);
+    setPwStatus(null);
+    try {
+      const res = await base44.functions.invoke('setUserPassword', {
+        email: pwResetTarget.email,
+        password: newPassword,
+        first_name: pwResetTarget.first_name,
+        company_name: company.name,
+      });
+      if (res.data?.success) {
+        setPwStatus({ type: 'success', message: `Password reset for ${pwResetTarget.first_name}. They've been emailed.` });
+      } else {
+        setPwStatus({ type: 'error', message: res.data?.error || 'Failed to reset password.' });
+      }
+    } catch (e) {
+      setPwStatus({ type: 'error', message: e.response?.data?.error || e.message || 'Failed.' });
+    }
+    setPwResetting(false);
+  }
+
   async function handleDelete() {
     await base44.entities.Technician.delete(deleteTarget.id);
     setDeleteTarget(null);
@@ -304,6 +337,9 @@ export default function CompanyTeamTab({ company }) {
                       <div className="flex items-center gap-1 flex-shrink-0">
                         <Button variant="ghost" size="sm" className="text-slate-400 hover:text-blue-600" onClick={() => handleResendInvite(tech)} title="Resend invite">
                           <Send className="w-3.5 h-3.5" />
+                        </Button>
+                        <Button variant="ghost" size="icon" className="text-slate-400 hover:text-amber-600" onClick={() => openPasswordReset(tech)} title="Reset password">
+                          <KeyRound className="w-3.5 h-3.5" />
                         </Button>
                         <Button variant="ghost" size="icon" className="text-slate-400 hover:text-slate-700" onClick={() => openEdit(tech)}>
                           <Pencil className="w-3.5 h-3.5" />
@@ -555,6 +591,62 @@ export default function CompanyTeamTab({ company }) {
                 className="bg-blue-600 hover:bg-blue-700"
               >
                 {saving ? "Saving..." : editing ? "Save Changes" : "Invite Member"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Password Reset Dialog */}
+        <Dialog open={!!pwResetTarget} onOpenChange={(open) => { if (!open) setPwResetTarget(null); }}>
+          <DialogContent className="sm:max-w-sm">
+            <DialogHeader>
+              <DialogTitle>Reset Password</DialogTitle>
+              <p className="text-sm text-slate-500">Set a new password for {pwResetTarget?.first_name} {pwResetTarget?.last_name}.</p>
+            </DialogHeader>
+            <div className="space-y-4 py-2">
+              {pwStatus && (
+                <div className={`text-sm rounded-lg p-3 ${pwStatus.type === 'success' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'}`}>
+                  {pwStatus.message}
+                </div>
+              )}
+              <div>
+                <Label>New Password</Label>
+                <div className="flex gap-2 mt-1">
+                  <div className="relative flex-1">
+                    <Input
+                      type={pwShowPassword ? "text" : "password"}
+                      value={newPassword}
+                      onChange={e => setNewPassword(e.target.value)}
+                      className="pr-10"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setPwShowPassword(!pwShowPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                    >
+                      {pwShowPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={() => { setNewPassword(generatePassword()); setPwShowPassword(true); }}
+                    title="Generate random password"
+                  >
+                    <RefreshCw className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setPwResetTarget(null)}>Cancel</Button>
+              <Button
+                onClick={handlePasswordReset}
+                disabled={pwResetting || newPassword.length < 8}
+                className="bg-amber-600 hover:bg-amber-700"
+              >
+                {pwResetting ? "Resetting..." : "Reset Password"}
               </Button>
             </DialogFooter>
           </DialogContent>
