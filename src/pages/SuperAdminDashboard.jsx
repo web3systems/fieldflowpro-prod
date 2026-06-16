@@ -80,19 +80,21 @@ export default function SuperAdminDashboard() {
   async function handleApprove() {
     const req = approveDialog;
     setApprovingId(req.id);
-    // Invite user
-    await base44.users.inviteUser(req.email, "user");
-    // Create access records for chosen companies
-    for (const cid of approveCompanyIds) {
-      const existing = accessRecords.find(a => a.user_email === req.email && a.company_id === cid);
-      if (!existing) {
-        await base44.entities.UserCompanyAccess.create({
-          user_email: req.email,
-          user_name: req.name || "",
-          company_id: cid,
-          role: approveRole,
-        });
-      }
+    try {
+      // Use unified invite flow
+      const assignments = approveCompanyIds.map(cid => {
+        const c = companies.find(co => co.id === cid);
+        return { company_id: cid, company_name: c?.name || '', role: approveRole };
+      });
+      await base44.functions.invoke('inviteTeamMember', {
+        first_name: (req.name || req.email).split(' ')[0],
+        last_name: (req.name || '').split(' ').slice(1).join(' ') || '',
+        email: req.email,
+        password: null,
+        assignments,
+      });
+    } catch (e) {
+      console.error('Approval invite error:', e);
     }
     await base44.entities.AccessRequest.update(req.id, { status: "approved", reviewed_by: user?.email, assigned_company_ids: approveCompanyIds });
     setApproveDialog(null);

@@ -45,7 +45,7 @@ const navItems = [
   { label: "Notifications", icon: Bell, page: "Notifications" },
   { label: "Messages", icon: MessageCircle, page: "Messages" },
   { label: "Accounting", icon: Calculator, page: "Accounting" },
-  { label: "Team", icon: Wrench, page: "Team" },
+  { label: "Team", icon: Wrench, page: "CompanySettings" },
   { label: "Price Book", icon: BookOpen, page: "PriceBook" },
   { label: "Tasks", icon: CheckSquare, page: "Tasks" },
   { label: "Inventory", icon: Boxes, page: "Inventory" },
