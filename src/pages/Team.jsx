@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useApp } from "../Layout";
-import { Plus, Wrench, Phone, Mail, Trash2, Pencil } from "lucide-react";
+import { Plus, Wrench, Phone, Mail, Trash2, Pencil, RefreshCw, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -27,8 +27,16 @@ const TECH_COLORS = [
 
 const defaultForm = {
   first_name: "", last_name: "", email: "", phone: "",
-  status: "active", color: "#3b82f6", skills: []
+  status: "active", color: "#3b82f6", skills: [],
+  role: "user", password: ""
 };
+
+function generatePassword() {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#$";
+  let pwd = "";
+  for (let i = 0; i < 12; i++) pwd += chars[Math.floor(Math.random() * chars.length)];
+  return pwd;
+}
 
 export default function Team() {
   const { activeCompany } = useApp();
@@ -41,6 +49,8 @@ export default function Team() {
   const [saving, setSaving] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [skillInput, setSkillInput] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [inviteStatus, setInviteStatus] = useState(null); // { type: 'success'|'error', message }
 
   useEffect(() => {
     if (activeCompany) {
@@ -61,6 +71,8 @@ export default function Team() {
     setEditing(null);
     setForm(defaultForm);
     setSkillInput("");
+    setShowPassword(false);
+    setInviteStatus(null);
     setDialogOpen(true);
   }
 
@@ -73,15 +85,37 @@ export default function Team() {
 
   async function handleSave() {
     setSaving(true);
-    const data = { ...form, company_id: activeCompany.id };
-    if (editing) {
-      await base44.entities.Technician.update(editing.id, data);
-    } else {
-      await base44.entities.Technician.create(data);
+    setInviteStatus(null);
+    try {
+      if (editing) {
+        // Editing existing — update Technician record only
+        const data = { first_name: form.first_name, last_name: form.last_name, email: form.email, phone: form.phone, status: form.status, color: form.color, skills: form.skills, company_id: activeCompany.id };
+        await base44.entities.Technician.update(editing.id, data);
+        setDialogOpen(false);
+        await loadTechs();
+      } else {
+        // New member — invite via backend function
+        const res = await base44.functions.invoke('inviteTeamMember', {
+          first_name: form.first_name,
+          last_name: form.last_name,
+          email: form.email,
+          role: form.role,
+          password: form.password || null,
+          company_id: activeCompany.id,
+          company_name: activeCompany.name,
+        });
+        if (res.data?.success) {
+          setInviteStatus({ type: 'success', message: `${form.first_name} has been invited! Check your email for credentials.` });
+          setDialogOpen(false);
+          await loadTechs();
+        } else {
+          setInviteStatus({ type: 'error', message: res.data?.error || 'Something went wrong.' });
+        }
+      }
+    } catch (err) {
+      setInviteStatus({ type: 'error', message: err.response?.data?.error || err.message || 'Failed to invite team member.' });
     }
     setSaving(false);
-    setDialogOpen(false);
-    await loadTechs();
   }
 
   async function handleDelete() {
@@ -184,6 +218,11 @@ export default function Team() {
             <DialogTitle>{editing ? "Edit Team Member" : "Add Team Member"}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-2">
+            {inviteStatus && (
+              <div className={`text-sm rounded-lg p-3 ${inviteStatus.type === 'success' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'}`}>
+                {inviteStatus.message}
+              </div>
+            )}
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label>First Name *</Label>
@@ -193,15 +232,60 @@ export default function Team() {
                 <Label>Last Name *</Label>
                 <Input value={form.last_name} onChange={e => setForm({ ...form, last_name: e.target.value })} />
               </div>
-              <div>
-                <Label>Email</Label>
+              <div className="col-span-2">
+                <Label>Email {!editing && "*"}</Label>
                 <Input type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} />
               </div>
               <div>
                 <Label>Phone</Label>
                 <Input type="tel" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} />
               </div>
+              {!editing && (
+                <div>
+                  <Label>Role</Label>
+                  <Select value={form.role} onValueChange={v => setForm({ ...form, role: v })}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="user">User (Technician)</SelectItem>
+                      <SelectItem value="admin">Admin (Manager)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
             </div>
+            {!editing && (
+              <div>
+                <Label>Password</Label>
+                <div className="flex gap-2 mt-1">
+                  <div className="relative flex-1">
+                    <Input
+                      type={showPassword ? "text" : "password"}
+                      value={form.password}
+                      onChange={e => setForm({ ...form, password: e.target.value })}
+                      placeholder="Enter or generate a password"
+                      className="pr-10"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                    >
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={() => { setForm({ ...form, password: generatePassword() }); setShowPassword(true); }}
+                    title="Generate random password"
+                  >
+                    <RefreshCw className="w-4 h-4" />
+                  </Button>
+                </div>
+                <p className="text-xs text-slate-400 mt-1">Leave blank to let them create their own password on first login.</p>
+              </div>
+            )}
             <div>
               <Label>Status</Label>
               <Select value={form.status} onValueChange={v => setForm({ ...form, status: v })}>
@@ -255,8 +339,8 @@ export default function Team() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
-            <Button onClick={handleSave} disabled={saving || !form.first_name} className="bg-blue-600 hover:bg-blue-700">
-              {saving ? "Saving..." : editing ? "Save Changes" : "Add Member"}
+            <Button onClick={handleSave} disabled={saving || !form.first_name || !form.last_name || (!editing && !form.email)} className="bg-blue-600 hover:bg-blue-700">
+              {saving ? "Saving..." : editing ? "Save Changes" : "Invite Member"}
             </Button>
           </DialogFooter>
         </DialogContent>
