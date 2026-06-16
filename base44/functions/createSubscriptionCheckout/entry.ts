@@ -1,7 +1,5 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 import Stripe from 'npm:stripe@14.21.0';
-
-const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY'));
 
 const PRICE_IDS = {
   starter: 'price_1TC3qE1h2Mdv0bDiUHlkJa2h',
@@ -18,6 +16,7 @@ Deno.serve(async (req) => {
     }
 
     const base44 = createClientFromRequest(req);
+    const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY'));
 
     // Create company via service role if no company_id provided
     let resolvedCompanyId = company_id;

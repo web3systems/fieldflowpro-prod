@@ -1,10 +1,11 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 import Stripe from 'npm:stripe@14.21.0';
-
-const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY'));
 
 Deno.serve(async (req) => {
   try {
+    const base44 = createClientFromRequest(req);
+    const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY'));
+
     const body = await req.text();
     const sig = req.headers.get('stripe-signature');
     const webhookSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET');
@@ -15,12 +16,37 @@ Deno.serve(async (req) => {
     }
     const event = await stripe.webhooks.constructEventAsync(body, sig, webhookSecret);
 
-    const base44 = createClientFromRequest(req);
-
     if (event.type === 'checkout.session.completed') {
       const session = event.data.object;
-      const { company_id, plan, owner_email, owner_name } = session.metadata || {};
+      const metadata = session.metadata || {};
+      const { company_id, plan, owner_email, owner_name, module_key, module_name } = metadata;
       if (!company_id) return Response.json({ received: true });
+
+      // Handle module subscription checkout
+      if (module_key) {
+        try {
+          const existingModules = await base44.asServiceRole.entities.CompanyModule.filter({ company_id, module_key });
+          const moduleData = {
+            company_id,
+            module_key,
+            module_name: module_name || module_key,
+            status: 'active',
+            stripe_subscription_id: session.subscription,
+            stripe_customer_id: session.customer,
+            activated_at: new Date().toISOString(),
+            cancelled_at: null,
+          };
+          if (existingModules[0]) {
+            await base44.asServiceRole.entities.CompanyModule.update(existingModules[0].id, moduleData);
+          } else {
+            await base44.asServiceRole.entities.CompanyModule.create(moduleData);
+          }
+          console.log(`CompanyModule ${module_key} activated for company ${company_id}`);
+        } catch (modErr) {
+          console.error(`CompanyModule activation failed: ${modErr.message}`);
+        }
+        return Response.json({ received: true });
+      }
 
       const stripeSub = await stripe.subscriptions.retrieve(session.subscription);
       const trialEnd = stripeSub.trial_end ? new Date(stripeSub.trial_end * 1000).toISOString() : null;
@@ -114,25 +140,45 @@ Deno.serve(async (req) => {
     if (event.type === 'customer.subscription.updated') {
       const stripeSub = event.data.object;
       const company_id = stripeSub.metadata?.company_id;
-      if (!company_id) return Response.json({ received: true });
+      const subId = stripeSub.id;
+      const newStatus = stripeSub.cancel_at_period_end ? 'cancelled'
+        : stripeSub.status === 'trialing' ? 'trialing'
+        : stripeSub.status === 'past_due' ? 'past_due'
+        : stripeSub.status === 'active' ? 'active' : stripeSub.status;
 
-      const existing = await base44.asServiceRole.entities.Subscription.filter({ company_id });
-      if (existing[0]) {
-        const status = stripeSub.cancel_at_period_end ? 'cancelled'
-          : stripeSub.status === 'trialing' ? 'trialing'
-          : stripeSub.status === 'past_due' ? 'past_due'
-          : stripeSub.status === 'active' ? 'active' : stripeSub.status;
+      // Update plan subscription if company_id in metadata
+      if (company_id) {
+        const existing = await base44.asServiceRole.entities.Subscription.filter({ company_id });
+        if (existing[0]) {
+          await base44.asServiceRole.entities.Subscription.update(existing[0].id, {
+            status: newStatus,
+            current_period_end: new Date(stripeSub.current_period_end * 1000).toISOString(),
+          });
+        }
+      }
 
-        await base44.asServiceRole.entities.Subscription.update(existing[0].id, {
-          status,
-          current_period_end: new Date(stripeSub.current_period_end * 1000).toISOString(),
-        });
+      // Also update any CompanyModule linked to this subscription
+      if (subId) {
+        const mods = await base44.asServiceRole.entities.CompanyModule.filter({ stripe_subscription_id: subId });
+        if (mods[0]) {
+          const moduleStatus = newStatus === 'cancelled' ? 'cancelled'
+            : newStatus === 'past_due' ? 'past_due'
+            : newStatus === 'active' ? 'active'
+            : mods[0].status;
+          await base44.asServiceRole.entities.CompanyModule.update(mods[0].id, {
+            status: moduleStatus,
+            ...(moduleStatus === 'cancelled' ? { cancelled_at: new Date().toISOString() } : {}),
+          });
+          console.log(`CompanyModule ${mods[0].module_key} status → ${moduleStatus}`);
+        }
       }
     }
 
     if (event.type === 'customer.subscription.deleted') {
       const stripeSub = event.data.object;
       const company_id = stripeSub.metadata?.company_id;
+      const subId = stripeSub.id;
+
       if (company_id) {
         const existing = await base44.asServiceRole.entities.Subscription.filter({ company_id });
         if (existing[0]) {
@@ -140,6 +186,18 @@ Deno.serve(async (req) => {
             status: 'cancelled',
             cancelled_at: new Date().toISOString(),
           });
+        }
+      }
+
+      // Cancel any CompanyModule linked to this subscription
+      if (subId) {
+        const mods = await base44.asServiceRole.entities.CompanyModule.filter({ stripe_subscription_id: subId });
+        if (mods[0]) {
+          await base44.asServiceRole.entities.CompanyModule.update(mods[0].id, {
+            status: 'cancelled',
+            cancelled_at: new Date().toISOString(),
+          });
+          console.log(`CompanyModule ${mods[0].module_key} cancelled (subscription deleted)`);
         }
       }
     }
