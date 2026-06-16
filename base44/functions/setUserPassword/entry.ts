@@ -17,12 +17,6 @@ Deno.serve(async (req) => {
 
     const isAdmin = manager.role === 'admin' || manager.role === 'super_admin';
 
-    // Look up user by email
-    const users = await base44.asServiceRole.entities.User.filter({ email });
-    if (users.length === 0) {
-      return Response.json({ error: 'User not found' }, { status: 404 });
-    }
-
     if (!isAdmin) {
       // Check manager has access to at least one company the user belongs to
       const userAccess = await base44.asServiceRole.entities.UserCompanyAccess.filter({ user_email: email });
