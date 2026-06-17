@@ -124,8 +124,9 @@ export default function Schedule() {
       const cust = customers.find(c => c.id === j.customer_id);
       const customerName = cust ? `${cust.first_name} ${cust.last_name}` : "";
 
-      // Legacy single appointment (scheduled_start)
-      if (j.scheduled_start) {
+      // Only show legacy scheduled_start if there are NO appointments (not yet migrated)
+      const hasAppointments = (j.appointments || []).length > 0;
+      if (j.scheduled_start && !hasAppointments) {
         result.push({
           id: j.id,
           title: customerName ? `${j.title} · ${customerName}` : j.title,

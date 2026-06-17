@@ -40,7 +40,7 @@ export default function JobAppointmentSection({ form, setForm, techs, onSave, sa
       scheduled_end: form.scheduled_end || "",
       status: "upcoming",
     }];
-    setForm(f => ({ ...f, appointments: seeded }));
+    setForm(f => ({ ...f, appointments: seeded, scheduled_start: "", scheduled_end: "" }));
   }
 
   function addAppointment() {
