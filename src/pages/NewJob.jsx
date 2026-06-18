@@ -4,7 +4,7 @@ import { base44 } from "@/api/base44Client";
 import { useApp } from "../Layout";
 import {
   ArrowLeft, Plus, Briefcase, User, Calendar, FileText,
-  List, Tag, Clock, Trash2, X, Pencil, UserCircle
+  List, Tag, Clock, Trash2, X, Pencil, UserCircle, RefreshCw
 } from "lucide-react";
 import LineItemRow from "@/components/services/LineItemRow";
 import { Button } from "@/components/ui/button";
@@ -39,6 +39,7 @@ const defaultJob = {
   customer_id: "", service_type: "", notes: "", internal_notes: "",
   line_items: [], tax_rate: 0, subtotal: 0, total_amount: 0,
   assigned_techs: [], checklist: [], tags: [],
+  is_recurring: false, recurrence_interval: "monthly",
 };
 
 export default function NewJob() {
@@ -285,6 +286,41 @@ export default function NewJob() {
                 {PRIORITY_OPTIONS.map(p => <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>)}
               </SelectContent>
             </Select>
+          </div>
+
+          {/* Recurring */}
+          <div className="bg-slate-50 border rounded-lg p-3">
+            <div className="flex items-center gap-2 mb-3">
+              <RefreshCw className="w-4 h-4 text-slate-500" />
+              <span className="font-semibold text-sm text-slate-700">Recurring</span>
+            </div>
+            <div className="flex items-center gap-2 mb-3">
+              <Checkbox
+                id="is_recurring"
+                checked={form.is_recurring}
+                onCheckedChange={v => setForm({ ...form, is_recurring: !!v })}
+              />
+              <Label htmlFor="is_recurring" className="text-sm text-slate-600 cursor-pointer">
+                Make this a recurring job
+              </Label>
+            </div>
+            {form.is_recurring && (
+              <div>
+                <Label className="text-xs text-slate-500 mb-1.5 block">Repeat every</Label>
+                <Select value={form.recurrence_interval || "monthly"} onValueChange={v => setForm({ ...form, recurrence_interval: v })}>
+                  <SelectTrigger className="h-8 text-sm"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="weekly">Weekly</SelectItem>
+                    <SelectItem value="biweekly">Bi-Weekly</SelectItem>
+                    <SelectItem value="monthly">Monthly</SelectItem>
+                    <SelectItem value="quarterly">Quarterly</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-slate-400 mt-2">
+                  A new job will automatically be created when this one is marked completed.
+                </p>
+              </div>
+            )}
           </div>
         </div>
 
