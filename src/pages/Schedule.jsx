@@ -120,13 +120,13 @@ export default function Schedule() {
     const result = [];
 
     filteredJobs.forEach(j => {
-      if (!CALENDAR_JOB_STATUSES.has(j.status)) return;
       const cust = customers.find(c => c.id === j.customer_id);
       const customerName = cust ? `${cust.first_name} ${cust.last_name}` : "";
 
-      // Only show legacy scheduled_start if there are NO appointments (not yet migrated)
       const hasAppointments = (j.appointments || []).length > 0;
-      if (j.scheduled_start && !hasAppointments) {
+
+      // Legacy scheduled_start: only show if no appointments and status is calendar-eligible
+      if (!hasAppointments && j.scheduled_start && CALENDAR_JOB_STATUSES.has(j.status)) {
         result.push({
           id: j.id,
           title: customerName ? `${j.title} · ${customerName}` : j.title,
@@ -140,7 +140,7 @@ export default function Schedule() {
         });
       }
 
-      // Individual appointments from the appointments array
+      // Individual appointments from the appointments array — show regardless of job status
       (j.appointments || []).forEach((apt, idx) => {
         if (!apt.scheduled_start || apt.status === "cancelled") return;
         const aptLabel = `${customerName || j.title}${j.appointments?.length > 1 ? ` · Visit ${idx + 1}` : ""}`;
