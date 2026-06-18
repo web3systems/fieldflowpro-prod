@@ -299,10 +299,12 @@ export default function Invoices() {
             ))}
           </SelectContent>
         </Select>
+      </div>
+      <div className="flex gap-2 items-center">
         <select
           value={sortField}
           onChange={e => setSortField(e.target.value)}
-          className="h-9 text-xs bg-white border border-slate-200 rounded-lg px-2.5 text-slate-600"
+          className="h-9 text-xs bg-white border border-slate-200 rounded-lg px-2.5 text-slate-600 flex-1 sm:w-auto sm:flex-none"
         >
           <option value="">Sort by...</option>
           <option value="customer_name">Customer</option>
@@ -314,7 +316,7 @@ export default function Invoices() {
         {sortField && (
           <button
             onClick={() => setSortDir(d => d === "asc" ? "desc" : "asc")}
-            className="h-9 w-9 flex items-center justify-center rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-500"
+            className="h-9 w-9 flex items-center justify-center rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-500 flex-shrink-0"
           >
             {sortDir === "asc" ? <ArrowUp className="w-3.5 h-3.5" /> : <ArrowDown className="w-3.5 h-3.5" />}
           </button>

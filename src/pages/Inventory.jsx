@@ -171,10 +171,12 @@ export default function Inventory() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
           <Input placeholder="Search items..." className="pl-9" value={search} onChange={e => setSearch(e.target.value)} />
         </div>
+      </div>
+      <div className="flex gap-2 items-center">
         <select
           value={sortField}
           onChange={e => setSortField(e.target.value)}
-          className="h-9 text-xs bg-white border border-slate-200 rounded-lg px-2.5 text-slate-600"
+          className="h-9 text-xs bg-white border border-slate-200 rounded-lg px-2.5 text-slate-600 flex-1 sm:w-auto sm:flex-none"
         >
           <option value="">Sort by...</option>
           <option value="name">Name</option>
@@ -186,7 +188,7 @@ export default function Inventory() {
         {sortField && (
           <button
             onClick={() => setSortDir(d => d === "asc" ? "desc" : "asc")}
-            className="h-9 w-9 flex items-center justify-center rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-500"
+            className="h-9 w-9 flex items-center justify-center rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-500 flex-shrink-0"
           >
             {sortDir === "asc" ? <ArrowUp className="w-3.5 h-3.5" /> : <ArrowDown className="w-3.5 h-3.5" />}
           </button>
