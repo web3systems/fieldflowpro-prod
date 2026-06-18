@@ -12,6 +12,10 @@ import SubCompaniesTab from '@/components/settings/SubCompaniesTab';
 import MarginRulesTab from '@/components/settings/MarginRulesTab';
 import ConnectorsTab from '@/components/settings/ConnectorsTab';
 import SeoAnalyticsTab from '@/components/settings/SeoAnalyticsTab';
+import PwaInstallButton from '@/components/settings/PwaInstallButton';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { User, Mail, Shield, Building2 } from 'lucide-react';
 
 export default function CompanySettings() {
   const { activeCompany, user, refreshCompanies } = useApp();
@@ -47,6 +51,66 @@ export default function CompanySettings() {
 
   const isOwner = user?.email === company.created_by || user?.role === 'admin' || user?.role === 'super_admin';
   const isParentCompany = !company.parent_company_id;
+  const MANAGER_ROLES = ['owner', 'manager', 'dispatcher', 'admin', 'super_admin'];
+  const isManager = user?.role && MANAGER_ROLES.includes(user?.role);
+
+  // Non-managers — only see their own account profile
+  if (!isManager) {
+    return (
+      <div className="min-h-screen bg-slate-50 p-6">
+        <div className="max-w-2xl mx-auto space-y-6">
+          <div>
+            <h1 className="text-3xl font-bold text-slate-900">My Account</h1>
+            <p className="text-slate-500 mt-1">{company.name}</p>
+          </div>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <User className="w-5 h-5 text-slate-500" />
+                Profile
+              </CardTitle>
+              <CardDescription>Your account information</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center gap-4">
+                <Avatar className="w-16 h-16">
+                  <AvatarFallback className="bg-blue-600 text-white text-xl">
+                    {user?.full_name?.[0] || "U"}
+                  </AvatarFallback>
+                </Avatar>
+                <div>
+                  <p className="text-lg font-semibold text-slate-900">{user?.full_name || "User"}</p>
+                  <p className="text-sm text-slate-500 flex items-center gap-1">
+                    <Mail className="w-3.5 h-3.5" /> {user?.email}
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 pt-2 border-t border-slate-100">
+                <div className="bg-slate-50 rounded-lg p-3">
+                  <span className="text-xs text-slate-400 flex items-center gap-1">
+                    <Shield className="w-3 h-3" /> Role
+                  </span>
+                  <Badge className="mt-1 bg-blue-100 text-blue-700 text-sm capitalize">
+                    {user?.role || "User"}
+                  </Badge>
+                </div>
+                <div className="bg-slate-50 rounded-lg p-3">
+                  <span className="text-xs text-slate-400 flex items-center gap-1">
+                    <Building2 className="w-3 h-3" /> Company
+                  </span>
+                  <p className="text-sm font-medium text-slate-800 mt-1">{company.name}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <PwaInstallButton />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 p-6">
@@ -55,6 +119,8 @@ export default function CompanySettings() {
           <h1 className="text-3xl font-bold text-slate-900">{company.name}</h1>
           <p className="text-slate-500 mt-1">Company Settings</p>
         </div>
+
+        <PwaInstallButton />
 
         <Tabs defaultValue="team" className="w-full">
           <TabsList>
