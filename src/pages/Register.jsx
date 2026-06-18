@@ -61,10 +61,10 @@ export default function Register() {
           </div>
           <h1 className="text-3xl font-bold text-white mb-3">You're all set!</h1>
           <p className="text-blue-200 text-lg mb-2">
-            Your 14-day free trial is ready. Redirecting you to sign in...
+            Your 14-day free trial is ready. No email confirmation needed — sign in with the credentials you just created.
           </p>
           <p className="text-blue-400 text-sm mb-6">
-            Use the email <strong className="text-white">{form.email}</strong> and the password you just created to log in.
+            Email: <strong className="text-white">{form.email}</strong>
           </p>
           <button
             onClick={() => base44.auth.redirectToLogin(loginUrl)}

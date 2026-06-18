@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 
 Deno.serve(async (req) => {
   try {
@@ -37,49 +37,38 @@ Deno.serve(async (req) => {
       owner_name: owner_name || '',
     });
 
+    // Register user directly — no email confirmation sent
+    try {
+      const registerResult = await base44.auth.register({ email: owner_email, password, fullName: owner_name || owner_email });
+      console.log('User registered:', owner_email, JSON.stringify(registerResult));
+    } catch (registerErr) {
+      console.error('register failed:', JSON.stringify(registerErr));
+      const errMsg = registerErr?.data?.detail?.[0]?.msg || registerErr?.message || String(registerErr);
+      return Response.json({ error: 'Could not create user account. ' + errMsg }, { status: 500 });
+    }
+
+    // Wait for user record to exist, then set role to admin
+    let userId = null;
+    for (let attempt = 0; attempt < 12; attempt++) {
+      if (attempt > 0) await new Promise(r => setTimeout(r, 1000));
+      const users = await base44.asServiceRole.entities.User.filter({ email: owner_email });
+      if (users.length > 0) {
+        userId = users[0].id;
+        await base44.asServiceRole.entities.User.update(userId, { role: 'admin' });
+        break;
+      }
+    }
+
+    // Create UserCompanyAccess with the user_id
     await base44.asServiceRole.entities.UserCompanyAccess.create({
       user_email: owner_email,
-      user_id: null,
+      user_id: userId,
       company_id: company.id,
       role: 'manager',
       user_name: owner_name || '',
     });
 
-    // Invite the user — this creates their account in the auth system
-    try {
-      await base44.users.inviteUser(owner_email, 'admin');
-    } catch (inviteErr) {
-      console.error('inviteUser failed:', inviteErr.message);
-      return Response.json({ error: 'Could not create user account. ' + inviteErr.message }, { status: 500 });
-    }
-
-    // Wait for the user record to be created, then set their password directly
-    let passwordSet = false;
-    for (let attempt = 0; attempt < 12; attempt++) {
-      if (attempt > 0) await new Promise(r => setTimeout(r, 1000));
-      const users = await base44.asServiceRole.entities.User.filter({ email: owner_email });
-      if (users.length > 0) {
-        const userId = users[0].id;
-        await base44.asServiceRole.entities.User.update(userId, { password });
-        console.log('Password set immediately for:', owner_email, 'on attempt', attempt + 1);
-        passwordSet = true;
-
-        // Clean up any pending password record
-        const pending = await base44.asServiceRole.entities.PendingPassword.filter({ email: owner_email });
-        for (const p of pending) {
-          await base44.asServiceRole.entities.PendingPassword.delete(p.id);
-        }
-        break;
-      }
-    }
-
-    if (!passwordSet) {
-      // Fallback: store for applyPendingPassword to handle on first login
-      console.warn('Could not set password immediately, storing as pending for:', owner_email);
-      await base44.asServiceRole.entities.PendingPassword.create({ email: owner_email, password });
-    }
-
-    return Response.json({ success: true, company_id: company.id, password_set: passwordSet });
+    return Response.json({ success: true, company_id: company.id });
 
   } catch (error) {
     console.error('startFreeTrial error:', error.message);
