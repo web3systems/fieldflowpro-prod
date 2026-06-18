@@ -1,6 +1,13 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 import { Resend } from 'npm:resend@4.0.0';
 
+function generatePassword() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#$';
+  let pw = '';
+  for (let i = 0; i < 12; i++) pw += chars[Math.floor(Math.random() * chars.length)];
+  return pw;
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -31,17 +38,32 @@ Deno.serve(async (req) => {
       }
     }
 
+    const finalPassword = password || generatePassword();
+    const fullName = `${first_name} ${last_name}`;
+
+    // Register user directly — no email confirmation needed
+    await base44.auth.register({
+      email,
+      password: finalPassword,
+      full_name: fullName,
+    });
+
+    // All subsequent operations use service role (register may have changed auth context)
     const platformRole = assignments.some(a => a.role === 'admin') ? 'admin' : 'user';
 
-    // 1. Invite the user via the platform
-    await base44.users.inviteUser(email, platformRole);
-
-    // 2. Store password if provided
-    if (password) {
-      await base44.asServiceRole.entities.PendingPassword.create({ email, password });
+    // Promote to admin if needed (register defaults to 'user')
+    if (platformRole === 'admin') {
+      try {
+        const users = await base44.asServiceRole.entities.User.filter({ email });
+        if (users.length) {
+          await base44.asServiceRole.entities.User.update(users[0].id, { role: 'admin' });
+        }
+      } catch (e) {
+        console.warn('Could not promote user role:', e.message);
+      }
     }
 
-    // 3. Create UserCompanyAccess + Technician for each assignment
+    // Create UserCompanyAccess + Technician for each assignment
     const results = [];
     for (const a of assignments) {
       // Check for existing access
@@ -52,7 +74,7 @@ Deno.serve(async (req) => {
       if (!existing.length) {
         await base44.asServiceRole.entities.UserCompanyAccess.create({
           user_email: email,
-          user_name: `${first_name} ${last_name}`,
+          user_name: fullName,
           company_id: a.company_id,
           role: a.role || 'standard',
         });
@@ -80,14 +102,13 @@ Deno.serve(async (req) => {
       ? companyNames.join(', ')
       : 'the team';
 
-    const generatedNote = password
-      ? `<p style="margin:16px 0;background:#f0f9ff;border-left:4px solid #3b82f6;padding:12px 16px;border-radius:0 6px 6px 0;">
+    const generatedNote = `
+         <p style="margin:16px 0;background:#f0f9ff;border-left:4px solid #3b82f6;padding:12px 16px;border-radius:0 6px 6px 0;">
            <strong style="color:#1e40af;">Your account credentials:</strong><br>
            <span style="color:#374151;">Email: <strong>${email}</strong></span><br>
-           <span style="color:#374151;">Password: <strong>${password}</strong></span>
+           <span style="color:#374151;">Password: <strong>${finalPassword}</strong></span>
          </p>
-         <p style="color:#6b7280;font-size:13px;">You can change your password anytime in your account settings.</p>`
-      : `<p style="color:#6b7280;font-size:13px;">When you first sign in, you'll be prompted to create a password.</p>`;
+         <p style="color:#6b7280;font-size:13px;">You can change your password anytime in your account settings.</p>`;
 
     const resend = new Resend(Deno.env.get('RESEND_API_KEY'));
     const appUrl = Deno.env.get('APP_URL') || 'https://app.fieldflowpro.com';
