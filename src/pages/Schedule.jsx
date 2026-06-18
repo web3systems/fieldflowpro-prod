@@ -49,19 +49,37 @@ function convertTimeTo24(time12h) {
   return `${String(hours).padStart(2, '0')}:${minutes || '00'}`;
 }
 
-// Custom event renderer — jobs are colored blocks, tasks are tiny text
+// Custom event renderer — jobs are colored blocks
 function CalendarEvent({ event }) {
-  if (event.isTask) {
-    return (
-      <div className="px-1 text-[10px] leading-tight text-slate-500 truncate" title={event.title}>
-        <CheckSquare className="w-2.5 h-2.5 inline-block mr-0.5 text-slate-400 flex-shrink-0" />
-        {event.title}
-      </div>
-    );
-  }
   return (
     <div className="px-1 text-[11px] leading-tight text-white font-medium truncate">
       {event.title}
+    </div>
+  );
+}
+
+// Custom date cell wrapper — renders tasks pinned at the bottom of each day cell
+function DateCellWrapper({ children, value, tasksByDate, onTaskClick }) {
+  const dateKey = moment(value).format("YYYY-MM-DD");
+  const dayTasks = tasksByDate[dateKey] || [];
+  if (dayTasks.length === 0) return children;
+
+  return (
+    <div className="rbc-date-cell-wrapper flex flex-col h-full">
+      <div className="flex-1 min-h-0">{children}</div>
+      <div className="flex-shrink-0 border-t border-slate-100 mx-0.5 pt-0.5 pb-1">
+        {dayTasks.map(task => (
+          <button
+            key={task.id}
+            onClick={(e) => { e.stopPropagation(); onTaskClick(); }}
+            className="block w-full text-left px-1 text-[9px] leading-tight text-slate-500 hover:text-blue-600 truncate"
+            title={task.title}
+          >
+            <CheckSquare className="w-2 h-2 inline-block mr-0.5 text-slate-400 flex-shrink-0" />
+            {task.title}
+          </button>
+        ))}
+      </div>
     </div>
   );
 }
@@ -116,6 +134,16 @@ export default function Schedule() {
 
   const CALENDAR_JOB_STATUSES = new Set(["scheduled", "in_progress", "completed"]);
 
+  const tasksByDate = useMemo(() => {
+    const map = {};
+    tasks.forEach(task => {
+      if (!task.due_date) return;
+      if (!map[task.due_date]) map[task.due_date] = [];
+      map[task.due_date].push(task);
+    });
+    return map;
+  }, [tasks]);
+
   const events = useMemo(() => {
     const result = [];
 
@@ -136,7 +164,6 @@ export default function Schedule() {
             : new Date(new Date(j.scheduled_start).getTime() + 60 * 60 * 1000),
           resource: j,
           isAppointment: false,
-          isTask: false,
         });
       }
 
@@ -154,28 +181,12 @@ export default function Schedule() {
           resource: j,
           aptStatus: apt.status,
           isAppointment: true,
-          isTask: false,
         });
       });
     });
 
-    // Tasks — all-day events with minimal text styling
-    tasks.forEach(task => {
-      if (!task.due_date) return;
-      const dueDate = new Date(task.due_date + "T00:00:00");
-      result.push({
-        id: `task_${task.id}`,
-        title: task.title,
-        start: dueDate,
-        end: dueDate,
-        resource: task,
-        isTask: true,
-        isAppointment: false,
-      });
-    });
-
     return result;
-  }, [filteredJobs, customers, tasks]);
+  }, [filteredJobs, customers]);
 
   // Filter events by history range when history mode is active
   const displayEvents = useMemo(() => {
@@ -201,20 +212,6 @@ export default function Schedule() {
   }, [displayEvents, historyMode]);
 
   const eventStyleGetter = (event) => {
-    // Tasks — tiny, transparent, no block
-    if (event.isTask) {
-      return {
-        style: {
-          backgroundColor: 'transparent',
-          color: '#64748b',
-          border: 'none',
-          padding: '1px 3px',
-          fontSize: '10px',
-          fontWeight: '400',
-          borderRadius: '0',
-        }
-      };
-    }
     let backgroundColor = '#3b82f6';
     if (event.isAppointment && event.aptStatus) {
       backgroundColor = APPOINTMENT_STATUS_COLORS[event.aptStatus] || '#3b82f6';
@@ -236,12 +233,12 @@ export default function Schedule() {
   };
 
   function handleSelectEvent(event) {
-    if (event.isTask) {
-      navigate(createPageUrl("Tasks"));
-      return;
-    }
     const job = event.resource;
     navigate(`/JobDetail/${job.id}`);
+  }
+
+  function handleTaskClick() {
+    navigate(createPageUrl("Tasks"));
   }
 
   function handleSelectSlot(slot) {
@@ -546,7 +543,10 @@ export default function Schedule() {
             onSelectSlot={handleSelectSlot}
             selectable
             eventPropGetter={eventStyleGetter}
-            components={{ event: CalendarEvent }}
+            components={{
+              event: CalendarEvent,
+              dateCellWrapper: (props) => <DateCellWrapper {...props} tasksByDate={tasksByDate} onTaskClick={handleTaskClick} />,
+            }}
             toolbar={false}
             style={{ height: '100%' }}
           />
