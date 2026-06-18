@@ -6,7 +6,7 @@ import { createPageUrl } from "@/utils";
 import { Calendar, momentLocalizer, Views } from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
-import { Plus, ChevronLeft, ChevronRight, Bell, MapPin, Clock, User, History, CalendarDays, X, CheckCircle2, Clock4, Users2, CheckSquare } from "lucide-react";
+import { Plus, ChevronLeft, ChevronRight, Bell, MapPin, Clock, User, History, CalendarDays, X, CheckCircle2, Clock4, Users2, CheckSquare, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -104,6 +104,8 @@ export default function Schedule() {
     from: moment().subtract(1, 'month').format("YYYY-MM-DD"),
     to: moment().format("YYYY-MM-DD"),
   });
+  const [calendarType, setCalendarType] = useState("customers"); // "customers" | "tasks"
+  const [calendarDropdownOpen, setCalendarDropdownOpen] = useState(false);
 
   useEffect(() => {
     if (activeCompany) loadData();
@@ -143,6 +145,50 @@ export default function Schedule() {
     });
     return map;
   }, [tasks]);
+
+  const TASK_PRIORITY_COLORS = {
+    urgent: "#ef4444",
+    high: "#f59e0b",
+    medium: "#3b82f6",
+    low: "#6b7280",
+  };
+
+  const TASK_PRIORITY_BG = {
+    urgent: "#fef2f2",
+    high: "#fffbeb",
+    medium: "#eff6ff",
+    low: "#f9fafb",
+  };
+
+  // Task calendar events
+  const taskEvents = useMemo(() => {
+    return tasks
+      .filter(t => t.due_date && t.status !== "cancelled" && t.status !== "completed")
+      .map(t => ({
+        id: t.id,
+        title: t.title,
+        start: new Date(t.due_date + "T00:00:00"),
+        end: new Date(t.due_date + "T23:59:59"),
+        resource: t,
+        isTask: true,
+      }));
+  }, [tasks]);
+
+  const taskEventStyleGetter = (event) => {
+    const priority = event.resource?.priority || "medium";
+    const color = TASK_PRIORITY_COLORS[priority] || "#3b82f6";
+    return {
+      style: {
+        backgroundColor: color,
+        borderRadius: "4px",
+        color: "white",
+        padding: "2px 5px",
+        fontSize: "11px",
+        fontWeight: "500",
+        borderLeft: `3px solid ${color}`,
+      },
+    };
+  };
 
   const events = useMemo(() => {
     const result = [];
@@ -233,6 +279,10 @@ export default function Schedule() {
   };
 
   function handleSelectEvent(event) {
+    if (event.isTask) {
+      navigate(createPageUrl("Tasks"));
+      return;
+    }
     const job = event.resource;
     navigate(`/JobDetail/${job.id}`);
   }
@@ -326,8 +376,8 @@ export default function Schedule() {
 
   return (
     <div className="flex overflow-hidden" style={{ height: 'calc(100vh - 57px)' }}>
-      {/* Pending bookings sidebar */}
-      {bookings.length > 0 && (
+      {/* Pending bookings sidebar — only in customer calendar */}
+      {calendarType === "customers" && bookings.length > 0 && (
         <div className="w-72 flex-shrink-0 border-r border-slate-200 bg-white flex flex-col overflow-hidden">
           <div className="p-4 border-b border-slate-200 flex-shrink-0">
             <div className="flex items-center gap-2">
@@ -375,6 +425,38 @@ export default function Schedule() {
                 <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigateCalendar(-1)}><ChevronLeft className="w-4 h-4" /></Button>
                 <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigateCalendar(1)}><ChevronRight className="w-4 h-4" /></Button>
                 <h2 className="text-base font-semibold text-slate-800">{dateLabel()}</h2>
+
+                {/* Calendar Switcher Dropdown */}
+                <div className="relative">
+                  <button
+                    onClick={() => setCalendarDropdownOpen(!calendarDropdownOpen)}
+                    className="flex items-center gap-1 ml-2 px-2 py-1 text-lg font-bold text-slate-800 hover:bg-slate-100 rounded-lg transition-colors"
+                  >
+                    {calendarType === "customers" ? "Customer Schedule" : "Company Tasks / Projects"}
+                    <ChevronDown className={`w-4 h-4 text-slate-500 transition-transform ${calendarDropdownOpen ? 'rotate-180' : ''}`} />
+                  </button>
+                  {calendarDropdownOpen && (
+                    <>
+                      <div className="fixed inset-0 z-10" onClick={() => setCalendarDropdownOpen(false)} />
+                      <div className="absolute left-0 top-full mt-1 z-20 w-56 bg-white rounded-xl shadow-xl border border-slate-200 overflow-hidden">
+                        <button
+                          onClick={() => { setCalendarType("customers"); setCalendarDropdownOpen(false); setHistoryMode(false); setDate(new Date()); }}
+                          className={`w-full text-left px-4 py-2.5 text-sm hover:bg-slate-50 flex items-center gap-2.5 ${calendarType === "customers" ? "bg-blue-50 text-blue-700 font-medium" : "text-slate-700"}`}
+                        >
+                          <CalendarDays className="w-4 h-4" />
+                          Customer Schedule
+                        </button>
+                        <button
+                          onClick={() => { setCalendarType("tasks"); setCalendarDropdownOpen(false); setHistoryMode(false); setDate(new Date()); }}
+                          className={`w-full text-left px-4 py-2.5 text-sm hover:bg-slate-50 flex items-center gap-2.5 ${calendarType === "tasks" ? "bg-blue-50 text-blue-700 font-medium" : "text-slate-700"}`}
+                        >
+                          <CheckSquare className="w-4 h-4" />
+                          Company Tasks / Projects
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </div>
               </>
             ) : (
               <>
@@ -412,67 +494,71 @@ export default function Schedule() {
             )}
           </div>
           <div className="flex items-center gap-2 flex-wrap">
-            {/* History / Live toggle */}
-            <Button
-              variant={historyMode ? "default" : "outline"}
-              size="sm"
-              className={`h-8 gap-1.5 text-xs ${historyMode ? 'bg-amber-600 hover:bg-amber-700' : ''}`}
-              onClick={() => {
-                const nextMode = !historyMode;
-                setHistoryMode(nextMode);
-                if (nextMode) {
-                  setDate(new Date(historyRange.from));
-                  setView(Views.MONTH);
-                } else {
-                  setDate(new Date());
-                }
-              }}
-            >
-              <History className="w-3.5 h-3.5" />
-              {historyMode ? "Live" : "History"}
-            </Button>
-            {historyMode && (
-              <Select
-                value=""
-                onValueChange={(v) => {
-                  if (!v) return;
-                  const now = moment();
-                  let from, to;
-                  if (v === "last_week") { from = now.clone().subtract(1, 'week').startOf('week'); to = now.clone().subtract(1, 'week').endOf('week'); }
-                  else if (v === "last_month") { from = now.clone().subtract(1, 'month').startOf('month'); to = now.clone().subtract(1, 'month').endOf('month'); }
-                  else if (v === "last_30") { from = now.clone().subtract(30, 'days'); to = now; }
-                  else if (v === "last_quarter") { from = now.clone().subtract(3, 'months').startOf('month'); to = now.clone().subtract(1, 'month').endOf('month'); }
-                  else if (v === "this_month") { from = now.clone().startOf('month'); to = now; }
-                  setHistoryRange({ from: from.format("YYYY-MM-DD"), to: to.format("YYYY-MM-DD") });
-                  setDate(from.toDate());
-                }}
-              >
-                <SelectTrigger className="w-32 h-8 text-xs">
-                  <Clock4 className="w-3 h-3 mr-1" />
-                  <SelectValue placeholder="Quick range" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="last_week">Last Week</SelectItem>
-                  <SelectItem value="last_month">Last Month</SelectItem>
-                  <SelectItem value="last_30">Last 30 Days</SelectItem>
-                  <SelectItem value="last_quarter">Last Quarter</SelectItem>
-                  <SelectItem value="this_month">This Month</SelectItem>
-                </SelectContent>
-              </Select>
-            )}
-            {techs.length > 0 && (
-              <Select value={filterTech} onValueChange={setFilterTech}>
-                <SelectTrigger className="w-40 h-8 text-xs">
-                  <User className="w-3 h-3 mr-1 flex-shrink-0" />
-                  <SelectValue placeholder="All Techs" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Technicians</SelectItem>
-                  {techs.map(t => (
-                    <SelectItem key={t.id} value={t.id}>{t.first_name} {t.last_name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            {/* History / Live toggle — only in customer calendar */}
+            {calendarType === "customers" && (
+              <>
+                <Button
+                  variant={historyMode ? "default" : "outline"}
+                  size="sm"
+                  className={`h-8 gap-1.5 text-xs ${historyMode ? 'bg-amber-600 hover:bg-amber-700' : ''}`}
+                  onClick={() => {
+                    const nextMode = !historyMode;
+                    setHistoryMode(nextMode);
+                    if (nextMode) {
+                      setDate(new Date(historyRange.from));
+                      setView(Views.MONTH);
+                    } else {
+                      setDate(new Date());
+                    }
+                  }}
+                >
+                  <History className="w-3.5 h-3.5" />
+                  {historyMode ? "Live" : "History"}
+                </Button>
+                {historyMode && (
+                  <Select
+                    value=""
+                    onValueChange={(v) => {
+                      if (!v) return;
+                      const now = moment();
+                      let from, to;
+                      if (v === "last_week") { from = now.clone().subtract(1, 'week').startOf('week'); to = now.clone().subtract(1, 'week').endOf('week'); }
+                      else if (v === "last_month") { from = now.clone().subtract(1, 'month').startOf('month'); to = now.clone().subtract(1, 'month').endOf('month'); }
+                      else if (v === "last_30") { from = now.clone().subtract(30, 'days'); to = now; }
+                      else if (v === "last_quarter") { from = now.clone().subtract(3, 'months').startOf('month'); to = now.clone().subtract(1, 'month').endOf('month'); }
+                      else if (v === "this_month") { from = now.clone().startOf('month'); to = now; }
+                      setHistoryRange({ from: from.format("YYYY-MM-DD"), to: to.format("YYYY-MM-DD") });
+                      setDate(from.toDate());
+                    }}
+                  >
+                    <SelectTrigger className="w-32 h-8 text-xs">
+                      <Clock4 className="w-3 h-3 mr-1" />
+                      <SelectValue placeholder="Quick range" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="last_week">Last Week</SelectItem>
+                      <SelectItem value="last_month">Last Month</SelectItem>
+                      <SelectItem value="last_30">Last 30 Days</SelectItem>
+                      <SelectItem value="last_quarter">Last Quarter</SelectItem>
+                      <SelectItem value="this_month">This Month</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
+                {techs.length > 0 && (
+                  <Select value={filterTech} onValueChange={setFilterTech}>
+                    <SelectTrigger className="w-40 h-8 text-xs">
+                      <User className="w-3 h-3 mr-1 flex-shrink-0" />
+                      <SelectValue placeholder="All Techs" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Technicians</SelectItem>
+                      {techs.map(t => (
+                        <SelectItem key={t.id} value={t.id}>{t.first_name} {t.last_name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              </>
             )}
             <div className="flex border border-slate-200 rounded-lg overflow-hidden text-xs">
               {[Views.MONTH, Views.WEEK, Views.DAY].map(v => (
@@ -485,33 +571,52 @@ export default function Schedule() {
                 </button>
               ))}
             </div>
-            <Button size="sm" className="gap-1.5 bg-blue-600 hover:bg-blue-700 h-8" onClick={() => {
-              setEditing(null);
-              const now = moment().startOf('hour').add(1, 'hour');
-              setForm({ ...defaultJob, scheduled_start: now.format("YYYY-MM-DDTHH:mm"), scheduled_end: now.clone().add(1, 'hour').format("YYYY-MM-DDTHH:mm") });
-              setSheetOpen(true);
-            }}>
-              <Plus className="w-3.5 h-3.5" /> New Job
-            </Button>
+            {calendarType === "customers" ? (
+              <Button size="sm" className="gap-1.5 bg-blue-600 hover:bg-blue-700 h-8" onClick={() => {
+                setEditing(null);
+                const now = moment().startOf('hour').add(1, 'hour');
+                setForm({ ...defaultJob, scheduled_start: now.format("YYYY-MM-DDTHH:mm"), scheduled_end: now.clone().add(1, 'hour').format("YYYY-MM-DDTHH:mm") });
+                setSheetOpen(true);
+              }}>
+                <Plus className="w-3.5 h-3.5" /> New Job
+              </Button>
+            ) : (
+              <Button size="sm" className="gap-1.5 bg-blue-600 hover:bg-blue-700 h-8" onClick={() => navigate(createPageUrl("Tasks"))}>
+                <Plus className="w-3.5 h-3.5" /> New Task
+              </Button>
+            )}
           </div>
         </div>
 
         {/* Legend */}
         <div className="flex gap-4 flex-wrap mb-2 flex-shrink-0">
-          {STATUS_OPTIONS.filter(s => CALENDAR_JOB_STATUSES.has(s.value)).map(s => (
-            <span key={s.value} className="flex items-center gap-1.5 text-xs text-slate-500">
-              <span className="w-2.5 h-2.5 rounded-sm flex-shrink-0" style={{ backgroundColor: s.color }} />
-              {s.label}
-            </span>
-          ))}
-          <span className="flex items-center gap-1.5 text-xs text-slate-400">
-            <CheckSquare className="w-3 h-3" />
-            Tasks
-          </span>
+          {calendarType === "customers" ? (
+            <>
+              {STATUS_OPTIONS.filter(s => CALENDAR_JOB_STATUSES.has(s.value)).map(s => (
+                <span key={s.value} className="flex items-center gap-1.5 text-xs text-slate-500">
+                  <span className="w-2.5 h-2.5 rounded-sm flex-shrink-0" style={{ backgroundColor: s.color }} />
+                  {s.label}
+                </span>
+              ))}
+              <span className="flex items-center gap-1.5 text-xs text-slate-400">
+                <CheckSquare className="w-3 h-3" />
+                Tasks
+              </span>
+            </>
+          ) : (
+            <>
+              {Object.entries(TASK_PRIORITY_COLORS).map(([priority, color]) => (
+                <span key={priority} className="flex items-center gap-1.5 text-xs text-slate-500">
+                  <span className="w-2.5 h-2.5 rounded-sm flex-shrink-0" style={{ backgroundColor: color }} />
+                  {priority.charAt(0).toUpperCase() + priority.slice(1)}
+                </span>
+              ))}
+            </>
+          )}
         </div>
 
-        {/* History stats bar */}
-        {historyMode && historyStats && (
+        {/* History stats bar — only in customer calendar */}
+        {calendarType === "customers" && historyMode && historyStats && (
           <div className="flex items-center gap-4 px-3 py-2 bg-amber-50 border border-amber-200 rounded-lg mb-2 flex-shrink-0 text-xs">
             <div className="flex items-center gap-1.5 text-amber-800">
               <CalendarDays className="w-3.5 h-3.5" />
@@ -534,18 +639,20 @@ export default function Schedule() {
         <div className="flex-1 min-h-0">
           <Calendar
             localizer={localizer}
-            events={displayEvents}
+            events={calendarType === "customers" ? displayEvents : taskEvents}
             view={view}
             date={date}
             onNavigate={setDate}
             onView={setView}
             onSelectEvent={handleSelectEvent}
-            onSelectSlot={handleSelectSlot}
-            selectable
-            eventPropGetter={eventStyleGetter}
-            components={{
+            onSelectSlot={calendarType === "customers" ? handleSelectSlot : undefined}
+            selectable={calendarType === "customers"}
+            eventPropGetter={calendarType === "customers" ? eventStyleGetter : taskEventStyleGetter}
+            components={calendarType === "customers" ? {
               event: CalendarEvent,
               dateCellWrapper: (props) => <DateCellWrapper {...props} tasksByDate={tasksByDate} onTaskClick={handleTaskClick} />,
+            } : {
+              event: CalendarEvent,
             }}
             toolbar={false}
             style={{ height: '100%' }}
