@@ -44,7 +44,7 @@ export default function PwaInstallButton() {
 
   if (installed) {
     return (
-      <Button disabled className="gap-2" variant="outline">
+      <Button disabled className="gap-2 rounded-full px-5" variant="outline">
         <Download className="w-4 h-4" /> App Installed
       </Button>
     );
@@ -52,7 +52,7 @@ export default function PwaInstallButton() {
 
   if (!isInstallable) {
     return (
-      <Button disabled className="gap-2" variant="outline">
+      <Button disabled className="gap-2 rounded-full px-5" variant="outline">
         <Download className="w-4 h-4" /> Install App (unsupported browser)
       </Button>
     );
@@ -62,7 +62,7 @@ export default function PwaInstallButton() {
     <Button
       onClick={handleInstall}
       disabled={installing}
-      className="gap-2 bg-blue-600 hover:bg-blue-700"
+      className="gap-2 rounded-full px-5 bg-blue-600 hover:bg-blue-700"
     >
       {installing ? (
         <><Loader2 className="w-4 h-4 animate-spin" /> Installing...</>
