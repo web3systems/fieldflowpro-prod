@@ -598,10 +598,7 @@ export default function Schedule() {
                   {s.label}
                 </span>
               ))}
-              <span className="flex items-center gap-1.5 text-xs text-slate-400">
-                <CheckSquare className="w-3 h-3" />
-                Tasks
-              </span>
+
             </>
           ) : (
             <>
@@ -650,7 +647,6 @@ export default function Schedule() {
             eventPropGetter={calendarType === "customers" ? eventStyleGetter : taskEventStyleGetter}
             components={calendarType === "customers" ? {
               event: CalendarEvent,
-              dateCellWrapper: (props) => <DateCellWrapper {...props} tasksByDate={tasksByDate} onTaskClick={handleTaskClick} />,
             } : {
               event: CalendarEvent,
             }}
