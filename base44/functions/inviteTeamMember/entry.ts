@@ -40,30 +40,27 @@ Deno.serve(async (req) => {
 
     const finalPassword = password || generatePassword();
     const fullName = `${first_name} ${last_name}`;
-
-    // Register user directly — no email confirmation needed
-    await base44.auth.register({
-      email,
-      password: finalPassword,
-      full_name: fullName,
-    });
-
-    // All subsequent operations use service role (register may have changed auth context)
     const platformRole = assignments.some(a => a.role === 'admin') ? 'admin' : 'user';
 
-    // Promote to admin if needed (register defaults to 'user')
-    if (platformRole === 'admin') {
-      try {
-        const users = await base44.asServiceRole.entities.User.filter({ email });
-        if (users.length) {
-          await base44.asServiceRole.entities.User.update(users[0].id, { role: 'admin' });
+    // 1. Invite the user — sends acceptance link email (clicking it verifies them)
+    await base44.users.inviteUser(email, platformRole);
+
+    // 2. Wait for user record, then set password + role directly (no PendingPassword)
+    let userId = null;
+    for (let attempt = 0; attempt < 12; attempt++) {
+      if (attempt > 0) await new Promise(r => setTimeout(r, 1000));
+      const users = await base44.asServiceRole.entities.User.filter({ email });
+      if (users.length > 0) {
+        userId = users[0].id;
+        await base44.asServiceRole.entities.User.update(userId, { password: finalPassword });
+        if (platformRole === 'admin') {
+          await base44.asServiceRole.entities.User.update(userId, { role: 'admin' });
         }
-      } catch (e) {
-        console.warn('Could not promote user role:', e.message);
+        break;
       }
     }
 
-    // Create UserCompanyAccess + Technician for each assignment
+    // 3. Create UserCompanyAccess + Technician for each assignment
     const results = [];
     for (const a of assignments) {
       // Check for existing access
@@ -74,6 +71,7 @@ Deno.serve(async (req) => {
       if (!existing.length) {
         await base44.asServiceRole.entities.UserCompanyAccess.create({
           user_email: email,
+          user_id: userId,
           user_name: fullName,
           company_id: a.company_id,
           role: a.role || 'standard',
@@ -81,6 +79,7 @@ Deno.serve(async (req) => {
       } else {
         await base44.asServiceRole.entities.UserCompanyAccess.update(existing[0].id, {
           role: a.role || 'standard',
+          user_id: userId,
         });
       }
 
@@ -108,7 +107,7 @@ Deno.serve(async (req) => {
            <span style="color:#374151;">Email: <strong>${email}</strong></span><br>
            <span style="color:#374151;">Password: <strong>${finalPassword}</strong></span>
          </p>
-         <p style="color:#6b7280;font-size:13px;">You can change your password anytime in your account settings.</p>`;
+         <p style="color:#6b7280;font-size:13px;">Step 1: Check your inbox for an invitation email from FieldFlow Pro and click <strong>"Accept Invitation"</strong> to verify your account.<br>Step 2: Sign in with the credentials above.</p>`;
 
     const resend = new Resend(Deno.env.get('RESEND_API_KEY'));
     const appUrl = Deno.env.get('APP_URL') || 'https://app.fieldflowpro.com';
