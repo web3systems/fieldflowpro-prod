@@ -5,7 +5,7 @@ import { useApp } from "../Layout";
 import { createPageUrl } from "@/utils";
 import {
   Plus, Search, UserPlus, Phone, Mail,
-  ChevronRight, Trash2, Code2
+  ChevronRight, Trash2, Code2, ArrowUp, ArrowDown
 } from "lucide-react";
 import EmbedCodeModal from "../components/leads/EmbedCodeModal";
 import { Button } from "@/components/ui/button";
@@ -52,6 +52,8 @@ export default function Leads() {
   const [saving, setSaving] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [embedOpen, setEmbedOpen] = useState(false);
+  const [sortField, setSortField] = useState("");
+  const [sortDir, setSortDir] = useState("asc");
 
   useEffect(() => {
     if (activeCompany) loadLeads();
@@ -93,6 +95,13 @@ export default function Leads() {
     const matchSearch = !search || name.includes(search.toLowerCase()) || l.email?.includes(search.toLowerCase());
     const matchStatus = filterStatus === "all" || l.status === filterStatus;
     return matchSearch && matchStatus;
+  }).sort((a, b) => {
+    if (!sortField) return 0;
+    let va = a[sortField] || "", vb = b[sortField] || "";
+    if (sortField === "estimated_value") { va = parseFloat(va) || 0; vb = parseFloat(vb) || 0; }
+    if (typeof va === "string") { va = va.toLowerCase(); vb = vb.toLowerCase(); }
+    const cmp = va < vb ? -1 : va > vb ? 1 : 0;
+    return sortDir === "asc" ? cmp : -cmp;
   });
 
   const getStage = (status) => STAGES.find(s => s.value === status) || STAGES[0];
@@ -139,9 +148,31 @@ export default function Leads() {
         })}
       </div>
 
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-        <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search leads..." className="pl-9 bg-white" />
+      <div className="flex gap-2 flex-wrap">
+        <div className="relative flex-1 min-w-48">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+          <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search leads..." className="pl-9 bg-white" />
+        </div>
+        <select
+          value={sortField}
+          onChange={e => setSortField(e.target.value)}
+          className="h-9 text-xs bg-white border border-slate-200 rounded-lg px-2.5 text-slate-600"
+        >
+          <option value="">Sort by...</option>
+          <option value="first_name">Name</option>
+          <option value="estimated_value">Value</option>
+          <option value="status">Status</option>
+          <option value="created_date">Date Created</option>
+          <option value="source">Source</option>
+        </select>
+        {sortField && (
+          <button
+            onClick={() => setSortDir(d => d === "asc" ? "desc" : "asc")}
+            className="h-9 w-9 flex items-center justify-center rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-500"
+          >
+            {sortDir === "asc" ? <ArrowUp className="w-3.5 h-3.5" /> : <ArrowDown className="w-3.5 h-3.5" />}
+          </button>
+        )}
       </div>
 
       {loading ? (

@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  Boxes, Plus, Search, AlertTriangle, Package, Wrench, Laptop, Edit, Trash2, Loader2
+  Boxes, Plus, Search, AlertTriangle, Package, Wrench, Laptop, Edit, Trash2, Loader2, ArrowUp, ArrowDown
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -42,6 +42,8 @@ export default function Inventory() {
   const [editing, setEditing] = useState(null);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState(defaultForm());
+  const [sortField, setSortField] = useState("");
+  const [sortDir, setSortDir] = useState("asc");
 
   function defaultForm() {
     return {
@@ -112,6 +114,14 @@ export default function Inventory() {
     const matchesTab = tab === "all" || item.item_type === tab;
     const matchesSearch = !search || item.name?.toLowerCase().includes(search.toLowerCase()) || item.category?.toLowerCase().includes(search.toLowerCase());
     return matchesTab && matchesSearch;
+  }).sort((a, b) => {
+    if (!sortField) return 0;
+    let va = a[sortField], vb = b[sortField];
+    if (va == null) va = ""; if (vb == null) vb = "";
+    if (sortField === "quantity" || sortField === "unit_cost") { va = parseFloat(va) || 0; vb = parseFloat(vb) || 0; }
+    if (typeof va === "string") { va = va.toLowerCase(); vb = vb.toLowerCase(); }
+    const cmp = va < vb ? -1 : va > vb ? 1 : 0;
+    return sortDir === "asc" ? cmp : -cmp;
   });
 
   const lowStock = items.filter(i => i.quantity != null && i.quantity_min != null && i.quantity <= i.quantity_min);
@@ -161,6 +171,26 @@ export default function Inventory() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
           <Input placeholder="Search items..." className="pl-9" value={search} onChange={e => setSearch(e.target.value)} />
         </div>
+        <select
+          value={sortField}
+          onChange={e => setSortField(e.target.value)}
+          className="h-9 text-xs bg-white border border-slate-200 rounded-lg px-2.5 text-slate-600"
+        >
+          <option value="">Sort by...</option>
+          <option value="name">Name</option>
+          <option value="quantity">Quantity</option>
+          <option value="unit_cost">Cost</option>
+          <option value="status">Status</option>
+          <option value="category">Category</option>
+        </select>
+        {sortField && (
+          <button
+            onClick={() => setSortDir(d => d === "asc" ? "desc" : "asc")}
+            className="h-9 w-9 flex items-center justify-center rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-500"
+          >
+            {sortDir === "asc" ? <ArrowUp className="w-3.5 h-3.5" /> : <ArrowDown className="w-3.5 h-3.5" />}
+          </button>
+        )}
       </div>
 
       <Tabs value={tab} onValueChange={setTab}>

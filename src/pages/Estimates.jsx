@@ -7,7 +7,7 @@ import {
   Plus, FileText, Search, Trash2, ChevronRight,
   CheckCircle, XCircle, Briefcase, Download, Copy,
   Phone, Mail, MapPin, ExternalLink, X, Calendar, Users, 
-  ListChecks, Paperclip, UserCircle2, ArrowLeft, Sparkles
+  ListChecks, Paperclip, UserCircle2, ArrowLeft, Sparkles, ArrowUp, ArrowDown
 } from "lucide-react";
 import { downloadEstimatePdf } from "../components/documents/generatePdf";
 import { Button } from "@/components/ui/button";
@@ -60,6 +60,8 @@ export default function Estimates() {
   const [showNewCustomer, setShowNewCustomer] = useState(false);
   const [newCustomer, setNewCustomer] = useState({ first_name: "", last_name: "", phone: "", email: "" });
   const [savingCustomer, setSavingCustomer] = useState(false);
+  const [sortField, setSortField] = useState("");
+  const [sortDir, setSortDir] = useState("asc");
 
   useEffect(() => {
     if (activeCompany) loadData();
@@ -255,6 +257,14 @@ export default function Estimates() {
       customerName.includes(q) ||
       e.estimate_number?.toLowerCase().includes(q)
     );
+  }).sort((a, b) => {
+    if (!sortField) return 0;
+    let va = sortField === "customer_name" ? getCustomerName(a.customer_id) : (a[sortField] || "");
+    let vb = sortField === "customer_name" ? getCustomerName(b.customer_id) : (b[sortField] || "");
+    if (sortField === "total") { va = parseFloat(va) || 0; vb = parseFloat(vb) || 0; }
+    if (typeof va === "string") { va = va.toLowerCase(); vb = vb.toLowerCase(); }
+    const cmp = va < vb ? -1 : va > vb ? 1 : 0;
+    return sortDir === "asc" ? cmp : -cmp;
   });
 
   return (
@@ -277,9 +287,31 @@ export default function Estimates() {
         </div>
       </div>
 
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-        <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by customer, title, or estimate #..." className="pl-9 bg-white" />
+      <div className="flex gap-2 flex-wrap">
+        <div className="relative flex-1 min-w-48">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+          <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by customer, title, or estimate #..." className="pl-9 bg-white" />
+        </div>
+        <select
+          value={sortField}
+          onChange={e => setSortField(e.target.value)}
+          className="h-9 text-xs bg-white border border-slate-200 rounded-lg px-2.5 text-slate-600"
+        >
+          <option value="">Sort by...</option>
+          <option value="customer_name">Customer</option>
+          <option value="total">Amount</option>
+          <option value="status">Status</option>
+          <option value="created_date">Date Created</option>
+          <option value="valid_until">Valid Until</option>
+        </select>
+        {sortField && (
+          <button
+            onClick={() => setSortDir(d => d === "asc" ? "desc" : "asc")}
+            className="h-9 w-9 flex items-center justify-center rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-500"
+          >
+            {sortDir === "asc" ? <ArrowUp className="w-3.5 h-3.5" /> : <ArrowDown className="w-3.5 h-3.5" />}
+          </button>
+        )}
       </div>
 
       {loading ? (

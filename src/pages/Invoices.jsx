@@ -5,7 +5,7 @@ import { useApp } from "../Layout";
 import {
   Plus, DollarSign, Search, ChevronRight, CheckCircle,
   Clock, AlertCircle, CreditCard, ExternalLink,
-  Download, Mail, X, Banknote
+  Download, Mail, X, Banknote, ArrowUp, ArrowDown
 } from "lucide-react";
 import RecordPaymentModal from "@/components/invoices/RecordPaymentModal";
 import { downloadInvoicePdf } from "../components/documents/generatePdf";
@@ -56,6 +56,8 @@ export default function Invoices() {
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [sendingEmail, setSendingEmail] = useState(false);
   const [recordPaymentInvoice, setRecordPaymentInvoice] = useState(null);
+  const [sortField, setSortField] = useState("");
+  const [sortDir, setSortDir] = useState("asc");
 
   useEffect(() => {
     if (activeCompany) loadData();
@@ -168,6 +170,14 @@ export default function Invoices() {
     const matchSearch = !search || inv.invoice_number?.toLowerCase().includes(search.toLowerCase()) || customerName.includes(search.toLowerCase());
     const matchStatus = filterStatus === "all" || inv.status === filterStatus;
     return matchSearch && matchStatus;
+  }).sort((a, b) => {
+    if (!sortField) return 0;
+    let va = sortField === "customer_name" ? getCustomerName(a.customer_id) : (a[sortField] || "");
+    let vb = sortField === "customer_name" ? getCustomerName(b.customer_id) : (b[sortField] || "");
+    if (sortField === "total") { va = parseFloat(va) || 0; vb = parseFloat(vb) || 0; }
+    if (typeof va === "string") { va = va.toLowerCase(); vb = vb.toLowerCase(); }
+    const cmp = va < vb ? -1 : va > vb ? 1 : 0;
+    return sortDir === "asc" ? cmp : -cmp;
   });
 
   const totalPaid = invoices.filter(i => i.status === "paid").reduce((s, i) => s + (i.total || 0), 0);
@@ -289,6 +299,26 @@ export default function Invoices() {
             ))}
           </SelectContent>
         </Select>
+        <select
+          value={sortField}
+          onChange={e => setSortField(e.target.value)}
+          className="h-9 text-xs bg-white border border-slate-200 rounded-lg px-2.5 text-slate-600"
+        >
+          <option value="">Sort by...</option>
+          <option value="customer_name">Customer</option>
+          <option value="total">Amount</option>
+          <option value="status">Status</option>
+          <option value="due_date">Due Date</option>
+          <option value="created_date">Date Created</option>
+        </select>
+        {sortField && (
+          <button
+            onClick={() => setSortDir(d => d === "asc" ? "desc" : "asc")}
+            className="h-9 w-9 flex items-center justify-center rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-500"
+          >
+            {sortDir === "asc" ? <ArrowUp className="w-3.5 h-3.5" /> : <ArrowDown className="w-3.5 h-3.5" />}
+          </button>
+        )}
       </div>
 
       {loading ? (

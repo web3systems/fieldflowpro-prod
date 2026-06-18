@@ -5,7 +5,7 @@ import { createPageUrl } from "@/utils";
 import { useNavigate } from "react-router-dom";
 import {
   Plus, Search, Users, Phone, Mail, MapPin,
-  ChevronRight, Trash2, FileText, Briefcase, DollarSign, Download, ExternalLink, X
+  ChevronRight, Trash2, FileText, Briefcase, DollarSign, Download, ExternalLink, X, ArrowUp, ArrowDown
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -46,6 +46,8 @@ export default function Customers() {
   const [saving, setSaving] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [sendingPortalInvite, setSendingPortalInvite] = useState(false);
+  const [sortField, setSortField] = useState("");
+  const [sortDir, setSortDir] = useState("asc");
 
   function handleExportCsv() {
     const rows = [["First Name", "Last Name", "Email", "Phone", "Address", "City", "State", "Status", "Source"]];
@@ -121,6 +123,13 @@ export default function Customers() {
     const matchSearch = !search || name.includes(search.toLowerCase()) || c.email?.includes(search.toLowerCase()) || c.phone?.includes(search);
     const matchStatus = filterStatus === "all" || c.status === filterStatus;
     return matchSearch && matchStatus;
+  }).sort((a, b) => {
+    if (!sortField) return 0;
+    let va = a[sortField] || "", vb = b[sortField] || "";
+    if (sortField === "total_revenue") { va = parseFloat(va) || 0; vb = parseFloat(vb) || 0; }
+    if (typeof va === "string") { va = va.toLowerCase(); vb = vb.toLowerCase(); }
+    const cmp = va < vb ? -1 : va > vb ? 1 : 0;
+    return sortDir === "asc" ? cmp : -cmp;
   });
 
   const statusStyle = {
@@ -162,6 +171,26 @@ export default function Customers() {
             <SelectItem value="lead">Lead</SelectItem>
           </SelectContent>
         </Select>
+        <select
+          value={sortField}
+          onChange={e => setSortField(e.target.value)}
+          className="h-9 text-xs bg-white border border-slate-200 rounded-lg px-2.5 text-slate-600"
+        >
+          <option value="">Sort by...</option>
+          <option value="first_name">Name</option>
+          <option value="total_revenue">Revenue</option>
+          <option value="status">Status</option>
+          <option value="created_date">Date Added</option>
+          <option value="city">City</option>
+        </select>
+        {sortField && (
+          <button
+            onClick={() => setSortDir(d => d === "asc" ? "desc" : "asc")}
+            className="h-9 w-9 flex items-center justify-center rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-500"
+          >
+            {sortDir === "asc" ? <ArrowUp className="w-3.5 h-3.5" /> : <ArrowDown className="w-3.5 h-3.5" />}
+          </button>
+        )}
       </div>
 
       {loading ? (

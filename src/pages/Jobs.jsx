@@ -6,7 +6,7 @@ import { createPageUrl } from "@/utils";
 import {
   Plus, Search, Filter, MapPin, User, ChevronRight,
   Briefcase, Calendar, X, FileText, DollarSign, CheckCircle, CreditCard,
-  Pencil, Tag, List, Paperclip, UserCircle, Clock, Trash2, ArrowLeft, LayoutList, Columns
+  Pencil, Tag, List, Paperclip, UserCircle, Clock, Trash2, ArrowLeft, LayoutList, Columns, ArrowUp, ArrowDown
 } from "lucide-react";
 import JobKanbanBoard from "@/components/jobs/JobKanbanBoard";
 import { Button } from "@/components/ui/button";
@@ -71,6 +71,8 @@ export default function Jobs() {
   const [checklistInput, setChecklistInput] = useState("");
   const [subscription, setSubscription] = useState(null);
   const [viewMode, setViewMode] = useState(() => localStorage.getItem("jobsViewMode") || "kanban");
+  const [sortField, setSortField] = useState("");
+  const [sortDir, setSortDir] = useState("asc");
 
   useEffect(() => {
     if (activeCompany) {
@@ -246,6 +248,14 @@ export default function Jobs() {
     const matchSearch = !search || j.title?.toLowerCase().includes(q) || customerName.includes(q);
     const matchStatus = filterStatus === "all" || j.status === filterStatus;
     return matchSearch && matchStatus;
+  }).sort((a, b) => {
+    if (!sortField) return 0;
+    let va = sortField === "customer_name" ? getCustomerName(a.customer_id) : (a[sortField] || "");
+    let vb = sortField === "customer_name" ? getCustomerName(b.customer_id) : (b[sortField] || "");
+    if (sortField === "total_amount") { va = parseFloat(va) || 0; vb = parseFloat(vb) || 0; }
+    if (typeof va === "string") { va = va.toLowerCase(); vb = vb.toLowerCase(); }
+    const cmp = va < vb ? -1 : va > vb ? 1 : 0;
+    return sortDir === "asc" ? cmp : -cmp;
   });
 
   return (
@@ -300,6 +310,26 @@ export default function Jobs() {
             ))}
           </SelectContent>
         </Select>
+        <select
+          value={sortField}
+          onChange={e => setSortField(e.target.value)}
+          className="h-9 text-xs bg-white border border-slate-200 rounded-lg px-2.5 text-slate-600"
+        >
+          <option value="">Sort by...</option>
+          <option value="customer_name">Customer</option>
+          <option value="total_amount">Amount</option>
+          <option value="status">Status</option>
+          <option value="scheduled_start">Schedule Date</option>
+          <option value="priority">Priority</option>
+        </select>
+        {sortField && (
+          <button
+            onClick={() => setSortDir(d => d === "asc" ? "desc" : "asc")}
+            className="h-9 w-9 flex items-center justify-center rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-500"
+          >
+            {sortDir === "asc" ? <ArrowUp className="w-3.5 h-3.5" /> : <ArrowDown className="w-3.5 h-3.5" />}
+          </button>
+        )}
       </div>
 
       {/* Job Cards */}

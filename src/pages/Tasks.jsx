@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Plus, Search, Pencil, Trash2, Link2 } from "lucide-react";
+import { Plus, Search, Pencil, Trash2, Link2, ArrowUp, ArrowDown } from "lucide-react";
 import { format, isValid, parseISO } from "date-fns";
 
 const STATUS_OPTIONS = [
@@ -47,6 +47,8 @@ export default function Tasks() {
   const [editingTask, setEditingTask] = useState(null);
   const [form, setForm] = useState(EMPTY_TASK);
   const [saving, setSaving] = useState(false);
+  const [sortField, setSortField] = useState("");
+  const [sortDir, setSortDir] = useState("asc");
 
   useEffect(() => {
     if (!activeCompany?.id) return;
@@ -116,6 +118,12 @@ export default function Tasks() {
     const matchSearch = !search || t.title?.toLowerCase().includes(q) || t.assigned_to_name?.toLowerCase().includes(q);
     const matchStatus = filterStatus === "all" || t.status === filterStatus;
     return matchSearch && matchStatus;
+  }).sort((a, b) => {
+    if (!sortField) return 0;
+    let va = a[sortField] || "", vb = b[sortField] || "";
+    if (typeof va === "string") { va = va.toLowerCase(); vb = vb.toLowerCase(); }
+    const cmp = va < vb ? -1 : va > vb ? 1 : 0;
+    return sortDir === "asc" ? cmp : -cmp;
   });
 
   const grouped = STATUS_OPTIONS.reduce((acc, s) => {
@@ -158,6 +166,25 @@ export default function Tasks() {
             ))}
           </SelectContent>
         </Select>
+        <select
+          value={sortField}
+          onChange={e => setSortField(e.target.value)}
+          className="h-9 text-xs bg-white border border-slate-200 rounded-lg px-2.5 text-slate-600"
+        >
+          <option value="">Sort by...</option>
+          <option value="title">Title</option>
+          <option value="priority">Priority</option>
+          <option value="due_date">Due Date</option>
+          <option value="assigned_to_name">Assignee</option>
+        </select>
+        {sortField && (
+          <button
+            onClick={() => setSortDir(d => d === "asc" ? "desc" : "asc")}
+            className="h-9 w-9 flex items-center justify-center rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-500"
+          >
+            {sortDir === "asc" ? <ArrowUp className="w-3.5 h-3.5" /> : <ArrowDown className="w-3.5 h-3.5" />}
+          </button>
+        )}
       </div>
 
       {/* Board */}
