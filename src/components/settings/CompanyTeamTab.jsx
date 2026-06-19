@@ -22,8 +22,9 @@ import { Plus, Wrench, Phone, Mail, Trash2, Pencil, RefreshCw, Eye, EyeOff, Buil
 import { Link } from 'react-router-dom';
 
 const ROLE_OPTIONS = [
-  { value: 'owner', label: 'Admin', desc: 'Full access including financials' },
-  { value: 'field_service_manager', label: 'Field Service Manager', desc: 'Manages operations — no financial access' },
+  { value: 'owner', label: 'Admin', desc: 'Full access including financials and billing' },
+  { value: 'manager', label: 'Manager', desc: 'Full management access' },
+  { value: 'field_service_manager', label: 'Field Service Manager', desc: 'Operations management — no financial access' },
   { value: 'technician', label: 'Technician', desc: 'Field access — assigned jobs only' },
 ];
 
