@@ -3,7 +3,8 @@ import { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import {
   Menu, X, ArrowRight, Hammer, Sparkles, Building2, Star,
-  ShieldCheck, Zap, MapPin, DollarSign, FileText, CheckCircle
+  ShieldCheck, Zap, MapPin, DollarSign, FileText, CheckCircle,
+  LayoutGrid, ClipboardCheck, ReceiptText, Tag, Users, GitBranch
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -30,7 +31,7 @@ export default function Landing() {
 
           {/* Desktop Nav */}
           <nav className="hidden md:flex items-center gap-8 text-sm text-slate-600">
-            <a href="#why-us" className="hover:text-slate-900 transition-colors">Compare</a>
+            <a href="#compare" className="hover:text-slate-900 transition-colors">Compare</a>
             <a href="#why-us" className="hover:text-slate-900 transition-colors">Why Us</a>
             <a href="#ai" className="hover:text-slate-900 transition-colors">AI Features</a>
             <a href="#pricing" className="hover:text-slate-900 transition-colors">Pricing</a>
@@ -53,7 +54,7 @@ export default function Landing() {
         {mobileMenuOpen && (
           <div className="md:hidden border-t border-slate-100 bg-white px-4 py-4 space-y-1">
             {[
-              { href: "#why-us", label: "Compare" },
+              { href: "#compare", label: "Compare" },
               { href: "#why-us", label: "Why Us" },
               { href: "#ai", label: "AI Features" },
               { href: "#pricing", label: "Pricing" },
@@ -423,6 +424,170 @@ export default function Landing() {
                 Start Free Trial <ArrowRight className="w-4 h-4" />
               </Button>
             </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* COMPARISON TABLE */}
+      <section id="compare" className="py-16 sm:py-24 bg-white">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6">
+          <div className="text-center mb-10 sm:mb-14">
+            <Badge className="bg-green-50 text-green-700 border-green-200 mb-4 text-xs font-medium px-4 py-1">
+              Simple comparison
+            </Badge>
+            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-3">
+              FieldFlowPro vs the other guys
+            </h2>
+            <p className="text-slate-500 text-base sm:text-lg max-w-xl mx-auto">
+              If you're comparing field service software, start with what actually matters to a working operator.
+            </p>
+          </div>
+
+          {/* Table */}
+          <div className="overflow-x-auto rounded-2xl border border-slate-200 shadow-sm">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-slate-200 bg-slate-50">
+                  <th className="text-left py-4 px-4 sm:px-6 font-semibold text-slate-700 text-sm">
+                    What matters
+                  </th>
+                  <th className="py-4 px-3 sm:px-5 font-semibold text-sm text-center bg-green-50/50">
+                    <span className="text-green-700">FieldFlowPro</span>
+                  </th>
+                  <th className="py-4 px-3 sm:px-5 font-semibold text-sm text-center">
+                    Jobber
+                  </th>
+                  <th className="py-4 px-3 sm:px-5 font-semibold text-sm text-center">
+                    Housecall Pro
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {[
+                  { feature: "Multiple companies, one login", ffp: "✅ Included", j: "❌ Separate accounts", hp: "❌ Separate accounts" },
+                  { feature: "Shared price book across companies", ffp: "✅ Included", j: "❌ Not available", hp: "❌ Not available" },
+                  { feature: "Flat rate — no per-user fees", ffp: "✅ Always", j: "❌ Charges per user", hp: "❌ Charges per user" },
+                  { feature: "Built-in AI fraud detection", ffp: "✅ Forge included", j: "❌ None", hp: "❌ None" },
+                  { feature: "Built-in AI workflow agent", ffp: "✅ Flow included", j: "❌ None", hp: "❌ None" },
+                  { feature: "Free trial — no credit card", ffp: "✅ 14 days free", j: "⚠️ Demo required", hp: "⚠️ Demo required" },
+                  { feature: "Built by service business owners", ffp: "✅ Yes", j: "❌ No", hp: "❌ No" },
+                  { feature: "Starting price", ffp: "$69/mo", j: "$39/mo (1 user only)", hp: "$59/mo (limited)" },
+                ].map(({ feature, ffp, j, hp }, i) => (
+                  <tr
+                    key={feature}
+                    className={`border-b border-slate-100 ${i % 2 === 0 ? "bg-white" : "bg-slate-50/50"}`}
+                  >
+                    <td className="py-3.5 px-4 sm:px-6 text-slate-700 font-medium">
+                      {feature}
+                    </td>
+                    <td className="py-3.5 px-3 sm:px-5 text-center bg-green-50/30">
+                      <span className={`text-xs sm:text-sm font-semibold ${ffp.startsWith("✅") ? "text-green-700" : ffp.startsWith("$") ? "text-green-700" : "text-green-700"}`}>
+                        {ffp}
+                      </span>
+                    </td>
+                    <td className="py-3.5 px-3 sm:px-5 text-center">
+                      <span className={`text-xs sm:text-sm ${j.startsWith("❌") ? "text-red-500" : j.startsWith("⚠️") ? "text-amber-600" : "text-slate-600"}`}>
+                        {j}
+                      </span>
+                    </td>
+                    <td className="py-3.5 px-3 sm:px-5 text-center">
+                      <span className={`text-xs sm:text-sm ${hp.startsWith("❌") ? "text-red-500" : hp.startsWith("⚠️") ? "text-amber-600" : "text-slate-600"}`}>
+                        {hp}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <p className="text-slate-400 text-xs sm:text-sm mt-5 leading-relaxed">
+            *Jobber's $39/mo Core plan supports 1 user only. A 5-person team on Jobber runs $149/mo — same price as FieldFlowPro Growth, which has no user cap and supports up to 3 companies.
+          </p>
+
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mt-8">
+            <Link to="/Register">
+              <Button size="lg" className="bg-green-600 hover:bg-green-700 text-white gap-2 px-8 w-full sm:w-auto text-base py-6 sm:py-4">
+                Try FieldFlowPro Free <ArrowRight className="w-4 h-4" />
+              </Button>
+            </Link>
+            <a href="#why-us">
+              <Button size="lg" variant="outline" className="w-full sm:w-auto border-slate-300 text-slate-700 gap-2 px-8 text-base py-6 sm:py-4">
+                See How Switching Works
+              </Button>
+            </a>
+          </div>
+        </div>
+      </section>
+
+      {/* FEATURES SECTION */}
+      <section id="features" className="py-16 sm:py-24 bg-slate-50">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+          <div className="text-center mb-12 sm:mb-16">
+            <Badge className="bg-blue-50 text-blue-700 border-blue-200 mb-4 text-xs font-medium px-4 py-1">
+              Everything you need
+            </Badge>
+            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-3">
+              One platform. Every workflow.
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
+            {[
+              {
+                icon: LayoutGrid,
+                title: "Multi-Company Dashboard",
+                description:
+                  "Switch between every company you own with one click. One login, one password, full visibility across your entire operation. No logging out. No separate accounts.",
+                color: "bg-blue-50 text-blue-600",
+              },
+              {
+                icon: ClipboardCheck,
+                title: "Estimates & Job Tracking",
+                description:
+                  "Create professional estimates in minutes. Convert them to jobs with one click. Track status, assign techs, add materials, and close jobs fast.",
+                color: "bg-emerald-50 text-emerald-600",
+              },
+              {
+                icon: ReceiptText,
+                title: "Invoicing in Minutes",
+                description:
+                  "Customer → Estimate → Job → Invoice. That's the whole workflow. Your team learns it in a day. Invoicing that used to take 2+ hours now takes 20 minutes.",
+                color: "bg-violet-50 text-violet-600",
+              },
+              {
+                icon: Tag,
+                title: "Shared Price Book",
+                description:
+                  "Set up your services and materials once. Use them across every company. When you update a price, it updates everywhere. No re-entering the same line items in four accounts.",
+                color: "bg-amber-50 text-amber-600",
+              },
+              {
+                icon: Users,
+                title: "Team Management",
+                description:
+                  "Add your whole team once. Assign techs across companies. Flat rate — no per-user fees no matter how many people you add.",
+                color: "bg-cyan-50 text-cyan-600",
+              },
+              {
+                icon: GitBranch,
+                title: "Subsidiary & Franchise Ready",
+                description:
+                  "Running a franchise? Have kids with their own companies under your umbrella? Create a parent company and add subsidiaries. Each has its own data, their own team — you see all of it from one login.",
+                color: "bg-rose-50 text-rose-600",
+              },
+            ].map(({ icon: Icon, title, description, color }) => (
+              <div
+                key={title}
+                className="bg-white border border-slate-200 rounded-2xl p-6 sm:p-7 hover:shadow-md transition-shadow"
+              >
+                <div className={`w-11 h-11 rounded-xl ${color} flex items-center justify-center mb-4`}>
+                  <Icon className="w-5 h-5" />
+                </div>
+                <h3 className="font-bold text-slate-900 text-base mb-2">{title}</h3>
+                <p className="text-slate-500 text-sm leading-relaxed">{description}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
