@@ -592,26 +592,199 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* FOOTER */}
-      <footer className="bg-slate-900 text-slate-400 py-12">
+      {/* PRICING SECTION */}
+      <section id="pricing" className="py-16 sm:py-24 bg-white">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-2.5">
+          <div className="text-center mb-12 sm:mb-16">
+            <Badge className="bg-blue-50 text-blue-700 border-blue-200 mb-4 text-xs font-medium px-4 py-1">
+              Simple pricing
+            </Badge>
+            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-3">
+              Flat rate. No surprises. No per-user fees.
+            </h2>
+            <p className="text-slate-500 text-base sm:text-lg max-w-xl mx-auto">
+              Pick your plan based on how many companies you run. Add subsidiaries as you grow.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8 max-w-5xl mx-auto">
+            {[
+              {
+                name: "Starter",
+                price: "$69",
+                period: "/mo",
+                subtitle: "Perfect for solo operators and small crews",
+                features: [
+                  "1 company included",
+                  "Unlimited jobs",
+                  "Unlimited team members",
+                  "Estimates, jobs & invoices",
+                  "Shared price book",
+                  "Flow AI agent included",
+                  "Forge fraud detection included",
+                  "14-day free trial",
+                ],
+                popular: false,
+                order: "lg:order-1",
+              },
+              {
+                name: "Growth",
+                price: "$149",
+                period: "/mo",
+                subtitle: "For growing teams running multiple locations",
+                features: [
+                  "3 companies included",
+                  "Everything in Starter",
+                  "+$29/mo per additional company",
+                  "Multi-company dashboard",
+                  "Custom email branding",
+                  "Priority support",
+                  "All AI agents included",
+                  "14-day free trial",
+                ],
+                popular: true,
+                order: "lg:order-2 order-first",
+              },
+              {
+                name: "Pro",
+                price: "$299",
+                period: "/mo",
+                subtitle: "For serious operators running multiple companies at scale",
+                features: [
+                  "10 companies included",
+                  "Everything in Growth",
+                  "+$19/mo per additional company",
+                  "White label ready",
+                  "API access",
+                  "Advanced reporting",
+                  "Dedicated support",
+                  "All AI agents included",
+                  "14-day free trial",
+                ],
+                popular: false,
+                order: "lg:order-3",
+              },
+            ].map(({ name, price, period, subtitle, features, popular, order }) => (
+              <div
+                key={name}
+                className={`relative rounded-2xl border-2 p-6 sm:p-8 flex flex-col ${order} ${
+                  popular
+                    ? "border-blue-500 bg-white shadow-xl scale-[1.02] lg:scale-105 z-10"
+                    : "border-slate-200 bg-white shadow-sm"
+                }`}
+              >
+                {popular && (
+                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2">
+                    <Badge className="bg-blue-600 text-white border-0 text-xs font-bold px-4 py-1 shadow-md">
+                      Most Popular
+                    </Badge>
+                  </div>
+                )}
+                <h3 className="text-lg font-bold text-slate-900 mb-1">{name}</h3>
+                <p className="text-slate-500 text-sm mb-4">{subtitle}</p>
+                <div className="mb-6">
+                  <span className="text-4xl sm:text-5xl font-extrabold text-slate-900">{price}</span>
+                  <span className="text-slate-400 text-base">{period}</span>
+                </div>
+                <ul className="space-y-2.5 mb-8 flex-1">
+                  {features.map((f) => (
+                    <li key={f} className="flex items-start gap-2.5 text-sm text-slate-600">
+                      <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
+                      <span>{f}</span>
+                    </li>
+                  ))}
+                </ul>
+                <Link to="/Register" className="mt-auto">
+                  <Button
+                    className={`w-full gap-2 ${
+                      popular
+                        ? "bg-blue-600 hover:bg-blue-700 text-white"
+                        : "bg-slate-900 hover:bg-slate-800 text-white"
+                    }`}
+                  >
+                    Start Free Trial
+                  </Button>
+                </Link>
+                <p className="text-slate-400 text-xs text-center mt-3">No credit card required</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="text-center mt-10 sm:mt-14">
+            <p className="text-slate-500 text-sm mb-2">
+              Need more than 10 companies? Running a franchise network?{" "}
+              <a href="mailto:support@fieldflowpro.com" className="text-blue-600 font-medium hover:underline">
+                Contact us for Enterprise pricing
+              </a>
+            </p>
+            <p className="text-slate-400 text-xs">
+              All plans include flat-rate pricing, no per-user fees, all AI agents, and a free 14-day trial. No credit card required to start.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* TESTIMONIAL SECTION */}
+      <section className="py-16 sm:py-24 bg-slate-50">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6">
+          <div className="text-center">
+            <div className="text-6xl sm:text-8xl text-slate-300 font-serif leading-none mb-6 sm:mb-8">"</div>
+            <blockquote className="text-base sm:text-xl text-slate-700 leading-relaxed italic mb-8">
+              We run four companies — handyman, cleaning, landscaping, and detailing — with 7 techs across all of them. FieldFlowPro is the only software that handles all of it from one login. Invoicing used to take over two hours a week. Now it takes 20 minutes. And when the fraud detection agent flagged a problem before it got worse — that alone paid for years of the subscription.
+            </blockquote>
+            <div className="text-slate-900 font-semibold text-sm sm:text-base">Tim Parrow</div>
+            <div className="text-slate-500 text-xs sm:text-sm">Parrow Enterprises · Milton, Vermont</div>
+            <Badge className="bg-white border border-slate-200 text-slate-600 mt-6 text-xs font-medium px-4 py-1">
+              Built by the same team that uses it every day
+            </Badge>
+          </div>
+        </div>
+      </section>
+
+      {/* FINAL CTA */}
+      <section className="py-16 sm:py-24 bg-slate-900">
+        <div className="max-w-2xl mx-auto px-4 sm:px-6 text-center">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white mb-4 leading-tight">
+            Ready to run your whole operation from one login?
+          </h2>
+          <p className="text-slate-400 text-base sm:text-lg mb-8 leading-relaxed">
+            Start your free 14-day trial today. No credit card required. No setup fees. Your whole team up and running in under an hour.
+          </p>
+          <Link to="/Register">
+            <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white gap-2 px-8 sm:px-10 w-full sm:w-auto text-base py-6 sm:py-4 shadow-lg shadow-blue-600/25">
+              Start Free Trial — No Credit Card Required <ArrowRight className="w-4 h-4" />
+            </Button>
+          </Link>
+          <p className="text-slate-500 text-xs sm:text-sm mt-6">
+            Questions? Email us at{" "}
+            <a href="mailto:support@fieldflowpro.com" className="text-blue-400 hover:underline">
+              support@fieldflowpro.com
+            </a>
+          </p>
+        </div>
+      </section>
+
+      {/* FOOTER */}
+      <footer className="bg-slate-950 text-slate-400 py-10">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="flex flex-col items-center md:items-start gap-1">
               <img
                 src="https://media.base44.com/images/public/69b20e4261ce8a3e5bf093b0/408bce6f6_LGipynfh-removebg-preview.png"
                 alt="FieldFlow Pro"
                 className="h-8 w-auto brightness-0 invert"
               />
+              <p className="text-xs text-slate-500">Built by operators, for operators.</p>
             </div>
             <div className="flex gap-6 text-sm flex-wrap justify-center">
-              <a href="#why-us" className="hover:text-white transition-colors">Why Us</a>
-              <a href="#ai" className="hover:text-white transition-colors">AI Features</a>
+              <a href="#compare" className="hover:text-white transition-colors">Compare</a>
+              <a href="#features" className="hover:text-white transition-colors">Features</a>
               <a href="#pricing" className="hover:text-white transition-colors">Pricing</a>
               <a href="#faq" className="hover:text-white transition-colors">FAQ</a>
-              <Link to="/Register" className="hover:text-white transition-colors">Sign Up</Link>
+              <a href="mailto:support@fieldflowpro.com" className="hover:text-white transition-colors">Contact</a>
               <Link to="/CustomerPortal" className="text-blue-400 hover:text-blue-300 transition-colors font-medium">Customer Portal</Link>
             </div>
-            <p className="text-xs text-slate-600">© 2026 FieldFlow Pro. All rights reserved.</p>
+            <p className="text-xs text-slate-600">© 2026 FieldFlowPro. All rights reserved.</p>
           </div>
         </div>
       </footer>
