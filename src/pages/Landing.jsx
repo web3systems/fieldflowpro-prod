@@ -2,7 +2,8 @@ import { Link } from "react-router-dom";
 import { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import {
-  Menu, X, ArrowRight, Hammer, Sparkles, Building2, Star
+  Menu, X, ArrowRight, Hammer, Sparkles, Building2, Star,
+  ShieldCheck, Zap, MapPin, DollarSign, FileText, CheckCircle
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -292,6 +293,136 @@ export default function Landing() {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* AI FEATURES */}
+      <section id="ai" className="py-16 sm:py-24 bg-slate-900">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+          <div className="text-center mb-14 sm:mb-20">
+            <Badge className="bg-purple-500/20 text-purple-300 border-purple-500/30 mb-5 text-xs font-semibold px-4 py-1.5">
+              AI-Powered Protection
+            </Badge>
+            <h2 className="text-3xl sm:text-5xl font-extrabold text-white mb-4 leading-tight">
+              You can't watch every job.
+              <br />
+              <span className="text-purple-400">We can.</span>
+            </h2>
+            <p className="text-slate-400 text-base sm:text-lg max-w-2xl mx-auto leading-relaxed">
+              FieldFlowPro comes with built-in AI agents that watch your operation around the clock — catching problems, surfacing insights, and protecting your revenue before you even know there's an issue.
+            </p>
+          </div>
+
+          {/* FORGE — Featured Fraud Detection Card */}
+          <div className="relative bg-slate-800/50 border border-purple-500/30 rounded-3xl p-6 sm:p-10 mb-8 overflow-hidden">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-purple-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+            <div className="relative">
+              <div className="flex flex-wrap items-center gap-3 mb-4">
+                <Badge className="bg-purple-500/20 text-purple-300 border-purple-500/30 text-xs font-bold px-3 py-1">
+                  Featured
+                </Badge>
+                <Badge className="bg-slate-700 text-slate-300 border-slate-600 text-xs px-3 py-1">
+                  Forge — Fraud Detection Agent
+                </Badge>
+              </div>
+
+              <div className="flex items-start gap-4 mb-5">
+                <div className="w-14 h-14 rounded-2xl bg-purple-500/20 border border-purple-500/30 flex items-center justify-center flex-shrink-0">
+                  <ShieldCheck className="w-7 h-7 text-purple-400" />
+                </div>
+                <div>
+                  <h3 className="text-xl sm:text-2xl font-bold text-white mb-3">
+                    Caught a thief. Before it got worse.
+                  </h3>
+                  <div className="text-slate-300 text-sm sm:text-base leading-relaxed space-y-3 max-w-3xl">
+                    <p>
+                      A technician was leaving estimates marked as 'pending' — then collecting cash payments on printed quotes that never became jobs or invoices in the system. No record. No deposit. No paper trail.
+                    </p>
+                    <p>
+                      Forge flagged it automatically. It detected the inconsistency between time spent in the field and zero deposit or job activity on those estimates. The pattern was caught before it became a serious problem.
+                    </p>
+                    <p className="text-white font-medium">
+                      No other field service software would have found that.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-6 pt-5 border-t border-slate-700/50">
+                <p className="text-slate-400 text-xs sm:text-sm leading-relaxed">
+                  <span className="text-purple-400 font-semibold">How it works:</span> Forge monitors estimate-to-job conversion rates, deposit patterns, field time vs. billing activity, and flags anomalies for owner review.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* 3 Agent Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-6">
+            {[
+              {
+                icon: Zap,
+                name: "Flow",
+                subtitle: "Workflow Assistant",
+                description:
+                  "Guides techs through jobs, surfaces customer history before they knock on the door, and helps new team members learn your workflow without a training manual.",
+                color: "from-amber-500/20 to-orange-500/20 border-amber-500/30",
+                iconColor: "text-amber-400",
+                iconBg: "bg-amber-500/20",
+              },
+              {
+                icon: MapPin,
+                name: "Dispatch Intelligence",
+                subtitle: null,
+                description:
+                  "Watches your schedule for gaps, conflicts, and inefficiencies. Suggests optimal routing and flags jobs at risk of running over time.",
+                color: "from-blue-500/20 to-cyan-500/20 border-blue-500/30",
+                iconColor: "text-blue-400",
+                iconBg: "bg-blue-500/20",
+              },
+              {
+                icon: DollarSign,
+                name: "Invoice & Collections",
+                subtitle: null,
+                description:
+                  "Monitors unpaid invoices, sends automated follow-up reminders, and flags jobs where payment is overdue based on your terms.",
+                color: "from-emerald-500/20 to-teal-500/20 border-emerald-500/30",
+                iconColor: "text-emerald-400",
+                iconBg: "bg-emerald-500/20",
+              },
+            ].map(({ icon: Icon, name, subtitle, description, color, iconColor, iconBg }) => (
+              <div
+                key={name}
+                className={`bg-gradient-to-br ${color} border rounded-2xl p-6 hover:shadow-lg hover:shadow-purple-500/5 transition-all`}
+              >
+                <div className={`w-11 h-11 rounded-xl ${iconBg} flex items-center justify-center mb-4`}>
+                  <Icon className={`w-5 h-5 ${iconColor}`} />
+                </div>
+                <h3 className="font-bold text-white text-base mb-1">{name}</h3>
+                {subtitle && (
+                  <p className="text-slate-400 text-xs mb-2">{subtitle}</p>
+                )}
+                <p className="text-slate-400 text-sm leading-relaxed">{description}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Bottom Callout */}
+          <div className="mt-14 sm:mt-20 bg-slate-800/50 border border-slate-700/50 rounded-2xl px-6 py-10 sm:py-12 text-center">
+            <div className="flex items-center justify-center gap-2 mb-4">
+              <CheckCircle className="w-5 h-5 text-purple-400" />
+              <p className="text-white text-base sm:text-lg font-medium">
+                Every FieldFlowPro plan includes all AI agents.
+              </p>
+            </div>
+            <p className="text-slate-400 text-sm mb-6">
+              No add-ons. No extra subscriptions. No Zapier required.
+            </p>
+            <Link to="/Register">
+              <Button size="lg" className="bg-purple-600 hover:bg-purple-700 text-white gap-2 px-8 text-base py-6 sm:py-4">
+                Start Free Trial <ArrowRight className="w-4 h-4" />
+              </Button>
+            </Link>
           </div>
         </div>
       </section>
