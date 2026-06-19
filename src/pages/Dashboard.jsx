@@ -6,7 +6,7 @@ import { createPageUrl } from "@/utils";
 import {
   Briefcase, Users, DollarSign, TrendingUp,
   Clock, CheckCircle, AlertCircle, Plus,
-  ArrowRight, Calendar, Building2, CalendarCheck, CreditCard
+  ArrowRight, Calendar, Building2, CalendarCheck, CreditCard, FileText
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -26,7 +26,8 @@ const statusColors = {
 };
 
 export default function Dashboard() {
-  const { activeCompany, companies, companiesLoading, user: appUser } = useApp();
+  const { activeCompany, companies, companiesLoading, user: appUser, companyRole } = useApp();
+  const isFieldServiceManager = companyRole === 'field_service_manager';
   const [user, setUser] = useState(null);
   const [jobs, setJobs] = useState([]);
   const [myTech, setMyTech] = useState(null);
@@ -139,7 +140,44 @@ export default function Dashboard() {
     .sort((a, b) => new Date(b.date) - new Date(a.date))
     .slice(0, 6);
 
-  const stats = [
+  const stats = isFieldServiceManager ? [
+    {
+      label: "Active Jobs",
+      value: activeJobs.length,
+      icon: Briefcase,
+      color: "text-blue-600",
+      bg: "bg-blue-50",
+      sub: `${todayJobs.length} today`,
+      link: createPageUrl("Jobs")
+    },
+    {
+      label: "Total Customers",
+      value: customers.length,
+      icon: Users,
+      color: "text-emerald-600",
+      bg: "bg-emerald-50",
+      sub: "All time",
+      link: createPageUrl("Customers")
+    },
+    {
+      label: "Open Estimates",
+      value: estimates.filter(e => ['draft', 'sent', 'viewed'].includes(e.status)).length,
+      icon: FileText,
+      color: "text-amber-600",
+      bg: "bg-amber-50",
+      sub: `${estimates.length} total`,
+      link: createPageUrl("Estimates")
+    },
+    {
+      label: "New Leads",
+      value: newLeads,
+      icon: TrendingUp,
+      color: "text-orange-600",
+      bg: "bg-orange-50",
+      sub: `${leads.length} total`,
+      link: createPageUrl("Leads")
+    },
+  ] : [
     {
       label: "Active Jobs",
       value: activeJobs.length,
@@ -233,11 +271,13 @@ export default function Dashboard() {
               <Plus className="w-3.5 h-3.5" /> Estimate
             </Button>
           </Link>
+          {!isFieldServiceManager && (
           <Link to={createPageUrl("Invoices")}>
             <Button size="sm" variant="outline" className="gap-1.5">
               <Plus className="w-3.5 h-3.5" /> Invoice
             </Button>
           </Link>
+          )}
           <Link to={createPageUrl("Jobs")}>
             <Button size="sm" className="gap-1.5 bg-blue-600 hover:bg-blue-700">
               <Plus className="w-3.5 h-3.5" /> New Job
@@ -342,9 +382,10 @@ export default function Dashboard() {
         </Card>
       )}
 
-      <RevenueChart invoices={invoices} />
+      {!isFieldServiceManager && <RevenueChart invoices={invoices} />}
 
-      {/* Today's Payments */}
+      {!isFieldServiceManager && (
+      /* Today's Payments */
       <Card className="border-0 shadow-sm border-l-4 border-l-green-500">
         <CardContent className="p-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -364,6 +405,7 @@ export default function Dashboard() {
           </div>
         </CardContent>
       </Card>
+      )}
 
       <div className="grid lg:grid-cols-2 gap-6">
         {/* Today's Jobs */}

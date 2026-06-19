@@ -22,17 +22,27 @@ import { Plus, Wrench, Phone, Mail, Trash2, Pencil, RefreshCw, Eye, EyeOff, Buil
 import { Link } from 'react-router-dom';
 
 const ROLE_OPTIONS = [
-  { value: 'standard', label: 'Standard Employee', desc: 'Can use all non-admin features' },
-  { value: 'manager', label: 'Manager', desc: 'Full access including settings' },
-  { value: 'owner', label: 'Owner', desc: 'Full access + billing' },
+  { value: 'owner', label: 'Admin', desc: 'Full access including financials' },
+  { value: 'field_service_manager', label: 'Field Service Manager', desc: 'Manages operations — no financial access' },
+  { value: 'technician', label: 'Technician', desc: 'Field access — assigned jobs only' },
 ];
 
 const ROLE_LABELS = {
   owner: 'bg-purple-100 text-purple-700',
   manager: 'bg-blue-100 text-blue-700',
+  field_service_manager: 'bg-indigo-100 text-indigo-700',
   dispatcher: 'bg-teal-100 text-teal-700',
   standard: 'bg-slate-100 text-slate-700',
   technician: 'bg-green-100 text-green-700',
+};
+
+const ROLE_DISPLAY = {
+  owner: 'Admin',
+  manager: 'Manager',
+  field_service_manager: 'Field Service Manager',
+  dispatcher: 'Dispatcher',
+  standard: 'Standard',
+  technician: 'Technician',
 };
 
 const TECH_COLORS = [
@@ -43,7 +53,7 @@ const TECH_COLORS = [
 const defaultForm = {
   first_name: "", last_name: "", email: "", phone: "",
   status: "active", color: "#3b82f6", skills: [],
-  password: "", assignments: [] // [{company_id, company_name, role: 'standard'}]
+  password: "", assignments: [] // [{company_id, company_name, role: 'technician'}]
 };
 
 function generatePassword() {
@@ -75,7 +85,6 @@ export default function CompanyTeamTab({ company }) {
 
   const isManager = user?.role === 'admin' || user?.role === 'super_admin';
 
-  // Get all companies this manager can assign to (parent + subsidiaries)
   const manageableCompanies = isManager
     ? companies
     : companies.filter(c => c.id === company.id || c.parent_company_id === company.id);
@@ -102,7 +111,7 @@ export default function CompanyTeamTab({ company }) {
 
   function openCreate() {
     setEditing(null);
-    setForm({ ...defaultForm, assignments: [{ company_id: company.id, company_name: company.name, role: 'standard' }] });
+    setForm({ ...defaultForm, assignments: [{ company_id: company.id, company_name: company.name, role: 'technician' }] });
     setSkillInput("");
     setShowPassword(false);
     setInviteStatus(null);
@@ -136,7 +145,7 @@ export default function CompanyTeamTab({ company }) {
       if (exists) {
         return { ...f, assignments: f.assignments.filter(a => a.company_id !== comp.id) };
       }
-      return { ...f, assignments: [...f.assignments, { company_id: comp.id, company_name: comp.name, role: 'standard' }] };
+      return { ...f, assignments: [...f.assignments, { company_id: comp.id, company_name: comp.name, role: 'technician' }] };
     });
   }
 
@@ -195,7 +204,7 @@ export default function CompanyTeamTab({ company }) {
         last_name: tech.last_name,
         email: tech.email,
         password: null,
-        assignments: [{ company_id: company.id, company_name: company.name, role: 'standard' }],
+        assignments: [{ company_id: company.id, company_name: company.name, role: 'technician' }],
       });
       if (res.data?.success) {
         alert(`Invite resent to ${tech.email}`);
@@ -272,7 +281,7 @@ export default function CompanyTeamTab({ company }) {
   }
 
   function getUserRole(email) {
-    return accessRecords.find(a => a.user_email === email)?.role || 'standard';
+    return accessRecords.find(a => a.user_email === email)?.role || 'technician';
   }
 
   const statusStyle = {
@@ -327,8 +336,8 @@ export default function CompanyTeamTab({ company }) {
                               {tech.status?.replace("_", " ")}
                             </Badge>
                             {userRole && (
-                              <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${ROLE_LABELS[userRole] || ROLE_LABELS.standard}`}>
-                                {userRole}
+                              <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${ROLE_LABELS[userRole] || ROLE_LABELS.technician}`}>
+                                {ROLE_DISPLAY[userRole] || userRole}
                               </span>
                             )}
                           </div>
@@ -365,7 +374,7 @@ export default function CompanyTeamTab({ company }) {
                       <div className="flex items-center gap-3">
                         <p className="text-xs font-medium text-slate-500 uppercase tracking-wide w-16">Role</p>
                         <Select value={userRole} onValueChange={v => handleUpdateRole(tech.email, v)}>
-                          <SelectTrigger className="w-36 h-7 text-xs">
+                          <SelectTrigger className="w-44 h-7 text-xs">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -390,12 +399,11 @@ export default function CompanyTeamTab({ company }) {
                                     if (hasAccess) {
                                       handleRemoveAccess(tech.email, c.id);
                                     } else {
-                                      // For existing users, add access + tech record
                                       base44.entities.UserCompanyAccess.create({
                                         user_email: tech.email,
                                         user_name: `${tech.first_name} ${tech.last_name}`,
                                         company_id: c.id,
-                                        role: 'standard',
+                                        role: 'technician',
                                       }).then(() => {
                                         base44.entities.Technician.create({
                                           company_id: c.id,
@@ -492,7 +500,7 @@ export default function CompanyTeamTab({ company }) {
                             <span className="text-sm flex-1">{c.name}</span>
                             {assignment && (
                               <Select value={assignment.role} onValueChange={v => updateAssignmentRole(c.id, v)}>
-                                <SelectTrigger className="w-32 h-7 text-xs">
+                                <SelectTrigger className="w-44 h-7 text-xs">
                                   <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>

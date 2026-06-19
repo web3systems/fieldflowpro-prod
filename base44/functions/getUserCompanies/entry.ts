@@ -33,7 +33,6 @@ Deno.serve(async (req) => {
 
     let subCompanies = [];
     if (parentIds.length > 0) {
-      // Fetch sub-companies for each parent
       const subResults = await Promise.all(
         parentIds.map(pid =>
           base44.asServiceRole.entities.Company.filter({ parent_company_id: pid }).catch(() => [])
@@ -56,7 +55,15 @@ Deno.serve(async (req) => {
       return a.name.localeCompare(b.name);
     });
 
-    return Response.json({ companies });
+    // Attach user's company-level role to each company
+    const companiesWithRole = companies.map(c => {
+      const access = accessRecords.find(a => a.company_id === c.id);
+      // For sub-companies, inherit the parent company's role if no direct access record exists
+      const role = access ? access.role : accessRecords.find(a => a.company_id === c.parent_company_id)?.role || 'technician';
+      return { ...c, user_role: role };
+    });
+
+    return Response.json({ companies: companiesWithRole });
   } catch (error) {
     console.error('getUserCompanies error:', error.message);
     return Response.json({ error: error.message }, { status: 500 });

@@ -18,7 +18,7 @@ import { Badge } from '@/components/ui/badge';
 import { User, Mail, Shield, Building2 } from 'lucide-react';
 
 export default function CompanySettings() {
-  const { activeCompany, user, refreshCompanies } = useApp();
+  const { activeCompany, user, refreshCompanies, companyRole } = useApp();
   const [company, setCompany] = useState(null);
   const [loading, setLoading] = useState(true);
   const [subscription, setSubscription] = useState(null);
@@ -49,10 +49,11 @@ export default function CompanySettings() {
   if (loading) return <div className="p-6">Loading...</div>;
   if (!company) return <div className="p-6">Company not found</div>;
 
-  const isOwner = user?.email === company.created_by || user?.role === 'admin' || user?.role === 'super_admin';
+  const isOwner = user?.email === company.created_by || user?.role === 'admin' || user?.role === 'super_admin' || companyRole === 'owner';
   const isParentCompany = !company.parent_company_id;
-  const MANAGER_ROLES = ['owner', 'manager', 'dispatcher', 'admin', 'super_admin'];
-  const isManager = user?.role && MANAGER_ROLES.includes(user?.role);
+  const MANAGER_ROLES = ['owner', 'manager', 'dispatcher', 'field_service_manager', 'admin', 'super_admin'];
+  const isManager = (user?.role && MANAGER_ROLES.includes(user?.role)) || MANAGER_ROLES.includes(companyRole);
+  const isFieldServiceManager = companyRole === 'field_service_manager';
 
   // Non-managers — only see their own account profile
   if (!isManager) {
@@ -125,12 +126,12 @@ export default function CompanySettings() {
         <Tabs defaultValue="team" className="w-full">
           <TabsList>
             <TabsTrigger value="team">Team</TabsTrigger>
-            <TabsTrigger value="billing">Billing & Plan</TabsTrigger>
+            {!isFieldServiceManager && <TabsTrigger value="billing">Billing & Plan</TabsTrigger>}
             <TabsTrigger value="portal">Customer Portal</TabsTrigger>
-            <TabsTrigger value="payments">Payments</TabsTrigger>
+            {!isFieldServiceManager && <TabsTrigger value="payments">Payments</TabsTrigger>}
             <TabsTrigger value="email">Email Settings</TabsTrigger>
             {isOwner && isParentCompany && <TabsTrigger value="locations">Locations</TabsTrigger>}
-            <TabsTrigger value="margins">Margin Rules</TabsTrigger>
+            {!isFieldServiceManager && <TabsTrigger value="margins">Margin Rules</TabsTrigger>}
             <TabsTrigger value="connectors">Connectors</TabsTrigger>
             <TabsTrigger value="seo">SEO & Analytics</TabsTrigger>
             {isOwner && <TabsTrigger value="general">General</TabsTrigger>}
@@ -140,25 +141,31 @@ export default function CompanySettings() {
             <CompanyTeamTab company={company} />
           </TabsContent>
 
+          {!isFieldServiceManager && (
           <TabsContent value="billing">
             <CompanyBillingTab company={company} />
           </TabsContent>
+          )}
 
           <TabsContent value="portal">
             <CustomerPortalSettingsTab company={company} onSave={loadCompany} />
           </TabsContent>
 
+          {!isFieldServiceManager && (
           <TabsContent value="payments">
             <StripeConnectCard company={company} />
           </TabsContent>
+          )}
 
           <TabsContent value="email">
             <CompanyEmailSettingsTab company={company} />
           </TabsContent>
 
+          {!isFieldServiceManager && (
           <TabsContent value="margins">
             <MarginRulesTab company={company} />
           </TabsContent>
+          )}
 
           <TabsContent value="connectors">
             <ConnectorsTab company={company} />

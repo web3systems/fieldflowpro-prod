@@ -19,6 +19,7 @@
       "enum": [
         "owner",
         "manager",
+        "field_service_manager",
         "dispatcher",
         "technician",
         "standard"

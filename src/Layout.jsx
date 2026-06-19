@@ -22,6 +22,12 @@ import {
 export const AppContext = createContext({});
 export const useApp = () => useContext(AppContext);
 
+const FINANCIAL_PAGES = ['Invoices', 'InvoiceDetail', 'Payments', 'Accounting', 'AccountingAdmin', 'AccountingAccounts', 'AccountingBanks', 'AccountingTransactions', 'AccountingReports', 'AccountingAudit', 'Expenses', 'ProfitMargin', 'ReceiptScanner', 'EmailTemplateEditor', 'Marketplace'];
+
+function isRoleFinancialBlocked(role) {
+  return role === 'field_service_manager';
+}
+
 function useAccessRequestCount(isSuperAdmin) {
   const [count, setCount] = useState(0);
   useEffect(() => {
@@ -72,6 +78,7 @@ export default function Layout({ children, currentPageName }) {
   const [user, setUser] = useState(null);
   const [companies, setCompanies] = useState([]);
   const [activeCompany, setActiveCompany] = useState(null);
+  const [companyRole, setCompanyRole] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [companiesLoading, setCompaniesLoading] = useState(true);
   const [subscription, setSubscription] = useState(null);
@@ -135,6 +142,7 @@ export default function Layout({ children, currentPageName }) {
       const saved = localStorage.getItem("activeCompanyId");
       const found = list.find(c => c.id === saved) || list[0];
       setActiveCompany(found || null);
+      setCompanyRole(found?.user_role || null);
     } catch (e) {
       console.error('loadCompanies error:', e);
     } finally {
@@ -144,18 +152,32 @@ export default function Layout({ children, currentPageName }) {
 
   function switchCompany(company) {
     setActiveCompany(company);
+    setCompanyRole(company?.user_role || null);
     localStorage.setItem("activeCompanyId", company.id);
   }
+
+  const isSuperAdmin = user?.role === "super_admin" || user?.role === "admin" || user?.role === "manager";
+  const isActive = (page) => currentPageName === page;
+  const blockFinancials = isRoleFinancialBlocked(companyRole);
+
+  // Filter nav items based on role
+  const visibleNavItems = blockFinancials
+    ? navItems.filter(item => !FINANCIAL_PAGES.includes(item.page))
+    : navItems;
+
+  // Redirect field service managers away from financial pages
+  useEffect(() => {
+    if (blockFinancials && FINANCIAL_PAGES.includes(currentPageName)) {
+      window.location.href = createPageUrl('Dashboard');
+    }
+  }, [blockFinancials, currentPageName]);
 
   if (isCustomerPortal) {
     return <div className="min-h-screen bg-gray-50">{children}</div>;
   }
 
-  const isSuperAdmin = user?.role === "super_admin" || user?.role === "admin" || user?.role === "manager";
-  const isActive = (page) => currentPageName === page;
-
   return (
-    <AppContext.Provider value={{ user, activeCompany, companies, companiesLoading, switchCompany, refreshCompanies: loadCompanies }}>
+    <AppContext.Provider value={{ user, activeCompany, companyRole, companies, companiesLoading, switchCompany, refreshCompanies: loadCompanies }}>
       <div className="flex h-screen bg-slate-50 overflow-hidden">
         {/* Sidebar */}
         <aside className={`
@@ -212,7 +234,7 @@ export default function Layout({ children, currentPageName }) {
 
           {/* Nav */}
           <nav className="flex-1 px-3 py-4 overflow-y-auto space-y-0.5">
-            {navItems.map(({ label, icon: Icon, page }) => (
+            {visibleNavItems.map(({ label, icon: Icon, page }) => (
               <Link
                 key={page}
                 to={createPageUrl(page)}
