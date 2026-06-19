@@ -1,270 +1,11 @@
 import { Link } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import {
-  Globe, CheckCircle, ArrowRight, Menu, X, Star,
-  Briefcase, Users, DollarSign, Calendar, BarChart3,
-  MessageSquare, Zap, Shield, Smartphone, ChevronDown, ChevronLeft, ChevronRight,
-  Brain, Sparkles, FileText, Camera, Bot
+  Menu, X, ArrowRight, Hammer, Sparkles, Building2, Star
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-
-const PLANS = [
-  {
-    name: "Starter",
-    price: 49,
-    color: "border-blue-200",
-    badge: null,
-    description: "Perfect for solo operators and small crews just getting started.",
-    features: [
-      "Core CRM",
-      "Jobs & Scheduling",
-      "Invoicing",
-      "Customer Portal",
-      "Lead Capture",
-      "Estimates",
-      "1 Subsidiary",
-      "Up to 3 users",
-    ],
-  },
-  {
-    name: "Professional",
-    price: 99,
-    color: "border-violet-400",
-    badge: "Most Popular",
-    description: "For growing field service businesses that need more power.",
-    features: [
-      "Everything in Starter",
-      "Up to 5 Subsidiaries",
-      "Accounting Module",
-      "Marketing Campaigns",
-      "Reports & Analytics",
-      "Stripe Payments",
-      "Recurring Jobs",
-      "Up to 10 users",
-    ],
-  },
-  {
-    name: "Enterprise",
-    price: 199,
-    color: "border-amber-300",
-    badge: null,
-    description: "For large operations that need unlimited scale and priority support.",
-    features: [
-      "Everything in Professional",
-      "Unlimited Subsidiaries",
-      "Unlimited Users",
-      "Priority Support",
-      "Custom Onboarding",
-      "SLA Guarantee",
-    ],
-  },
-];
-
-const FEATURES = [
-  {
-    icon: Briefcase,
-    title: "Jobs & Scheduling",
-    desc: "Dispatch jobs, assign technicians, and track progress from a single dashboard.",
-    color: "bg-blue-50 text-blue-600",
-  },
-  {
-    icon: Users,
-    title: "CRM & Customers",
-    desc: "Manage leads, customers, and service addresses with a full activity history.",
-    color: "bg-emerald-50 text-emerald-600",
-  },
-  {
-    icon: DollarSign,
-    title: "Invoicing & Payments",
-    desc: "Create estimates, send invoices, and collect payments online via Stripe.",
-    color: "bg-violet-50 text-violet-600",
-  },
-  {
-    icon: Calendar,
-    title: "Calendar & Dispatch",
-    desc: "Drag-and-drop scheduling with real-time technician availability.",
-    color: "bg-orange-50 text-orange-600",
-  },
-  {
-    icon: BarChart3,
-    title: "Reports & Analytics",
-    desc: "Revenue trends, job completion rates, and custom dashboards.",
-    color: "bg-pink-50 text-pink-600",
-  },
-  {
-    icon: MessageSquare,
-    title: "Marketing Campaigns",
-    desc: "Send targeted email and SMS campaigns to re-engage your customer base.",
-    color: "bg-cyan-50 text-cyan-600",
-  },
-];
-
-const TESTIMONIALS = [
-  {
-    name: "Dave Kowalski",
-    company: "Kowalski Handyman Services",
-    quote: "I always said there was no software made for handymen. FieldFlow Pro proved me wrong. I send estimates from my phone, customers approve online, and I get paid the same day the job is done.",
-    rating: 5,
-  },
-  {
-    name: "Sarah Chen",
-    company: "Bright Clean Co.",
-    quote: "The customer portal alone paid for itself. Clients book online, get reminders automatically, and we spend less time on the phone.",
-    rating: 5,
-  },
-  {
-    name: "James Whitfield",
-    company: "Whitfield Electrical",
-    quote: "We manage 3 service brands from one dashboard. Scheduling, invoicing, and payments — all in one place. I can't imagine running the business without it.",
-    rating: 5,
-  },
-];
-
-const FAQS = [
-  {
-    q: "Can I try FieldFlow Pro before paying?",
-    a: "Yes! Every new account starts with a free trial so you can explore the full platform before committing to a plan.",
-  },
-  {
-    q: "Can I manage multiple companies or brands?",
-    a: "Absolutely. Professional plans support up to 5 subsidiaries, and Enterprise gives you unlimited companies under one account.",
-  },
-  {
-    q: "How does online payment collection work?",
-    a: "We integrate with Stripe so your customers can pay invoices online. Funds go directly to your Stripe account.",
-  },
-  {
-    q: "Is there a mobile app?",
-    a: "FieldFlow Pro is fully responsive and works great on mobile browsers. A dedicated native app is on our roadmap.",
-  },
-  {
-    q: "Can I cancel anytime?",
-    a: "Yes, you can cancel your subscription at any time. You'll retain access until the end of your billing period.",
-  },
-];
-
-const HERO_SLIDES = [
-  {
-    image: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1600&auto=format&fit=crop&q=80",
-    badge: "🔨 Finally — Software Built for Handymen",
-    title: "The all-in-one platform",
-    titleHighlight: "handymen actually need.",
-    subtitle: "Most software ignores handyman businesses. We built FieldFlow Pro specifically for the way you work — quote jobs, schedule visits, track materials, and get paid fast.",
-  },
-  {
-    image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1600&auto=format&fit=crop&q=80",
-    badge: "🔧 From First Call to Final Payment",
-    title: "Stop losing jobs to",
-    titleHighlight: "bad follow-up.",
-    subtitle: "Capture every lead, send professional estimates in minutes, and follow up automatically — so you never lose a job because you were too busy to reply.",
-  },
-  {
-    image: "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=1600&auto=format&fit=crop&q=80",
-    badge: "📈 Works for Any Field Service Trade",
-    title: "Not just handyman —",
-    titleHighlight: "any trade, one platform.",
-    subtitle: "Whether you're a handyman, plumber, painter, HVAC tech, or cleaner — FieldFlow Pro runs your entire operation from scheduling to invoicing.",
-  },
-  {
-    image: "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=1600&auto=format&fit=crop&q=80",
-    badge: "🤖 Powered by AI — Built for the Field",
-    title: "Your AI-powered",
-    titleHighlight: "business assistant.",
-    subtitle: "FieldFlow Pro uses AI to write estimates, scan receipts, automate follow-ups, and give you business insights — so you can focus on the work, not the paperwork.",
-  },
-];
-
-function HeroCarousel() {
-  const [current, setCurrent] = useState(0);
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrent(prev => (prev + 1) % HERO_SLIDES.length);
-    }, 5000);
-    return () => clearInterval(timer);
-  }, []);
-
-  const slide = HERO_SLIDES[current];
-
-  return (
-    <section className="relative overflow-hidden bg-slate-900 text-white">
-      {HERO_SLIDES.map((s, i) => (
-        <div
-          key={i}
-          className={`absolute inset-0 transition-opacity duration-1000 ${i === current ? "opacity-100" : "opacity-0"}`}
-        >
-          <img src={s.image} alt="" className="w-full h-full object-cover opacity-25" />
-        </div>
-      ))}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-blue-600/20 via-transparent to-transparent" />
-
-      <div className="relative max-w-6xl mx-auto px-4 sm:px-6 py-16 sm:py-24 md:py-32 text-center">
-        <Badge className="bg-blue-600/20 text-blue-300 border-blue-500/30 mb-4 sm:mb-6 text-xs px-3 py-1">
-          {slide.badge}
-        </Badge>
-        <h1 className="text-3xl sm:text-5xl md:text-6xl font-extrabold leading-tight mb-4 sm:mb-6 tracking-tight">
-          {slide.title}<br className="hidden sm:block" />
-          <span className="text-blue-400"> {slide.titleHighlight}</span>
-        </h1>
-        <p className="text-base sm:text-xl text-slate-300 max-w-2xl mx-auto mb-8 sm:mb-10 leading-relaxed">
-          {slide.subtitle}
-        </p>
-        <div className="flex flex-col gap-3 justify-center px-2 sm:px-0 sm:flex-row sm:gap-4">
-          <Link to="/Register">
-            <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white gap-2 px-8 w-full sm:w-auto text-base py-6 sm:py-4">
-              Start Free Trial <ArrowRight className="w-4 h-4" />
-            </Button>
-          </Link>
-
-        </div>
-        <p className="text-slate-500 text-sm mt-5">No credit card required · Cancel anytime</p>
-
-        {/* Carousel Controls */}
-        <div className="flex items-center justify-center gap-4 mt-10">
-          <button
-            onClick={() => setCurrent((current - 1 + HERO_SLIDES.length) % HERO_SLIDES.length)}
-            className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
-          >
-            <ChevronLeft className="w-4 h-4" />
-          </button>
-          <div className="flex gap-2">
-            {HERO_SLIDES.map((_, i) => (
-              <button
-                key={i}
-                onClick={() => setCurrent(i)}
-                className={`w-2 h-2 rounded-full transition-all ${i === current ? "bg-blue-400 w-6" : "bg-white/30"}`}
-              />
-            ))}
-          </div>
-          <button
-            onClick={() => setCurrent((current + 1) % HERO_SLIDES.length)}
-            className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
-          >
-            <ChevronRight className="w-4 h-4" />
-          </button>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function FAQItem({ q, a }) {
-  const [open, setOpen] = useState(false);
-  return (
-    <div className="border-b border-slate-200">
-      <button
-        onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between text-left gap-4 py-5"
-      >
-        <span className="font-medium text-slate-800 text-base">{q}</span>
-        <ChevronDown className={`w-5 h-5 text-slate-400 flex-shrink-0 transition-transform ${open ? "rotate-180" : ""}`} />
-      </button>
-      {open && <p className="pb-5 text-slate-500 text-sm leading-relaxed">{a}</p>}
-    </div>
-  );
-}
 
 export default function Landing() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -277,27 +18,28 @@ export default function Landing() {
     <div className="min-h-screen bg-white text-slate-900 font-sans">
       {/* NAV */}
       <header className="sticky top-0 z-50 bg-white/90 backdrop-blur border-b border-slate-100">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 flex items-center justify-between h-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between h-16">
           <div className="flex items-center">
-            <img src="https://media.base44.com/images/public/69b20e4261ce8a3e5bf093b0/408bce6f6_LGipynfh-removebg-preview.png" alt="FieldFlow Pro" className="h-24 w-auto" />
+            <img
+              src="https://media.base44.com/images/public/69b20e4261ce8a3e5bf093b0/408bce6f6_LGipynfh-removebg-preview.png"
+              alt="FieldFlow Pro"
+              className="h-24 w-auto"
+            />
           </div>
 
           {/* Desktop Nav */}
           <nav className="hidden md:flex items-center gap-8 text-sm text-slate-600">
-            <a href="#ai" className="hover:text-purple-700 transition-colors font-semibold text-purple-600 flex items-center gap-1"><Sparkles className="w-3.5 h-3.5" /> AI Features</a>
-            <a href="#features" className="hover:text-slate-900 transition-colors">Features</a>
+            <a href="#why-us" className="hover:text-slate-900 transition-colors">Compare</a>
+            <a href="#why-us" className="hover:text-slate-900 transition-colors">Why Us</a>
+            <a href="#ai" className="hover:text-slate-900 transition-colors">AI Features</a>
             <a href="#pricing" className="hover:text-slate-900 transition-colors">Pricing</a>
-            <a href="#testimonials" className="hover:text-slate-900 transition-colors">Reviews</a>
             <a href="#faq" className="hover:text-slate-900 transition-colors">FAQ</a>
           </nav>
 
           <div className="hidden md:flex items-center gap-3">
-            <Link to="/CustomerPortal">
-              <Button variant="ghost" size="sm" className="text-slate-500 hover:text-slate-900">Customer Portal</Button>
-            </Link>
-            <Button variant="ghost" size="sm" onClick={handleSignIn}>Business Sign In</Button>
+            <Button variant="ghost" size="sm" onClick={handleSignIn}>Sign In</Button>
             <Link to="/Register">
-              <Button size="sm" className="bg-blue-600 hover:bg-blue-700">Get Started Free</Button>
+              <Button size="sm" className="bg-blue-600 hover:bg-blue-700">Start Free Trial</Button>
             </Link>
           </div>
 
@@ -310,393 +52,247 @@ export default function Landing() {
         {mobileMenuOpen && (
           <div className="md:hidden border-t border-slate-100 bg-white px-4 py-4 space-y-1">
             {[
-              { href: "#features", label: "Features" },
+              { href: "#why-us", label: "Compare" },
+              { href: "#why-us", label: "Why Us" },
+              { href: "#ai", label: "AI Features" },
               { href: "#pricing", label: "Pricing" },
-              { href: "#testimonials", label: "Reviews" },
               { href: "#faq", label: "FAQ" },
             ].map(({ href, label }) => (
               <a key={label} href={href} className="block px-2 py-3 text-base text-slate-700 border-b border-slate-50 active:bg-slate-50" onClick={() => setMobileMenuOpen(false)}>{label}</a>
             ))}
-            <Link to="/CustomerPortal" className="block px-2 py-3 text-base text-blue-600 font-medium border-b border-slate-50" onClick={() => setMobileMenuOpen(false)}>Customer Portal →</Link>
             <div className="flex flex-col gap-2 pt-3">
-              <Button variant="outline" className="w-full" size="default" onClick={() => { setMobileMenuOpen(false); handleSignIn(); }}>Business Sign In</Button>
-              <Link to="/Register"><Button className="w-full bg-blue-600 hover:bg-blue-700" size="default">Get Started Free</Button></Link>
+              <Button variant="outline" className="w-full" size="default" onClick={() => { setMobileMenuOpen(false); handleSignIn(); }}>Sign In</Button>
+              <Link to="/Register"><Button className="w-full bg-blue-600 hover:bg-blue-700" size="default">Start Free Trial</Button></Link>
             </div>
           </div>
         )}
       </header>
 
-      <HeroCarousel />
+      {/* HERO SECTION */}
+      <section className="relative overflow-hidden bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-16 sm:py-24 md:py-28">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
+            {/* Left Content */}
+            <div>
+              <Badge className="bg-blue-50 text-blue-700 border-blue-200 mb-6 text-xs font-medium px-4 py-1.5 rounded-full">
+                Built for handymen, cleaners, and multi-company operators
+              </Badge>
 
-      {/* LOGOS / SOCIAL PROOF */}
-      <section className="bg-slate-50 pt-12 pb-12 border-b border-slate-100">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center">
-          <p className="text-slate-400 text-sm mb-8 uppercase tracking-widest font-medium">Built for handymen & every trade that works in the field</p>
-          <div className="flex flex-wrap justify-center gap-3 text-slate-500 font-semibold text-sm">
-            {[
-              { label: "Handyman", highlight: true },
-              { label: "Plumbing" },
-              { label: "Electrical" },
-              { label: "Painting" },
-              { label: "HVAC" },
-              { label: "Cleaning" },
-              { label: "Landscaping" },
-              { label: "Carpentry" },
-            ].map(({ label, highlight }) => (
-              <span
-                key={label}
-                className={`px-4 py-2 border rounded-full ${highlight ? "bg-blue-600 text-white border-blue-600 font-bold" : "bg-white border-slate-200"}`}
-              >
-                {label}
-              </span>
-            ))}
-          </div>
-        </div>
-      </section>
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-[3.5rem] font-extrabold text-slate-900 leading-[1.1] tracking-tight mb-6">
+                Finally. Field service software
+                <br />
+                <span className="text-blue-600">that works the way you actually work.</span>
+              </h1>
 
-      {/* HANDYMAN PAIN POINT SECTION */}
-      <section className="py-12 sm:py-20 bg-white border-b border-slate-100">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6">
-          <div className="text-center mb-8 sm:mb-12">
-            <Badge className="bg-amber-50 text-amber-700 border-amber-200 mb-4">🔨 For Handymen, By Design</Badge>
-            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-4">
-              "There's no good software for handymen."<br />
-              <span className="text-blue-600">We heard you. We fixed it.</span>
-            </h2>
-            <p className="text-slate-500 text-lg max-w-2xl mx-auto">
-              Generic service software is built for large companies with office staff. FieldFlow Pro is built for the person doing the work — solo operators, small crews, and growing handyman businesses.
-            </p>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
-            {[
-              {
-                before: "Texting quotes back and forth",
-                after: "Send a professional estimate in 2 minutes from your phone",
-                icon: "📱",
-              },
-              {
-                before: "Chasing customers for payment",
-                after: "Customers pay online the moment the job is done",
-                icon: "💵",
-              },
-              {
-                before: "Forgetting follow-ups and losing leads",
-                after: "Every lead is tracked, followed up, and converted automatically",
-                icon: "📋",
-              },
-            ].map(({ before, after, icon }) => (
-              <div key={before} className="bg-slate-50 border border-slate-100 rounded-2xl p-5 sm:p-6">
-                <div className="text-3xl mb-4">{icon}</div>
-                <div className="mb-3">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-red-400 mb-1">Before</p>
-                  <p className="text-slate-500 text-sm">{before}</p>
-                </div>
-                <div className="w-full h-px bg-slate-200 my-3" />
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-wide text-green-600 mb-1">After FieldFlow Pro</p>
-                  <p className="text-slate-700 text-sm font-medium">{after}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+              <p className="text-base sm:text-lg text-slate-500 leading-relaxed mb-8 max-w-xl">
+                One login. Every company. Flat-rate pricing. And an AI fraud detection agent already built in — because you can't watch every job yourself.
+              </p>
 
-      {/* AI SECTION */}
-      <section id="ai" className="py-14 sm:py-24 bg-gradient-to-br from-slate-900 via-purple-950 to-slate-900 text-white overflow-hidden relative">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-purple-600/20 via-transparent to-transparent pointer-events-none" />
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 relative">
-          <div className="text-center mb-12 sm:mb-16">
-            <div className="inline-flex items-center gap-2 bg-purple-500/20 border border-purple-500/30 text-purple-300 text-xs font-semibold px-4 py-2 rounded-full mb-5">
-              <Sparkles className="w-3.5 h-3.5" /> AI-Powered Features
-            </div>
-            <h2 className="text-3xl sm:text-5xl font-extrabold mb-4 leading-tight">
-              Stop doing admin work.<br />
-              <span className="text-purple-400">Let AI handle it.</span>
-            </h2>
-            <p className="text-slate-300 text-lg max-w-2xl mx-auto">
-              FieldFlow Pro has AI built right into your workflow — not bolted on as an afterthought. It works while you work.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6 mb-12">
-            {[
-              {
-                icon: Brain,
-                title: "AI Estimator",
-                description: "Describe a job in plain English and the AI generates a full, itemized estimate in seconds. No more guessing or starting from scratch.",
-                tag: "Most Popular",
-                tagColor: "bg-purple-500/30 text-purple-300 border-purple-500/30",
-                accent: "border-purple-500/40",
-              },
-              {
-                icon: Camera,
-                title: "Receipt Scanner",
-                description: "Snap a photo of any receipt on the job. AI reads it, extracts vendor, amount, and line items, and logs the expense automatically.",
-                tag: "Save Hours Weekly",
-                tagColor: "bg-pink-500/20 text-pink-300 border-pink-500/30",
-                accent: "border-pink-500/30",
-              },
-              {
-                icon: Bot,
-                title: "AI Business Insights",
-                description: "Ask your business questions in plain language — 'What was my revenue last month?' or 'Which jobs are most profitable?' Get instant answers.",
-                tag: "Like Having a CFO",
-                tagColor: "bg-blue-500/20 text-blue-300 border-blue-500/30",
-                accent: "border-blue-500/30",
-              },
-              {
-                icon: FileText,
-                title: "Smart Follow-Ups",
-                description: "AI-drafted email and SMS follow-ups for unsent estimates, overdue invoices, and completed jobs — reviewed by you, sent in one click.",
-                tag: "Win More Jobs",
-                tagColor: "bg-emerald-500/20 text-emerald-300 border-emerald-500/30",
-                accent: "border-emerald-500/30",
-              },
-            ].map(({ icon: Icon, title, description, tag, tagColor, accent }) => (
-              <div key={title} className={`bg-white/5 border ${accent} rounded-2xl p-6 hover:bg-white/10 transition-colors`}>
-                <div className="flex items-start gap-4">
-                  <div className="w-11 h-11 rounded-xl bg-white/10 flex items-center justify-center flex-shrink-0">
-                    <Icon className="w-5 h-5 text-white" />
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2 flex-wrap">
-                      <h3 className="font-bold text-white text-base">{title}</h3>
-                      <span className={`text-xs border px-2 py-0.5 rounded-full font-medium ${tagColor}`}>{tag}</span>
-                    </div>
-                    <p className="text-slate-300 text-sm leading-relaxed">{description}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Bottom stat bar */}
-          <div className="grid grid-cols-3 gap-4 border-t border-white/10 pt-10 text-center">
-            {[
-              { stat: "< 2 min", label: "Average time to generate an AI estimate" },
-              { stat: "~5 hrs", label: "Admin time saved per week on average" },
-              { stat: "100%", label: "Built-in — no separate AI subscription needed" },
-            ].map(({ stat, label }) => (
-              <div key={stat}>
-                <div className="text-2xl sm:text-3xl font-extrabold text-purple-300 mb-1">{stat}</div>
-                <div className="text-slate-400 text-xs leading-snug">{label}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* FEATURES */}
-      <section id="features" className="py-14 sm:py-24 max-w-6xl mx-auto px-4 sm:px-6">
-        <div className="text-center mb-10 sm:mb-16">
-          <Badge className="bg-blue-50 text-blue-600 border-blue-100 mb-4">Features</Badge>
-          <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-4">Everything a handyman business needs</h2>
-          <p className="text-slate-500 text-lg max-w-xl mx-auto">From the first inquiry to the final payment — FieldFlow Pro handles the entire job lifecycle so you can stay on the tools.</p>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-          {FEATURES.map(({ icon: Icon, title, desc, color }) => (
-            <div key={title} className="bg-white border border-slate-100 rounded-2xl p-6 hover:shadow-md transition-shadow">
-              <div className={`w-11 h-11 rounded-xl flex items-center justify-center mb-4 ${color}`}>
-                <Icon className="w-5 h-5" />
-              </div>
-              <h3 className="font-semibold text-slate-800 mb-2">{title}</h3>
-              <p className="text-slate-500 text-sm leading-relaxed">{desc}</p>
-            </div>
-          ))}
-        </div>
-
-        {/* Extra highlights */}
-        <div className="mt-8 sm:mt-12 grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 text-center">
-          {[
-            { icon: Zap, label: "Lightning fast setup", sub: "Get running in under 10 minutes" },
-            { icon: Shield, label: "Secure & reliable", sub: "Enterprise-grade data security" },
-            { icon: Smartphone, label: "Mobile friendly", sub: "Works great on any device" },
-          ].map(({ icon: Icon, label, sub }) => (
-            <div key={label} className="flex flex-col items-center gap-2 p-6 bg-slate-50 rounded-2xl">
-              <Icon className="w-6 h-6 text-blue-600" />
-              <p className="font-semibold text-slate-800 text-sm">{label}</p>
-              <p className="text-slate-400 text-xs">{sub}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* PRICING */}
-      <section id="pricing" className="py-14 sm:py-24 bg-slate-50">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6">
-          <div className="text-center mb-10 sm:mb-16">
-            <Badge className="bg-violet-50 text-violet-600 border-violet-100 mb-4">Pricing</Badge>
-            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-4">Simple, transparent pricing</h2>
-            <p className="text-slate-500 text-lg">Start free. Upgrade as you grow. No hidden fees.</p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {PLANS.map((plan) => (
-              <div
-                key={plan.name}
-                className={`relative bg-white rounded-2xl border-2 ${plan.color} p-6 sm:p-8 flex flex-col ${plan.badge ? "shadow-xl md:scale-105" : "shadow-sm"}`}
-              >
-                {plan.badge && (
-                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2">
-                    <Badge className="bg-violet-600 text-white border-0 px-3 py-0.5">{plan.badge}</Badge>
-                  </div>
-                )}
-                <div className="mb-6">
-                  <h3 className="text-xl font-bold text-slate-900">{plan.name}</h3>
-                  <p className="text-slate-500 text-sm mt-1">{plan.description}</p>
-                </div>
-                <div className="mb-6">
-                  <span className="text-4xl font-extrabold text-slate-900">${plan.price}</span>
-                  <span className="text-slate-400 text-sm">/mo</span>
-                </div>
-                <ul className="space-y-3 mb-8 flex-1">
-                  {plan.features.map(f => (
-                    <li key={f} className="flex items-start gap-2.5 text-sm text-slate-600">
-                      <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
-                      {f}
-                    </li>
-                  ))}
-                </ul>
+              <div className="flex flex-col sm:flex-row gap-3 mb-6">
                 <Link to="/Register">
-                  <Button
-                    className={`w-full ${plan.badge ? "bg-violet-600 hover:bg-violet-700" : "bg-slate-900 hover:bg-slate-700"}`}
-                  >
-                    Get Started
+                  <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white gap-2 px-8 w-full sm:w-auto text-base py-6 sm:py-4">
+                    Start Free 14-Day Trial <ArrowRight className="w-4 h-4" />
                   </Button>
                 </Link>
+                <a href="#why-us">
+                  <Button size="lg" variant="outline" className="w-full sm:w-auto border-slate-300 text-slate-700 gap-2 px-8 text-base py-6 sm:py-4">
+                    See How It Works
+                  </Button>
+                </a>
               </div>
-            ))}
+
+              <p className="text-slate-400 text-sm">
+                No credit card required · No setup fees · Your whole team running in under an hour
+              </p>
+            </div>
+
+            {/* Right Image */}
+            <div className="relative">
+              <div className="rounded-2xl overflow-hidden shadow-2xl">
+                <img
+                  src="https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=1200&auto=format&fit=crop&q=80"
+                  alt="Technician reviewing a job with a homeowner"
+                  className="w-full h-auto object-cover aspect-[4/3]"
+                />
+              </div>
+              {/* Decorative glow */}
+              <div className="absolute -inset-4 bg-gradient-to-br from-blue-400/20 via-transparent to-transparent rounded-[2rem] -z-10 blur-2xl" />
+            </div>
           </div>
-          <p className="text-center text-slate-400 text-sm mt-8">All plans start with a free trial. No credit card required to sign up.</p>
         </div>
       </section>
 
-      {/* MODULE MARKETPLACE */}
-      <section id="marketplace" className="py-16 sm:py-28 bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50 border-b border-slate-200 relative overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-blue-200/30 via-transparent to-transparent pointer-events-none" />
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 relative">
-          <div className="text-center mb-12 sm:mb-16">
-            <Badge className="bg-blue-100 text-blue-700 border-blue-200 mb-4 text-xs font-semibold">🧩 Expand Your Power</Badge>
-            <h2 className="text-3xl sm:text-5xl font-extrabold text-slate-900 mb-5 leading-tight">
-              Modular add-ons to fit<br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">your exact needs</span>
-            </h2>
-            <p className="text-slate-600 text-lg max-w-2xl mx-auto leading-relaxed">
-              Start lean with core features. Add advanced modules only when you need them. Pay for what you use. Upgrade or downgrade anytime.
-            </p>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 mb-10">
+      {/* STATS BAR */}
+      <section className="bg-slate-900 py-10 sm:py-14">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
             {[
-              { icon: "🤖", name: "AI Estimator", price: 29, desc: "Auto-generate accurate estimates using AI — just describe the project.", color: "from-purple-100 to-purple-50 border-purple-300 shadow-md hover:shadow-lg" },
-              { icon: "📊", name: "Advanced Reports", price: 19, desc: "Custom dashboards, revenue trends, and deep performance analytics.", color: "from-blue-100 to-blue-50 border-blue-300 shadow-md hover:shadow-lg" },
-              { icon: "📣", name: "Marketing & Campaigns", price: 19, desc: "Email campaigns, announcements, and customer re-engagement tools.", color: "from-orange-100 to-orange-50 border-orange-300 shadow-md hover:shadow-lg" },
-              { icon: "🧾", name: "Accounting", price: 29, desc: "Full accounting suite with chart of accounts and bank reconciliation.", color: "from-green-100 to-green-50 border-green-300 shadow-md hover:shadow-lg" },
-              { icon: "📷", name: "Receipt Scanner", price: 9, desc: "Scan receipts on the job — AI extracts and logs expenses automatically.", color: "from-pink-100 to-pink-50 border-pink-300 shadow-md hover:shadow-lg" },
-              { icon: "🔄", name: "Recurring Jobs", price: 19, desc: "Schedule recurring service visits with automatic job generation.", color: "from-cyan-100 to-cyan-50 border-cyan-300 shadow-md hover:shadow-lg" },
-              { icon: "🌐", name: "Website Builder", price: 24, desc: "Build a professional business website with your services and pricing.", color: "from-indigo-100 to-indigo-50 border-indigo-300 shadow-md hover:shadow-lg" },
-              { icon: "⭐", name: "Review Automation", price: 14, desc: "Auto-send Google review requests after every completed job.", color: "from-amber-100 to-amber-50 border-amber-300 shadow-md hover:shadow-lg" },
-            ].map(({ icon, name, price, desc, color }) => (
-              <div key={name} className={`bg-gradient-to-br ${color} border rounded-2xl p-6 flex flex-col gap-4 transition-all hover:scale-105`}>
-                <div className="text-3xl">{icon}</div>
-                <div>
-                  <h3 className="font-bold text-slate-900 text-base mb-2">{name}</h3>
-                  <p className="text-slate-600 text-sm leading-relaxed">{desc}</p>
-                </div>
-                <div className="mt-auto pt-3 border-t border-white/40">
-                  <div className="flex items-baseline gap-1">
-                    <span className="font-extrabold text-lg text-slate-900">${price}</span>
-                    <span className="text-slate-500 text-xs">/month</span>
-                  </div>
-                </div>
+              { stat: "20+", label: "Jobs managed per week" },
+              { stat: "5", label: "Companies on one login" },
+              { stat: "Hours", label: "Saved on invoicing every week" },
+              { stat: "1", label: "Fraud case caught by AI before it became a problem" },
+            ].map(({ stat, label }) => (
+              <div key={label} className="text-center">
+                <div className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white mb-1.5">{stat}</div>
+                <div className="text-slate-400 text-xs sm:text-sm leading-snug max-w-[180px] mx-auto">{label}</div>
               </div>
             ))}
-          </div>
-          <div className="text-center flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-            <Link to="/Register" className="block sm:inline-block">
-              <Button size="lg" className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white gap-2 px-8 font-semibold">
-                See Marketplace <ArrowRight className="w-4 h-4" />
-              </Button>
-            </Link>
-            <p className="text-slate-500 text-sm">Try all modules free during your trial</p>
           </div>
         </div>
       </section>
 
-      {/* TESTIMONIALS */}
-      <section id="testimonials" className="py-14 sm:py-24 max-w-6xl mx-auto px-4 sm:px-6">
-        <div className="text-center mb-10 sm:mb-16">
-          <Badge className="bg-emerald-50 text-emerald-600 border-emerald-100 mb-4">Reviews</Badge>
-          <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-4">Real handymen. Real results.</h2>
-          <p className="text-slate-500 text-lg">From solo operators to growing crews — here's what they're saying.</p>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-6">
-          {TESTIMONIALS.map(({ name, company, quote, rating }) => (
-            <div key={name} className="bg-white border border-slate-100 rounded-2xl p-6 shadow-sm">
-              <div className="flex gap-0.5 mb-4">
-                {Array.from({ length: rating }).map((_, i) => (
-                  <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />
-                ))}
+      {/* FOUNDING STORY */}
+      <section id="why-us" className="py-16 sm:py-24 bg-slate-50">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6">
+          <div className="text-center mb-10">
+            <Badge className="bg-slate-200 text-slate-700 border-slate-300 mb-4 text-xs font-medium px-4 py-1">
+              Why we built this
+            </Badge>
+            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-8">
+              We built FieldFlowPro because we needed it.
+            </h2>
+          </div>
+
+          <div className="bg-white rounded-2xl border border-slate-200 p-6 sm:p-10 shadow-sm">
+            <div className="prose prose-slate max-w-none text-slate-600 leading-relaxed space-y-5">
+              <p className="text-base sm:text-lg">
+                Tim Parrow runs four service companies in Vermont. His kids each started their own field service business — handyman, cleaning, landscaping. He needed one place to see all of them without logging in and out, paying four separate software bills, or missing what was happening in the field.
+              </p>
+
+              <p className="text-base sm:text-lg">
+                When a technician started leaving estimates as 'pending' — collecting cash on printed quotes that never became jobs or invoices — the built-in AI agent caught it. It flagged the inconsistency between time spent in the field and zero deposit or job activity. No other field service software would have caught that.
+              </p>
+
+              <p className="text-base sm:text-lg font-medium text-slate-800">
+                That's why FieldFlowPro exists. Built by operators, for operators.
+              </p>
+            </div>
+
+            <div className="mt-8 pt-6 border-t border-slate-100 flex items-center gap-4">
+              <div className="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
+                TP
               </div>
-              <p className="text-slate-600 text-sm leading-relaxed mb-5">"{quote}"</p>
               <div>
-                <p className="font-semibold text-slate-800 text-sm">{name}</p>
-                <p className="text-slate-400 text-xs">{company}</p>
+                <p className="font-semibold text-slate-900">Tim Parrow</p>
+                <p className="text-slate-500 text-sm">Parrow Enterprises, Milton VT</p>
               </div>
             </div>
-          ))}
-        </div>
-      </section>
-
-
-
-      {/* FAQ */}
-      <section id="faq" className="py-14 sm:py-24 bg-slate-50">
-        <div className="max-w-2xl mx-auto px-4 sm:px-6">
-          <div className="text-center mb-10 sm:mb-12">
-            <Badge className="bg-orange-50 text-orange-600 border-orange-100 mb-4">FAQ</Badge>
-            <h2 className="text-3xl font-bold text-slate-900">Frequently asked questions</h2>
-          </div>
-          <div>
-            {FAQS.map(faq => <FAQItem key={faq.q} {...faq} />)}
           </div>
         </div>
       </section>
 
-      {/* CUSTOMER PORTAL CTA */}
-      <section className="py-12 sm:py-16 bg-emerald-50 border-y border-emerald-100">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center gap-6 sm:gap-8">
-          <div className="flex-1 text-left">
-            <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200 mb-3">For Customers</Badge>
-            <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-3">Are you a customer looking for your portal?</h2>
-            <p className="text-slate-500 text-base leading-relaxed mb-2">
-              If your service provider uses FieldFlow Pro, you can log in to view your jobs, approve estimates, pay invoices, and request new services — anytime, from any device.
-            </p>
-            <p className="text-slate-400 text-sm">
-              <strong>Sign in with your email.</strong> If you've forgotten your password, use the "Forgot password" link on the login page to reset it instantly.
+      {/* WHO IT'S FOR — 3 CARDS */}
+      <section className="py-16 sm:py-24 bg-white">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+          <div className="text-center mb-12 sm:mb-16">
+            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-4">
+              Built for the businesses everyone else ignores
+            </h2>
+            <p className="text-slate-500 text-lg max-w-2xl mx-auto">
+              Most field service software is built for large enterprise teams. FieldFlowPro is built for the rest of us.
             </p>
           </div>
-          <div className="flex-shrink-0 flex flex-col items-center gap-3 w-full sm:w-auto">
-            <Link to="/CustomerPortal" className="w-full sm:w-auto">
-              <Button size="lg" className="bg-emerald-600 hover:bg-emerald-700 text-white gap-2 px-8 w-full sm:w-auto">
-                Go to Customer Portal <ArrowRight className="w-4 h-4" />
-              </Button>
-            </Link>
-            <p className="text-slate-400 text-xs text-center">Use your email address to sign in.<br />Password reset is available on the login page.</p>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
+            {[
+              {
+                icon: Hammer,
+                title: "Handyman businesses",
+                description:
+                  "Handymen have been told to use software built for plumbers or HVAC companies. FieldFlowPro was built with the handyman workflow in mind — quotes, small jobs, materials tracking, and getting paid fast.",
+                gradient: "from-amber-400 to-orange-500",
+              },
+              {
+                icon: Sparkles,
+                title: "Cleaning side-hustles",
+                description:
+                  "Running a cleaning business on nights and weekends shouldn't require enterprise software. Track your clients, schedule recurring jobs, send invoices, and look professional — without the complexity.",
+                gradient: "from-emerald-400 to-teal-500",
+              },
+              {
+                icon: Building2,
+                title: "Multi-company operators",
+                description:
+                  "Own more than one company? Run a franchise? Have kids with their own businesses under your umbrella? One login switches between every company. One price book shared across all of them. One flat monthly rate.",
+                gradient: "from-indigo-400 to-purple-500",
+              },
+            ].map(({ icon: Icon, title, description, gradient }) => (
+              <div
+                key={title}
+                className="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 hover:shadow-lg transition-shadow group"
+              >
+                <div
+                  className={`w-12 h-12 rounded-xl bg-gradient-to-br ${gradient} flex items-center justify-center mb-5 group-hover:scale-110 transition-transform`}
+                >
+                  <Icon className="w-6 h-6 text-white" />
+                </div>
+                <h3 className="font-bold text-slate-900 text-lg mb-3">{title}</h3>
+                <p className="text-slate-500 text-sm leading-relaxed">{description}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="py-16 sm:py-24 bg-gradient-to-br from-blue-600 to-violet-700 text-white text-center">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6">
-          <h2 className="text-2xl sm:text-4xl font-extrabold mb-4">Finally — software that works the way you do.</h2>
-          <p className="text-blue-100 text-base sm:text-lg mb-8 sm:mb-10">Handymen and field service pros across every trade are using FieldFlow Pro to win more jobs, get paid faster, and stop drowning in admin work.</p>
-          <Link to="/Register" className="block sm:inline-block">
-            <Button size="lg" className="bg-white text-blue-700 hover:bg-blue-50 gap-2 px-10 font-semibold w-full sm:w-auto py-6 sm:py-4 text-base">
-              Start Free Trial <ArrowRight className="w-4 h-4" />
-            </Button>
-          </Link>
-          <p className="text-blue-200 text-sm mt-4">No credit card required · Set up in minutes</p>
+      {/* INDUSTRY PATHS — 4 VISUAL CARDS */}
+      <section className="py-16 sm:py-24 bg-slate-50">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+          <div className="text-center mb-12 sm:mb-16">
+            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-4">
+              FieldFlowPro works for your type of work
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
+            {[
+              {
+                image:
+                  "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=800&auto=format&fit=crop&q=80",
+                badge: "Handyman Services",
+                text: "Track repairs, estimates, materials, and follow-ups so every job feels professional",
+              },
+              {
+                image:
+                  "https://images.unsplash.com/photo-1580256081112-e49377338b7f?w=800&auto=format&fit=crop&q=80",
+                badge: "Cleaning Companies",
+                text: "Manage recurring cleanings, Airbnb turnovers, and side-hustle schedules without scattered texts",
+              },
+              {
+                image:
+                  "https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&auto=format&fit=crop&q=80",
+                badge: "Multi-Company / Franchise",
+                text: "Switch between subsidiary companies with one click. One login, one price book, full visibility",
+              },
+              {
+                image:
+                  "https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?w=800&auto=format&fit=crop&q=80",
+                badge: "Repair & Maintenance",
+                text: "Organize urgent fixes, routine service, and work order tracking in one simple field workflow",
+              },
+            ].map(({ image, badge, text }) => (
+              <div
+                key={badge}
+                className="relative rounded-2xl overflow-hidden aspect-[4/3] group cursor-pointer"
+              >
+                <img
+                  src={image}
+                  alt={badge}
+                  className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-black/10" />
+                <div className="absolute top-4 left-4">
+                  <Badge className="bg-white/90 text-slate-800 border-0 text-xs font-semibold px-3 py-1">
+                    {badge}
+                  </Badge>
+                </div>
+                <div className="absolute bottom-0 left-0 right-0 p-5 sm:p-6">
+                  <p className="text-white text-sm sm:text-base font-medium leading-relaxed">
+                    {text}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -705,10 +301,15 @@ export default function Landing() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2.5">
-              <img src="https://media.base44.com/images/public/69b20e4261ce8a3e5bf093b0/408bce6f6_LGipynfh-removebg-preview.png" alt="FieldFlow Pro" className="h-8 w-auto brightness-0 invert" />
+              <img
+                src="https://media.base44.com/images/public/69b20e4261ce8a3e5bf093b0/408bce6f6_LGipynfh-removebg-preview.png"
+                alt="FieldFlow Pro"
+                className="h-8 w-auto brightness-0 invert"
+              />
             </div>
             <div className="flex gap-6 text-sm flex-wrap justify-center">
-              <a href="#features" className="hover:text-white transition-colors">Features</a>
+              <a href="#why-us" className="hover:text-white transition-colors">Why Us</a>
+              <a href="#ai" className="hover:text-white transition-colors">AI Features</a>
               <a href="#pricing" className="hover:text-white transition-colors">Pricing</a>
               <a href="#faq" className="hover:text-white transition-colors">FAQ</a>
               <Link to="/Register" className="hover:text-white transition-colors">Sign Up</Link>
