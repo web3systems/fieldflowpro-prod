@@ -350,6 +350,9 @@ export default function Invoices() {
                           <span className="text-xs text-slate-400">Due {format(new Date(inv.due_date), "MMM d, yyyy")}</span>
                         )}
                       </div>
+                      <p className="text-xs text-slate-400 mt-0.5">
+                        Created {inv.created_date ? format(new Date(inv.created_date), "MMM d, yyyy") : "—"}
+                      </p>
                     </div>
                     <div className="text-right flex-shrink-0">
                       <p className="text-base font-bold text-slate-800">${(inv.total || 0).toLocaleString()}</p>
