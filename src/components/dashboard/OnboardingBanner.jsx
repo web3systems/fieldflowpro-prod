@@ -1,9 +1,10 @@
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { Building2, Users, Briefcase, CheckCircle, ChevronRight, Mail, CreditCard } from "lucide-react";
+import { Building2, Users, Briefcase, CheckCircle, ChevronRight, Mail, CreditCard, X } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
-export default function OnboardingBanner({ company, customers, jobs, emailConfigured, stripeConnected }) {
+export default function OnboardingBanner({ company, customers, jobs, emailConfigured, stripeConnected, dismissed, onDismiss }) {
   const steps = [
     {
       done: !!(company?.phone && company?.email),
@@ -53,11 +54,20 @@ export default function OnboardingBanner({ company, customers, jobs, emailConfig
   ];
 
   const completed = steps.filter(s => s.done).length;
-  if (completed === steps.length) return null;
+  if (completed === steps.length || dismissed) return null;
 
   return (
     <Card className="border-0 shadow-sm border-l-4 border-l-blue-500 bg-gradient-to-r from-blue-50/60 to-indigo-50/40">
-      <CardContent className="p-5">
+      <CardContent className="p-5 relative">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="absolute top-3 right-3 text-slate-400 hover:text-slate-600 hover:bg-slate-200/50 rounded-full w-7 h-7"
+          onClick={onDismiss}
+          title="Dismiss getting started"
+        >
+          <X className="w-4 h-4" />
+        </Button>
         <div className="flex items-center justify-between mb-3">
           <div>
             <h3 className="font-semibold text-slate-800 text-sm">Getting Started</h3>

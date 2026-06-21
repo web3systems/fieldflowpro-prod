@@ -40,6 +40,7 @@ export default function Dashboard() {
   const [stripeConnected, setStripeConnected] = useState(false);
   const [loading, setLoading] = useState(true);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [onboardingDismissed, setOnboardingDismissed] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -68,8 +69,32 @@ export default function Dashboard() {
   useEffect(() => {
     base44.auth.me().then(u => {
       setUser(u);
+      // Check if onboarding was previously dismissed
+      if (u?.onboarding_dismissed) {
+        setOnboardingDismissed(true);
+      }
     }).catch(() => {});
   }, []);
+
+  // Also check localStorage on mount as a fast cache
+  useEffect(() => {
+    if (activeCompany) {
+      const key = `onboarding_dismissed_${activeCompany.id}`;
+      if (localStorage.getItem(key) === '1') {
+        setOnboardingDismissed(true);
+      }
+    }
+  }, [activeCompany]);
+
+  async function handleDismissOnboarding() {
+    setOnboardingDismissed(true);
+    if (activeCompany) {
+      localStorage.setItem(`onboarding_dismissed_${activeCompany.id}`, '1');
+    }
+    try {
+      await base44.auth.updateMe({ onboarding_dismissed: true });
+    } catch (_) { /* silent */ }
+  }
 
   async function loadData() {
     setLoading(true);
@@ -286,7 +311,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <OnboardingBanner company={activeCompany} customers={customers} jobs={jobs} emailConfigured={emailConfigured} stripeConnected={stripeConnected} />
+      <OnboardingBanner company={activeCompany} customers={customers} jobs={jobs} emailConfigured={emailConfigured} stripeConnected={stripeConnected} dismissed={onboardingDismissed} onDismiss={handleDismissOnboarding} />
 
       {/* My Jobs (for technicians) */}
       {myTech && myJobs.length > 0 && (
