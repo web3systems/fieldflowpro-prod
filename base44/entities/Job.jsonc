@@ -291,6 +291,35 @@
     },
     "recurrence_parent_id": {
       "type": "string"
+    },
+    "deposit_amount": {
+      "type": "number",
+      "description": "Deposit amount requested"
+    },
+    "deposit_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "paid",
+        "waived"
+      ],
+      "description": "Current status of the deposit"
+    },
+    "deposit_paid_date": {
+      "type": "string",
+      "description": "Date the deposit was paid"
+    },
+    "deposit_stripe_link": {
+      "type": "string",
+      "description": "Stripe payment link URL for the deposit"
+    },
+    "deposit_payment_intent_id": {
+      "type": "string",
+      "description": "Stripe payment intent ID once paid"
+    },
+    "deposit_invoice_id": {
+      "type": "string",
+      "description": "Invoice ID created for the deposit"
     }
   },
   "required": [

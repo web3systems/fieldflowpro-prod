@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { useApp } from "../Layout";
 import { createPageUrl } from "@/utils";
-import { ArrowLeft, Briefcase, Star, CreditCard, FileText, Phone, Mail, MapPin, ExternalLink, ChevronRight, Trash2 } from "lucide-react";
+import { ArrowLeft, Briefcase, Star, CreditCard, FileText, Phone, Mail, MapPin, ExternalLink, ChevronRight, Trash2, DollarSign } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
@@ -25,6 +25,7 @@ import JobTasksSection from "@/components/jobs/JobTasksSection";
 import JobMarginReview from "@/components/jobs/JobMarginReview";
 import AttachDocumentModal from "@/components/jobs/AttachDocumentModal";
 import DepositRequestModal from "@/components/jobs/DepositRequestModal";
+import JobDepositStatus from "@/components/jobs/JobDepositStatus";
 
 const STATUS_COLORS = {
   new: "bg-blue-100 text-blue-700 border-blue-200",
@@ -63,6 +64,7 @@ export default function JobDetail() {
   const [showAttachModal, setShowAttachModal] = useState(false);
   const [showDepositModal, setShowDepositModal] = useState(false);
   const [marginRule, setMarginRule] = useState(null);
+  const [depositData, setDepositData] = useState(null); // tracks deposit state locally
   const { toast } = useToast();
 
   const loadData = useCallback(async () => {
@@ -75,6 +77,7 @@ export default function JobDetail() {
       const j = jobs[0];
       setJob(j);
       setForm({ ...defaultJob, ...j });
+      setDepositData({ deposit_amount: j.deposit_amount, deposit_status: j.deposit_status, deposit_paid_date: j.deposit_paid_date, deposit_stripe_link: j.deposit_stripe_link });
       const invs = await base44.entities.Invoice.filter({ job_id: id });
       setExistingInvoices(invs);
       if (j.estimate_id) {
@@ -147,6 +150,18 @@ export default function JobDetail() {
     if (line_items.length === 0 && form.total_amount) {
       line_items = [{ description: form.title, quantity: 1, unit_price: form.total_amount, total: form.total_amount }];
     }
+
+    // Deduct paid deposit if present (never deduct waived or pending)
+    const effectiveDeposit = depositData || job;
+    const paidDeposit = effectiveDeposit?.deposit_status === "paid" ? (effectiveDeposit?.deposit_amount || 0) : 0;
+    if (paidDeposit > 0) {
+      line_items = [
+        ...line_items,
+        { description: "Deposit Received", quantity: 1, unit_price: -paidDeposit, total: -paidDeposit },
+      ];
+      subtotal = subtotal - paidDeposit;
+    }
+
     const allInv = await base44.entities.Invoice.list();
     const invoice_number = `INV-${String((allInv.length || 0) + 1).padStart(4, "0")}`;
     const invoice = await base44.entities.Invoice.create({
@@ -160,7 +175,7 @@ export default function JobDetail() {
       subtotal,
       tax_rate: form.tax_rate || 0,
       tax_amount: subtotal * ((form.tax_rate || 0) / 100),
-      total: form.total_amount || subtotal,
+      total: paidDeposit > 0 ? (form.total_amount || subtotal) - paidDeposit : (form.total_amount || subtotal),
       amount_paid: 0,
     });
     setInvoiceActionLoading(false);
@@ -262,12 +277,13 @@ export default function JobDetail() {
       {/* Deposit Modal */}
       {showDepositModal && (
         <DepositRequestModal
-          job={job}
-          jobTotal={form.total_amount || linkedEstimate?.total || 0}
+          job={{ ...job, ...form }}
+          customer={customer}
           onClose={() => setShowDepositModal(false)}
-          onDeposited={(inv) => {
-            setExistingInvoices(prev => [...prev, inv]);
-            toast({ title: `Deposit of $${inv.total.toFixed(2)} recorded!` });
+          onDepositRequested={(data) => {
+            setDepositData(data);
+            setJob(j => ({ ...j, ...data }));
+            toast({ title: `Deposit of $${data.deposit_amount?.toFixed(2)} requested!` });
           }}
         />
       )}
@@ -377,6 +393,41 @@ export default function JobDetail() {
               )}
             </div>
           )}
+
+          {/* Deposit Status / Request */}
+          {(() => {
+            const dep = depositData || {};
+            const hasDeposit = dep.deposit_status;
+            const hasLineItems = (form.line_items || []).length > 0;
+            if (hasDeposit) {
+              return (
+                <JobDepositStatus
+                  job={{ ...job, ...dep }}
+                  onDepositUpdated={(updated) => {
+                    setDepositData({ deposit_amount: updated.deposit_amount, deposit_status: updated.deposit_status, deposit_paid_date: updated.deposit_paid_date, deposit_stripe_link: updated.deposit_stripe_link });
+                    setJob(j => ({ ...j, ...updated }));
+                  }}
+                />
+              );
+            }
+            if (hasLineItems) {
+              return (
+                <div className="bg-white border border-slate-200 rounded-xl px-5 py-4 flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-semibold text-slate-700">Deposit</p>
+                    <p className="text-xs text-slate-400">No deposit collected yet</p>
+                  </div>
+                  <button
+                    onClick={() => setShowDepositModal(true)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 rounded-lg transition-colors"
+                  >
+                    <DollarSign className="w-3.5 h-3.5" /> Request Deposit
+                  </button>
+                </div>
+              );
+            }
+            return null;
+          })()}
 
           {/* Invoice Section */}
           <JobInvoiceSection
