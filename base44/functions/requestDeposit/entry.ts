@@ -59,12 +59,17 @@ Deno.serve(async (req) => {
       product_data: { name: depositLabel },
     }, Object.keys(stripeOptions).length > 0 ? stripeOptions : undefined);
 
+    const appUrl = Deno.env.get("APP_URL") || 'https://app.fieldflowpro.com';
     const paymentLink = await stripe.paymentLinks.create({
       line_items: [{ price: priceData.id, quantity: 1 }],
       metadata: {
         base44_app_id: Deno.env.get("BASE44_APP_ID"),
         job_id,
         deposit: 'true',
+      },
+      after_completion: {
+        type: 'redirect',
+        redirect: { url: `${appUrl}/PaymentConfirmation?job_id=${job_id}&type=deposit` },
       },
     }, Object.keys(stripeOptions).length > 0 ? stripeOptions : undefined);
 

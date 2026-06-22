@@ -15,19 +15,40 @@ Deno.serve(async (req) => {
     return Response.json({ error: "Invalid signature" }, { status: 400 });
   }
 
+  // Helper: today's date as YYYY-MM-DD
+  const todayDate = () => {
+    const now = new Date();
+    const y = now.getUTCFullYear();
+    const m = String(now.getUTCMonth() + 1).padStart(2, '0');
+    const d = String(now.getUTCDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  };
+
   if (event.type === "checkout.session.completed") {
     const session = event.data.object;
     const invoice_id = session.metadata?.invoice_id;
+    const job_id = session.metadata?.job_id;
     const isDeposit = session.metadata?.deposit === 'true';
 
+    // Handle job deposit payment (from payment link created by requestDeposit)
+    if (job_id && isDeposit) {
+      try {
+        await base44.asServiceRole.entities.Job.update(job_id, {
+          deposit_status: 'paid',
+          deposit_paid_date: todayDate(),
+          deposit_payment_intent_id: session.payment_intent || '',
+        });
+        console.log(`Job ${job_id} deposit marked as paid via Stripe checkout.session.completed`);
+      } catch (err) {
+        console.error("Failed to update job deposit status:", err.message);
+      }
+      return Response.json({ received: true });
+    }
+
+    // Handle regular invoice payment
     if (invoice_id) {
       try {
-        // Use Eastern Time date for paid_date
-        const now = new Date();
-        const etDate = new Intl.DateTimeFormat("en-US", { timeZone: "America/New_York", year: "numeric", month: "2-digit", day: "2-digit" }).format(now);
-        const [month, day, year] = etDate.split("/");
-        const paid_date = `${year}-${month}-${day}`;
-
+        const paid_date = todayDate();
         const sessionAmount = (session.amount_total || 0) / 100;
 
         if (isDeposit) {
@@ -37,17 +58,15 @@ Deno.serve(async (req) => {
             console.error(`Invoice ${invoice_id} not found for deposit webhook`);
             return Response.json({ received: true });
           }
-
           const newAmountPaid = (invoice.amount_paid || 0) + sessionAmount;
           const newStatus = newAmountPaid >= invoice.total ? "paid" : "partial";
-
           await base44.asServiceRole.entities.Invoice.update(invoice_id, {
             amount_paid: newAmountPaid,
             status: newStatus,
             payment_method: "stripe",
             ...(newStatus === "paid" ? { paid_date } : {}),
           });
-          console.log(`Deposit of $${sessionAmount} recorded on invoice ${invoice_id}. New amount paid: $${newAmountPaid}, status: ${newStatus}`);
+          console.log(`Deposit of $${sessionAmount} recorded on invoice ${invoice_id}. Status: ${newStatus}`);
         } else {
           await base44.asServiceRole.entities.Invoice.update(invoice_id, {
             status: "paid",
@@ -55,7 +74,7 @@ Deno.serve(async (req) => {
             paid_date,
             payment_method: "stripe",
           });
-          console.log(`Invoice ${invoice_id} marked as paid via Stripe webhook ($${sessionAmount})`);
+          console.log(`Invoice ${invoice_id} marked as paid via Stripe ($${sessionAmount})`);
         }
       } catch (err) {
         console.error("Failed to update invoice:", err.message);
