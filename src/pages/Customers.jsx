@@ -5,7 +5,7 @@ import { createPageUrl } from "@/utils";
 import { useNavigate } from "react-router-dom";
 import {
   Plus, Search, Users, Phone, Mail, MapPin,
-  ChevronRight, Trash2, FileText, Briefcase, DollarSign, Download, ExternalLink, X, ArrowUp, ArrowDown
+  Briefcase, DollarSign, Download, ExternalLink, X, ArrowUp, ArrowDown, FileText, Trash2, ChevronRight
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -46,8 +46,9 @@ export default function Customers() {
   const [saving, setSaving] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [sendingPortalInvite, setSendingPortalInvite] = useState(false);
-  const [sortField, setSortField] = useState("");
+  const [sortField, setSortField] = useState("first_name");
   const [sortDir, setSortDir] = useState("asc");
+  const [jobCounts, setJobCounts] = useState({});
 
   function handleExportCsv() {
     const rows = [["First Name", "Last Name", "Email", "Phone", "Address", "City", "State", "Status", "Source"]];
@@ -71,8 +72,14 @@ export default function Customers() {
 
   async function loadCustomers() {
     setLoading(true);
-    const list = await base44.entities.Customer.filter({ company_id: activeCompany.id });
+    const [list, jobs] = await Promise.all([
+      base44.entities.Customer.filter({ company_id: activeCompany.id }),
+      base44.entities.Job.filter({ company_id: activeCompany.id }),
+    ]);
     setCustomers(list);
+    const counts = {};
+    jobs.forEach(j => { counts[j.customer_id] = (counts[j.customer_id] || 0) + 1; });
+    setJobCounts(counts);
     setLoading(false);
   }
 
@@ -124,7 +131,14 @@ export default function Customers() {
     const matchStatus = filterStatus === "all" || c.status === filterStatus;
     return matchSearch && matchStatus;
   }).sort((a, b) => {
-    if (!sortField) return 0;
+    if (sortField === "job_count") {
+      const diff = (jobCounts[b.id] || 0) - (jobCounts[a.id] || 0);
+      return sortDir === "asc" ? -diff : diff;
+    }
+    if (sortField === "created_date") {
+      const diff = new Date(b.created_date) - new Date(a.created_date);
+      return sortDir === "asc" ? -diff : diff;
+    }
     let va = a[sortField] || "", vb = b[sortField] || "";
     if (sortField === "total_revenue") { va = parseFloat(va) || 0; vb = parseFloat(vb) || 0; }
     if (typeof va === "string") { va = va.toLowerCase(); vb = vb.toLowerCase(); }
@@ -133,17 +147,44 @@ export default function Customers() {
   });
 
   const statusStyle = {
-    active: "bg-green-100 text-green-700",
-    inactive: "bg-gray-100 text-gray-600",
-    lead: "bg-blue-100 text-blue-700",
+    active: "bg-green-100 text-green-700 border-green-200",
+    inactive: "bg-gray-100 text-gray-600 border-gray-200",
+    lead: "bg-blue-100 text-blue-700 border-blue-200",
   };
+
+  const AVATAR_COLORS = [
+    "bg-blue-500", "bg-violet-500", "bg-emerald-500", "bg-amber-500",
+    "bg-rose-500", "bg-cyan-500", "bg-indigo-500", "bg-orange-500",
+    "bg-teal-500", "bg-pink-500",
+  ];
+
+  function getAvatarColor(name = "") {
+    const idx = (name.charCodeAt(0) || 0) % AVATAR_COLORS.length;
+    return AVATAR_COLORS[idx];
+  }
+
+  function getInitials(customer) {
+    if (customer.business_name) return customer.business_name.slice(0, 2).toUpperCase();
+    const f = customer.first_name?.[0] || "";
+    const l = customer.last_name?.[0] || "";
+    return (f + l).toUpperCase() || "?";
+  }
+
+  function getDisplayName(customer) {
+    return customer.business_name || `${customer.first_name || ""} ${customer.last_name || ""}`.trim() || "—";
+  }
+
+  function getAddress(customer) {
+    return [customer.address, customer.city, customer.state].filter(Boolean).join(", ");
+  }
 
   return (
     <div className="relative min-h-full p-4 md:p-6 pb-24 lg:pb-6 space-y-5 max-w-7xl mx-auto">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Customers</h1>
-          <p className="text-slate-500 text-sm mt-0.5">{filtered.length} customers</p>
+          <p className="text-slate-500 text-sm mt-0.5">{filtered.length} {filtered.length === 1 ? "customer" : "customers"}</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={handleExportCsv} className="gap-2 hidden sm:flex">
@@ -155,112 +196,193 @@ export default function Customers() {
         </div>
       </div>
 
-      <div className="flex gap-3 flex-wrap">
-        <div className="relative flex-1 min-w-48">
+      {/* Search + Filters */}
+      <div className="flex flex-col sm:flex-row gap-3">
+        <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-          <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search customers..." className="pl-9 bg-white" />
+          <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by name, email or phone..." className="pl-9 bg-white" />
         </div>
-        <Select value={filterStatus} onValueChange={setFilterStatus}>
-          <SelectTrigger className="w-36 bg-white">
-            <SelectValue placeholder="Status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All</SelectItem>
-            <SelectItem value="active">Active</SelectItem>
-            <SelectItem value="inactive">Inactive</SelectItem>
-            <SelectItem value="lead">Lead</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-      <div className="flex gap-2 items-center">
-        <select
-          value={sortField}
-          onChange={e => setSortField(e.target.value)}
-          className="h-9 text-xs bg-white border border-slate-200 rounded-lg px-2.5 text-slate-600 flex-1 sm:w-auto sm:flex-none"
-        >
-          <option value="">Sort by...</option>
-          <option value="first_name">Name</option>
-          <option value="total_revenue">Revenue</option>
-          <option value="status">Status</option>
-          <option value="created_date">Date Added</option>
-          <option value="city">City</option>
-        </select>
-        {sortField && (
+        <div className="flex gap-2">
+          <Select value={filterStatus} onValueChange={setFilterStatus}>
+            <SelectTrigger className="w-32 bg-white">
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All</SelectItem>
+              <SelectItem value="active">Active</SelectItem>
+              <SelectItem value="inactive">Inactive</SelectItem>
+              <SelectItem value="lead">Lead</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={sortField} onValueChange={setSortField}>
+            <SelectTrigger className="w-40 bg-white">
+              <SelectValue placeholder="Sort by..." />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="first_name">Name A–Z</SelectItem>
+              <SelectItem value="created_date">Most Recent</SelectItem>
+              <SelectItem value="job_count">Most Jobs</SelectItem>
+              <SelectItem value="total_revenue">Revenue</SelectItem>
+            </SelectContent>
+          </Select>
           <button
             onClick={() => setSortDir(d => d === "asc" ? "desc" : "asc")}
             className="h-9 w-9 flex items-center justify-center rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-500 flex-shrink-0"
+            title={sortDir === "asc" ? "Ascending" : "Descending"}
           >
             {sortDir === "asc" ? <ArrowUp className="w-3.5 h-3.5" /> : <ArrowDown className="w-3.5 h-3.5" />}
           </button>
-        )}
+        </div>
       </div>
 
+      {/* Grid / Empty / Loading */}
       {loading ? (
-        <div className="space-y-3">
-          {[1, 2, 3].map(i => <div key={i} className="h-20 bg-slate-100 rounded-xl animate-pulse" />)}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {[1, 2, 3, 4, 5, 6].map(i => (
+            <div key={i} className="h-52 bg-slate-100 rounded-2xl animate-pulse" />
+          ))}
         </div>
       ) : filtered.length === 0 ? (
-        <Card className="border-dashed border-2 border-slate-200">
-          <CardContent className="p-12 text-center">
-            <Users className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-            <p className="text-slate-500 font-medium">No customers found</p>
-            <Button onClick={openCreate} className="mt-4 gap-2">
+        <div className="flex flex-col items-center justify-center py-24 text-center">
+          <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mb-4">
+            <Users className="w-8 h-8 text-slate-400" />
+          </div>
+          <p className="text-slate-700 font-semibold text-lg mb-1">
+            {customers.length === 0 ? "No customers yet" : "No customers found"}
+          </p>
+          <p className="text-slate-400 text-sm mb-6">
+            {customers.length === 0 ? "Add your first customer to get started." : "Try adjusting your search or filters."}
+          </p>
+          {customers.length === 0 && (
+            <Button onClick={openCreate} className="gap-2 bg-blue-600 hover:bg-blue-700">
               <Plus className="w-4 h-4" /> Add Customer
             </Button>
-          </CardContent>
-        </Card>
+          )}
+        </div>
       ) : (
-        <div className="space-y-3">
-          {filtered.map(customer => (
-            <Card key={customer.id} className="border-0 shadow-sm hover:shadow-md transition-all cursor-pointer" onClick={() => navigate(`/CustomerDetail/${customer.id}`)}>
-              <CardContent className="p-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-semibold flex-shrink-0">
-                    {customer.business_name ? customer.business_name[0].toUpperCase() : `${customer.first_name?.[0] || ""}${customer.last_name?.[0] || ""}`}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <h3 className="font-semibold text-slate-800">
-                        {customer.business_name || `${customer.first_name || ""} ${customer.last_name || ""}`.trim() || "—"}
-                      </h3>
-                      <Badge className={`text-xs ${statusStyle[customer.status] || "bg-gray-100 text-gray-600"}`}>
-                        {customer.status}
-                      </Badge>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {filtered.map(customer => {
+            const displayName = getDisplayName(customer);
+            const initials = getInitials(customer);
+            const avatarColor = getAvatarColor(displayName);
+            const address = getAddress(customer);
+            const jobCount = jobCounts[customer.id] || 0;
+            return (
+              <div
+                key={customer.id}
+                className="bg-white rounded-2xl shadow-sm border border-slate-100 hover:shadow-md hover:border-slate-200 transition-all flex flex-col"
+              >
+                {/* Card top */}
+                <div className="p-5 flex-1">
+                  <div className="flex items-start justify-between gap-3 mb-4">
+                    {/* Avatar + Name */}
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className={`w-11 h-11 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0 ${avatarColor}`}>
+                        {initials}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="font-bold text-slate-900 leading-tight truncate">{displayName}</p>
+                        {customer.business_name && (customer.first_name || customer.last_name) && (
+                          <p className="text-xs text-slate-400 truncate mt-0.5">
+                            {`${customer.first_name || ""} ${customer.last_name || ""}`.trim()}
+                          </p>
+                        )}
+                      </div>
                     </div>
-                    <div className="flex flex-wrap gap-3 mt-1">
-                      {customer.phone && (
-                        <span className="flex items-center gap-1 text-xs text-slate-500">
-                          <Phone className="w-3 h-3" />{customer.phone}
+                    {/* Job count + status badges */}
+                    <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
+                      {jobCount > 0 && (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-600">
+                          <Briefcase className="w-3 h-3" />{jobCount} {jobCount === 1 ? "Job" : "Jobs"}
                         </span>
                       )}
-                      {customer.email && (
-                        <span className="flex items-center gap-1 text-xs text-slate-500">
-                          <Mail className="w-3 h-3" />{customer.email}
-                        </span>
-                      )}
-                      {customer.city && (
-                        <span className="flex items-center gap-1 text-xs text-slate-500">
-                          <MapPin className="w-3 h-3" />{customer.city}
+                      {customer.status && (
+                        <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium border ${statusStyle[customer.status] || "bg-gray-100 text-gray-600 border-gray-200"}`}>
+                          {customer.status}
                         </span>
                       )}
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 flex-shrink-0">
-                    {customer.total_revenue > 0 && (
-                      <span className="text-sm font-semibold text-emerald-600">${customer.total_revenue.toLocaleString()}</span>
+
+                  {/* Contact details */}
+                  <div className="space-y-1.5">
+                    {customer.phone && (
+                      <a
+                        href={`tel:${customer.phone}`}
+                        onClick={e => e.stopPropagation()}
+                        className="flex items-center gap-2 text-sm text-slate-600 hover:text-blue-600 transition-colors"
+                      >
+                        <Phone className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
+                        <span className="truncate">{customer.phone}</span>
+                      </a>
                     )}
-                    <button
-                      className="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-md"
-                      onClick={e => { e.stopPropagation(); setDeleteTarget(customer); }}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                    <ChevronRight className="w-4 h-4 text-slate-400" />
+                    {customer.email && (
+                      <a
+                        href={`mailto:${customer.email}`}
+                        onClick={e => e.stopPropagation()}
+                        className="flex items-center gap-2 text-sm text-slate-600 hover:text-blue-600 transition-colors"
+                      >
+                        <Mail className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
+                        <span className="truncate">{customer.email}</span>
+                      </a>
+                    )}
+                    {address && (
+                      <div className="flex items-start gap-2 text-sm text-slate-500">
+                        <MapPin className="w-3.5 h-3.5 text-slate-400 flex-shrink-0 mt-0.5" />
+                        <span className="truncate">{address}</span>
+                      </div>
+                    )}
                   </div>
+
+                  {/* Tags */}
+                  {customer.tags?.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 mt-3">
+                      {customer.tags.map(tag => (
+                        <span key={tag} className="px-2 py-0.5 rounded-full text-xs bg-violet-50 text-violet-700 border border-violet-100">{tag}</span>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Revenue */}
+                  {customer.total_revenue > 0 && (
+                    <p className="mt-3 text-sm font-semibold text-emerald-600">${customer.total_revenue.toLocaleString()} lifetime</p>
+                  )}
                 </div>
-              </CardContent>
-            </Card>
-          ))}
+
+                {/* Action buttons */}
+                <div className="px-5 pb-4 pt-3 border-t border-slate-100 flex items-center gap-2">
+                  <button
+                    onClick={() => navigate(`/CustomerDetail/${customer.id}`)}
+                    className="flex-1 h-10 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium transition-colors"
+                  >
+                    View
+                  </button>
+                  <button
+                    onClick={() => navigate(`/NewJob?customer_id=${customer.id}`)}
+                    className="flex-1 h-10 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium transition-colors"
+                  >
+                    New Job
+                  </button>
+                  {customer.phone && (
+                    <a
+                      href={`tel:${customer.phone}`}
+                      className="h-10 w-10 rounded-lg bg-slate-100 hover:bg-green-100 hover:text-green-700 text-slate-500 flex items-center justify-center transition-colors flex-shrink-0"
+                      title={`Call ${customer.phone}`}
+                    >
+                      <Phone className="w-4 h-4" />
+                    </a>
+                  )}
+                  <button
+                    onClick={e => { e.stopPropagation(); setDeleteTarget(customer); }}
+                    className="h-10 w-10 rounded-lg bg-slate-100 hover:bg-red-50 hover:text-red-600 text-slate-400 flex items-center justify-center transition-colors flex-shrink-0"
+                    title="Delete customer"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            );
+          })}
         </div>
       )}
 
