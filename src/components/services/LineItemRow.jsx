@@ -16,6 +16,7 @@ export default function LineItemRow({ item, idx, companyId, services = [], onSer
       unit_price: svc.unit_price || 0,
       total: (item.quantity || 1) * (svc.unit_price || 0),
       notes: item.notes || "",
+      category: item.category, // always preserve category
     });
     setShowAddModal(false);
   }
@@ -38,13 +39,14 @@ export default function LineItemRow({ item, idx, companyId, services = [], onSer
         unit_price: svc.unit_price || 0,
         total: (item.quantity || 1) * (svc.unit_price || 0),
         notes: item.notes || "",
+        category: item.category, // always preserve category
       });
     }
   }
 
   const selectValue = item.service_id ? item.service_id : "__custom__";
   // Support both 'category' (invoices/jobs) and '_category' (estimates) for material detection
-  const isMaterialRow = item.category === "materials" || item._category === "Materials";
+  const isMaterialRow = item.category === "material" || item.category === "materials" || item._category === "Materials";
 
   // Group all services by item_type then category — mirrors the price book structure
   const { serviceGroups, materialGroups } = useMemo(() => {
