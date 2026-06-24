@@ -281,9 +281,9 @@ export default function EstimateDetail() {
     recalcOption(lineItems, opt);
   }
 
-  function handleDownloadPdf() {
+  async function handleDownloadPdf() {
     const customer = customers.find(c => c.id === form.customer_id);
-    downloadEstimatePdf({ ...form, id }, customer, activeCompany);
+    await downloadEstimatePdf({ ...form, id }, customer, activeCompany);
   }
 
   const getCustomerName = (cid) => {

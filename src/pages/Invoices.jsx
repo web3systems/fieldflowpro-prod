@@ -204,9 +204,9 @@ export default function Invoices() {
     }
   }
 
-  function handleDownloadPdf() {
+  async function handleDownloadPdf() {
     const customer = customers.find(c => c.id === form.customer_id);
-    downloadInvoicePdf({ ...form, id: editing?.id }, customer, activeCompany);
+    await downloadInvoicePdf({ ...form, id: editing?.id }, customer, activeCompany);
   }
 
   function handleExportCsv() {

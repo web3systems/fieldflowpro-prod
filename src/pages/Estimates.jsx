@@ -197,9 +197,9 @@ export default function Estimates() {
     await loadData();
   }
 
-  function handleDownloadPdf() {
+  async function handleDownloadPdf() {
     const customer = customers.find(c => c.id === form.customer_id);
-    downloadEstimatePdf({ ...form, id: editing?.id }, customer, activeCompany);
+    await downloadEstimatePdf({ ...form, id: editing?.id }, customer, activeCompany);
   }
 
   async function handleCreateNewCustomer() {

@@ -95,9 +95,9 @@ export default function AIEstimator() {
     navigate(createPageUrl("Estimates"));
   }
 
-  function handleDownloadPdf() {
+  async function handleDownloadPdf() {
     const customer = customers.find(c => c.id === (savedEstimate || draftEstimate)?.customer_id);
-    downloadEstimatePdf(savedEstimate || { ...draftEstimate, id: "preview" }, customer, activeCompany);
+    await downloadEstimatePdf(savedEstimate || { ...draftEstimate, id: "preview" }, customer, activeCompany);
   }
 
   function getCustomerName(id) {

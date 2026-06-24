@@ -182,9 +182,9 @@ export default function InvoiceDetail() {
     }
   }
 
-  function handleDownloadPdf() {
+  async function handleDownloadPdf() {
     const customer = customers.find(c => c.id === form.customer_id);
-    downloadInvoicePdf({ ...form, id }, customer, activeCompany);
+    await downloadInvoicePdf({ ...form, id }, customer, activeCompany);
   }
 
   async function handleStripePayment() {
