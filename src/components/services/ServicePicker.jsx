@@ -19,8 +19,9 @@ export default function ServicePicker({ companyId, onSelect, itemType, category:
   // Filter by itemType if provided, otherwise show all
   const relevant = useMemo(() => {
     let items = services;
-    if (itemType === "service") items = services.filter(s => s.item_type === "service" || !s.item_type);
-    else if (itemType === "material") items = services.filter(s => s.item_type === "material");
+    const isMat = s => s.item_type === "material" || (s.category || "").toLowerCase() === "materials";
+    if (itemType === "service") items = services.filter(s => !isMat(s));
+    else if (itemType === "material") items = services.filter(isMat);
     if (!search) return items;
     const q = search.toLowerCase();
     return items.filter(s =>

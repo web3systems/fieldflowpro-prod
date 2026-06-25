@@ -50,9 +50,10 @@ export default function LineItemRow({ item, idx, companyId, services = [], onSer
 
   // Group all services by item_type then category — mirrors the price book structure
   const { serviceGroups, materialGroups } = useMemo(() => {
-    const matItems = services.filter(s => s.item_type === "material");
-    // Services = everything that is NOT explicitly a material
-    const svcItems = services.filter(s => s.item_type !== "material");
+    const isMat = s => s.item_type === "material" || (s.category || "").toLowerCase() === "materials";
+    const matItems = services.filter(isMat);
+    // Services = everything that is NOT a material
+    const svcItems = services.filter(s => !isMat(s));
 
     function groupByCategory(items) {
       const map = {};
