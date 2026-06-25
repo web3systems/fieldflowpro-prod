@@ -1,59 +1,46 @@
-import { useState, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
+import { base44 } from "@/api/base44Client";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectGroup, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Trash2 } from "lucide-react";
 import AddServiceModal from "./AddServiceModal";
 
-export default function LineItemRow({ item, idx, companyId, services = [], onServicesUpdate, onUpdate, onRemove }) {
+// Detect if a price book entry is a material
+function isMaterialEntry(s) {
+  return s.item_type === "material" || (s.category || "").toLowerCase() === "materials";
+}
+
+// Detect if a line item row is in the materials section
+function isMaterialItem(item) {
+  return (
+    item._category === "Materials" ||
+    item.category === "material" ||
+    item.category === "materials"
+  );
+}
+
+export default function LineItemRow({ item, idx, companyId, services: servicesProp = [], onServicesUpdate, onUpdate, onRemove }) {
   const [showAddModal, setShowAddModal] = useState(false);
+  const [allServices, setAllServices] = useState(servicesProp);
 
-  function handleCreated(svc) {
-    if (onServicesUpdate) onServicesUpdate(svc);
-    onUpdate(idx, null, {
-      ...item,
-      service_id: svc.id,
-      description: svc.name,
-      unit_price: svc.unit_price || 0,
-      total: (item.quantity || 1) * (svc.unit_price || 0),
-      notes: item.notes || "",
-      category: item.category, // always preserve category
-    });
-    setShowAddModal(false);
-  }
+  // Fetch fresh price book data directly — don't rely solely on parent prop
+  useEffect(() => {
+    if (!companyId) return;
+    base44.entities.Service.filter({ company_id: companyId, is_active: true })
+      .then(data => setAllServices(data))
+      .catch(() => {});
+  }, [companyId]);
 
-  function handleServiceSelect(value) {
-    if (value === "__add_new__") {
-      setShowAddModal(true);
-      return;
-    }
-    if (value === "__custom__") {
-      onUpdate(idx, null, { ...item, service_id: null, description: "" });
-      return;
-    }
-    const svc = services.find(s => s.id === value);
-    if (svc) {
-      onUpdate(idx, null, {
-        ...item,
-        service_id: svc.id,
-        description: svc.name,
-        unit_price: svc.unit_price || 0,
-        total: (item.quantity || 1) * (svc.unit_price || 0),
-        notes: item.notes || "",
-        category: item.category, // always preserve category
-      });
-    }
-  }
+  // Keep in sync if parent passes updated services (e.g. after AddServiceModal)
+  useEffect(() => {
+    if (servicesProp.length > 0) setAllServices(servicesProp);
+  }, [servicesProp]);
 
-  const selectValue = item.service_id ? item.service_id : "__custom__";
-  // Support both 'category' (invoices/jobs) and '_category' (estimates) for material detection
-  const isMaterialRow = item.category === "material" || item.category === "materials" || item._category === "Materials";
+  const isMaterialRow = isMaterialItem(item);
 
-  // Group all services by item_type then category — mirrors the price book structure
   const { serviceGroups, materialGroups } = useMemo(() => {
-    const isMat = s => s.item_type === "material" || (s.category || "").toLowerCase() === "materials";
-    const matItems = services.filter(isMat);
-    // Services = everything that is NOT a material
-    const svcItems = services.filter(s => !isMat(s));
+    const matItems = allServices.filter(isMaterialEntry);
+    const svcItems = allServices.filter(s => !isMaterialEntry(s));
 
     function groupByCategory(items) {
       const map = {};
@@ -65,18 +52,53 @@ export default function LineItemRow({ item, idx, companyId, services = [], onSer
       return map;
     }
 
-    const matGroups = groupByCategory(matItems);
-    // If no items are tagged as material, fall back to showing everything
-    const fallbackGroups = Object.keys(matGroups).length === 0 ? groupByCategory(services) : matGroups;
-
     return {
       serviceGroups: groupByCategory(svcItems),
-      materialGroups: fallbackGroups,
+      materialGroups: groupByCategory(matItems),
     };
-  }, [services]);
+  }, [allServices]);
 
-  // For material rows show materials; for service rows show services
   const groupsToShow = isMaterialRow ? materialGroups : serviceGroups;
+
+  function handleCreated(svc) {
+    // Add to local list immediately
+    setAllServices(prev => [...prev, svc]);
+    if (onServicesUpdate) onServicesUpdate(svc);
+    onUpdate(idx, null, {
+      ...item,
+      service_id: svc.id,
+      description: svc.name,
+      unit_price: svc.unit_price || 0,
+      unit: svc.unit || "",
+      total: (item.quantity || 1) * (svc.unit_price || 0),
+      notes: item.notes || "",
+      category: item.category,
+    });
+    setShowAddModal(false);
+  }
+
+  function handleServiceSelect(value) {
+    if (value === "__add_new__") { setShowAddModal(true); return; }
+    if (value === "__custom__") {
+      onUpdate(idx, null, { ...item, service_id: null, description: "" });
+      return;
+    }
+    const svc = allServices.find(s => s.id === value);
+    if (svc) {
+      onUpdate(idx, null, {
+        ...item,
+        service_id: svc.id,
+        description: svc.name,
+        unit_price: svc.unit_price || 0,
+        unit: svc.unit || "",
+        total: (item.quantity || 1) * (svc.unit_price || 0),
+        notes: item.notes || "",
+        category: item.category,
+      });
+    }
+  }
+
+  const selectValue = item.service_id ? item.service_id : "__custom__";
 
   return (
     <>
@@ -96,8 +118,7 @@ export default function LineItemRow({ item, idx, companyId, services = [], onSer
             <SelectContent>
               <SelectItem value="__add_new__" className="text-blue-600 font-medium">+ Add to Price Book</SelectItem>
               <SelectItem value="__custom__">-- Custom / Manual --</SelectItem>
-              {/* Ensures the select always renders the current value even if service is no longer in list */}
-              {item.service_id && !services.some(s => s.id === item.service_id) && (
+              {item.service_id && !allServices.some(s => s.id === item.service_id) && (
                 <SelectItem value={item.service_id} className="hidden">{item.description || item.service_id}</SelectItem>
               )}
               {Object.entries(groupsToShow).map(([cat, items]) => (
@@ -107,6 +128,7 @@ export default function LineItemRow({ item, idx, companyId, services = [], onSer
                     <SelectItem key={svc.id} value={svc.id}>
                       {svc.name || "(unnamed)"}
                       {svc.unit_price > 0 ? ` — $${svc.unit_price.toFixed(2)}` : ""}
+                      {svc.unit ? ` / ${svc.unit}` : ""}
                     </SelectItem>
                   ))}
                 </SelectGroup>
