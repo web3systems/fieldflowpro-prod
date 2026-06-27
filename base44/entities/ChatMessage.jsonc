@@ -100,30 +100,7 @@
         }
       ]
     },
-    "update": {
-      "$or": [
-        {
-          "data.sender_type": "customer",
-          "data.customer_id": "{{user.customer_id}}",
-          "created_by_id": "{{user.id}}"
-        },
-        {
-          "user_condition": {
-            "role": {
-              "$in": [
-                "admin",
-                "manager",
-                "field_service_manager",
-                "dispatcher",
-                "technician",
-                "standard"
-              ]
-            }
-          },
-          "data.company_id": "{{user.company_id}}"
-        }
-      ]
-    },
+    "update": null,
     "delete": {
       "$or": [
         {
