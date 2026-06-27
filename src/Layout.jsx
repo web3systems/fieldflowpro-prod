@@ -131,22 +131,8 @@ export default function Layout({ children, currentPageName }) {
           : Promise.resolve(null),
       ]);
 
-      let list = companyRes.data?.companies || [];
+      const list = companyRes.data?.companies || [];
       const portalData = portalRes?.data;
-
-      // Fallback: if getUserCompanies returned empty (no UserCompanyAccess records seeded),
-      // try querying Company directly — works for owners/admins whose company_id is set on their user
-      if (list.length === 0) {
-        try {
-          const directCompanies = await base44.entities.Company.list();
-          if (directCompanies.length > 0) {
-            // Attach a default role — treat as owner since they can see these records
-            list = directCompanies.map(c => ({ ...c, user_role: user.role === 'admin' ? 'owner' : 'technician' }));
-          }
-        } catch (_) {
-          // Direct query also failed — leave list empty
-        }
-      }
 
       // If user has customer records but NO staff company access → send to portal
       if (list.length === 0 && portalData?.customers?.length > 0) {
