@@ -40,7 +40,8 @@ export default function LeadCapture() {
     setSubmitting(true);
     setSubmitError(null);
     try {
-      await base44.functions.invoke('submitLead', { ...form, company_id: companyId });
+      const res = await base44.functions.invoke('submitLead', { ...form, company_id: companyId });
+      if (res?.data?.error) throw new Error(res.data.error);
       setSubmitted(true);
     } catch (err) {
       console.error('Lead submit error:', err);

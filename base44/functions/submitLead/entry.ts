@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 
 Deno.serve(async (req) => {
   try {
@@ -24,7 +24,7 @@ Deno.serve(async (req) => {
     });
 
     console.log('Lead created:', lead.id, 'for company:', company_id);
-    return Response.json({ success: true, lead });
+    return Response.json({ success: true, lead_id: lead.id });
   } catch (error) {
     console.error('submitLead error:', error.message);
     return Response.json({ error: error.message }, { status: 500 });
