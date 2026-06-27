@@ -105,5 +105,59 @@
     "subject",
     "description",
     "submitter_email"
-  ]
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "data.submitter_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": {
+              "$in": [
+                "admin",
+                "manager"
+              ]
+            }
+          },
+          "data.company_id": "{{user.company_id}}"
+        }
+      ]
+    },
+    "read": {
+      "$or": [
+        {
+          "data.submitter_email": "{{user.email}}"
+        },
+        {
+          "data.company_id": "{{user.company_id}}"
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.submitter_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": {
+              "$in": [
+                "admin",
+                "manager"
+              ]
+            }
+          },
+          "data.company_id": "{{user.company_id}}"
+        }
+      ]
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      },
+      "data.company_id": "{{user.company_id}}"
+    }
+  }
 }

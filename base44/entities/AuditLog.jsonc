@@ -47,5 +47,20 @@
     "action",
     "entity_type",
     "entity_id"
-  ]
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "service_role"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      },
+      "data.company_id": "{{user.company_id}}"
+    },
+    "update": {},
+    "delete": {}
+  }
 }

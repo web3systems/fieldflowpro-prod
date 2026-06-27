@@ -31,5 +31,43 @@
   },
   "required": [
     "company_id"
-  ]
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": {
+          "$in": [
+            "admin",
+            "manager"
+          ]
+        }
+      },
+      "data.company_id": "{{user.company_id}}"
+    },
+    "read": {
+      "data.company_id": "{{user.company_id}}"
+    },
+    "update": {
+      "user_condition": {
+        "role": {
+          "$in": [
+            "admin",
+            "manager"
+          ]
+        }
+      },
+      "data.company_id": "{{user.company_id}}"
+    },
+    "delete": {
+      "user_condition": {
+        "role": {
+          "$in": [
+            "admin",
+            "manager"
+          ]
+        }
+      },
+      "data.company_id": "{{user.company_id}}"
+    }
+  }
 }

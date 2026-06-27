@@ -66,5 +66,53 @@
     "title",
     "section_id",
     "tag"
-  ]
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "$or": [
+        {
+          "data.tag": "All Users"
+        },
+        {
+          "data.tag": "Customers",
+          "user_condition": {
+            "role": "customer"
+          }
+        },
+        {
+          "data.tag": "Managers & Admins",
+          "user_condition": {
+            "role": {
+              "$in": [
+                "manager",
+                "admin"
+              ]
+            }
+          }
+        },
+        {
+          "data.tag": "Admins Only",
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ],
+      "data.is_published": true
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
 }

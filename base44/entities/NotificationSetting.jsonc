@@ -92,5 +92,71 @@
   "required": [
     "user_email",
     "company_id"
-  ]
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "data.user_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": {
+              "$in": [
+                "admin",
+                "manager"
+              ]
+            }
+          },
+          "data.company_id": "{{user.company_id}}"
+        }
+      ]
+    },
+    "read": {
+      "$or": [
+        {
+          "data.user_email": "{{user.email}}"
+        },
+        {
+          "data.company_id": "{{user.company_id}}"
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.user_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": {
+              "$in": [
+                "admin",
+                "manager"
+              ]
+            }
+          },
+          "data.company_id": "{{user.company_id}}"
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.user_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": {
+              "$in": [
+                "admin",
+                "manager"
+              ]
+            }
+          },
+          "data.company_id": "{{user.company_id}}"
+        }
+      ]
+    }
+  }
 }

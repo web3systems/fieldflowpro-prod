@@ -53,5 +53,93 @@
     "customer_id",
     "sender_type",
     "message"
-  ]
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "data.sender_type": "customer",
+          "data.customer_id": "{{user.customer_id}}"
+        },
+        {
+          "user_condition": {
+            "role": {
+              "$in": [
+                "admin",
+                "manager",
+                "field_service_manager",
+                "dispatcher",
+                "technician",
+                "standard"
+              ]
+            }
+          },
+          "data.company_id": "{{user.company_id}}"
+        }
+      ]
+    },
+    "read": {
+      "$or": [
+        {
+          "data.customer_id": "{{user.customer_id}}"
+        },
+        {
+          "user_condition": {
+            "role": {
+              "$in": [
+                "admin",
+                "manager",
+                "field_service_manager",
+                "dispatcher",
+                "technician",
+                "standard"
+              ]
+            }
+          },
+          "data.company_id": "{{user.company_id}}"
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.sender_type": "customer",
+          "data.customer_id": "{{user.customer_id}}"
+        },
+        {
+          "user_condition": {
+            "role": {
+              "$in": [
+                "admin",
+                "manager",
+                "field_service_manager",
+                "dispatcher",
+                "technician",
+                "standard"
+              ]
+            }
+          },
+          "data.company_id": "{{user.company_id}}"
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": {
+              "$in": [
+                "admin",
+                "manager"
+              ]
+            }
+          }
+        }
+      ],
+      "data.company_id": "{{user.company_id}}"
+    }
+  }
 }

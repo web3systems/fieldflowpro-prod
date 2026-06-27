@@ -55,5 +55,41 @@
     "user_email",
     "title",
     "type"
-  ]
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": {
+              "$in": [
+                "admin",
+                "manager",
+                "field_service_manager",
+                "dispatcher",
+                "technician",
+                "standard"
+              ]
+            }
+          },
+          "data.company_id": "{{user.company_id}}",
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "service_role"
+          }
+        }
+      ]
+    },
+    "read": {
+      "data.user_email": "{{user.email}}",
+      "data.company_id": "{{user.company_id}}"
+    },
+    "update": {
+      "data.user_email": "{{user.email}}",
+      "data.company_id": "{{user.company_id}}"
+    },
+    "delete": {}
+  }
 }
