@@ -243,20 +243,26 @@ export default function Dashboard() {
 
   if (companiesLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
+      <div className="flex flex-col items-center justify-center h-64 gap-4">
         <div className="w-8 h-8 border-4 border-slate-200 border-t-blue-500 rounded-full animate-spin" />
+        <p className="text-slate-400 text-sm">Loading your workspace…</p>
       </div>
     );
   }
 
   if (!activeCompany) {
     return (
-      <div className="p-8 text-center">
-        <Building2 className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-        <p className="text-slate-500">No company selected. Please go to Companies to set one up.</p>
-        <Link to={createPageUrl("Companies")}>
-          <Button className="mt-4">Manage Companies</Button>
-        </Link>
+      <div className="p-8 text-center max-w-md mx-auto mt-16">
+        <Building2 className="w-14 h-14 text-slate-300 mx-auto mb-4" />
+        <h2 className="text-lg font-semibold text-slate-700 mb-2">No company found</h2>
+        <p className="text-slate-500 text-sm mb-6">
+          Your account isn't linked to a company yet. This can happen if your invitation hasn't been fully set up.
+          Please contact your administrator or try signing out and back in.
+        </p>
+        <div className="flex gap-3 justify-center flex-wrap">
+          <Button variant="outline" onClick={() => window.location.reload()}>Refresh</Button>
+          <Button onClick={() => base44.auth.logout('/')}>Sign Out</Button>
+        </div>
       </div>
     );
   }

@@ -117,20 +117,36 @@ export default function Layout({ children, currentPageName }) {
   }
 
   async function loadCompanies() {
+    // Safety timeout: never leave the spinner running forever
+    const timeout = setTimeout(() => setCompaniesLoading(false), 8000);
     try {
-      if (!user?.email) return;
+      if (!user?.email) { clearTimeout(timeout); setCompaniesLoading(false); return; }
       setCompaniesLoading(true);
 
       // Run company access check and customer portal check in parallel
       const [companyRes, portalRes] = await Promise.all([
-        base44.functions.invoke('getUserCompanies', {}),
+        base44.functions.invoke('getUserCompanies', {}).catch(() => ({ data: { companies: [] } })),
         window.location.pathname !== '/CustomerPortal'
           ? base44.functions.invoke('getCustomerPortalData', { action: 'init' }).catch(() => null)
           : Promise.resolve(null),
       ]);
 
-      const list = companyRes.data?.companies || [];
+      let list = companyRes.data?.companies || [];
       const portalData = portalRes?.data;
+
+      // Fallback: if getUserCompanies returned empty (no UserCompanyAccess records seeded),
+      // try querying Company directly — works for owners/admins whose company_id is set on their user
+      if (list.length === 0) {
+        try {
+          const directCompanies = await base44.entities.Company.list();
+          if (directCompanies.length > 0) {
+            // Attach a default role — treat as owner since they can see these records
+            list = directCompanies.map(c => ({ ...c, user_role: user.role === 'admin' ? 'owner' : 'technician' }));
+          }
+        } catch (_) {
+          // Direct query also failed — leave list empty
+        }
+      }
 
       // If user has customer records but NO staff company access → send to portal
       if (list.length === 0 && portalData?.customers?.length > 0) {
@@ -146,6 +162,7 @@ export default function Layout({ children, currentPageName }) {
     } catch (e) {
       console.error('loadCompanies error:', e);
     } finally {
+      clearTimeout(timeout);
       setCompaniesLoading(false);
     }
   }
