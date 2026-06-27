@@ -22,6 +22,7 @@ import Messages from './pages/Messages';
 import CampaignIdeaPreview from './pages/CampaignIdeaPreview';
 import Register from './pages/Register';
 import Landing from './pages/Landing';
+import LeadPipeline from './pages/LeadPipeline';
 import CompanySettings from './pages/CompanySettings';
 import SaaSAdminDashboard from './pages/SaaSAdminDashboard';
 import EmailTemplateEditor from './pages/EmailTemplateEditor';
@@ -127,6 +128,7 @@ const AuthenticatedApp = () => {
       <Route path="/Notifications" element={<LayoutWrapper currentPageName="Notifications"><Notifications /></LayoutWrapper>} />
       <Route path="/CustomerDetail/:id" element={<LayoutWrapper currentPageName="Customers"><CustomerDetail /></LayoutWrapper>} />
       <Route path="/LeadDetail/:id" element={<LayoutWrapper currentPageName="Leads"><LeadDetail /></LayoutWrapper>} />
+      <Route path="/LeadPipeline" element={<LayoutWrapper currentPageName="Leads"><LeadPipeline /></LayoutWrapper>} />
       <Route path="/UserProfile/:id" element={<LayoutWrapper currentPageName="Users"><UserProfile /></LayoutWrapper>} />
       <Route path="/EstimateDetail/:id" element={<LayoutWrapper currentPageName="Estimates"><EstimateDetail /></LayoutWrapper>} />
       <Route path="/JobDetail/:id" element={<LayoutWrapper currentPageName="Jobs"><JobDetail /></LayoutWrapper>} />
