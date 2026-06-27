@@ -70,7 +70,19 @@
   ],
   "rls": {
     "create": {
-      "data.company_id": "{{user.company_id}}"
+      "$or": [
+        {
+          "data.company_id": "{{user.company_id}}"
+        },
+        {
+          "user": null
+        },
+        {
+          "user_condition": {
+            "role": "service_role"
+          }
+        }
+      ]
     },
     "read": {
       "data.company_id": "{{user.company_id}}"

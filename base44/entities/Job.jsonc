@@ -337,9 +337,16 @@
           "data.company_id": "{{user.company_id}}"
         },
         {
-          "data.assigned_techs": "{{user.id}}"
+          "data.assigned_techs": {
+            "$in": [
+              "{{user.id}}"
+            ]
+          }
         },
         {
+          "user_condition": {
+            "role": "customer"
+          },
           "data.customer_id": "{{user.customer_id}}"
         }
       ]
@@ -347,7 +354,11 @@
     "update": {
       "$or": [
         {
-          "data.assigned_techs": "{{user.id}}"
+          "data.assigned_techs": {
+            "$in": [
+              "{{user.id}}"
+            ]
+          }
         },
         {
           "created_by_id": "{{user.id}}"

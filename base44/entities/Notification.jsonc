@@ -72,8 +72,7 @@
               ]
             }
           },
-          "data.company_id": "{{user.company_id}}",
-          "created_by_id": "{{user.id}}"
+          "data.company_id": "{{user.company_id}}"
         },
         {
           "user_condition": {

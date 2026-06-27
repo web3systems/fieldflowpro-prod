@@ -149,6 +149,9 @@
           "data.company_id": "{{user.company_id}}"
         },
         {
+          "user_condition": {
+            "role": "customer"
+          },
           "data.customer_id": "{{user.customer_id}}",
           "data.status": {
             "$ne": "draft"
@@ -158,15 +161,6 @@
     },
     "update": {
       "$or": [
-        {
-          "data.customer_id": "{{user.customer_id}}",
-          "data.status": {
-            "$in": [
-              "sent",
-              "viewed"
-            ]
-          }
-        },
         {
           "user_condition": {
             "role": {

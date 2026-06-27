@@ -109,6 +109,9 @@
           "data.company_id": "{{user.company_id}}"
         },
         {
+          "user_condition": {
+            "role": "customer"
+          },
           "data.customer_id": "{{user.customer_id}}"
         }
       ]
