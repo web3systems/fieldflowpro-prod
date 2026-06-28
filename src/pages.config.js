@@ -71,10 +71,12 @@ import AccountingAccounts from './pages/AccountingAccounts';
 import AccountingReports from './pages/AccountingReports';
 import AccountingBanks from './pages/AccountingBanks';
 import AccountingAdmin from './pages/AccountingAdmin';
+import Henry from './pages/Henry';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
+    "Henry": Henry,
     "Booking": Booking,
     "Companies": Companies,
     "CustomerPortal": CustomerPortal,
@@ -102,7 +104,7 @@ export const PAGES = {
 }
 
 export const pagesConfig = {
-    mainPage: "Dashboard",
+    mainPage: "Henry",
     Pages: PAGES,
     Layout: __Layout,
 };
