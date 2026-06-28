@@ -33,7 +33,7 @@ export default function JobAppointmentSection({ form, setForm, techs, onSave, sa
   // If no appointments exist yet, seed from legacy scheduled_start/scheduled_end
   const hasLegacy = form.scheduled_start && appointments.length === 0;
 
-  function seedFromLegacy() {
+  async function seedFromLegacy() {
     const seeded = [{
       ...emptyAppointment(),
       scheduled_start: form.scheduled_start || "",
@@ -41,6 +41,8 @@ export default function JobAppointmentSection({ form, setForm, techs, onSave, sa
       status: "upcoming",
     }];
     setForm(f => ({ ...f, appointments: seeded, scheduled_start: "", scheduled_end: "" }));
+    // Save immediately so the legacy fields are cleared in the DB and the banner never reappears
+    await onSave({ appointments: seeded, scheduled_start: "", scheduled_end: "" });
   }
 
   function addAppointment() {

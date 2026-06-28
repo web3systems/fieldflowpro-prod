@@ -97,9 +97,17 @@ export default function JobDetail() {
 
   useEffect(() => { loadData(); }, [loadData]);
 
-  async function handleSave(statusOverride) {
+  async function handleSave(statusOverride, extraData) {
     setSaving(true);
-    const dataToSave = statusOverride ? { ...form, status: statusOverride } : form;
+    let dataToSave;
+    if (typeof statusOverride === 'string') {
+      dataToSave = { ...form, status: statusOverride, ...extraData };
+    } else if (statusOverride && typeof statusOverride === 'object') {
+      // Called with a data override object (e.g. from seedFromLegacy)
+      dataToSave = { ...form, ...statusOverride };
+    } else {
+      dataToSave = form;
+    }
     await base44.entities.Job.update(id, dataToSave);
     setJob(j => ({ ...j, ...dataToSave }));
     setSaving(false);
