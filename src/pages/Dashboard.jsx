@@ -6,8 +6,9 @@ import { createPageUrl } from "@/utils";
 import {
   Briefcase, Users, DollarSign, TrendingUp,
   Clock, CheckCircle, AlertCircle, Plus,
-  ArrowRight, Calendar, Building2, CalendarCheck, CreditCard, FileText
+  ArrowRight, Calendar, Building2, CalendarCheck, CreditCard, FileText, Mic
 } from "lucide-react";
+import HenryModal from "../components/henry/HenryModal";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -41,6 +42,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [onboardingDismissed, setOnboardingDismissed] = useState(false);
+  const [henryOpen, setHenryOpen] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -269,6 +271,34 @@ export default function Dashboard() {
 
   return (
     <div className="p-4 md:p-6 pb-20 lg:pb-6 space-y-6 max-w-7xl mx-auto">
+      {/* Henry Modal */}
+      {henryOpen && (
+        <HenryModal
+          onClose={() => setHenryOpen(false)}
+          company={activeCompany}
+          user={user || appUser}
+        />
+      )}
+
+      {/* Henry Banner */}
+      <button
+        onClick={() => setHenryOpen(true)}
+        className="w-full flex items-center gap-4 px-5 py-4 rounded-2xl text-left transition-all hover:brightness-110 active:scale-[0.99] focus:outline-none"
+        style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e3a8a 60%, #1d4ed8 100%)', border: '1px solid rgba(59,130,246,0.3)' }}
+      >
+        <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(251,191,36,0.15)', border: '1px solid rgba(251,191,36,0.4)' }}>
+          <Mic className="w-5 h-5 text-amber-400" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-amber-400 font-semibold text-sm tracking-wide">Henry is ready</p>
+          <p className="text-slate-300 text-xs mt-0.5 truncate">Good {new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 17 ? 'afternoon' : 'evening'} — tap to start your briefing</p>
+        </div>
+        <div className="flex items-center gap-1.5 flex-shrink-0">
+          <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+          <span className="text-slate-400 text-xs">Active</span>
+        </div>
+      </button>
+
       {showOnboarding && activeCompany && (
         <OnboardingWizard
           company={activeCompany}

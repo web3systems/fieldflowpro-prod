@@ -1,0 +1,328 @@
+import { useState, useEffect, useRef, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
+import { base44 } from "@/api/base44Client";
+import { X, Mic, MicOff, Zap, Briefcase, FileText, Sun } from "lucide-react";
+
+const QUICK_ACTIONS = [
+  { label: "Morning Briefing", command: "morning briefing", icon: Sun },
+  { label: "Open Jobs", command: "open jobs", icon: Briefcase },
+  { label: "Dispatch Tech", command: "dispatch", icon: Zap },
+  { label: "Create Estimate", command: "create estimate", icon: FileText },
+];
+
+function getGreeting() {
+  const h = new Date().getHours();
+  if (h < 12) return "morning";
+  if (h < 17) return "afternoon";
+  return "evening";
+}
+
+function speak(text, onEnd) {
+  if (!window.speechSynthesis) { if (onEnd) onEnd(); return; }
+  window.speechSynthesis.cancel();
+  const utt = new SpeechSynthesisUtterance(text);
+  utt.rate = 0.92;
+  utt.pitch = 1.0;
+  const voices = window.speechSynthesis.getVoices();
+  const preferred = voices.find(v =>
+    v.name.includes('Google UK English Male') ||
+    v.name.includes('Daniel') ||
+    v.name.includes('Alex')
+  ) || voices.find(v => v.lang?.startsWith('en')) || voices[0];
+  if (preferred) utt.voice = preferred;
+  if (onEnd) utt.onend = onEnd;
+  window.speechSynthesis.speak(utt);
+}
+
+export default function HenryModal({ onClose, company, user }) {
+  const navigate = useNavigate();
+  const [messages, setMessages] = useState([]);
+  const [isListening, setIsListening] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [weather, setWeather] = useState(null);
+  const recognitionRef = useRef(null);
+  const messagesEndRef = useRef(null);
+  const initialized = useRef(false);
+
+  const addMessage = useCallback((role, text) => {
+    setMessages(prev => [...prev, { role, text, id: Date.now() + Math.random() }]);
+  }, []);
+
+  const henrySay = useCallback((text, onEnd) => {
+    addMessage("henry", text);
+    setIsSpeaking(true);
+    speak(text, () => {
+      setIsSpeaking(false);
+      if (onEnd) onEnd();
+    });
+  }, [addMessage]);
+
+  // Greet on open
+  useEffect(() => {
+    if (initialized.current) return;
+    initialized.current = true;
+    if (window.speechSynthesis) {
+      window.speechSynthesis.getVoices();
+      window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
+    }
+    const firstName = user?.full_name?.split(' ')[0] || 'there';
+    setTimeout(() => {
+      henrySay(`Good ${getGreeting()}, ${firstName}. I'm Henry, your field operations manager. What would you like to work on today?`);
+    }, 400);
+  }, [henrySay, user]);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
+  // Close on Escape
+  useEffect(() => {
+    const handler = (e) => { if (e.key === 'Escape') handleClose(); };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, []);
+
+  function handleClose() {
+    window.speechSynthesis?.cancel();
+    recognitionRef.current?.stop();
+    onClose();
+  }
+
+  const startListening = useCallback(() => {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) {
+      henrySay("Sorry, your browser doesn't support voice recognition. Please try Chrome.");
+      return;
+    }
+    recognitionRef.current?.stop();
+    const recognition = new SR();
+    recognition.lang = 'en-US';
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+    recognitionRef.current = recognition;
+    recognition.onstart = () => setIsListening(true);
+    recognition.onend = () => setIsListening(false);
+    recognition.onerror = () => setIsListening(false);
+    recognition.onresult = (e) => {
+      const said = e.results[0][0].transcript.toLowerCase().trim();
+      addMessage("user", said);
+      handleCommand(said);
+    };
+    recognition.start();
+  }, [henrySay, addMessage]);
+
+  const stopListening = useCallback(() => {
+    recognitionRef.current?.stop();
+    setIsListening(false);
+  }, []);
+
+  const handleCommand = useCallback(async (cmd) => {
+    setIsLoading(true);
+    try {
+      if (cmd.includes('briefing') || cmd.includes('morning')) {
+        await doBriefing();
+      } else if (cmd.includes('open jobs') || cmd.includes('jobs today') || cmd.includes('jobs')) {
+        await doOpenJobs();
+      } else if (cmd.includes('dispatch')) {
+        henrySay("Sure. Who would you like to dispatch? Please say the technician's name.");
+      } else if (cmd.includes('create estimate') || cmd.includes('estimate')) {
+        henrySay("Opening estimates now.", () => { handleClose(); navigate('/Estimates'); });
+      } else if (cmd.includes('customers')) {
+        henrySay("Opening customers.", () => { handleClose(); navigate('/Customers'); });
+      } else if (cmd.includes('invoices')) {
+        henrySay("Opening invoices.", () => { handleClose(); navigate('/Invoices'); });
+      } else {
+        henrySay(`I heard: "${cmd}". Try saying "morning briefing" or "open jobs".`);
+      }
+    } catch (e) {
+      henrySay("Sorry, I ran into an issue. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  }, [company, weather, henrySay, navigate]);
+
+  async function doBriefing() {
+    const companyId = company?.id;
+    const firstName = user?.full_name?.split(' ')[0] || 'there';
+    const dateStr = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+
+    const [weatherRes, jobsData, dispatchRes] = await Promise.all([
+      base44.functions.invoke('getWeather', {}).then(r => r.data).catch(() => null),
+      companyId ? base44.entities.Job.filter({ company_id: companyId }).catch(() => []) : Promise.resolve([]),
+      companyId ? base44.functions.invoke('suggestDispatch', { company_id: companyId }).then(r => r.data).catch(() => null) : Promise.resolve(null),
+    ]);
+
+    if (weatherRes) setWeather(weatherRes);
+
+    const today = new Date().toISOString().split('T')[0];
+    const todayJobs = jobsData.filter(j =>
+      j.scheduled_start?.startsWith(today) && ['scheduled', 'in_progress'].includes(j.status)
+    );
+    const inProgress = todayJobs.filter(j => j.status === 'in_progress');
+    const unassigned = todayJobs.filter(j => !j.assigned_techs?.length);
+
+    let briefing = `Good ${getGreeting()}, ${firstName}. Here's your briefing for ${dateStr}. `;
+    if (weatherRes) {
+      briefing += `Weather: ${weatherRes.temp}°F and ${weatherRes.conditions} in ${weatherRes.city}. `;
+      if (weatherRes.alerts?.length) briefing += `Alert: ${weatherRes.alerts[0].event}. `;
+    }
+    briefing += `You have ${todayJobs.length} job${todayJobs.length !== 1 ? 's' : ''} scheduled today. `;
+    if (inProgress.length) briefing += `${inProgress.length} in progress. `;
+    if (unassigned.length) briefing += `${unassigned.length} unassigned — needs attention. `;
+    todayJobs.slice(0, 3).forEach((j, i) => {
+      const addr = [j.address, j.city].filter(Boolean).join(', ') || 'no address set';
+      briefing += `Job ${i + 1}: ${j.title} at ${addr}. `;
+    });
+    if (dispatchRes?.suggestions?.length) {
+      const s = dispatchRes.suggestions[0];
+      if (s.suggested_tech) briefing += `Recommendation: dispatch ${s.suggested_tech.name} to ${s.address}. `;
+    }
+    briefing += `What would you like to work on first?`;
+    henrySay(briefing);
+  }
+
+  async function doOpenJobs() {
+    if (!company?.id) { henrySay("No company found. Please set up your company first."); return; }
+    const today = new Date().toISOString().split('T')[0];
+    const jobs = await base44.entities.Job.filter({ company_id: company.id }).catch(() => []);
+    const todayJobs = jobs.filter(j =>
+      j.scheduled_start?.startsWith(today) && ['scheduled', 'in_progress', 'new'].includes(j.status)
+    );
+    if (!todayJobs.length) {
+      henrySay("You have no jobs scheduled for today. Would you like to create one?");
+      return;
+    }
+    let response = `You have ${todayJobs.length} job${todayJobs.length !== 1 ? 's' : ''} today. `;
+    todayJobs.slice(0, 5).forEach((j, i) => {
+      const addr = [j.address, j.city].filter(Boolean).join(', ') || 'no address';
+      response += `${i + 1}: ${j.title}, ${j.status.replace('_', ' ')}, at ${addr}. `;
+    });
+    henrySay(response);
+  }
+
+  const triggerQuickAction = useCallback((command) => {
+    addMessage("user", command);
+    handleCommand(command);
+  }, [addMessage, handleCommand]);
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style={{ background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(6px)' }}
+    >
+      <div
+        className="relative w-full max-w-lg flex flex-col rounded-3xl overflow-hidden shadow-2xl"
+        style={{ background: '#0f172a', maxHeight: '90vh', border: '1px solid rgba(255,255,255,0.07)' }}
+      >
+        {/* Close */}
+        <button
+          onClick={handleClose}
+          className="absolute top-4 right-4 z-10 w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-700 transition-colors"
+        >
+          <X className="w-4 h-4" />
+        </button>
+
+        {/* Header / Avatar */}
+        <div className="flex flex-col items-center pt-10 pb-6 px-6" style={{ background: 'linear-gradient(180deg, #0f1f3d 0%, #0f172a 100%)' }}>
+          <div className="relative mb-4">
+            <div
+              className={`w-24 h-24 rounded-full flex items-center justify-center shadow-2xl transition-all duration-500 ${isSpeaking ? 'ring-4 ring-amber-400/60 scale-105' : 'ring-2 ring-slate-600'}`}
+              style={{ background: 'linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%)' }}
+            >
+              <span className="text-amber-400 text-3xl font-black">H</span>
+            </div>
+            {/* Status dot */}
+            <span className={`absolute bottom-1 right-1 w-4 h-4 rounded-full border-2 transition-colors duration-300 ${
+              isListening ? 'bg-green-400 animate-pulse border-slate-900' :
+              isSpeaking ? 'bg-amber-400 animate-pulse border-slate-900' :
+              'bg-green-400 border-slate-900'
+            }`} />
+          </div>
+          <h2 className="text-white text-2xl font-bold tracking-tight">Henry</h2>
+          <p className="text-slate-400 text-sm mt-0.5">Field Operations Manager</p>
+          {weather && (
+            <div className="flex items-center gap-2 mt-3 bg-slate-800/60 border border-slate-700/50 rounded-full px-4 py-1.5 text-xs text-slate-300">
+              <Sun className="w-3.5 h-3.5 text-amber-400" />
+              <span>{weather.city}: {weather.temp}°F · {weather.conditions}</span>
+            </div>
+          )}
+        </div>
+
+        {/* Conversation */}
+        <div className="flex-1 overflow-y-auto px-5 py-4 space-y-3 min-h-0" style={{ maxHeight: '280px' }}>
+          {messages.length === 0 ? (
+            <p className="text-center text-slate-600 text-sm py-6">Henry is ready…</p>
+          ) : messages.map(msg => (
+            <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+              <div className={`max-w-[85%] px-4 py-2.5 rounded-2xl text-sm leading-relaxed ${
+                msg.role === 'henry'
+                  ? 'text-slate-100 rounded-tl-sm'
+                  : 'text-slate-200 rounded-tr-sm'
+              }`}
+              style={msg.role === 'henry'
+                ? { background: 'rgba(37, 99, 235, 0.18)', border: '1px solid rgba(59, 130, 246, 0.25)' }
+                : { background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)' }
+              }>
+                {msg.role === 'henry' && (
+                  <span className="text-amber-400 font-semibold text-xs block mb-1">Henry</span>
+                )}
+                {msg.text}
+              </div>
+            </div>
+          ))}
+          <div ref={messagesEndRef} />
+        </div>
+
+        {/* Quick actions */}
+        <div className="grid grid-cols-4 gap-2 px-5 pb-4">
+          {QUICK_ACTIONS.map(({ label, command, icon: Icon }) => (
+            <button
+              key={label}
+              onClick={() => triggerQuickAction(command)}
+              disabled={isListening || isLoading || isSpeaking}
+              className="flex flex-col items-center gap-1.5 px-2 py-3 rounded-xl text-slate-400 hover:text-white text-xs font-medium transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-700/60"
+              style={{ border: '1px solid rgba(255,255,255,0.07)' }}
+            >
+              <Icon className="w-4 h-4 text-amber-400" />
+              <span className="text-center leading-tight">{label}</span>
+            </button>
+          ))}
+        </div>
+
+        {/* Mic */}
+        <div className="flex flex-col items-center pb-8 pt-2">
+          <button
+            onClick={isListening ? stopListening : startListening}
+            disabled={isSpeaking || isLoading}
+            className={`w-18 h-18 rounded-full flex items-center justify-center shadow-2xl transition-all duration-200 focus:outline-none active:scale-95 ${
+              isListening
+                ? 'scale-110 shadow-red-500/40'
+                : isSpeaking || isLoading
+                ? 'opacity-50 cursor-not-allowed'
+                : 'hover:scale-105 shadow-blue-500/30'
+            }`}
+            style={{
+              width: '72px',
+              height: '72px',
+              background: isListening
+                ? 'linear-gradient(135deg, #dc2626 0%, #ef4444 100%)'
+                : 'linear-gradient(135deg, #1d4ed8 0%, #3b82f6 100%)',
+            }}
+          >
+            {isListening
+              ? <MicOff className="w-7 h-7 text-white" />
+              : <Mic className="w-7 h-7 text-white" />
+            }
+          </button>
+          <p className="text-slate-500 text-xs mt-3 h-4">
+            {isListening ? 'Listening… tap to stop' :
+             isSpeaking ? 'Henry is speaking…' :
+             isLoading ? 'Processing…' :
+             'Tap to speak'}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
