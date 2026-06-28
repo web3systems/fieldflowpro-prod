@@ -22,6 +22,7 @@ import Messages from './pages/Messages';
 import CampaignIdeaPreview from './pages/CampaignIdeaPreview';
 import Register from './pages/Register';
 import Landing from './pages/Landing';
+import Henry from './pages/Henry';
 import LeadPipeline from './pages/LeadPipeline';
 import CompanySettings from './pages/CompanySettings';
 import SaaSAdminDashboard from './pages/SaaSAdminDashboard';
@@ -119,6 +120,7 @@ const AuthenticatedApp = () => {
           }
         />
       ))}
+      <Route path="/Henry" element={<LayoutWrapper currentPageName="Henry"><Henry /></LayoutWrapper>} />
       <Route path="/Schedule" element={<LayoutWrapper currentPageName="Schedule"><Schedule /></LayoutWrapper>} />
       <Route path="/Booking" element={<Booking />} />
       <Route path="/SuperAdminDashboard" element={<LayoutWrapper currentPageName="SuperAdminDashboard"><SuperAdminDashboard /></LayoutWrapper>} />

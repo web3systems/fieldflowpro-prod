@@ -5,7 +5,7 @@ import { createPageUrl } from "@/utils";
 import {
   LayoutDashboard, Users, Briefcase, FileText, DollarSign,
   UserPlus, Settings, Building2, Menu, X, ChevronDown,
-  Bell, LogOut, Wrench, BarChart3, Globe, Home, UsersRound, CalendarDays, ShieldCheck, CreditCard, Megaphone, Calculator, MessageCircle, Mail, BookOpen, CheckSquare, Package, Boxes, Camera
+  Bell, LogOut, Wrench, BarChart3, Globe, Home, UsersRound, CalendarDays, ShieldCheck, CreditCard, Megaphone, Calculator, MessageCircle, Mail, BookOpen, CheckSquare, Package, Boxes, Camera, Mic
 } from "lucide-react";
 import NotificationBell from "@/components/notifications/NotificationBell";
 import SeoHead from "@/components/seo/SeoHead";
@@ -41,6 +41,7 @@ function useAccessRequestCount(isSuperAdmin) {
 
 const navItems = [
   { label: "Dashboard", icon: LayoutDashboard, page: "Dashboard" },
+  { label: "Henry (AI)", icon: Mic, page: "Henry" },
   { label: "Leads", icon: UserPlus, page: "Leads" },
   { label: "Customers", icon: Users, page: "Customers" },
   { label: "Estimates", icon: FileText, page: "Estimates" },
