@@ -144,61 +144,62 @@ export default function HenryModal({ onClose, company, user }) {
 
   async function doBriefing() {
     const companyId = company?.id;
-    const firstName = user?.full_name?.split(' ')[0] || 'there';
-    const dateStr = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+    if (!companyId) { henrySay("No company found. Please set up your company first."); return; }
 
-    const [weatherRes, jobsData, dispatchRes] = await Promise.all([
-      base44.functions.invoke('getWeather', {}).then(r => r.data).catch(() => null),
-      companyId ? base44.entities.Job.filter({ company_id: companyId }).catch(() => []) : Promise.resolve([]),
-      companyId ? base44.functions.invoke('suggestDispatch', { company_id: companyId }).then(r => r.data).catch(() => null) : Promise.resolve(null),
-    ]);
+    const allJobs = await base44.entities.Job.filter({ company_id: companyId }).catch(() => []);
+    const activeJobs = allJobs.filter(j => ['in_progress', 'scheduled', 'new'].includes(j.status));
 
-    if (weatherRes) setWeather(weatherRes);
+    const inProgress = activeJobs.filter(j => j.status === 'in_progress');
+    const scheduled = activeJobs.filter(j => j.status === 'scheduled');
+    const newJobs = activeJobs.filter(j => j.status === 'new');
 
-    const today = new Date().toISOString().split('T')[0];
-    const todayJobs = jobsData.filter(j =>
-      j.scheduled_start?.startsWith(today) && ['scheduled', 'in_progress'].includes(j.status)
-    );
-    const inProgress = todayJobs.filter(j => j.status === 'in_progress');
-    const unassigned = todayJobs.filter(j => !j.assigned_techs?.length);
+    const total = activeJobs.length;
+    const companyName = company?.name || 'your crew';
 
-    let briefing = `Good ${getGreeting()}, ${firstName}. Here's your briefing for ${dateStr}. `;
-    if (weatherRes) {
-      briefing += `Weather: ${weatherRes.temp}°F and ${weatherRes.conditions} in ${weatherRes.city}. `;
-      if (weatherRes.alerts?.length) briefing += `Alert: ${weatherRes.alerts[0].event}. `;
-    }
-    briefing += `You have ${todayJobs.length} job${todayJobs.length !== 1 ? 's' : ''} scheduled today. `;
-    if (inProgress.length) briefing += `${inProgress.length} in progress. `;
-    if (unassigned.length) briefing += `${unassigned.length} unassigned — needs attention. `;
-    todayJobs.slice(0, 3).forEach((j, i) => {
-      const addr = [j.address, j.city].filter(Boolean).join(', ') || 'no address set';
-      briefing += `Job ${i + 1}: ${j.title} at ${addr}. `;
-    });
-    if (dispatchRes?.suggestions?.length) {
-      const s = dispatchRes.suggestions[0];
-      if (s.suggested_tech) briefing += `Recommendation: dispatch ${s.suggested_tech.name} to ${s.address}. `;
-    }
-    briefing += `What would you like to work on first?`;
-    henrySay(briefing);
+    const spokenBriefing = `Good morning. Here's your field overview. You have ${total} active job${total !== 1 ? 's' : ''} across ${companyName}. ${inProgress.length} are currently in progress, ${scheduled.length} are scheduled, and ${newJobs.length} are new and need attention. Which job would you like to act on? You can say dispatch, create estimate, or view customers.`;
+
+    // Build display cards (in_progress first, then scheduled, then new)
+    const ordered = [...inProgress, ...scheduled, ...newJobs];
+    const jobLines = ordered.slice(0, 8).map(j => {
+      const techLabel = j.assigned_techs?.length ? `Tech ID: ${j.assigned_techs[0].slice(-4)}` : 'Unassigned';
+      const dateLabel = j.scheduled_start ? new Date(j.scheduled_start).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '';
+      return `• ${j.title} [${j.status.replace('_', ' ')}] — ${techLabel}${dateLabel ? ' · ' + dateLabel : ''}`;
+    }).join('\n');
+
+    addMessage("henry", `Good morning. Here's your field overview:\n\n${total} active jobs across ${companyName}\n• ${inProgress.length} in progress\n• ${scheduled.length} scheduled\n• ${newJobs.length} new / needs attention\n\n${jobLines}\n\nWhich job would you like to act on? You can say dispatch, create estimate, or view customers.`);
+    setIsSpeaking(true);
+    speak(spokenBriefing, () => setIsSpeaking(false));
   }
 
   async function doOpenJobs() {
     if (!company?.id) { henrySay("No company found. Please set up your company first."); return; }
-    const today = new Date().toISOString().split('T')[0];
-    const jobs = await base44.entities.Job.filter({ company_id: company.id }).catch(() => []);
-    const todayJobs = jobs.filter(j =>
-      j.scheduled_start?.startsWith(today) && ['scheduled', 'in_progress', 'new'].includes(j.status)
-    );
-    if (!todayJobs.length) {
-      henrySay("You have no jobs scheduled for today. Would you like to create one?");
+    const allJobs = await base44.entities.Job.filter({ company_id: company.id }).catch(() => []);
+    const activeJobs = allJobs.filter(j => ['in_progress', 'scheduled', 'new'].includes(j.status));
+
+    if (!activeJobs.length) {
+      henrySay("You have no active jobs right now. Would you like to create one?");
       return;
     }
-    let response = `You have ${todayJobs.length} job${todayJobs.length !== 1 ? 's' : ''} today. `;
-    todayJobs.slice(0, 5).forEach((j, i) => {
-      const addr = [j.address, j.city].filter(Boolean).join(', ') || 'no address';
-      response += `${i + 1}: ${j.title}, ${j.status.replace('_', ' ')}, at ${addr}. `;
+
+    const inProgress = activeJobs.filter(j => j.status === 'in_progress');
+    const scheduled = activeJobs.filter(j => j.status === 'scheduled');
+    const newJobs = activeJobs.filter(j => j.status === 'new');
+    const ordered = [...inProgress, ...scheduled, ...newJobs];
+
+    let spoken = `You have ${activeJobs.length} active job${activeJobs.length !== 1 ? 's' : ''}. `;
+    ordered.slice(0, 5).forEach((j, i) => {
+      spoken += `${i + 1}: ${j.title}, ${j.status.replace('_', ' ')}. `;
     });
-    henrySay(response);
+
+    const jobLines = ordered.slice(0, 8).map(j => {
+      const techLabel = j.assigned_techs?.length ? `Tech ID: ${j.assigned_techs[0].slice(-4)}` : 'Unassigned';
+      const dateLabel = j.scheduled_start ? new Date(j.scheduled_start).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '';
+      return `• ${j.title} [${j.status.replace('_', ' ')}] — ${techLabel}${dateLabel ? ' · ' + dateLabel : ''}`;
+    }).join('\n');
+
+    addMessage("henry", `${activeJobs.length} active job${activeJobs.length !== 1 ? 's' : ''}:\n\n${jobLines}`);
+    setIsSpeaking(true);
+    speak(spoken, () => setIsSpeaking(false));
   }
 
   const triggerQuickAction = useCallback((command) => {
