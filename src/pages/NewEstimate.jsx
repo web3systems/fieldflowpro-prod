@@ -199,7 +199,14 @@ export default function NewEstimate() {
           {/* Valid Until */}
           <div className="p-4 border-b border-slate-200">
             <Label className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1 block">Valid Until</Label>
-            <Input type="date" value={form.valid_until} onChange={e => setForm({ ...form, valid_until: e.target.value })} className="bg-white text-sm" />
+            <select
+              value={form.valid_until || ""}
+              onChange={e => setForm({ ...form, valid_until: e.target.value })}
+              className="w-full h-9 text-sm border border-input rounded-md bg-white px-2"
+            >
+              <option value="">Select date...</option>
+              {Array.from({ length: 365 }, (_, i) => { const d = new Date(); d.setDate(d.getDate() + i); const v = d.toISOString().split("T")[0]; return <option key={v} value={v}>{d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</option>; })}
+            </select>
           </div>
 
           {/* Schedule */}
@@ -211,11 +218,43 @@ export default function NewEstimate() {
             <div className="space-y-2">
               <div>
                 <Label className="text-xs text-slate-400 mb-0.5 block">From</Label>
-                <Input type="datetime-local" value={form.scheduled_start || ""} onChange={e => setForm({ ...form, scheduled_start: e.target.value })} className="bg-white text-xs h-8" />
+                <div className="flex gap-1">
+                  <select
+                    value={form.scheduled_start?.split("T")[0] || ""}
+                    onChange={e => setForm({ ...form, scheduled_start: e.target.value + "T" + (form.scheduled_start?.split("T")[1]?.slice(0,5) || "08:00") })}
+                    className="flex-1 h-8 text-xs border border-input rounded-md bg-white px-1"
+                  >
+                    <option value="">Date</option>
+                    {Array.from({ length: 365 }, (_, i) => { const d = new Date(); d.setDate(d.getDate() + i - 30); const v = d.toISOString().split("T")[0]; return <option key={v} value={v}>{d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</option>; })}
+                  </select>
+                  <select
+                    value={form.scheduled_start?.split("T")[1]?.slice(0,5) || "08:00"}
+                    onChange={e => setForm({ ...form, scheduled_start: (form.scheduled_start?.split("T")[0] || new Date().toISOString().split("T")[0]) + "T" + e.target.value })}
+                    className="w-24 h-8 text-xs border border-input rounded-md bg-white px-1"
+                  >
+                    {Array.from({ length: 48 }, (_, i) => { const h = String(Math.floor(i/2)).padStart(2,"0"); const m = i%2===0?"00":"30"; const v = `${h}:${m}`; const label = new Date(`2000-01-01T${v}`).toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"}); return <option key={v} value={v}>{label}</option>; })}
+                  </select>
+                </div>
               </div>
               <div>
                 <Label className="text-xs text-slate-400 mb-0.5 block">To</Label>
-                <Input type="datetime-local" value={form.scheduled_end || ""} onChange={e => setForm({ ...form, scheduled_end: e.target.value })} className="bg-white text-xs h-8" />
+                <div className="flex gap-1">
+                  <select
+                    value={form.scheduled_end?.split("T")[0] || ""}
+                    onChange={e => setForm({ ...form, scheduled_end: e.target.value + "T" + (form.scheduled_end?.split("T")[1]?.slice(0,5) || "09:00") })}
+                    className="flex-1 h-8 text-xs border border-input rounded-md bg-white px-1"
+                  >
+                    <option value="">Date</option>
+                    {Array.from({ length: 365 }, (_, i) => { const d = new Date(); d.setDate(d.getDate() + i - 30); const v = d.toISOString().split("T")[0]; return <option key={v} value={v}>{d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</option>; })}
+                  </select>
+                  <select
+                    value={form.scheduled_end?.split("T")[1]?.slice(0,5) || "09:00"}
+                    onChange={e => setForm({ ...form, scheduled_end: (form.scheduled_end?.split("T")[0] || new Date().toISOString().split("T")[0]) + "T" + e.target.value })}
+                    className="w-24 h-8 text-xs border border-input rounded-md bg-white px-1"
+                  >
+                    {Array.from({ length: 48 }, (_, i) => { const h = String(Math.floor(i/2)).padStart(2,"0"); const m = i%2===0?"00":"30"; const v = `${h}:${m}`; const label = new Date(`2000-01-01T${v}`).toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"}); return <option key={v} value={v}>{label}</option>; })}
+                  </select>
+                </div>
               </div>
             </div>
           </div>

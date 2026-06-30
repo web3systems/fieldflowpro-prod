@@ -235,15 +235,45 @@ export default function NewJob() {
               <span className="font-semibold text-sm text-slate-700">Schedule</span>
             </div>
             <div className="space-y-2 text-xs">
-              <div className="flex items-center gap-2">
-                <span className="w-8 text-slate-500">From</span>
-                <Input type="date" value={form.scheduled_start?.split("T")[0] || ""} onChange={e => setForm({ ...form, scheduled_start: e.target.value })} className="h-7 text-xs flex-1" />
-                <Input type="time" value={form.scheduled_start?.split("T")[1]?.slice(0,5) || ""} onChange={e => setForm({ ...form, scheduled_start: (form.scheduled_start?.split("T")[0] || "") + "T" + e.target.value })} className="h-7 text-xs w-20" />
+              <div className="space-y-1">
+                <span className="text-slate-500">From</span>
+                <div className="flex gap-1">
+                  <select
+                    value={form.scheduled_start?.split("T")[0] || ""}
+                    onChange={e => setForm({ ...form, scheduled_start: e.target.value + "T" + (form.scheduled_start?.split("T")[1]?.slice(0,5) || "08:00") })}
+                    className="flex-1 h-7 text-xs border border-input rounded-md bg-white px-1"
+                  >
+                    <option value="">Date</option>
+                    {Array.from({ length: 365 }, (_, i) => { const d = new Date(); d.setDate(d.getDate() + i - 30); const v = d.toISOString().split("T")[0]; return <option key={v} value={v}>{d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</option>; })}
+                  </select>
+                  <select
+                    value={form.scheduled_start?.split("T")[1]?.slice(0,5) || "08:00"}
+                    onChange={e => setForm({ ...form, scheduled_start: (form.scheduled_start?.split("T")[0] || new Date().toISOString().split("T")[0]) + "T" + e.target.value })}
+                    className="w-24 h-7 text-xs border border-input rounded-md bg-white px-1"
+                  >
+                    {Array.from({ length: 48 }, (_, i) => { const h = String(Math.floor(i/2)).padStart(2,"0"); const m = i%2===0?"00":"30"; const v = `${h}:${m}`; const label = new Date(`2000-01-01T${v}`).toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"}); return <option key={v} value={v}>{label}</option>; })}
+                  </select>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="w-8 text-slate-500">To</span>
-                <Input type="date" value={form.scheduled_end?.split("T")[0] || ""} onChange={e => setForm({ ...form, scheduled_end: e.target.value })} className="h-7 text-xs flex-1" />
-                <Input type="time" value={form.scheduled_end?.split("T")[1]?.slice(0,5) || ""} onChange={e => setForm({ ...form, scheduled_end: (form.scheduled_end?.split("T")[0] || "") + "T" + e.target.value })} className="h-7 text-xs w-20" />
+              <div className="space-y-1">
+                <span className="text-slate-500">To</span>
+                <div className="flex gap-1">
+                  <select
+                    value={form.scheduled_end?.split("T")[0] || ""}
+                    onChange={e => setForm({ ...form, scheduled_end: e.target.value + "T" + (form.scheduled_end?.split("T")[1]?.slice(0,5) || "09:00") })}
+                    className="flex-1 h-7 text-xs border border-input rounded-md bg-white px-1"
+                  >
+                    <option value="">Date</option>
+                    {Array.from({ length: 365 }, (_, i) => { const d = new Date(); d.setDate(d.getDate() + i - 30); const v = d.toISOString().split("T")[0]; return <option key={v} value={v}>{d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</option>; })}
+                  </select>
+                  <select
+                    value={form.scheduled_end?.split("T")[1]?.slice(0,5) || "09:00"}
+                    onChange={e => setForm({ ...form, scheduled_end: (form.scheduled_end?.split("T")[0] || new Date().toISOString().split("T")[0]) + "T" + e.target.value })}
+                    className="w-24 h-7 text-xs border border-input rounded-md bg-white px-1"
+                  >
+                    {Array.from({ length: 48 }, (_, i) => { const h = String(Math.floor(i/2)).padStart(2,"0"); const m = i%2===0?"00":"30"; const v = `${h}:${m}`; const label = new Date(`2000-01-01T${v}`).toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"}); return <option key={v} value={v}>{label}</option>; })}
+                  </select>
+                </div>
               </div>
               <div className="flex items-center gap-2 pt-1">
                 <Checkbox id="anytime" checked={anytime} onCheckedChange={setAnytime} />
