@@ -48,6 +48,8 @@ import ReceiptScanner from './pages/ReceiptScanner';
 import AccountingAudit from './pages/AccountingAudit';
 import ProductOverview from './pages/ProductOverview';
 import PaymentConfirmation from './pages/PaymentConfirmation';
+import PrivacyPolicyPublic from './pages/PrivacyPolicyPublic';
+import TermsAndConditions from './pages/TermsAndConditions';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 
@@ -185,6 +187,8 @@ function App() {
             <Route path="/CustomerPortal" element={<CustomerPortal />} />
             <Route path="/ProductOverview" element={<ProductOverview />} />
             <Route path="/PaymentConfirmation" element={<PaymentConfirmation />} />
+            <Route path="/privacy" element={<PrivacyPolicyPublic />} />
+            <Route path="/terms" element={<TermsAndConditions />} />
             <Route path="*" element={<AuthenticatedApp />} />
           </Routes>
         </Router>
