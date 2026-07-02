@@ -46,10 +46,15 @@ import Marketplace from './pages/Marketplace';
 import Inventory from './pages/Inventory';
 import ReceiptScanner from './pages/ReceiptScanner';
 import AccountingAudit from './pages/AccountingAudit';
+import AccountingAdmin from './pages/AccountingAdmin';
+import Companies from './pages/Companies';
+import Users from './pages/Users';
+import Reports from './pages/Reports';
 import ProductOverview from './pages/ProductOverview';
 import PaymentConfirmation from './pages/PaymentConfirmation';
 import PrivacyPolicyPublic from './pages/PrivacyPolicyPublic';
 import TermsAndConditions from './pages/TermsAndConditions';
+import AdminConsoleLayout from './components/AdminConsoleLayout';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 
@@ -164,6 +169,17 @@ const AuthenticatedApp = () => {
       <Route path="/ReceiptScanner" element={<LayoutWrapper currentPageName="ReceiptScanner"><ReceiptScanner /></LayoutWrapper>} />
       <Route path="/Team" element={<LayoutWrapper currentPageName="CompanySettings"><CompanySettings /></LayoutWrapper>} />
       <Route path="/AccountingAudit" element={<LayoutWrapper currentPageName="AccountingAudit"><AccountingAudit /></LayoutWrapper>} />
+
+      {/* Admin Console routes */}
+      <Route path="/admin/saas-admin" element={<AdminConsoleLayout><SaaSAdminDashboard /></AdminConsoleLayout>} />
+      <Route path="/admin/dashboard" element={<AdminConsoleLayout><SuperAdminDashboard /></AdminConsoleLayout>} />
+      <Route path="/admin/marketing" element={<AdminConsoleLayout><Marketing /></AdminConsoleLayout>} />
+      <Route path="/admin/accounting" element={<AdminConsoleLayout><AccountingAdmin /></AdminConsoleLayout>} />
+      <Route path="/admin/companies" element={<AdminConsoleLayout><Companies /></AdminConsoleLayout>} />
+      <Route path="/admin/employees" element={<AdminConsoleLayout><Users /></AdminConsoleLayout>} />
+      <Route path="/admin/reports" element={<AdminConsoleLayout><Reports /></AdminConsoleLayout>} />
+      <Route path="/admin/audit-log" element={<AdminConsoleLayout><AuditLog /></AdminConsoleLayout>} />
+
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );

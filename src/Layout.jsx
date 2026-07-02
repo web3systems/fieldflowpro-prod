@@ -5,7 +5,7 @@ import { createPageUrl } from "@/utils";
 import {
   LayoutDashboard, Users, Briefcase, FileText, DollarSign,
   UserPlus, Settings, Building2, Menu, X, ChevronDown,
-  Bell, LogOut, Wrench, BarChart3, Globe, Home, UsersRound, CalendarDays, ShieldCheck, CreditCard, Megaphone, Calculator, MessageCircle, Mail, BookOpen, CheckSquare, Package, Boxes, Camera, Mic
+  Bell, LogOut, Wrench, BarChart3, Globe, Home, UsersRound, CalendarDays, ShieldCheck, CreditCard, Megaphone, Calculator, MessageCircle, Mail, BookOpen, CheckSquare, Package, Boxes, Camera, Mic, ExternalLink
 } from "lucide-react";
 import NotificationBell from "@/components/notifications/NotificationBell";
 import SeoHead from "@/components/seo/SeoHead";
@@ -64,16 +64,7 @@ const navItems = [
   { label: "Documentation", icon: BookOpen, page: "Documentation" },
 ];
 
-const adminItems = [
-  { label: "SaaS Admin", icon: ShieldCheck, page: "SaaSAdminDashboard" },
-  { label: "Admin Dashboard", icon: ShieldCheck, page: "SuperAdminDashboard" },
-  { label: "Marketing", icon: Megaphone, page: "Marketing" },
-  { label: "Accounting", icon: Calculator, page: "AccountingAdmin" },
-  { label: "Companies", icon: Building2, page: "Companies" },
-  { label: "Employees", icon: UsersRound, page: "Users" },
-  { label: "Reports", icon: BarChart3, page: "Reports" },
-  { label: "Audit Log", icon: ShieldCheck, page: "AuditLog" },
-];
+
 
 export default function Layout({ children, currentPageName }) {
   const [user, setUser] = useState(null);
@@ -199,6 +190,21 @@ export default function Layout({ children, currentPageName }) {
             </button>
           </div>
 
+          {/* Admin Console switch — platform admins only */}
+          {isSuperAdmin && (
+            <div className="px-4 py-2 border-b border-slate-700/50">
+              <Link
+                to="/admin/saas-admin"
+                onClick={() => setSidebarOpen(false)}
+                className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-orange-500/10 hover:bg-orange-500/20 text-orange-400 hover:text-orange-300 text-xs font-semibold transition-colors"
+              >
+                <ShieldCheck className="w-3.5 h-3.5 flex-shrink-0" />
+                Switch to Admin Console
+                <ExternalLink className="w-3 h-3 ml-auto flex-shrink-0" />
+              </Link>
+            </div>
+          )}
+
           {/* Company Switcher */}
           {companies.length > 0 && (
             <div className="px-4 py-3 border-b border-slate-700/50">
@@ -256,30 +262,7 @@ export default function Layout({ children, currentPageName }) {
               </Link>
             ))}
 
-            {isSuperAdmin && (
-              <>
-                <div className="pt-4 pb-1 px-3">
-                  <p className="text-slate-600 text-xs font-semibold uppercase tracking-wider">Admin</p>
-                </div>
-                {adminItems.map(({ label, icon: Icon, page }) => (
-                  <Link
-                    key={page}
-                    to={createPageUrl(page)}
-                    onClick={() => setSidebarOpen(false)}
-                    className={`
-                      flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all
-                      ${isActive(page)
-                        ? "bg-blue-600 text-white"
-                        : "text-slate-400 hover:text-white hover:bg-slate-800"
-                      }
-                    `}
-                  >
-                    <Icon className="w-4 h-4 flex-shrink-0" />
-                    {label}
-                  </Link>
-                ))}
-              </>
-            )}
+
           </nav>
 
           {/* User */}
