@@ -103,7 +103,12 @@ export default function InvoiceEstimatePreview({
             <tbody>
               {lineItems.map((item, idx) => (
                 <tr key={idx} className="border-b border-slate-200 hover:bg-slate-50">
-                  <td className="px-4 py-3 text-sm text-slate-700">{item.description}</td>
+                  <td className="px-4 py-3 text-sm text-slate-700">
+                    <span>{item.description}</span>
+                    {(item.notes || item.comments) && (
+                      <p className="text-xs text-slate-400 italic mt-0.5">{item.notes || item.comments}</p>
+                    )}
+                  </td>
                   <td className="px-4 py-3 text-center text-sm text-slate-700">${(item.unit_price || 0).toFixed(2)}</td>
                   <td className="px-4 py-3 text-center text-sm text-slate-700">{item.quantity || 1}</td>
                   <td className="px-4 py-3 text-right text-sm font-semibold text-slate-900">${(item.total || 0).toFixed(2)}</td>

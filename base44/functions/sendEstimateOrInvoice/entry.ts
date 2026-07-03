@@ -97,7 +97,10 @@ Deno.serve(async (req) => {
     function buildLineItemsHtml(lineItems) {
       return (lineItems || []).map(item => `
         <tr>
-          <td style="padding:14px 16px;border-bottom:1px solid #e5e7eb;font-size:14px;color:#111827;">${item.description || 'Item'}</td>
+          <td style="padding:14px 16px;border-bottom:1px solid #e5e7eb;font-size:14px;color:#111827;">
+            ${item.description || 'Item'}
+            ${(item.notes || item.comments) ? `<div style="font-size:12px;color:#9ca3af;font-style:italic;margin-top:3px;">${item.notes || item.comments}</div>` : ''}
+          </td>
           <td style="padding:14px 16px;border-bottom:1px solid #e5e7eb;font-size:14px;color:#374151;text-align:center;">${item.quantity || 1}</td>
           <td style="padding:14px 16px;border-bottom:1px solid #e5e7eb;font-size:14px;color:#374151;text-align:right;">$${(item.unit_price || 0).toFixed(2)}</td>
           <td style="padding:14px 16px;border-bottom:1px solid #e5e7eb;font-size:14px;font-weight:600;color:#111827;text-align:right;">$${(item.total || 0).toFixed(2)}</td>
