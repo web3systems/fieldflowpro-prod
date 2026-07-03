@@ -48,6 +48,7 @@ import ReceiptScanner from './pages/ReceiptScanner';
 import AccountingAudit from './pages/AccountingAudit';
 import AccountingAdmin from './pages/AccountingAdmin';
 import Companies from './pages/Companies';
+import AdminCompanies from './pages/AdminCompanies';
 import Users from './pages/Users';
 import Reports from './pages/Reports';
 import ProductOverview from './pages/ProductOverview';
@@ -175,7 +176,7 @@ const AuthenticatedApp = () => {
       <Route path="/admin/dashboard" element={<AdminConsoleLayout><SuperAdminDashboard /></AdminConsoleLayout>} />
       <Route path="/admin/marketing" element={<AdminConsoleLayout><Marketing /></AdminConsoleLayout>} />
       <Route path="/admin/accounting" element={<AdminConsoleLayout><AccountingAdmin /></AdminConsoleLayout>} />
-      <Route path="/admin/companies" element={<AdminConsoleLayout><Companies /></AdminConsoleLayout>} />
+      <Route path="/admin/companies" element={<AdminConsoleLayout><AdminCompanies /></AdminConsoleLayout>} />
       <Route path="/admin/employees" element={<AdminConsoleLayout><Users /></AdminConsoleLayout>} />
       <Route path="/admin/reports" element={<AdminConsoleLayout><Reports /></AdminConsoleLayout>} />
       <Route path="/admin/audit-log" element={<AdminConsoleLayout><AuditLog /></AdminConsoleLayout>} />
