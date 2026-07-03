@@ -471,7 +471,7 @@ export default function Landing() {
                   { feature: "Built-in AI workflow agent", ffp: "✅ Flow included", j: "❌ None", hp: "❌ None" },
                   { feature: "Free trial — no credit card", ffp: "✅ 14 days free", j: "⚠️ Demo required", hp: "⚠️ Demo required" },
                   { feature: "Built by service business owners", ffp: "✅ Yes", j: "❌ No", hp: "❌ No" },
-                  { feature: "Starting price", ffp: "$69/mo", j: "$39/mo (1 user only)", hp: "$59/mo (limited)" },
+                  { feature: "Starting price", ffp: "$49/mo", j: "$39/mo (1 user only)", hp: "$59/mo (limited)" },
                 ].map(({ feature, ffp, j, hp }, i) => (
                   <tr
                     key={feature}
@@ -611,7 +611,7 @@ export default function Landing() {
             {[
               {
                 name: "Starter",
-                price: "$69",
+                price: "$49",
                 period: "/mo",
                 subtitle: "Perfect for solo operators and small crews",
                 features: [
@@ -629,7 +629,7 @@ export default function Landing() {
               },
               {
                 name: "Growth",
-                price: "$149",
+                price: "$99",
                 period: "/mo",
                 subtitle: "For growing teams running multiple locations",
                 features: [
@@ -647,7 +647,7 @@ export default function Landing() {
               },
               {
                 name: "Pro",
-                price: "$299",
+                price: "$199",
                 period: "/mo",
                 subtitle: "For serious operators running multiple companies at scale",
                 features: [
