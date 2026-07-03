@@ -6,7 +6,7 @@ import { createPageUrl } from "@/utils";
 import {
   ArrowLeft, DollarSign, User, Calendar, CreditCard, Mail,
   Download, Save, Edit2, Plus, Trash2, CheckCircle, AlertCircle, Clock, ExternalLink,
-  Phone, MapPin, Banknote
+  Phone, MapPin, Banknote, ShieldCheck, Lock
 } from "lucide-react";
 import RecordPaymentModal from "@/components/invoices/RecordPaymentModal";
 import ManualChargeModal from "@/components/invoices/ManualChargeModal";
@@ -211,6 +211,23 @@ export default function InvoiceDetail() {
   const amountDue = (form.total || 0) - (form.amount_paid || 0);
   const canPay = !["paid", "void"].includes(form.status);
 
+  // Honey-Do Crew: Tim Parrow approval required before PDF/email
+  const isHoneyDoCrew = activeCompany?.name?.toLowerCase().includes("honey-do");
+  const needsApproval = isHoneyDoCrew && !form.manager_approved;
+  const canApproveAsManager = user?.role === "admin" || user?.role === "super_admin" || user?.role === "manager";
+
+  async function handleManagerApprove() {
+    await base44.entities.Invoice.update(id, { manager_approved: true });
+    setForm(f => ({ ...f, manager_approved: true }));
+    setInvoice(inv => ({ ...inv, manager_approved: true }));
+  }
+
+  async function handleRevokeApproval() {
+    await base44.entities.Invoice.update(id, { manager_approved: false });
+    setForm(f => ({ ...f, manager_approved: false }));
+    setInvoice(inv => ({ ...inv, manager_approved: false }));
+  }
+
   if (loading) return (
     <div className="p-6 space-y-4">
       {[1,2,3].map(i => <div key={i} className="h-32 bg-slate-100 rounded-xl animate-pulse" />)}
@@ -292,12 +309,12 @@ export default function InvoiceDetail() {
           </div>
         </div>
         <div className="flex gap-2 flex-shrink-0">
-          <Button size="sm" variant="outline" onClick={handleDownloadPdf} className="gap-1 text-xs hidden sm:flex">
-            <Download className="w-3.5 h-3.5" /> PDF
+          <Button size="sm" variant="outline" onClick={needsApproval ? () => alert("This invoice requires approval from Tim Parrow before it can be downloaded as PDF.") : handleDownloadPdf} className={`gap-1 text-xs hidden sm:flex ${needsApproval ? "opacity-50" : ""}`}>
+            {needsApproval ? <Lock className="w-3.5 h-3.5" /> : <Download className="w-3.5 h-3.5" />} PDF
           </Button>
           {customer?.email && (
-            <Button size="sm" variant="outline" onClick={handleSendEmail} disabled={sendingEmail} className="gap-1 text-xs hidden sm:flex border-blue-200 text-blue-600 hover:bg-blue-50">
-              <Mail className="w-3.5 h-3.5" />{sendingEmail ? "Sending..." : "Send Email"}
+            <Button size="sm" variant="outline" onClick={needsApproval ? () => alert("This invoice requires approval from Tim Parrow before emailing to the customer.") : handleSendEmail} disabled={sendingEmail} className={`gap-1 text-xs hidden sm:flex border-blue-200 text-blue-600 hover:bg-blue-50 ${needsApproval ? "opacity-50" : ""}`}>
+              {needsApproval ? <Lock className="w-3.5 h-3.5" /> : <Mail className="w-3.5 h-3.5" />}{sendingEmail ? "Sending..." : "Send Email"}
             </Button>
           )}
           <Button
@@ -382,6 +399,23 @@ export default function InvoiceDetail() {
           <Card className="border-0 shadow-sm">
             <CardContent className="p-4 space-y-2">
               <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">Actions</p>
+
+              {/* Honey-Do Crew approval banner */}
+              {isHoneyDoCrew && (
+                <div className={`p-3 rounded-lg border text-sm mb-1 ${form.manager_approved ? "bg-green-50 border-green-200 text-green-700" : "bg-amber-50 border-amber-200 text-amber-800"}`}>
+                  <div className="flex items-center gap-2 font-medium mb-1">
+                    <ShieldCheck className="w-4 h-4 flex-shrink-0" />
+                    {form.manager_approved ? "Approved by Tim Parrow" : "Awaiting Tim Parrow Approval"}
+                  </div>
+                  <p className="text-xs opacity-80 mb-2">{form.manager_approved ? "PDF and email are unlocked." : "PDF and email to customer are locked until approved."}</p>
+                  {canApproveAsManager && (
+                    form.manager_approved
+                      ? <button onClick={handleRevokeApproval} className="text-xs underline text-green-700 hover:text-green-900">Revoke approval</button>
+                      : <button onClick={handleManagerApprove} className="w-full py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold rounded-lg">✓ Approve as Tim Parrow</button>
+                  )}
+                </div>
+              )}
+
               {canPay && (
                 <>
                   <Button onClick={handleStripePayment} disabled={paymentLoading} className="w-full gap-2 bg-violet-600 hover:bg-violet-700">
@@ -413,8 +447,8 @@ export default function InvoiceDetail() {
                 </Button>
               )}
               {customer?.email && (
-                <Button variant="outline" onClick={handleSendEmail} disabled={sendingEmail} className="w-full gap-2 border-blue-200 text-blue-600 hover:bg-blue-50">
-                  <Mail className="w-4 h-4" />{sendingEmail ? "Sending..." : "Email Invoice to Customer"}
+                <Button variant="outline" onClick={needsApproval ? () => alert("This invoice requires approval from Tim Parrow before emailing to the customer.") : handleSendEmail} disabled={sendingEmail} className={`w-full gap-2 border-blue-200 text-blue-600 hover:bg-blue-50 ${needsApproval ? "opacity-50" : ""}`}>
+                  {needsApproval ? <Lock className="w-4 h-4" /> : <Mail className="w-4 h-4" />}{sendingEmail ? "Sending..." : "Email Invoice to Customer"}
                 </Button>
               )}
             </CardContent>

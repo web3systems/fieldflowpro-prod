@@ -30,6 +30,11 @@
       ],
       "default": "draft"
     },
+    "manager_approved": {
+      "type": "boolean",
+      "default": false,
+      "description": "Required for Honey-Do Crew: must be approved by Tim Parrow before PDF/email is allowed"
+    },
     "line_items": {
       "type": "array",
       "items": {

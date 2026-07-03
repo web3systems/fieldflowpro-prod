@@ -7,7 +7,7 @@ import { createPageUrl } from "@/utils";
 import {
   ArrowLeft, Download, Copy, CheckCircle, XCircle, Briefcase,
   Plus, Save, User, Calendar, DollarSign, FileText, Edit2, X,
-  Mail, Phone, MapPin, Sparkles
+  Mail, Phone, MapPin, Sparkles, ShieldCheck, Lock
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -51,7 +51,7 @@ function makeOption(index) {
 export default function EstimateDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { activeCompany } = useApp();
+  const { activeCompany, user } = useApp();
 
   const [estimate, setEstimate] = useState(null);
   const [customers, setCustomers] = useState([]);
@@ -311,6 +311,23 @@ export default function EstimateDetail() {
   const canAct = !["approved", "declined"].includes(form.status);
   const opt = getOption();
 
+  // Honey-Do Crew: Tim Parrow approval required before PDF/email
+  const isHoneyDoCrew = activeCompany?.name?.toLowerCase().includes("honey-do");
+  const needsApproval = isHoneyDoCrew && !form.manager_approved;
+  const canApproveAsManager = user?.role === "admin" || user?.role === "super_admin" || user?.role === "manager";
+
+  async function handleManagerApprove() {
+    await base44.entities.Estimate.update(id, { manager_approved: true });
+    setForm(f => ({ ...f, manager_approved: true }));
+    setEstimate(e => ({ ...e, manager_approved: true }));
+  }
+
+  async function handleRevokeApproval() {
+    await base44.entities.Estimate.update(id, { manager_approved: false });
+    setForm(f => ({ ...f, manager_approved: false }));
+    setEstimate(e => ({ ...e, manager_approved: false }));
+  }
+
   return (
     <div className="p-4 md:p-6 pb-24 lg:pb-6 max-w-7xl mx-auto">
       {showAI && (
@@ -343,8 +360,8 @@ export default function EstimateDetail() {
           <Button size="sm" onClick={() => setShowAI(true)} className="gap-1 text-xs bg-violet-600 hover:bg-violet-700">
             <Sparkles className="w-3.5 h-3.5" /> AI Estimate
           </Button>
-          <Button size="sm" variant="outline" onClick={handleDownloadPdf} className="gap-1 text-xs hidden sm:flex">
-            <Download className="w-3.5 h-3.5" /> PDF
+          <Button size="sm" variant="outline" onClick={needsApproval ? () => alert("This estimate requires approval from Tim Parrow before it can be downloaded as PDF.") : handleDownloadPdf} className={`gap-1 text-xs hidden sm:flex ${needsApproval ? "opacity-50" : ""}`}>
+            {needsApproval ? <Lock className="w-3.5 h-3.5" /> : <Download className="w-3.5 h-3.5" />} PDF
           </Button>
           <Button size="sm" variant="outline" onClick={handleDuplicate} disabled={duplicating} className="gap-1 text-xs hidden sm:flex">
             <Copy className="w-3.5 h-3.5" /> {duplicating ? "..." : "Duplicate"}
@@ -460,10 +477,26 @@ export default function EstimateDetail() {
                 </div>
               </div>
 
+              {/* Honey-Do Crew approval banner */}
+              {isHoneyDoCrew && (
+                <div className={`p-3 rounded-lg border text-sm mb-1 ${form.manager_approved ? "bg-green-50 border-green-200 text-green-700" : "bg-amber-50 border-amber-200 text-amber-800"}`}>
+                  <div className="flex items-center gap-2 font-medium mb-1">
+                    <ShieldCheck className="w-4 h-4 flex-shrink-0" />
+                    {form.manager_approved ? "Approved by Tim Parrow" : "Awaiting Tim Parrow Approval"}
+                  </div>
+                  <p className="text-xs opacity-80 mb-2">{form.manager_approved ? "PDF and email are unlocked." : "PDF download and email to customer are locked until approved."}</p>
+                  {canApproveAsManager && (
+                    form.manager_approved
+                      ? <button onClick={handleRevokeApproval} className="text-xs underline text-green-700 hover:text-green-900">Revoke approval</button>
+                      : <button onClick={handleManagerApprove} className="w-full py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold rounded-lg">✓ Approve as Tim Parrow</button>
+                  )}
+                </div>
+              )}
+
               {canAct && (
                 <>
-                  <Button onClick={handleSendEmail} disabled={sendingEmail} className="w-full gap-2 bg-blue-600 hover:bg-blue-700">
-                    <Mail className="w-4 h-4" />
+                  <Button onClick={needsApproval ? () => alert("This estimate requires approval from Tim Parrow before emailing to the customer.") : handleSendEmail} disabled={sendingEmail} className={`w-full gap-2 ${needsApproval ? "bg-slate-400 hover:bg-slate-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"}`}>
+                    {needsApproval ? <Lock className="w-4 h-4" /> : <Mail className="w-4 h-4" />}
                     {sendingEmail ? "Sending..." : "Email to Customer"}
                   </Button>
                   <Button onClick={handleDecline} variant="outline" className="w-full gap-2 border-red-200 text-red-600 hover:bg-red-50">
@@ -671,8 +704,8 @@ export default function EstimateDetail() {
           )}
 
           <div className="flex justify-end gap-2">
-            <Button onClick={handleSendEmail} disabled={sendingEmail} variant="outline" className="gap-2">
-              <Mail className="w-4 h-4" />{sendingEmail ? "Sending..." : "Email to Customer"}
+            <Button onClick={needsApproval ? () => alert("This estimate requires approval from Tim Parrow before emailing to the customer.") : handleSendEmail} disabled={sendingEmail} variant="outline" className={`gap-2 ${needsApproval ? "opacity-50" : ""}`}>
+              {needsApproval ? <Lock className="w-4 h-4" /> : <Mail className="w-4 h-4" />}{sendingEmail ? "Sending..." : "Email to Customer"}
             </Button>
             <Button onClick={handleSave} disabled={saving} className="gap-2 bg-blue-600 hover:bg-blue-700">
               <Save className="w-4 h-4" />{saving ? "Saving..." : "Save Changes"}
