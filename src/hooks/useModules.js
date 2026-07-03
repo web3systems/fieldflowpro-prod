@@ -10,15 +10,11 @@ export function useModules(companyId) {
 
   useEffect(() => {
     if (!companyId) return;
-    if (cache[companyId]) {
-      setActiveModules(cache[companyId]);
-      setLoading(false);
-      return;
-    }
+    // Always re-fetch (don't use stale cache) — just use cache as initial value
+    setLoading(true);
     base44.entities.CompanyModule.filter({ company_id: companyId, status: "active" })
       .then(mods => {
         const keys = mods.map(m => m.module_key);
-        cache[companyId] = keys;
         setActiveModules(keys);
       })
       .catch(() => {})
@@ -30,7 +26,7 @@ export function useModules(companyId) {
   }
 
   function invalidateCache() {
-    delete cache[companyId];
+    // no-op kept for API compatibility
   }
 
   return { activeModules, loading, hasModule, invalidateCache };
