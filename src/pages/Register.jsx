@@ -7,12 +7,12 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Check, Globe, Zap, Shield, Star } from "lucide-react";
 
-const SIGNUP_PLANS = ["starter", "professional", "enterprise"];
+const SIGNUP_PLANS = ["starter", "growth", "pro"];
 
 export default function Register() {
   const urlParams = new URLSearchParams(window.location.search);
   const [step, setStep] = useState(urlParams.get('welcome') === 'true' ? 'welcome' : 'plan');
-  const [selectedPlan, setSelectedPlan] = useState("professional");
+  const [selectedPlan, setSelectedPlan] = useState("growth");
   const [form, setForm] = useState({ name: "", email: "", company_name: "", phone: "", password: "" });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -122,10 +122,7 @@ export default function Register() {
                         <span className="text-3xl font-bold text-white">${plan.price}</span>
                         <span className="text-blue-300 text-sm mb-1">/month</span>
                       </div>
-                      <p className="text-blue-300 text-xs mt-1">
-                        {plan.limits.users ? `Up to ${plan.limits.users} users` : "Unlimited users"}
-                        {plan.limits.jobs_per_month ? ` · ${plan.limits.jobs_per_month} jobs/mo` : " · Unlimited jobs"}
-                      </p>
+                      <p className="text-blue-300 text-xs mt-1">Flat rate · No per-user fees</p>
                     </div>
                     <ul className="space-y-2">
                       {plan.features.map(f => (

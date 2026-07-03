@@ -1,4 +1,6 @@
 // Subscription plan config — single source of truth
+// NOTE: priceId fields for starter/growth/pro need real Stripe Price objects created
+// at $69/$149/$299 before live billing is enabled. Do not invent IDs here.
 
 export const PLANS = {
   trial: {
@@ -6,36 +8,32 @@ export const PLANS = {
     price: 0,
     color: 'text-slate-600',
     bg: 'bg-slate-100',
-    limits: { users: 2, jobs_per_month: 50, subsidiaries: 1 },
     features: ['Core CRM', 'Jobs & Scheduling', 'Invoicing', 'Customer Portal'],
   },
   starter: {
     name: 'Starter',
-    price: 49,
-    priceId: 'price_1TC3qE1h2Mdv0bDiUHlkJa2h',
+    price: 69,
+    priceId: null, // TODO: create Stripe price at $69/mo
     color: 'text-blue-600',
     bg: 'bg-blue-50',
-    limits: { users: 3, jobs_per_month: 100, subsidiaries: 1 },
-    features: ['Core CRM', 'Jobs & Scheduling', 'Invoicing', 'Customer Portal', 'Lead Capture', 'Estimates', '1 Subsidiary'],
+    features: ['1 company included', 'Unlimited jobs', 'Unlimited team members', 'Core CRM', 'Jobs & Scheduling', 'Invoicing', 'Customer Portal', 'Lead Capture', 'Estimates'],
   },
-  professional: {
-    name: 'Professional',
-    price: 99,
-    priceId: 'price_1TC3qE1h2Mdv0bDi8fyZ8r78',
+  growth: {
+    name: 'Growth',
+    price: 149,
+    priceId: null, // TODO: create Stripe price at $149/mo
     color: 'text-violet-600',
     bg: 'bg-violet-50',
-    limits: { users: 10, jobs_per_month: null, subsidiaries: 5 },
-    features: ['Everything in Starter', 'Up to 5 Subsidiaries', 'Accounting Module', 'Marketing Campaigns', 'Reports & Analytics', 'Stripe Payments', 'Recurring Jobs'],
+    features: ['3 companies included', '+$29/mo per additional company', 'Everything in Starter', 'Multi-company dashboard', 'Custom email branding', 'Priority support', 'All AI agents included'],
     popular: true,
   },
-  enterprise: {
-    name: 'Enterprise',
-    price: 199,
-    priceId: 'price_1TdvyE1h2Mdv0bDiVdINdmfC',
+  pro: {
+    name: 'Pro',
+    price: 299,
+    priceId: null, // TODO: create Stripe price at $299/mo
     color: 'text-amber-600',
     bg: 'bg-amber-50',
-    limits: { users: null, jobs_per_month: null, subsidiaries: null },
-    features: ['Everything in Professional', 'Unlimited Subsidiaries', 'Unlimited Users', 'Priority Support', 'Custom Onboarding', 'SLA Guarantee'],
+    features: ['10 companies included', '+$19/mo per additional company', 'Everything in Growth', 'White label ready', 'API access', 'Advanced reporting', 'Dedicated support'],
   },
 };
 
@@ -46,12 +44,11 @@ export function canAccessFeature(subscription, feature) {
   if (!['trialing', 'active'].includes(status)) return false;
 
   const featureMap = {
-    accounting: ['professional', 'enterprise'],
-    marketing: ['professional', 'enterprise'],
-    reports: ['professional', 'enterprise'],
-    stripe_payments: ['professional', 'enterprise'],
-    recurring_jobs: ['professional', 'enterprise'],
-    unlimited_users: ['enterprise'],
+    accounting: ['growth', 'pro'],
+    marketing: ['growth', 'pro'],
+    reports: ['growth', 'pro'],
+    stripe_payments: ['growth', 'pro'],
+    recurring_jobs: ['growth', 'pro'],
   };
 
   const allowed = featureMap[feature];

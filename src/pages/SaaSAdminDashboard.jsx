@@ -41,7 +41,7 @@ export default function SaaSAdminDashboard() {
       const totalRevenue = subscriptions
         .filter(s => s.status === 'active' || s.status === 'trialing')
         .reduce((sum, s) => {
-          const planPrice = { starter: 49, professional: 99, enterprise: 199 };
+          const planPrice = { starter: 69, growth: 149, pro: 299 };
           return sum + (planPrice[s.plan] || 0);
         }, 0);
 
