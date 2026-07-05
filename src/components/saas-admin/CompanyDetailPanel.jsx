@@ -9,7 +9,7 @@ import {
   X, Building2, Mail, Phone, Globe, MapPin, Calendar, CreditCard,
   Users, Briefcase, FileText, DollarSign, Clock, AlertTriangle,
   CheckCircle, RefreshCw, Ban, Send, ShieldCheck, ChevronRight,
-  ExternalLink, Wrench, ToggleLeft, ToggleRight, Edit3, Save
+  ExternalLink, Wrench, ToggleLeft, ToggleRight, Edit3, Save, Plus, Trash2, Pencil
 } from "lucide-react";
 
 const STATUS_COLORS = {
@@ -27,6 +27,8 @@ const PLAN_COLORS = {
   enterprise: "bg-amber-50 text-amber-700 border-amber-200",
 };
 
+const INDUSTRY_OPTIONS = ["cleaning","landscaping","handyman","painting","plumbing","electrical","hvac","other"];
+
 export default function CompanyDetailPanel({ company, subscription, allCompanies = [], onClose, onRefresh }) {
   const [metrics, setMetrics] = useState(null);
   const [loadingMetrics, setLoadingMetrics] = useState(true);
@@ -40,6 +42,12 @@ export default function CompanyDetailPanel({ company, subscription, allCompanies
   });
   const [note, setNote] = useState("");
   const [actionMsg, setActionMsg] = useState("");
+  const [subsidiaries, setSubsidiaries] = useState(allCompanies.filter(c => c.parent_company_id === company.id));
+  const [editingSubId, setEditingSubId] = useState(null);
+  const [editingSubForm, setEditingSubForm] = useState({});
+  const [addingSubsidiary, setAddingSubsidiary] = useState(false);
+  const [newSubForm, setNewSubForm] = useState({ name: "", industry: "other", is_active: true });
+  const [subActionLoading, setSubActionLoading] = useState(null);
 
   useEffect(() => {
     loadMetrics();
@@ -117,6 +125,45 @@ export default function CompanyDetailPanel({ company, subscription, allCompanies
     } finally {
       setActionLoading(null);
     }
+  }
+
+  async function handleToggleSubActive(sub) {
+    setSubActionLoading(sub.id + "_toggle");
+    await base44.entities.Company.update(sub.id, { is_active: !sub.is_active });
+    setSubsidiaries(prev => prev.map(s => s.id === sub.id ? { ...s, is_active: !s.is_active } : s));
+    setSubActionLoading(null);
+  }
+
+  function startEditSub(sub) {
+    setEditingSubId(sub.id);
+    setEditingSubForm({ name: sub.name, industry: sub.industry || "other", phone: sub.phone || "", email: sub.email || "" });
+  }
+
+  async function handleSaveSubEdit() {
+    setSubActionLoading(editingSubId + "_save");
+    await base44.entities.Company.update(editingSubId, editingSubForm);
+    setSubsidiaries(prev => prev.map(s => s.id === editingSubId ? { ...s, ...editingSubForm } : s));
+    setEditingSubId(null);
+    setSubActionLoading(null);
+  }
+
+  async function handleDeleteSub(sub) {
+    if (!window.confirm(`Remove ${sub.name} as a subsidiary? This won't delete the company, just unlinks it from the parent.`)) return;
+    setSubActionLoading(sub.id + "_delete");
+    await base44.entities.Company.update(sub.id, { parent_company_id: null });
+    setSubsidiaries(prev => prev.filter(s => s.id !== sub.id));
+    setSubActionLoading(null);
+  }
+
+  async function handleAddSubsidiary() {
+    if (!newSubForm.name.trim()) return;
+    setSubActionLoading("adding");
+    const created = await base44.entities.Company.create({ ...newSubForm, parent_company_id: company.id });
+    setSubsidiaries(prev => [...prev, created]);
+    setNewSubForm({ name: "", industry: "other", is_active: true });
+    setAddingSubsidiary(false);
+    setSubActionLoading(null);
+    setActionMsg(`Subsidiary "${created.name}" created.`);
   }
 
   async function handleCancelSubscription() {
@@ -375,35 +422,124 @@ export default function CompanyDetailPanel({ company, subscription, allCompanies
             </div>
           </Section>
 
-          {/* Subsidiaries — only shown on master companies */}
-          {(() => {
-            const subs = allCompanies.filter(c => c.parent_company_id === company.id);
-            if (subs.length === 0) return null;
-            return (
-              <Section title={`Subsidiaries (${subs.length})`} icon={Building2}>
-                <div className="space-y-2">
-                  {subs.map(sub => (
-                    <div key={sub.id} className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg border border-slate-100">
-                      <div
-                        className="w-7 h-7 rounded-md flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
-                        style={{ backgroundColor: sub.primary_color || '#64748b' }}
-                      >
-                        {sub.name?.[0]}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-slate-800 truncate">{sub.name}</p>
-                        <p className="text-xs text-slate-400 capitalize">{sub.industry}</p>
-                      </div>
-                      <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${sub.is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'}`}>
-                        {sub.is_active ? 'Active' : 'Inactive'}
-                      </span>
+          {/* Subsidiaries — full management for master companies */}
+          {!company.parent_company_id && (
+            <Section
+              title={`Subsidiaries (${subsidiaries.length})`}
+              icon={Building2}
+              action={
+                <button
+                  onClick={() => setAddingSubsidiary(v => !v)}
+                  className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 font-medium"
+                >
+                  <Plus className="w-3 h-3" /> Add
+                </button>
+              }
+            >
+              <div className="space-y-2">
+                {/* Add new subsidiary form */}
+                {addingSubsidiary && (
+                  <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg space-y-2">
+                    <p className="text-xs font-semibold text-blue-800 mb-1">New Subsidiary</p>
+                    <Input
+                      value={newSubForm.name}
+                      onChange={e => setNewSubForm(f => ({ ...f, name: e.target.value }))}
+                      placeholder="Subsidiary name..."
+                      className="h-8 text-sm"
+                    />
+                    <Select value={newSubForm.industry} onValueChange={v => setNewSubForm(f => ({ ...f, industry: v }))}>
+                      <SelectTrigger className="h-8 text-sm"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {INDUSTRY_OPTIONS.map(i => <SelectItem key={i} value={i} className="capitalize">{i}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                    <div className="flex gap-2">
+                      <Button size="sm" onClick={handleAddSubsidiary} disabled={subActionLoading === "adding" || !newSubForm.name.trim()} className="gap-1 text-xs h-7">
+                        <Save className="w-3 h-3" /> {subActionLoading === "adding" ? "Creating..." : "Create"}
+                      </Button>
+                      <Button size="sm" variant="outline" onClick={() => setAddingSubsidiary(false)} className="text-xs h-7">Cancel</Button>
                     </div>
-                  ))}
-                  <p className="text-xs text-slate-400 mt-1">Subsidiaries share this company's subscription and are managed by its owner.</p>
-                </div>
-              </Section>
-            );
-          })()}
+                  </div>
+                )}
+
+                {subsidiaries.length === 0 && !addingSubsidiary && (
+                  <p className="text-sm text-slate-400 py-2">No subsidiaries yet. Add one above.</p>
+                )}
+
+                {subsidiaries.map(sub => (
+                  <div key={sub.id} className="border border-slate-200 rounded-lg overflow-hidden">
+                    {editingSubId === sub.id ? (
+                      <div className="p-3 bg-slate-50 space-y-2">
+                        <Input
+                          value={editingSubForm.name}
+                          onChange={e => setEditingSubForm(f => ({ ...f, name: e.target.value }))}
+                          className="h-8 text-sm"
+                          placeholder="Name"
+                        />
+                        <div className="grid grid-cols-2 gap-2">
+                          <Select value={editingSubForm.industry} onValueChange={v => setEditingSubForm(f => ({ ...f, industry: v }))}>
+                            <SelectTrigger className="h-8 text-sm"><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                              {INDUSTRY_OPTIONS.map(i => <SelectItem key={i} value={i} className="capitalize">{i}</SelectItem>)}
+                            </SelectContent>
+                          </Select>
+                          <Input value={editingSubForm.phone} onChange={e => setEditingSubForm(f => ({ ...f, phone: e.target.value }))} className="h-8 text-sm" placeholder="Phone" />
+                        </div>
+                        <Input value={editingSubForm.email} onChange={e => setEditingSubForm(f => ({ ...f, email: e.target.value }))} className="h-8 text-sm" placeholder="Email" />
+                        <div className="flex gap-2">
+                          <Button size="sm" onClick={handleSaveSubEdit} disabled={subActionLoading === sub.id + "_save"} className="gap-1 text-xs h-7">
+                            <Save className="w-3 h-3" /> {subActionLoading === sub.id + "_save" ? "Saving..." : "Save"}
+                          </Button>
+                          <Button size="sm" variant="outline" onClick={() => setEditingSubId(null)} className="text-xs h-7">Cancel</Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-3 p-3">
+                        <div
+                          className="w-7 h-7 rounded-md flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
+                          style={{ backgroundColor: sub.primary_color || '#64748b' }}
+                        >
+                          {sub.name?.[0]}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-slate-800 truncate">{sub.name}</p>
+                          <p className="text-xs text-slate-400 capitalize">{sub.industry}{sub.email ? ` · ${sub.email}` : ""}</p>
+                        </div>
+                        <div className="flex items-center gap-1.5 flex-shrink-0">
+                          <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${sub.is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'}`}>
+                            {sub.is_active ? 'Active' : 'Inactive'}
+                          </span>
+                          <button onClick={() => startEditSub(sub)} className="p-1 text-slate-400 hover:text-blue-600 rounded" title="Edit">
+                            <Pencil className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            onClick={() => handleToggleSubActive(sub)}
+                            disabled={subActionLoading === sub.id + "_toggle"}
+                            className={`p-1 rounded text-xs font-medium ${sub.is_active ? 'text-amber-500 hover:text-amber-700' : 'text-green-500 hover:text-green-700'}`}
+                            title={sub.is_active ? "Deactivate" : "Reactivate"}
+                          >
+                            {sub.is_active ? <Ban className="w-3.5 h-3.5" /> : <CheckCircle className="w-3.5 h-3.5" />}
+                          </button>
+                          <button
+                            onClick={() => handleDeleteSub(sub)}
+                            disabled={subActionLoading === sub.id + "_delete"}
+                            className="p-1 text-slate-400 hover:text-red-600 rounded"
+                            title="Unlink subsidiary"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+
+                {subsidiaries.length > 0 && (
+                  <p className="text-xs text-slate-400 mt-1">Subsidiaries share this company's subscription. Unlink removes the parent relationship without deleting the company.</p>
+                )}
+              </div>
+            </Section>
+          )}
 
           {/* Stripe Connect */}
           <Section title="Integrations" icon={CheckCircle}>
