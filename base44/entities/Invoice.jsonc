@@ -46,6 +46,9 @@
           "description": {
             "type": "string"
           },
+          "notes": {
+            "type": "string"
+          },
           "category": {
             "type": "string"
           },
