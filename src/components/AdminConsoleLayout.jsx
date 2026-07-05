@@ -13,7 +13,7 @@ const adminNavItems = [
   { label: "Admin Dashboard", icon: LayoutDashboard, path: "/admin/dashboard" },
   { label: "Marketing", icon: Megaphone, path: "/admin/marketing" },
   { label: "Companies", icon: Building2, path: "/admin/companies" },
-  { label: "Employees", icon: UsersRound, path: "/admin/employees" },
+  { label: "Users", icon: UsersRound, path: "/admin/users" },
   { label: "Reports", icon: BarChart3, path: "/admin/reports" },
   { label: "Audit Log", icon: ClipboardList, path: "/admin/audit-log" },
 ];
