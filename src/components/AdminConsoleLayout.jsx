@@ -2,16 +2,14 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import {
-  ShieldCheck, Megaphone, Building2, UsersRound,
+  ShieldCheck, Building2, UsersRound,
   BarChart3, ClipboardList, LayoutDashboard, Menu, X, LogOut,
   ArrowLeft, ChevronRight
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 const adminNavItems = [
-  { label: "SaaS Admin", icon: ShieldCheck, path: "/admin/saas-admin" },
-  { label: "Admin Dashboard", icon: LayoutDashboard, path: "/admin/dashboard" },
-  { label: "Marketing", icon: Megaphone, path: "/admin/marketing" },
+  { label: "Overview", icon: LayoutDashboard, path: "/admin/saas-admin" },
   { label: "Companies", icon: Building2, path: "/admin/companies" },
   { label: "Users", icon: UsersRound, path: "/admin/users" },
   { label: "Reports", icon: BarChart3, path: "/admin/reports" },

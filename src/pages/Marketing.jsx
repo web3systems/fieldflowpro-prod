@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import UpgradeNudge from "@/components/subscription/UpgradeNudge";
 import { canAccessFeature } from "@/lib/subscription";
 import { base44 } from "@/api/base44Client";
-import { useApp } from "../Layout";
+import { useContext } from "react";
+import { AppContext } from "../Layout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -33,7 +34,8 @@ const AUDIENCE_LABELS = {
 };
 
 export default function Marketing() {
-  const { activeCompany } = useApp();
+  const appCtx = useContext(AppContext);
+  const activeCompany = appCtx?.activeCompany;
   const { toast } = useToast();
   const [subscription, setSubscription] = useState(null);
   const [campaigns, setCampaigns] = useState([]);
