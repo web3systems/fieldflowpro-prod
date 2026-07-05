@@ -27,7 +27,7 @@ const PLAN_COLORS = {
   enterprise: "bg-amber-50 text-amber-700 border-amber-200",
 };
 
-export default function CompanyDetailPanel({ company, subscription, onClose, onRefresh }) {
+export default function CompanyDetailPanel({ company, subscription, allCompanies = [], onClose, onRefresh }) {
   const [metrics, setMetrics] = useState(null);
   const [loadingMetrics, setLoadingMetrics] = useState(true);
   const [actionLoading, setActionLoading] = useState(null);
@@ -374,6 +374,36 @@ export default function CompanyDetailPanel({ company, subscription, onClose, onR
               )}
             </div>
           </Section>
+
+          {/* Subsidiaries — only shown on master companies */}
+          {(() => {
+            const subs = allCompanies.filter(c => c.parent_company_id === company.id);
+            if (subs.length === 0) return null;
+            return (
+              <Section title={`Subsidiaries (${subs.length})`} icon={Building2}>
+                <div className="space-y-2">
+                  {subs.map(sub => (
+                    <div key={sub.id} className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg border border-slate-100">
+                      <div
+                        className="w-7 h-7 rounded-md flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
+                        style={{ backgroundColor: sub.primary_color || '#64748b' }}
+                      >
+                        {sub.name?.[0]}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-slate-800 truncate">{sub.name}</p>
+                        <p className="text-xs text-slate-400 capitalize">{sub.industry}</p>
+                      </div>
+                      <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${sub.is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'}`}>
+                        {sub.is_active ? 'Active' : 'Inactive'}
+                      </span>
+                    </div>
+                  ))}
+                  <p className="text-xs text-slate-400 mt-1">Subsidiaries share this company's subscription and are managed by its owner.</p>
+                </div>
+              </Section>
+            );
+          })()}
 
           {/* Stripe Connect */}
           <Section title="Integrations" icon={CheckCircle}>

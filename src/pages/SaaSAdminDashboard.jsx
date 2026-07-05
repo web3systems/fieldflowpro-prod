@@ -37,9 +37,13 @@ export default function SaaSAdminDashboard() {
         base44.entities.User.list()
       ]);
 
-      const activeCompanies = companies.filter(c => c.is_active).length;
+      // Only count master companies as SaaS customers (not subsidiaries)
+      const masterCompanies = companies.filter(c => !c.parent_company_id);
+      const activeCompanies = masterCompanies.filter(c => c.is_active).length;
+      // Revenue based on master companies' subscriptions only
+      const masterCompanyIds = new Set(masterCompanies.map(c => c.id));
       const totalRevenue = subscriptions
-        .filter(s => s.status === 'active' || s.status === 'trialing')
+        .filter(s => (s.status === 'active' || s.status === 'trialing') && masterCompanyIds.has(s.company_id))
         .reduce((sum, s) => {
           const planPrice = { starter: 69, growth: 149, pro: 299 };
           return sum + (planPrice[s.plan] || 0);
