@@ -1,8 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import UpgradeNudge from "@/components/subscription/UpgradeNudge";
 import { canAccessFeature } from "@/lib/subscription";
 import { base44 } from "@/api/base44Client";
-import { useContext } from "react";
 import { AppContext } from "../Layout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
