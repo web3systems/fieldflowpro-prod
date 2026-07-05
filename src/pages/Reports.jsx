@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { useApp } from "../Layout";
+import { AppContext } from "../Layout";
+import { useContext } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
-import { DollarSign, Briefcase, TrendingUp, Users, FileText, UserPlus, BarChart3, CheckCircle, Clock } from "lucide-react";
+import { DollarSign, Briefcase, TrendingUp, Users, FileText, UserPlus, BarChart3, CheckCircle, Clock, Building2 } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   RevenueBarChart, RevenueAreaChart, JobStatusPieChart, LeadSourceChart,
   LeadFunnelChart, NewCustomersChart, InvoiceStatusChart, AvgJobValueChart,
@@ -21,17 +23,39 @@ function parseDate(raw) {
 }
 
 export default function Reports() {
-  const { activeCompany } = useApp();
+  // Works in both tenant layout (AppContext present) and Admin Console (no context)
+  const appCtx = useContext(AppContext);
+  const [allCompanies, setAllCompanies] = useState([]);
+  const [selectedCompanyId, setSelectedCompanyId] = useState(null);
+
+  // Determine if we're in admin mode (no AppContext)
+  const isAdminMode = !appCtx?.activeCompany;
+  const activeCompany = isAdminMode
+    ? allCompanies.find(c => c.id === selectedCompanyId) || null
+    : appCtx.activeCompany;
+
   const [jobs, setJobs] = useState([]);
   const [invoices, setInvoices] = useState([]);
   const [customers, setCustomers] = useState([]);
   const [leads, setLeads] = useState([]);
   const [technicians, setTechnicians] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+
+  // Load company list for admin picker
+  useEffect(() => {
+    if (!isAdminMode) return;
+    base44.entities.Company.filter({ is_active: true }, "name", 200)
+      .then(list => {
+        const masters = list.filter(c => !c.parent_company_id);
+        setAllCompanies(masters);
+        if (masters.length > 0) setSelectedCompanyId(masters[0].id);
+      })
+      .catch(() => {});
+  }, [isAdminMode]);
 
   useEffect(() => {
     if (activeCompany) loadData();
-  }, [activeCompany]);
+  }, [activeCompany?.id]);
 
   async function loadData() {
     setLoading(true);
@@ -78,6 +102,12 @@ export default function Reports() {
     { label: "Overdue Invoices", value: overdueCount, icon: Clock, color: "text-red-600", bg: "bg-red-50" },
   ];
 
+  if (isAdminMode && allCompanies.length === 0) return (
+    <div className="p-6 space-y-4">
+      {[1,2,3].map(i => <div key={i} className="h-48 bg-slate-100 rounded-xl animate-pulse" />)}
+    </div>
+  );
+
   if (loading) return (
     <div className="p-6 space-y-4">
       {[1,2,3].map(i => <div key={i} className="h-48 bg-slate-100 rounded-xl animate-pulse" />)}
@@ -86,11 +116,26 @@ export default function Reports() {
 
   return (
     <div className="p-4 md:p-6 pb-24 lg:pb-6 space-y-6 max-w-7xl mx-auto">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Reports & Analytics</h1>
           <p className="text-slate-500 text-sm mt-0.5">{activeCompany?.name} — business insights</p>
         </div>
+        {isAdminMode && (
+          <div className="flex items-center gap-2">
+            <Building2 className="w-4 h-4 text-slate-400" />
+            <Select value={selectedCompanyId || ""} onValueChange={setSelectedCompanyId}>
+              <SelectTrigger className="w-56 h-9 text-sm">
+                <SelectValue placeholder="Select company..." />
+              </SelectTrigger>
+              <SelectContent>
+                {allCompanies.map(c => (
+                  <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
       </div>
 
       {/* KPI Cards */}
