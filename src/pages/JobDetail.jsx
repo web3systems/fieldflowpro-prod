@@ -21,6 +21,7 @@ import JobPhotosSection from "@/components/jobs/JobPhotosSection";
 import JobCostingSection from "@/components/jobs/JobCostingSection";
 import JobReceiptsSection from "@/components/jobs/JobReceiptsSection";
 import JobActivityFeed from "@/components/jobs/JobActivityFeed";
+import WorkLogSection from "@/components/jobs/WorkLogSection";
 import JobTasksSection from "@/components/jobs/JobTasksSection";
 import JobMarginReview from "@/components/jobs/JobMarginReview";
 import AttachDocumentModal from "@/components/jobs/AttachDocumentModal";
@@ -479,6 +480,9 @@ export default function JobDetail() {
             onInternalNoteAdded={(log) => setJob(j => ({ ...j, internal_notes_log: log }))}
             onCustomerNoteAdded={(notes) => setJob(j => ({ ...j, customer_notes: notes }))}
           />
+
+          {/* Work Logs */}
+          <WorkLogSection job={job} techs={techs} />
 
           {/* Activity Feed */}
           <JobActivityFeed job={job} form={form} customer={customer} techs={techs} />

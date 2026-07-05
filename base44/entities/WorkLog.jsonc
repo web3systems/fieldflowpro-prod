@@ -1,0 +1,146 @@
+{
+  "name": "WorkLog",
+  "type": "object",
+  "properties": {
+    "company_id": {
+      "type": "string"
+    },
+    "job_id": {
+      "type": "string"
+    },
+    "technician_id": {
+      "type": "string"
+    },
+    "technician_name": {
+      "type": "string"
+    },
+    "date": {
+      "type": "string",
+      "format": "date"
+    },
+    "clock_in": {
+      "type": "string",
+      "description": "ISO datetime when tech clocked in"
+    },
+    "clock_out": {
+      "type": "string",
+      "description": "ISO datetime when tech clocked out"
+    },
+    "duration_minutes": {
+      "type": "number",
+      "description": "Total minutes on site"
+    },
+    "work_performed": {
+      "type": "string",
+      "description": "Detailed description of work done"
+    },
+    "materials_used": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "number"
+          },
+          "unit": {
+            "type": "string"
+          },
+          "cost": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    "issues_found": {
+      "type": "string",
+      "description": "Any problems discovered during the job"
+    },
+    "follow_up_needed": {
+      "type": "boolean",
+      "default": false
+    },
+    "follow_up_notes": {
+      "type": "string"
+    },
+    "customer_satisfied": {
+      "type": "boolean"
+    },
+    "photos": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "voice_transcript": {
+      "type": "string",
+      "description": "Raw transcript from voice AI log"
+    },
+    "ai_summary": {
+      "type": "string",
+      "description": "AI-generated summary of the worklog"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "submitted",
+        "reviewed"
+      ],
+      "default": "submitted"
+    },
+    "weather_conditions": {
+      "type": "string"
+    },
+    "mileage": {
+      "type": "number"
+    }
+  },
+  "required": [
+    "company_id",
+    "job_id",
+    "technician_name",
+    "date"
+  ],
+  "rls": {
+    "create": {
+      "data.company_id": "{{user.company_id}}"
+    },
+    "read": {
+      "data.company_id": "{{user.company_id}}"
+    },
+    "update": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "manager"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "manager"
+          }
+        }
+      ]
+    }
+  }
+}

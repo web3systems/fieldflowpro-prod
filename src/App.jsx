@@ -47,6 +47,9 @@ import Inventory from './pages/Inventory';
 import ReceiptScanner from './pages/ReceiptScanner';
 import AccountingAudit from './pages/AccountingAudit';
 import AccountingAdmin from './pages/AccountingAdmin';
+import Dispatch from './pages/Dispatch';
+import WorkLogs from './pages/WorkLogs';
+import FieldTechAgent from './pages/FieldTechAgent';
 import Companies from './pages/Companies';
 import AdminCompanies from './pages/AdminCompanies';
 import SaaSUsers from './pages/SaaSUsers';
@@ -171,6 +174,9 @@ const AuthenticatedApp = () => {
       <Route path="/ReceiptScanner" element={<LayoutWrapper currentPageName="ReceiptScanner"><ReceiptScanner /></LayoutWrapper>} />
       <Route path="/Team" element={<LayoutWrapper currentPageName="CompanySettings"><CompanySettings /></LayoutWrapper>} />
       <Route path="/AccountingAudit" element={<LayoutWrapper currentPageName="AccountingAudit"><AccountingAudit /></LayoutWrapper>} />
+      <Route path="/Dispatch" element={<LayoutWrapper currentPageName="Dispatch"><Dispatch /></LayoutWrapper>} />
+      <Route path="/WorkLogs" element={<LayoutWrapper currentPageName="WorkLogs"><WorkLogs /></LayoutWrapper>} />
+      <Route path="/FieldTechAgent" element={<LayoutWrapper currentPageName="FieldTechAgent"><FieldTechAgent /></LayoutWrapper>} />
 
       {/* Admin Console routes */}
       <Route path="/admin/saas-admin" element={<AdminConsoleLayout><SaaSAdminDashboard /></AdminConsoleLayout>} />
