@@ -147,7 +147,9 @@ export default function Dashboard() {
   const activeJobs = jobs.filter(j => ["in_progress", "scheduled", "new"].includes(j.status));
   const todayJobs = jobs.filter(j => {
     if (!j.scheduled_start) return false;
-    return format(new Date(j.scheduled_start), "yyyy-MM-dd") === format(new Date(), "yyyy-MM-dd") ;
+    try {
+      return format(new Date(j.scheduled_start), "yyyy-MM-dd") === format(new Date(), "yyyy-MM-dd");
+    } catch { return false; }
   });
   const totalRevenue = invoices.filter(i => i.status === "paid").reduce((s, i) => s + (i.total || 0), 0);
   const pendingRevenue = invoices.filter(i => ["sent", "viewed", "overdue"].includes(i.status)).reduce((s, i) => s + (i.total || 0), 0);
@@ -269,10 +271,14 @@ export default function Dashboard() {
     );
   }
 
-  const tomorrowStr = format(new Date(Date.now() + 86400000), "yyyy-MM-dd");
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const tomorrowStr = format(tomorrow, "yyyy-MM-dd");
   const tomorrowJobs = jobs.filter(j => {
     if (!j.scheduled_start || ["completed","cancelled"].includes(j.status)) return false;
-    return format(new Date(j.scheduled_start), "yyyy-MM-dd") === tomorrowStr;
+    try {
+      return format(new Date(j.scheduled_start), "yyyy-MM-dd") === tomorrowStr;
+    } catch { return false; }
   });
   const inProgressJobs = jobs.filter(j => j.status === "in_progress");
 
