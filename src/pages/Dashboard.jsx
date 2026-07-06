@@ -315,7 +315,7 @@ export default function Dashboard() {
         {/* Quick Action Buttons */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
-            { label: "NEW JOB", icon: Plus, link: createPageUrl("NewJob") },
+            { label: "NEW ESTIMATE", icon: Plus, link: createPageUrl("NewEstimate") },
             { label: "SCHEDULE", icon: Calendar, link: createPageUrl("Schedule") },
             { label: "CUSTOMERS", icon: Users, link: createPageUrl("Customers") },
             { label: "LEADS", icon: TrendingUp, link: createPageUrl("Leads") },
