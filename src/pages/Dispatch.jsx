@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { format } from "date-fns";
 import DispatchAIPanel from "@/components/dispatch/DispatchAIPanel";
+import { useToast } from "@/components/ui/use-toast";
 
 const PRIORITY_COLOR = {
   urgent: "bg-red-100 text-red-700 border-red-200",
@@ -31,6 +32,7 @@ const STATUS_COLOR = {
 
 export default function Dispatch() {
   const { activeCompany } = useApp();
+  const { toast } = useToast();
   const [jobs, setJobs] = useState([]);
   const [techs, setTechs] = useState([]);
   const [customers, setCustomers] = useState([]);
@@ -41,6 +43,7 @@ export default function Dispatch() {
   const [selectedTech, setSelectedTech] = useState("");
   const [dispatchMessage, setDispatchMessage] = useState("");
   const [sendingSms, setSendingSms] = useState(false);
+  const [isAssigning, setIsAssigning] = useState(false);
   const [showAI, setShowAI] = useState(false);
 
   useEffect(() => {
@@ -92,21 +95,44 @@ export default function Dispatch() {
   async function handleAssign(job, techId, message) {
     const tech = getTech(techId);
     if (!tech) return;
-    await base44.entities.Job.update(job.id, { assigned_techs: [techId], status: job.status === "new" ? "scheduled" : job.status });
-    // Create dispatch note
-    await base44.entities.DispatchNote.create({
-      company_id: activeCompany.id,
-      job_id: job.id,
-      technician_id: techId,
-      message: message || `Assigned to ${tech.first_name} ${tech.last_name}`,
-      dispatched_by: "Dispatcher",
-      dispatched_at: new Date().toISOString(),
-      type: job.assigned_techs?.length ? "reassignment" : "assignment",
-    });
-    setAssigningJob(null);
-    setSelectedTech("");
-    setDispatchMessage("");
-    await loadData();
+    setIsAssigning(true);
+    try {
+      await base44.entities.Job.update(job.id, {
+        assigned_techs: [techId],
+        status: job.status === "new" ? "scheduled" : job.status,
+      });
+      // Create dispatch note — wrapped separately so a note failure doesn't block the assignment
+      try {
+        await base44.entities.DispatchNote.create({
+          company_id: activeCompany.id,
+          job_id: job.id,
+          technician_id: techId,
+          message: message || `Assigned to ${tech.first_name} ${tech.last_name}`,
+          dispatched_by: "Dispatcher",
+          dispatched_at: new Date().toISOString(),
+          type: job.assigned_techs?.length ? "reassignment" : "assignment",
+        });
+      } catch (noteErr) {
+        console.error("Dispatch note creation failed (non-critical):", noteErr);
+      }
+      setAssigningJob(null);
+      setSelectedTech("");
+      setDispatchMessage("");
+      toast({
+        title: "Technician assigned",
+        description: `${tech.first_name} ${tech.last_name} assigned to "${job.title}"`,
+      });
+      await loadData();
+    } catch (err) {
+      console.error("Assignment failed:", err);
+      toast({
+        title: "Assignment failed",
+        description: err?.message || "Could not save the assignment. Check your permissions and try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsAssigning(false);
+    }
   }
 
   async function sendSmsToTech(tech, job, message) {
@@ -288,18 +314,19 @@ export default function Dispatch() {
                           <div className="flex gap-2">
                             <Button
                               size="sm"
-                              disabled={!selectedTech}
+                              disabled={!selectedTech || isAssigning}
                               className="bg-blue-600 hover:bg-blue-700 gap-1.5"
                               onClick={() => handleAssign(job, selectedTech, dispatchMessage)}
                             >
-                              <CheckCircle className="w-3.5 h-3.5" /> Assign
+                              <CheckCircle className="w-3.5 h-3.5" />
+                              {isAssigning ? "Saving..." : "Assign"}
                             </Button>
                             {selectedTech && (
                               <Button
                                 size="sm"
                                 variant="outline"
                                 className="gap-1.5 text-green-700"
-                                disabled={sendingSms}
+                                disabled={sendingSms || isAssigning}
                                 onClick={async () => {
                                   await handleAssign(job, selectedTech, dispatchMessage);
                                   const tech = getTech(selectedTech);
