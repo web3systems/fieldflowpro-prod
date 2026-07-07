@@ -158,28 +158,35 @@ function buildLineItemsTable(doc, lineItems, startY, accentRgb) {
   doc.setFont("helvetica", "normal");
   doc.setFontSize(9);
 
-  (lineItems || []).forEach((item, idx) => {
-    if (y > 260) { doc.addPage(); y = 20; }
+  const DESC_LINE_H = 5;   // mm per line at 9pt
+  const NOTE_LINE_H = 4.2; // mm per line at 7.5pt
+  const ROW_PAD = 5;        // top + bottom padding per row
 
+  (lineItems || []).forEach((item, idx) => {
     const descLines = doc.splitTextToSize(item.description || "—", 88);
     const noteText = item.notes || item.comments || "";
-    const noteLines = noteText ? doc.splitTextToSize(noteText, 88) : [];
-    const rowHeight = descLines.length * 5 + (noteLines.length > 0 ? noteLines.length * 4 + 1.5 : 0) + 5;
+    const noteLines = noteText ? doc.splitTextToSize(noteText, 86) : [];
+    const rowHeight = ROW_PAD + descLines.length * DESC_LINE_H + (noteLines.length > 0 ? noteLines.length * NOTE_LINE_H + 2 : 0) + ROW_PAD;
+
+    // Page break BEFORE drawing the row if it won't fit
+    if (y + rowHeight > 272) { doc.addPage(); y = 20; }
 
     if (idx % 2 === 0) {
       doc.setFillColor(248, 250, 252);
-      doc.rect(16, y - 3, 178, rowHeight, "F");
+      doc.rect(16, y, 178, rowHeight, "F");
     }
+
+    const textY = y + ROW_PAD;
 
     // Description
     doc.setFont("helvetica", "normal");
     doc.setFontSize(9);
     doc.setTextColor(30, 41, 59);
-    doc.text(descLines, 20, y);
+    doc.text(descLines, 20, textY);
 
     // Notes in italic gray below description
     if (noteLines.length > 0) {
-      const noteY = y + descLines.length * 5;
+      const noteY = textY + descLines.length * DESC_LINE_H + 2;
       doc.setFont("helvetica", "italic");
       doc.setFontSize(7.5);
       doc.setTextColor(120, 130, 150);
@@ -190,17 +197,17 @@ function buildLineItemsTable(doc, lineItems, startY, accentRgb) {
     doc.setFont("helvetica", "normal");
     doc.setFontSize(9);
     doc.setTextColor(30, 41, 59);
-    doc.text(String(item.quantity ?? 1), 122, y, { align: "right" });
-    doc.text(`$${(item.unit_price || 0).toFixed(2)}`, 158, y, { align: "right" });
+    doc.text(String(item.quantity ?? 1), 122, textY, { align: "right" });
+    doc.text(`$${(item.unit_price || 0).toFixed(2)}`, 158, textY, { align: "right" });
     doc.setFont("helvetica", "bold");
-    doc.text(`$${(item.total || 0).toFixed(2)}`, 192, y, { align: "right" });
+    doc.text(`$${(item.total || 0).toFixed(2)}`, 192, textY, { align: "right" });
 
     y += rowHeight;
 
     // Row divider
     doc.setDrawColor(226, 232, 240);
     doc.setLineWidth(0.2);
-    doc.line(16, y - 1, 194, y - 1);
+    doc.line(16, y, 194, y);
   });
 
   y += 4;
@@ -366,7 +373,10 @@ export async function downloadEstimatePdf(estimate, customer, company) {
     y = buildTotals(doc, estimate, y, accentRgb);
   }
 
-  if (estimate.notes) {
+  // Only show the top-level notes block if there are no options (option notes are already
+  // rendered inline above each option's table — showing them again here would duplicate content).
+  const hasOptions = estimate.options?.length > 0;
+  if (estimate.notes && !hasOptions) {
     if (y > 258) { doc.addPage(); y = 20; }
     doc.setFont("helvetica", "bold");
     doc.setFontSize(8);
