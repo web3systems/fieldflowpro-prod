@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react"; // ledger-enabled
+import { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { useApp } from "../Layout";
@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import RecordPaymentModal from "@/components/invoices/RecordPaymentModal";
 import ManualChargeModal from "@/components/invoices/ManualChargeModal";
+import PaymentHistory from "@/components/invoices/PaymentHistory";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -375,10 +376,6 @@ export default function InvoiceDetail() {
                     <Label className="text-xs">Due Date</Label>
                     <Input type="date" value={form.due_date || ""} onChange={e => setForm(f => ({ ...f, due_date: e.target.value }))} className="h-8 text-sm" />
                   </div>
-                  <div>
-                    <Label className="text-xs">Amount Paid ($)</Label>
-                    <Input type="number" value={form.amount_paid || 0} onChange={e => setForm(f => ({ ...f, amount_paid: parseFloat(e.target.value) || 0 }))} className="h-8 text-sm" />
-                  </div>
                   <Button size="sm" onClick={handleSave} disabled={saving} className="w-full gap-1 bg-blue-600 hover:bg-blue-700">
                     <Save className="w-3 h-3" />{saving ? "Saving..." : "Save"}
                   </Button>
@@ -393,10 +390,10 @@ export default function InvoiceDetail() {
                     <span className="text-xs text-slate-500">Total</span>
                     <span className="font-bold text-slate-900">${(form.total || 0).toLocaleString()}</span>
                   </div>
-                  {form.amount_paid > 0 && (
+                  {effectiveAmountPaid > 0 && (
                     <div className="flex items-center justify-between">
                       <span className="text-xs text-slate-500">Paid</span>
-                      <span className="text-green-600 font-medium text-sm">${form.amount_paid.toLocaleString()}</span>
+                      <span className="text-green-600 font-medium text-sm">${effectiveAmountPaid.toFixed(2)}</span>
                     </div>
                   )}
                   {amountDue > 0 && (
@@ -629,6 +626,11 @@ export default function InvoiceDetail() {
               <Textarea value={form.notes || ""} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} rows={3} placeholder="Notes..." />
             </CardContent>
           </Card>
+
+          {/* Payment History Ledger */}
+          {ledgerPayments.length > 0 && (
+            <PaymentHistory payments={ledgerPayments} invoiceTotal={form.total} />
+          )}
 
           <div className="flex justify-end">
             <Button onClick={handleSave} disabled={saving} className="gap-2 bg-blue-600 hover:bg-blue-700">
