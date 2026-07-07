@@ -39,9 +39,11 @@ export default function WorkLogSection({ job, techs = [] }) {
     setLoading(false);
   }
 
-  async function handleSubmit() {
+  const resetForm = () => setForm({ technician_name: "", date: new Date().toISOString().split("T")[0], clock_in_time: "", clock_out_time: "", work_performed: "", issues_found: "", follow_up_needed: false, follow_up_notes: "", customer_satisfied: true, materials: [{ name: "", quantity: 1, unit: "", cost: "" }] });
+
+  async function handleSubmit(withAI = false) {
     if (!form.work_performed.trim()) return;
-    setSaving(true);
+    setSaving(withAI ? "ai" : "manual");
     const user = await base44.auth.me().catch(() => null);
 
     let duration_minutes = null;
@@ -58,14 +60,14 @@ export default function WorkLogSection({ job, techs = [] }) {
       .filter(m => m.name.trim())
       .map(m => ({ name: m.name, quantity: Number(m.quantity) || 1, unit: m.unit, cost: m.cost ? Number(m.cost) : undefined }));
 
-    // Generate AI summary
     let ai_summary = "";
-    try {
-      const res = await base44.integrations.Core.InvokeLLM({
-        prompt: `Summarize this field tech work log in 2-3 sentences for office staff to quickly answer customer questions:\n\nWork performed: ${form.work_performed}\nIssues: ${form.issues_found || "None"}\nMaterials: ${materials_used.map(m => `${m.quantity} ${m.unit || ""} ${m.name}`).join(", ") || "None"}\nFollow-up needed: ${form.follow_up_needed ? "Yes - " + form.follow_up_notes : "No"}\nCustomer satisfied: ${form.customer_satisfied ? "Yes" : "No/Unknown"}`,
-      });
-      ai_summary = res;
-    } catch (_) {}
+    if (withAI) {
+      try {
+        ai_summary = await base44.integrations.Core.InvokeLLM({
+          prompt: `Summarize this field tech work log in 2-3 sentences for office staff:\n\nWork performed: ${form.work_performed}\nIssues: ${form.issues_found || "None"}\nMaterials: ${materials_used.map(m => `${m.quantity} ${m.unit || ""} ${m.name}`).join(", ") || "None"}\nFollow-up needed: ${form.follow_up_needed ? "Yes - " + form.follow_up_notes : "No"}\nCustomer satisfied: ${form.customer_satisfied ? "Yes" : "No/Unknown"}`,
+        });
+      } catch (_) {}
+    }
 
     await base44.entities.WorkLog.create({
       company_id: job.company_id,
@@ -87,7 +89,7 @@ export default function WorkLogSection({ job, techs = [] }) {
     });
     setSaving(false);
     setShowForm(false);
-    setForm({ technician_name: "", date: new Date().toISOString().split("T")[0], clock_in_time: "", clock_out_time: "", work_performed: "", issues_found: "", follow_up_needed: false, follow_up_notes: "", customer_satisfied: true, materials: [{ name: "", quantity: 1, unit: "", cost: "" }] });
+    resetForm();
     await loadLogs();
   }
 
@@ -186,9 +188,12 @@ export default function WorkLogSection({ job, techs = [] }) {
             </div>
           )}
 
-          <div className="flex gap-2">
-            <Button size="sm" onClick={handleSubmit} disabled={saving || !form.work_performed.trim()} className="bg-blue-600 hover:bg-blue-700 gap-1.5">
-              {saving ? "Saving..." : <><Sparkles className="w-3.5 h-3.5" /> Save &amp; Generate AI Summary</>}
+          <div className="flex gap-2 flex-wrap">
+            <Button size="sm" onClick={() => handleSubmit(false)} disabled={!!saving || !form.work_performed.trim()} className="bg-blue-600 hover:bg-blue-700">
+              {saving === "manual" ? "Saving..." : "Save Log"}
+            </Button>
+            <Button size="sm" onClick={() => handleSubmit(true)} disabled={!!saving || !form.work_performed.trim()} variant="outline" className="gap-1.5 border-violet-200 text-violet-700 hover:bg-violet-50">
+              {saving === "ai" ? "Generating..." : <><Sparkles className="w-3.5 h-3.5" /> Save with AI Summary</>}
             </Button>
             <Button size="sm" variant="ghost" onClick={() => setShowForm(false)}>Cancel</Button>
           </div>
