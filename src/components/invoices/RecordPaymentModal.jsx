@@ -1,17 +1,18 @@
 import { useState } from "react";
 import { base44 } from "@/api/base44Client";
+import { useApp } from "@/Layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { X, CheckCircle } from "lucide-react";
 
-const PAYMENT_METHODS = ["cash", "check", "bank_transfer", "venmo", "zelle", "other"];
-
 export default function RecordPaymentModal({ invoice, onClose, onSaved }) {
+  const { activeCompany, user } = useApp();
   const amountDue = (invoice.total || 0) - (invoice.amount_paid || 0);
   const [amount, setAmount] = useState(amountDue.toFixed(2));
   const [method, setMethod] = useState("cash");
+  const [paymentType, setPaymentType] = useState(amountDue <= 0 ? "final" : "partial");
   const [paidDate, setPaidDate] = useState(new Date().toISOString().split("T")[0]);
   const [note, setNote] = useState("");
   const [checkNumber, setCheckNumber] = useState("");
@@ -20,21 +21,30 @@ export default function RecordPaymentModal({ invoice, onClose, onSaved }) {
   async function handleSave() {
     setSaving(true);
     const paid = parseFloat(amount) || 0;
+
+    // 1. Create a Payment ledger record
+    await base44.entities.Payment.create({
+      company_id: activeCompany?.id || invoice.company_id,
+      job_id: invoice.job_id || "",
+      invoice_id: invoice.id,
+      amount: paid,
+      payment_method: method,
+      payment_type: paymentType,
+      received_date: paidDate,
+      notes: [method === "check" && checkNumber ? `Check #${checkNumber}` : "", note].filter(Boolean).join(" — ") || "",
+      recorded_by: user?.full_name || user?.email || "Staff",
+    });
+
+    // 2. Sync invoice.amount_paid and status
     const newAmountPaid = (invoice.amount_paid || 0) + paid;
     const newStatus = newAmountPaid >= (invoice.total || 0) ? "paid" : "partial";
     await base44.entities.Invoice.update(invoice.id, {
       amount_paid: newAmountPaid,
       status: newStatus,
-      paid_date: paidDate,
+      paid_date: newStatus === "paid" ? paidDate : (invoice.paid_date || undefined),
       payment_method: method,
-      notes: (() => {
-        const parts = [];
-        if (method === "check" && checkNumber) parts.push(`Check #${checkNumber}`);
-        if (note) parts.push(note);
-        const detail = parts.join(" — ");
-        return detail ? `${invoice.notes || ""}\n[Payment ${paidDate}]: ${detail}`.trim() : invoice.notes;
-      })(),
     });
+
     setSaving(false);
     onSaved();
   }
@@ -59,7 +69,7 @@ export default function RecordPaymentModal({ invoice, onClose, onSaved }) {
               </div>
             )}
             <div className="flex justify-between font-semibold border-t border-slate-200 pt-1">
-              <span>Amount due</span>
+              <span>Balance due</span>
               <span className="text-red-600">${amountDue.toFixed(2)}</span>
             </div>
           </div>
@@ -73,22 +83,32 @@ export default function RecordPaymentModal({ invoice, onClose, onSaved }) {
               className="mt-1"
               step="0.01"
               min="0"
-              max={amountDue}
             />
+          </div>
+
+          <div>
+            <Label className="text-xs font-medium text-slate-600">Payment Type</Label>
+            <Select value={paymentType} onValueChange={setPaymentType}>
+              <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+              <SelectContent className="z-[200]">
+                <SelectItem value="deposit">Deposit</SelectItem>
+                <SelectItem value="partial">Partial Payment</SelectItem>
+                <SelectItem value="final">Final Payment</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           <div>
             <Label className="text-xs font-medium text-slate-600">Payment Method</Label>
             <Select value={method} onValueChange={setMethod}>
-              <SelectTrigger className="mt-1">
-                <SelectValue />
-              </SelectTrigger>
+              <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
               <SelectContent className="z-[200]">
                 <SelectItem value="cash">Cash</SelectItem>
                 <SelectItem value="check">Check</SelectItem>
-                <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
+                <SelectItem value="card">Card (in-person)</SelectItem>
                 <SelectItem value="venmo">Venmo</SelectItem>
                 <SelectItem value="zelle">Zelle</SelectItem>
+                <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
                 <SelectItem value="other">Other</SelectItem>
               </SelectContent>
             </Select>
@@ -102,12 +122,7 @@ export default function RecordPaymentModal({ invoice, onClose, onSaved }) {
           {method === "check" && (
             <div>
               <Label className="text-xs font-medium text-slate-600">Check Number</Label>
-              <Input
-                value={checkNumber}
-                onChange={e => setCheckNumber(e.target.value)}
-                placeholder="e.g. 1042"
-                className="mt-1"
-              />
+              <Input value={checkNumber} onChange={e => setCheckNumber(e.target.value)} placeholder="e.g. 1042" className="mt-1" />
             </div>
           )}
 

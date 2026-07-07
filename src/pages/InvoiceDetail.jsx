@@ -63,6 +63,8 @@ export default function InvoiceDetail() {
   const [depositLoading, setDepositLoading] = useState(false);
   const [services, setServices] = useState([]);
 
+  const [ledgerPayments, setLedgerPayments] = useState([]);
+
   const loadData = useCallback(async () => {
     const [invs, c, svcs] = await Promise.all([
       base44.entities.Invoice.filter({ id }),
@@ -70,7 +72,16 @@ export default function InvoiceDetail() {
       activeCompany ? base44.entities.Service.filter({ company_id: activeCompany.id, is_active: true }) : Promise.resolve([]),
     ]);
     setServices(svcs);
-    if (invs.length > 0) { setInvoice(invs[0]); setForm({ ...defaultForm, ...invs[0] }); }
+    if (invs.length > 0) {
+      const inv = invs[0];
+      setInvoice(inv);
+      setForm({ ...defaultForm, ...inv });
+      // Load ledger payments for this invoice (and its job if linked)
+      const pmtFilter = inv.job_id
+        ? base44.entities.Payment.filter({ job_id: inv.job_id })
+        : base44.entities.Payment.filter({ invoice_id: id });
+      pmtFilter.then(pmts => setLedgerPayments(pmts)).catch(() => {});
+    }
     setCustomers(c);
     setLoading(false);
   }, [id, activeCompany]);
@@ -208,7 +219,10 @@ export default function InvoiceDetail() {
   };
 
   const customer = customers.find(c => c.id === form.customer_id);
-  const amountDue = (form.total || 0) - (form.amount_paid || 0);
+  // Use ledger sum as source of truth; fall back to invoice.amount_paid for legacy invoices with no ledger records
+  const ledgerTotal = ledgerPayments.reduce((s, p) => s + (p.amount || 0), 0);
+  const effectiveAmountPaid = ledgerPayments.length > 0 ? ledgerTotal : (form.amount_paid || 0);
+  const amountDue = Math.max(0, (form.total || 0) - effectiveAmountPaid);
   const canPay = !["paid", "void"].includes(form.status);
 
   // Honey-Do Crew: Tim Parrow approval required before PDF/email

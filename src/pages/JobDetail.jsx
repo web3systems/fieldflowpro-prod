@@ -135,13 +135,13 @@ export default function JobDetail() {
   async function generateInvoice(collectPayment = false) {
     setInvoiceActionLoading(true);
 
-    // Prevent duplicate invoices — check if an unsent/draft invoice already exists for this job
+    // Prevent duplicate invoices — if an active (non-void) invoice exists, navigate to it
     const existingForJob = await base44.entities.Invoice.filter({ job_id: id });
-    const hasActiveInvoice = existingForJob.some(inv => inv.status !== "void");
-    if (hasActiveInvoice && !collectPayment) {
+    const activeInvoice = existingForJob.find(inv => inv.status !== "void");
+    if (activeInvoice && !collectPayment) {
       setInvoiceActionLoading(false);
-      const latest = existingForJob[existingForJob.length - 1];
-      toast({ title: "Invoice already exists", description: `Invoice #${latest.invoice_number || latest.id.slice(-4)} is already linked to this job.`, variant: "destructive" });
+      toast({ title: "Invoice already exists", description: `Invoice #${activeInvoice.invoice_number || activeInvoice.id.slice(-4)} is already linked to this job.`, variant: "destructive" });
+      navigate(`/InvoiceDetail/${activeInvoice.id}`);
       return;
     }
 
@@ -160,33 +160,40 @@ export default function JobDetail() {
       line_items = [{ description: form.title, quantity: 1, unit_price: form.total_amount, total: form.total_amount }];
     }
 
-    // Deduct paid deposit if present (never deduct waived or pending)
-    const effectiveDeposit = depositData || job;
-    const paidDeposit = effectiveDeposit?.deposit_status === "paid" ? (effectiveDeposit?.deposit_amount || 0) : 0;
-    if (paidDeposit > 0) {
-      line_items = [
-        ...line_items,
-        { description: "Deposit Received", quantity: 1, unit_price: -paidDeposit, total: -paidDeposit },
-      ];
-      subtotal = subtotal - paidDeposit;
-    }
+    // Load ledger payments already made for this job — deposits, partials, etc.
+    // These are reflected in amount_paid on the invoice, NOT as negative line items,
+    // so the invoice total stays as the full job value and the balance is correct.
+    const existingPayments = await base44.entities.Payment.filter({ job_id: id }).catch(() => []);
+    const totalAlreadyPaid = existingPayments.reduce((s, p) => s + (p.amount || 0), 0);
 
+    const invoiceTotal = form.total_amount || subtotal;
     const allInv = await base44.entities.Invoice.list();
     const invoice_number = `INV-${String((allInv.length || 0) + 1).padStart(4, "0")}`;
+    const newStatus = totalAlreadyPaid >= invoiceTotal ? "paid" : totalAlreadyPaid > 0 ? "partial" : "sent";
+
     const invoice = await base44.entities.Invoice.create({
       company_id: activeCompany.id,
       customer_id: form.customer_id,
       job_id: id,
       estimate_id: job.estimate_id || "",
       invoice_number,
-      status: "sent",
+      status: newStatus,
       line_items,
       subtotal,
       tax_rate: form.tax_rate || 0,
       tax_amount: subtotal * ((form.tax_rate || 0) / 100),
-      total: paidDeposit > 0 ? (form.total_amount || subtotal) - paidDeposit : (form.total_amount || subtotal),
-      amount_paid: 0,
+      total: invoiceTotal,
+      amount_paid: totalAlreadyPaid,
+      ...(newStatus === "paid" ? { paid_date: new Date().toISOString().split("T")[0] } : {}),
     });
+
+    // Link any unlinked job Payment records to this new invoice
+    await Promise.all(
+      existingPayments
+        .filter(p => !p.invoice_id)
+        .map(p => base44.entities.Payment.update(p.id, { invoice_id: invoice.id }))
+    ).catch(() => {});
+
     setInvoiceActionLoading(false);
 
     if (collectPayment && invoice?.id) {

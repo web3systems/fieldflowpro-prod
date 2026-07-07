@@ -469,7 +469,7 @@ export default function Schedule() {
                     onChange={e => {
                       const from = e.target.value;
                       setHistoryRange(r => ({ ...r, from }));
-                      if (from) setDate(new Date(from));
+                      if (from) setDate(new Date(from + "T00:00:00"));
                     }}
                     className="h-8 w-36 text-xs bg-white"
                   />
@@ -505,7 +505,7 @@ export default function Schedule() {
                     const nextMode = !historyMode;
                     setHistoryMode(nextMode);
                     if (nextMode) {
-                      setDate(new Date(historyRange.from));
+                      setDate(new Date(historyRange.from + "T00:00:00"));
                       setView(Views.MONTH);
                     } else {
                       setDate(new Date());
@@ -528,7 +528,7 @@ export default function Schedule() {
                       else if (v === "last_quarter") { from = now.clone().subtract(3, 'months').startOf('month'); to = now.clone().subtract(1, 'month').endOf('month'); }
                       else if (v === "this_month") { from = now.clone().startOf('month'); to = now; }
                       setHistoryRange({ from: from.format("YYYY-MM-DD"), to: to.format("YYYY-MM-DD") });
-                      setDate(from.toDate());
+                        setDate(from.toDate());
                     }}
                   >
                     <SelectTrigger className="w-32 h-8 text-xs">
@@ -695,14 +695,46 @@ export default function Schedule() {
                   <Input value={form.service_type} onChange={e => setForm({ ...form, service_type: e.target.value })} />
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-3">
                 <div>
                   <Label>Start</Label>
-                  <Input type="datetime-local" value={form.scheduled_start} onChange={e => setForm({ ...form, scheduled_start: e.target.value })} />
+                  <div className="flex gap-2 mt-1">
+                    <select
+                      value={form.scheduled_start?.split("T")[0] || ""}
+                      onChange={e => setForm({ ...form, scheduled_start: e.target.value + "T" + (form.scheduled_start?.split("T")[1]?.slice(0,5) || "08:00") })}
+                      className="flex-1 h-9 text-sm border border-input rounded-md bg-white px-2"
+                    >
+                      <option value="">Date</option>
+                      {Array.from({ length: 365 }, (_, i) => { const d = new Date(); d.setDate(d.getDate() + i - 30); const v = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`; return <option key={v} value={v}>{d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</option>; })}
+                    </select>
+                    <select
+                      value={form.scheduled_start?.split("T")[1]?.slice(0,5) || "08:00"}
+                      onChange={e => setForm({ ...form, scheduled_start: (form.scheduled_start?.split("T")[0] || new Date().toISOString().split("T")[0]) + "T" + e.target.value })}
+                      className="w-28 h-9 text-sm border border-input rounded-md bg-white px-2"
+                    >
+                      {Array.from({ length: 48 }, (_, i) => { const h = String(Math.floor(i/2)).padStart(2,"0"); const m = i%2===0?"00":"30"; const v = `${h}:${m}`; const label = new Date(`2000-01-01T${v}`).toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"}); return <option key={v} value={v}>{label}</option>; })}
+                    </select>
+                  </div>
                 </div>
                 <div>
                   <Label>End</Label>
-                  <Input type="datetime-local" value={form.scheduled_end} onChange={e => setForm({ ...form, scheduled_end: e.target.value })} />
+                  <div className="flex gap-2 mt-1">
+                    <select
+                      value={form.scheduled_end?.split("T")[0] || ""}
+                      onChange={e => setForm({ ...form, scheduled_end: e.target.value + "T" + (form.scheduled_end?.split("T")[1]?.slice(0,5) || "09:00") })}
+                      className="flex-1 h-9 text-sm border border-input rounded-md bg-white px-2"
+                    >
+                      <option value="">Date</option>
+                      {Array.from({ length: 365 }, (_, i) => { const d = new Date(); d.setDate(d.getDate() + i - 30); const v = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`; return <option key={v} value={v}>{d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</option>; })}
+                    </select>
+                    <select
+                      value={form.scheduled_end?.split("T")[1]?.slice(0,5) || "09:00"}
+                      onChange={e => setForm({ ...form, scheduled_end: (form.scheduled_end?.split("T")[0] || new Date().toISOString().split("T")[0]) + "T" + e.target.value })}
+                      className="w-28 h-9 text-sm border border-input rounded-md bg-white px-2"
+                    >
+                      {Array.from({ length: 48 }, (_, i) => { const h = String(Math.floor(i/2)).padStart(2,"0"); const m = i%2===0?"00":"30"; const v = `${h}:${m}`; const label = new Date(`2000-01-01T${v}`).toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"}); return <option key={v} value={v}>{label}</option>; })}
+                    </select>
+                  </div>
                 </div>
               </div>
               <div>
