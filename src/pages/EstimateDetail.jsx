@@ -149,7 +149,9 @@ export default function EstimateDetail() {
     } else {
       items[index] = { ...items[index], [field]: value };
       if (field === "quantity" || field === "unit_price") {
-        items[index].total = (items[index].quantity || 0) * (items[index].unit_price || 0);
+        const qty = parseFloat(items[index].quantity) || 0;
+        const price = parseFloat(items[index].unit_price) || 0;
+        items[index].total = qty * price;
       }
     }
     recalcOption(items, opt);

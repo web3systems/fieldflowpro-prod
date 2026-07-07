@@ -154,7 +154,14 @@ export default function LineItemRow({ item, idx, companyId, services: servicesPr
           <Input
             type="number"
             value={item.quantity}
-            onChange={e => onUpdate(idx, "quantity", parseFloat(e.target.value) || 0)}
+            onChange={e => {
+              const val = e.target.value;
+              onUpdate(idx, "quantity", val === "" || val === "-" ? val : parseFloat(val));
+            }}
+            onBlur={e => {
+              const val = parseFloat(e.target.value);
+              onUpdate(idx, "quantity", isNaN(val) ? 1 : val);
+            }}
             placeholder="Qty"
             className="bg-white text-sm text-center"
           />
@@ -163,13 +170,20 @@ export default function LineItemRow({ item, idx, companyId, services: servicesPr
           <Input
             type="number"
             value={item.unit_price}
-            onChange={e => onUpdate(idx, "unit_price", parseFloat(e.target.value) || 0)}
+            onChange={e => {
+              const val = e.target.value;
+              onUpdate(idx, "unit_price", val === "" || val === "-" ? val : parseFloat(val));
+            }}
+            onBlur={e => {
+              const val = parseFloat(e.target.value);
+              onUpdate(idx, "unit_price", isNaN(val) ? 0 : val);
+            }}
             placeholder="Price"
             className="bg-white text-sm"
           />
         </div>
-        <div className="col-span-2 text-right text-sm font-medium text-slate-700 pt-2">
-          ${(item.total || 0).toFixed(2)}
+        <div className={`col-span-2 text-right text-sm font-medium pt-2 ${(item.total || 0) < 0 ? "text-red-600" : "text-slate-700"}`}>
+          {(item.total || 0) < 0 ? `-$${Math.abs(item.total || 0).toFixed(2)}` : `$${(item.total || 0).toFixed(2)}`}
         </div>
         <div className="col-span-1 flex justify-end pt-1">
           <button onClick={() => onRemove(idx)} className="text-red-400 hover:text-red-600">
