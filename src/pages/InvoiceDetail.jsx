@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react"; // ledger-enabled
 import { useParams, useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { useApp } from "../Layout";
@@ -263,7 +263,7 @@ export default function InvoiceDetail() {
     <div className="p-4 md:p-6 pb-24 lg:pb-6 max-w-7xl mx-auto">
       {showRecordPayment && invoice && (
         <RecordPaymentModal
-          invoice={invoice}
+          invoice={{ ...invoice, amount_paid: effectiveAmountPaid }}
           onClose={() => setShowRecordPayment(false)}
           onSaved={() => { setShowRecordPayment(false); loadData(); }}
         />
