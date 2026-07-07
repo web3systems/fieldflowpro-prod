@@ -359,8 +359,11 @@ export async function downloadEstimatePdf(estimate, customer, company) {
         doc.setFont("helvetica", "normal");
         doc.setFontSize(8);
         doc.setTextColor(100, 116, 139);
-        doc.text(doc.splitTextToSize(option.notes, 170), 16, y);
-        y += 5;
+        const noteLines = doc.splitTextToSize(option.notes, 170);
+        // Page break if the notes block won't fit
+        if (y + noteLines.length * 4.5 > 272) { doc.addPage(); y = 20; }
+        doc.text(noteLines, 16, y);
+        y += noteLines.length * 4.5 + 4; // advance by actual rendered height
       }
 
       y += 3;
