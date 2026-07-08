@@ -13,8 +13,8 @@ const STEPS = [
 
 function isStepActive(key, job) {
   if (key === "appointment") return !!job.scheduled_start;
-  if (key === "start") return job.status === "in_progress" || job.status === "completed";
-  if (key === "finish") return job.status === "completed";
+  if (key === "start") return job.status === "in_progress" || job.status === "invoiced" || job.status === "completed";
+  if (key === "finish") return job.status === "invoiced" || job.status === "completed";
   return false;
 }
 

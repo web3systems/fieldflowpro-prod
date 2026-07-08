@@ -25,8 +25,10 @@ import UsageLimitBanner from "@/components/subscription/UsageLimitBanner";
 
 const STATUS_OPTIONS = [
   { value: "new", label: "New", color: "bg-blue-100 text-blue-700 border-blue-200" },
+  { value: "estimated", label: "Estimated", color: "bg-sky-100 text-sky-700 border-sky-200" },
   { value: "scheduled", label: "Scheduled", color: "bg-purple-100 text-purple-700 border-purple-200" },
   { value: "in_progress", label: "In Progress", color: "bg-amber-100 text-amber-700 border-amber-200" },
+  { value: "invoiced", label: "Invoiced", color: "bg-orange-100 text-orange-700 border-orange-200" },
   { value: "completed", label: "Completed", color: "bg-green-100 text-green-700 border-green-200" },
   { value: "cancelled", label: "Cancelled", color: "bg-red-100 text-red-700 border-red-200" },
   { value: "on_hold", label: "On Hold", color: "bg-gray-100 text-gray-700 border-gray-200" },

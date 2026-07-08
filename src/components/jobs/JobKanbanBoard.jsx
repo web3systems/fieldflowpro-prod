@@ -9,8 +9,10 @@ import { format } from "date-fns";
 
 const STATUSES = [
   { key: "new", label: "New", color: "border-l-blue-500 bg-blue-50/50" },
+  { key: "estimated", label: "Estimated", color: "border-l-sky-500 bg-sky-50/50" },
   { key: "scheduled", label: "Scheduled", color: "border-l-purple-500 bg-purple-50/50" },
   { key: "in_progress", label: "In Progress", color: "border-l-amber-500 bg-amber-50/50" },
+  { key: "invoiced", label: "Invoiced", color: "border-l-orange-500 bg-orange-50/50" },
   { key: "completed", label: "Completed", color: "border-l-green-500 bg-green-50/50" },
   { key: "cancelled", label: "Cancelled", color: "border-l-red-500 bg-red-50/50" },
   { key: "on_hold", label: "On Hold", color: "border-l-gray-500 bg-gray-50/50" },
@@ -82,8 +84,10 @@ export default function JobKanbanBoard({ jobs, customers, techs, onStatusChange,
               <div className="flex items-center gap-2">
                 <div className={`w-2.5 h-2.5 rounded-full ${
                   column.key === "new" ? "bg-blue-500" :
+                  column.key === "estimated" ? "bg-sky-500" :
                   column.key === "scheduled" ? "bg-purple-500" :
                   column.key === "in_progress" ? "bg-amber-500" :
+                  column.key === "invoiced" ? "bg-orange-500" :
                   column.key === "completed" ? "bg-green-500" :
                   column.key === "cancelled" ? "bg-red-500" : "bg-gray-500"
                 }`} />

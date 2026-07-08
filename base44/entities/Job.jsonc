@@ -21,8 +21,10 @@
       "type": "string",
       "enum": [
         "new",
+        "estimated",
         "scheduled",
         "in_progress",
+        "invoiced",
         "completed",
         "cancelled",
         "on_hold"
