@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
-import { Mic, MicOff, Zap, Briefcase, Users, FileText, Sun } from "lucide-react";
+import { Mic, MicOff, Zap, Briefcase, Users, FileText, Sun, Send } from "lucide-react";
 
 const QUICK_ACTIONS = [
   { label: "Morning Briefing", command: "morning briefing", icon: Sun },
@@ -46,6 +46,7 @@ export default function Henry() {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [transcript, setTranscript] = useState("");
+  const [textInput, setTextInput] = useState("");
   const recognitionRef = useRef(null);
   const messagesEndRef = useRef(null);
   const initialized = useRef(false);
@@ -342,9 +343,42 @@ export default function Henry() {
         ))}
       </div>
 
+      {/* Text input */}
+      <div className="w-full max-w-2xl mt-6 flex gap-2">
+        <input
+          type="text"
+          value={textInput}
+          onChange={e => setTextInput(e.target.value)}
+          onKeyDown={e => {
+            if (e.key === "Enter" && textInput.trim() && !isLoading) {
+              const msg = textInput.trim();
+              setTextInput("");
+              addMessage("user", msg);
+              handleCommand(msg);
+            }
+          }}
+          disabled={isListening || isLoading}
+          placeholder="Or type a command..."
+          className="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-slate-200 placeholder:text-slate-500 text-sm focus:outline-none focus:border-blue-500 disabled:opacity-50"
+        />
+        <button
+          onClick={() => {
+            if (!textInput.trim() || isLoading) return;
+            const msg = textInput.trim();
+            setTextInput("");
+            addMessage("user", msg);
+            handleCommand(msg);
+          }}
+          disabled={!textInput.trim() || isLoading || isListening}
+          className="w-12 h-12 rounded-xl bg-blue-600 hover:bg-blue-500 flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex-shrink-0"
+        >
+          <Send className="w-5 h-5 text-white" />
+        </button>
+      </div>
+
       {/* Transcript debug strip */}
       {transcript && (
-        <p className="mt-6 text-slate-600 text-xs text-center">Last heard: "{transcript}"</p>
+        <p className="mt-3 text-slate-600 text-xs text-center">Last heard: "{transcript}"</p>
       )}
     </div>
   );
