@@ -13,6 +13,7 @@ import CustomerAddresses from "@/components/customers/CustomerAddresses";
 import CustomerTasks from "@/components/customers/CustomerTasks";
 import CustomerNotes from "@/components/customers/CustomerNotes";
 import AssignRecordModal from "@/components/customers/AssignRecordModal";
+import CustomerSmsPanel from "@/components/customers/CustomerSmsPanel";
 
 const statusStyle = {
   active: "bg-green-100 text-green-700",
@@ -265,6 +266,7 @@ export default function CustomerDetail() {
             )}
           </div>
 
+          <CustomerSmsPanel customer={customer} />
           <CustomerTasks customer={customer} onUpdate={handleUpdate} />
           <CustomerAddresses customer={customer} onUpdate={handleUpdate} />
           <CustomerNotes
