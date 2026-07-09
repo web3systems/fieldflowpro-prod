@@ -44,53 +44,61 @@ export default function WorkLogSection({ job, techs = [] }) {
   async function handleSubmit(withAI = false) {
     if (!form.work_performed.trim()) return;
     setSaving(withAI ? "ai" : "manual");
-    const user = await base44.auth.me().catch(() => null);
 
-    let duration_minutes = null;
-    let clock_in = null;
-    let clock_out = null;
-    if (form.clock_in_time && form.clock_out_time) {
-      clock_in = `${form.date}T${form.clock_in_time}`;
-      clock_out = `${form.date}T${form.clock_out_time}`;
-      const diff = (new Date(clock_out) - new Date(clock_in)) / 60000;
-      if (diff > 0) duration_minutes = Math.round(diff);
+    try {
+      const user = await base44.auth.me().catch(() => null);
+
+      let duration_minutes = null;
+      let clock_in = null;
+      let clock_out = null;
+      if (form.clock_in_time && form.clock_out_time) {
+        clock_in = `${form.date}T${form.clock_in_time}`;
+        clock_out = `${form.date}T${form.clock_out_time}`;
+        const diff = (new Date(clock_out) - new Date(clock_in)) / 60000;
+        if (diff > 0) duration_minutes = Math.round(diff);
+      }
+
+      const materials_used = form.materials
+        .filter(m => m.name.trim())
+        .map(m => ({ name: m.name, quantity: Number(m.quantity) || 1, unit: m.unit, cost: m.cost ? Number(m.cost) : undefined }));
+
+      let ai_summary = "";
+      if (withAI) {
+        try {
+          ai_summary = await base44.integrations.Core.InvokeLLM({
+            prompt: `Summarize this field tech work log in 2-3 sentences for office staff:\n\nWork performed: ${form.work_performed}\nIssues: ${form.issues_found || "None"}\nMaterials: ${materials_used.map(m => `${m.quantity} ${m.unit || ""} ${m.name}`).join(", ") || "None"}\nFollow-up needed: ${form.follow_up_needed ? "Yes - " + form.follow_up_notes : "No"}\nCustomer satisfied: ${form.customer_satisfied ? "Yes" : "No/Unknown"}`,
+          });
+        } catch (_) {}
+      }
+
+      await base44.entities.WorkLog.create({
+        company_id: job.company_id,
+        job_id: job.id,
+        technician_id: user?.id,
+        technician_name: form.technician_name || user?.full_name || "Staff",
+        date: form.date,
+        clock_in,
+        clock_out,
+        duration_minutes,
+        work_performed: form.work_performed,
+        issues_found: form.issues_found || undefined,
+        follow_up_needed: form.follow_up_needed,
+        follow_up_notes: form.follow_up_notes || undefined,
+        customer_satisfied: form.customer_satisfied,
+        materials_used,
+        ai_summary,
+        status: "submitted",
+      });
+
+      setShowForm(false);
+      resetForm();
+      await loadLogs();
+    } catch (err) {
+      console.error("WorkLog save failed:", err);
+      alert("Failed to save work log. Please try again.");
+    } finally {
+      setSaving(false);
     }
-
-    const materials_used = form.materials
-      .filter(m => m.name.trim())
-      .map(m => ({ name: m.name, quantity: Number(m.quantity) || 1, unit: m.unit, cost: m.cost ? Number(m.cost) : undefined }));
-
-    let ai_summary = "";
-    if (withAI) {
-      try {
-        ai_summary = await base44.integrations.Core.InvokeLLM({
-          prompt: `Summarize this field tech work log in 2-3 sentences for office staff:\n\nWork performed: ${form.work_performed}\nIssues: ${form.issues_found || "None"}\nMaterials: ${materials_used.map(m => `${m.quantity} ${m.unit || ""} ${m.name}`).join(", ") || "None"}\nFollow-up needed: ${form.follow_up_needed ? "Yes - " + form.follow_up_notes : "No"}\nCustomer satisfied: ${form.customer_satisfied ? "Yes" : "No/Unknown"}`,
-        });
-      } catch (_) {}
-    }
-
-    await base44.entities.WorkLog.create({
-      company_id: job.company_id,
-      job_id: job.id,
-      technician_id: user?.id,
-      technician_name: form.technician_name || user?.full_name || "Staff",
-      date: form.date,
-      clock_in,
-      clock_out,
-      duration_minutes,
-      work_performed: form.work_performed,
-      issues_found: form.issues_found || undefined,
-      follow_up_needed: form.follow_up_needed,
-      follow_up_notes: form.follow_up_notes || undefined,
-      customer_satisfied: form.customer_satisfied,
-      materials_used,
-      ai_summary,
-      status: "submitted",
-    });
-    setSaving(false);
-    setShowForm(false);
-    resetForm();
-    await loadLogs();
   }
 
   function updateMaterial(i, field, value) {
