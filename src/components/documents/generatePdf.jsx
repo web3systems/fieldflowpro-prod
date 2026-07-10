@@ -247,6 +247,56 @@ function buildTotals(doc, data, startY, accentRgb) {
   return y + 20;
 }
 
+function buildScopeOfWork(doc, scopeHtml, startY, accentRgb) {
+  if (!scopeHtml) return startY;
+  // Strip HTML tags to plain text
+  const plain = scopeHtml
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<\/p>/gi, "\n")
+    .replace(/<\/li>/gi, "\n")
+    .replace(/<li>/gi, "• ")
+    .replace(/<[^>]+>/g, "")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&nbsp;/g, " ")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+
+  if (!plain) return startY;
+
+  const { r, g, b } = accentRgb;
+  let y = startY;
+
+  // Section page break if needed
+  if (y > 230) { doc.addPage(); y = 20; }
+
+  // Section header bar
+  doc.setFillColor(r, g, b);
+  doc.rect(16, y - 4, 178, 8, "F");
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(9);
+  doc.setTextColor(255, 255, 255);
+  doc.text("SCOPE OF WORK", 20, y + 0.5);
+  y += 10;
+
+  // Body
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+  doc.setTextColor(30, 41, 59);
+
+  const paragraphs = plain.split("\n");
+  paragraphs.forEach(para => {
+    if (!para.trim()) { y += 3; return; }
+    const lines = doc.splitTextToSize(para.trim(), 170);
+    if (y + lines.length * 5 > 272) { doc.addPage(); y = 20; }
+    doc.text(lines, 20, y);
+    y += lines.length * 5 + 2;
+  });
+
+  return y + 6;
+}
+
 function buildFooter(doc, company, accentRgb) {
   const { r, g, b } = accentRgb;
   const footerY = 278;
@@ -290,6 +340,10 @@ export async function downloadInvoicePdf(invoice, customer, company) {
 
   y = buildLineItemsTable(doc, invoice.line_items, y, accentRgb);
   y = buildTotals(doc, invoice, y, accentRgb);
+
+  if (invoice.scope_of_work) {
+    y = buildScopeOfWork(doc, invoice.scope_of_work, y, accentRgb);
+  }
 
   if (invoice.notes) {
     if (y > 258) { doc.addPage(); y = 20; }
@@ -374,6 +428,11 @@ export async function downloadEstimatePdf(estimate, customer, company) {
   } else {
     y = buildLineItemsTable(doc, estimate.line_items, y, accentRgb);
     y = buildTotals(doc, estimate, y, accentRgb);
+  }
+
+  // Scope of Work section (after all line items / totals)
+  if (estimate.scope_of_work) {
+    y = buildScopeOfWork(doc, estimate.scope_of_work, y, accentRgb);
   }
 
   // Only show the top-level notes block if there are no options (option notes are already

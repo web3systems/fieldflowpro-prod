@@ -35,6 +35,10 @@
       "default": false,
       "description": "Required for Honey-Do Crew: must be approved by Tim Parrow before PDF/email is allowed"
     },
+    "scope_of_work": {
+      "type": "string",
+      "description": "Rich-text scope of work / statement of work. Renders as a separate section in the PDF."
+    },
     "line_items": {
       "type": "array",
       "items": {

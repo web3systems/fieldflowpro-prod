@@ -22,6 +22,8 @@ import ServicePicker from "@/components/services/ServicePicker";
 import DraggableLineItemsSection from "@/components/services/DraggableLineItemsSection";
 import { downloadEstimatePdf } from "../components/documents/generatePdf";
 import InvoiceEstimatePreview from "@/components/documents/InvoiceEstimatePreview";
+import ReactQuill from "react-quill";
+import "react-quill/dist/quill.snow.css";
 
 const STATUS_STYLES = {
   draft: "bg-gray-100 text-gray-600",
@@ -703,6 +705,28 @@ export default function EstimateDetail() {
               </CardContent>
             )}
           </Card>
+          )}
+
+          {/* Scope of Work */}
+          {!showPreview && (
+            <Card className="border-0 shadow-sm">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <FileText className="w-4 h-4 text-slate-400" />
+                  Scope of Work
+                  <span className="text-xs font-normal text-slate-400 ml-1">— optional, renders in PDF</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ReactQuill
+                  theme="snow"
+                  value={form.scope_of_work || ""}
+                  onChange={val => setForm(f => ({ ...f, scope_of_work: val }))}
+                  placeholder="Describe the full scope: project phases, exclusions, materials spec, terms, site requirements..."
+                  style={{ minHeight: 160 }}
+                />
+              </CardContent>
+            </Card>
           )}
 
           <div className="flex justify-end gap-2">

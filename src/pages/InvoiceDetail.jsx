@@ -24,6 +24,8 @@ import DraggableLineItemsSection from "@/components/services/DraggableLineItemsS
 import LineItemRow from "@/components/services/LineItemRow";
 import { downloadInvoicePdf } from "../components/documents/generatePdf";
 import InvoiceEstimatePreview from "@/components/documents/InvoiceEstimatePreview";
+import ReactQuill from "react-quill";
+import "react-quill/dist/quill.snow.css";
 
 const STATUS_STYLES = {
   draft: { label: "Draft", style: "bg-gray-100 text-gray-600", icon: Clock },
@@ -620,6 +622,25 @@ export default function InvoiceDetail() {
               })()}
                 </CardContent>
                 </Card>
+
+          {/* Scope of Work */}
+          <Card className="border-0 shadow-sm">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base flex items-center gap-2">
+                Scope of Work
+                <span className="text-xs font-normal text-slate-400 ml-1">— optional, renders in PDF</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ReactQuill
+                theme="snow"
+                value={form.scope_of_work || ""}
+                onChange={val => setForm(f => ({ ...f, scope_of_work: val }))}
+                placeholder="Describe the full scope: project phases, exclusions, materials spec, terms, site requirements..."
+                style={{ minHeight: 160 }}
+              />
+            </CardContent>
+          </Card>
 
           {/* Notes */}
           <Card className="border-0 shadow-sm">
