@@ -156,7 +156,10 @@ export default function JobLineItemsSection({ form, setForm, companyId, onSave }
           </div>
 
           <div className="px-5 pb-4">
-            <Button size="sm" onClick={onSave} className="gap-1 bg-blue-600 hover:bg-blue-700 text-xs">
+            <Button size="sm" onClick={() => {
+              const tot = subtotal + taxAmount - (form.discount || 0);
+              onSave({ line_items: lineItems, tax_rate: taxRate, total_amount: tot });
+            }} className="gap-1 bg-blue-600 hover:bg-blue-700 text-xs">
               <Check className="w-3 h-3" /> Save Line Items
             </Button>
           </div>
