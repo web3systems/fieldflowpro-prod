@@ -1,0 +1,52 @@
+{
+  "name": "Review",
+  "type": "object",
+  "properties": {
+    "company_id": {
+      "type": "string"
+    },
+    "customer_id": {
+      "type": "string"
+    },
+    "job_id": {
+      "type": "string"
+    },
+    "customer_name": {
+      "type": "string"
+    },
+    "rating": {
+      "type": "number",
+      "description": "Star rating 1-5 (filled in when customer responds)"
+    },
+    "review_text": {
+      "type": "string"
+    },
+    "sent_via": {
+      "type": "string",
+      "enum": [
+        "email",
+        "sms",
+        "both"
+      ],
+      "default": "email"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "sent",
+        "responded"
+      ],
+      "default": "sent"
+    },
+    "sent_at": {
+      "type": "string"
+    },
+    "responded_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "company_id",
+    "customer_id"
+  ]
+}

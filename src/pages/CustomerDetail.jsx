@@ -14,6 +14,8 @@ import CustomerTasks from "@/components/customers/CustomerTasks";
 import CustomerNotes from "@/components/customers/CustomerNotes";
 import AssignRecordModal from "@/components/customers/AssignRecordModal";
 import CustomerSmsPanel from "@/components/customers/CustomerSmsPanel";
+import CustomerReviews from "@/components/reviews/CustomerReviews";
+import RequestReviewModal from "@/components/reviews/RequestReviewModal";
 
 const statusStyle = {
   active: "bg-green-100 text-green-700",
@@ -34,6 +36,7 @@ export default function CustomerDetail() {
   const [loading, setLoading] = useState(true);
   const [sendingInvite, setSendingInvite] = useState(false);
   const [assignModal, setAssignModal] = useState(null); // "job" | "estimate" | "invoice"
+  const [showReviewModal, setShowReviewModal] = useState(false);
 
   const loadData = useCallback(async () => {
     if (!id) return;
@@ -266,6 +269,11 @@ export default function CustomerDetail() {
             )}
           </div>
 
+          <CustomerReviews
+            customerId={id}
+            companyId={customer.company_id}
+            onRequestReview={() => setShowReviewModal(true)}
+          />
           <CustomerSmsPanel customer={customer} />
           <CustomerTasks customer={customer} onUpdate={handleUpdate} />
           <CustomerAddresses customer={customer} onUpdate={handleUpdate} />
@@ -277,6 +285,13 @@ export default function CustomerDetail() {
           />
         </div>
       </div>
+
+      <RequestReviewModal
+        open={showReviewModal}
+        onClose={() => setShowReviewModal(false)}
+        customer={customer}
+        company={activeCompany}
+      />
 
       <AssignRecordModal
         open={!!assignModal}

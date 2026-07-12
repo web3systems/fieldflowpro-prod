@@ -27,6 +27,7 @@ import JobMarginReview from "@/components/jobs/JobMarginReview";
 import AttachDocumentModal from "@/components/jobs/AttachDocumentModal";
 import DepositRequestModal from "@/components/jobs/DepositRequestModal";
 import JobDepositStatus from "@/components/jobs/JobDepositStatus";
+import RequestReviewModal from "@/components/reviews/RequestReviewModal";
 
 const STATUS_COLORS = {
   new: "bg-blue-100 text-blue-700 border-blue-200",
@@ -64,6 +65,7 @@ export default function JobDetail() {
   const [linkedEstimate, setLinkedEstimate] = useState(null);
   const [showAttachModal, setShowAttachModal] = useState(false);
   const [showDepositModal, setShowDepositModal] = useState(false);
+  const [showReviewModal, setShowReviewModal] = useState(false);
   const [marginRule, setMarginRule] = useState(null);
   const [depositData, setDepositData] = useState(null); // tracks deposit state locally
   const { toast } = useToast();
@@ -264,8 +266,8 @@ export default function JobDetail() {
           </Button>
           {form.status === "completed" && (
             <>
-              <Button size="sm" variant="outline" className="gap-1 text-xs" onClick={() => sendReviewRequest()} disabled={reviewLoading}>
-                <Star className="w-3.5 h-3.5 text-amber-500" />{reviewLoading ? "Sending..." : "Review"}
+              <Button size="sm" variant="outline" className="gap-1 text-xs" onClick={() => setShowReviewModal(true)}>
+                <Star className="w-3.5 h-3.5 text-amber-500" /> Review
               </Button>
               <Button size="sm" className="gap-1 text-xs bg-violet-600 hover:bg-violet-700" onClick={() => generateInvoice(true)} disabled={invoiceActionLoading}>
                 <CreditCard className="w-3.5 h-3.5" /> Collect Payment
@@ -274,6 +276,15 @@ export default function JobDetail() {
           )}
         </div>
       </div>
+
+      {/* Review Request Modal */}
+      <RequestReviewModal
+        open={showReviewModal}
+        onClose={() => setShowReviewModal(false)}
+        customer={customer}
+        job={job}
+        company={activeCompany}
+      />
 
       {/* Attach Document Modal */}
       <AttachDocumentModal
