@@ -3,7 +3,7 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { useApp } from "../Layout";
 import { createPageUrl } from "@/utils";
-import { ArrowLeft, FileText, Briefcase, DollarSign, ExternalLink, Calendar, ChevronRight, Link2 } from "lucide-react";
+import { ArrowLeft, FileText, Briefcase, DollarSign, ExternalLink, Calendar, ChevronRight, Link2, CreditCard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
@@ -33,6 +33,7 @@ export default function CustomerDetail() {
   const [invoices, setInvoices] = useState([]);
   const [activities, setActivities] = useState([]);
   const [technicians, setTechnicians] = useState([]);
+  const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [sendingInvite, setSendingInvite] = useState(false);
   const [assignModal, setAssignModal] = useState(null); // "job" | "estimate" | "invoice"
@@ -54,6 +55,14 @@ export default function CustomerDetail() {
     setInvoices(inv);
     setActivities(acts.sort((a, b) => new Date(b.created_date) - new Date(a.created_date)));
     setTechnicians(techs);
+    // Load payments for all invoices belonging to this customer
+    const invoiceIds = inv.map(i => i.id);
+    if (invoiceIds.length > 0) {
+      const allPmts = await Promise.all(invoiceIds.map(iid => base44.entities.Payment.filter({ invoice_id: iid }).catch(() => [])));
+      setPayments(allPmts.flat().sort((a, b) => new Date(b.received_date) - new Date(a.received_date)));
+    } else {
+      setPayments([]);
+    }
     setLoading(false);
   }, [id, activeCompany]);
 
@@ -268,6 +277,37 @@ export default function CustomerDetail() {
               </div>
             )}
           </div>
+
+          {/* Payments */}
+          {payments.length > 0 && (
+            <div className="bg-white rounded-xl shadow-sm border p-4">
+              <h3 className="text-sm font-semibold text-slate-700 flex items-center gap-1.5 mb-3">
+                <CreditCard className="w-4 h-4 text-slate-500" /> Payment History ({payments.length})
+              </h3>
+              <div className="space-y-2">
+                {payments.map(pmt => {
+                  const inv = invoices.find(i => i.id === pmt.invoice_id);
+                  return (
+                    <div key={pmt.id} className="flex items-center justify-between p-2.5 rounded-lg border border-slate-100 bg-slate-50">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-slate-800">
+                          ${(pmt.amount || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          <span className="ml-2 text-xs font-normal text-slate-500 capitalize">{pmt.payment_type?.replace("_", " ")} · {pmt.payment_method}</span>
+                        </p>
+                        <p className="text-xs text-slate-400">
+                          {pmt.received_date ? format(new Date(pmt.received_date), "MMM d, yyyy") : "—"}
+                          {inv && <span className="ml-2">Invoice #{inv.invoice_number || inv.id.slice(-6)}</span>}
+                          {pmt.recorded_by && <span className="ml-2">by {pmt.recorded_by}</span>}
+                          {pmt.notes && <span className="ml-2">· {pmt.notes}</span>}
+                        </p>
+                      </div>
+                      <span className="ml-3 text-xs font-semibold text-green-600 bg-green-50 px-2 py-0.5 rounded-full border border-green-100">Paid</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
           <CustomerReviews
             customerId={id}
