@@ -76,9 +76,18 @@ export default function NewJob() {
     const fmt = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
     setForm(f => ({ ...f, scheduled_start: fmt(now), scheduled_end: fmt(new Date(now.getTime() + 3600000)) }));
 
-    // Pre-fill customer from URL param
-    const customerId = new URLSearchParams(window.location.search).get("customer_id");
-    if (customerId) setForm(f => ({ ...f, customer_id: customerId }));
+    // Pre-fill customer and/or date from URL params
+    const params = new URLSearchParams(window.location.search);
+    const customerId = params.get("customer_id");
+    const dateParam = params.get("date");
+    setForm(f => ({
+      ...f,
+      ...(customerId ? { customer_id: customerId } : {}),
+      ...(dateParam ? {
+        scheduled_start: `${dateParam}T08:00`,
+        scheduled_end: `${dateParam}T09:00`,
+      } : {}),
+    }));
   }, [activeCompany]);
 
   function updateLineItem(index, field, value) {

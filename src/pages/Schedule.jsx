@@ -292,18 +292,8 @@ export default function Schedule() {
   }
 
   function handleSelectSlot(slot) {
-    setEditing(null);
-    const start = moment(slot.start);
-    // In month view, react-big-calendar gives start===end, so default to 1 hour duration
-    const end = slot.end > slot.start && (slot.end - slot.start) > 60 * 60 * 1000
-      ? moment(slot.end)
-      : moment(slot.start).add(1, 'hour');
-    setForm({
-      ...defaultJob,
-      scheduled_start: start.format("YYYY-MM-DDTHH:mm"),
-      scheduled_end: end.format("YYYY-MM-DDTHH:mm"),
-    });
-    setSheetOpen(true);
+    const date = moment(slot.start).format("YYYY-MM-DD");
+    navigate(`/NewJob?date=${date}`);
   }
 
   async function handleSave() {
@@ -572,12 +562,7 @@ export default function Schedule() {
               ))}
             </div>
             {calendarType === "customers" ? (
-              <Button size="sm" className="gap-1.5 bg-blue-600 hover:bg-blue-700 h-8" onClick={() => {
-                setEditing(null);
-                const now = moment().startOf('hour').add(1, 'hour');
-                setForm({ ...defaultJob, scheduled_start: now.format("YYYY-MM-DDTHH:mm"), scheduled_end: now.clone().add(1, 'hour').format("YYYY-MM-DDTHH:mm") });
-                setSheetOpen(true);
-              }}>
+              <Button size="sm" className="gap-1.5 bg-blue-600 hover:bg-blue-700 h-8" onClick={() => navigate("/NewJob")}>
                 <Plus className="w-3.5 h-3.5" /> New Job
               </Button>
             ) : (
