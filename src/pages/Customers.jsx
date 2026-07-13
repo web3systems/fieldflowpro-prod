@@ -399,13 +399,13 @@ export default function Customers() {
             {/* Quick actions for existing customers */}
             {editing && (
               <div className="flex gap-2 p-3 bg-slate-50 rounded-xl">
-                <button onClick={() => { setSheetOpen(false); navigate(createPageUrl(`Estimates?customer_id=${editing.id}`)); }} className="flex-1 flex flex-col items-center gap-1.5 py-2.5 rounded-lg bg-blue-500 hover:bg-blue-600 transition-colors text-white shadow-sm">
+                <button onClick={() => { setSheetOpen(false); navigate(`/NewEstimate?customer_id=${editing.id}`); }} className="flex-1 flex flex-col items-center gap-1.5 py-2.5 rounded-lg bg-blue-500 hover:bg-blue-600 transition-colors text-white shadow-sm">
                   <FileText className="w-4 h-4" /><span className="text-xs font-medium">New Estimate</span>
                 </button>
-                <button onClick={() => { setSheetOpen(false); navigate(createPageUrl(`Jobs?customer_id=${editing.id}`)); }} className="flex-1 flex flex-col items-center gap-1.5 py-2.5 rounded-lg bg-purple-500 hover:bg-purple-600 transition-colors text-white shadow-sm">
+                <button onClick={() => { setSheetOpen(false); navigate(`/NewJob?customer_id=${editing.id}`); }} className="flex-1 flex flex-col items-center gap-1.5 py-2.5 rounded-lg bg-purple-500 hover:bg-purple-600 transition-colors text-white shadow-sm">
                   <Briefcase className="w-4 h-4" /><span className="text-xs font-medium">New Job</span>
                 </button>
-                <button onClick={() => { setSheetOpen(false); navigate(createPageUrl(`Invoices?customer_id=${editing.id}`)); }} className="flex-1 flex flex-col items-center gap-1.5 py-2.5 rounded-lg bg-green-500 hover:bg-green-600 transition-colors text-white shadow-sm">
+                <button onClick={() => { setSheetOpen(false); navigate(`/NewInvoice?customer_id=${editing.id}`); }} className="flex-1 flex flex-col items-center gap-1.5 py-2.5 rounded-lg bg-green-500 hover:bg-green-600 transition-colors text-white shadow-sm">
                   <DollarSign className="w-4 h-4" /><span className="text-xs font-medium">New Invoice</span>
                 </button>
                 {editing?.email && (
