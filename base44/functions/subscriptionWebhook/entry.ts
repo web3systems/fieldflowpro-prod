@@ -48,6 +48,100 @@ Deno.serve(async (req) => {
         return Response.json({ received: true });
       }
 
+      // Handle Lifetime plan (one-time payment — no subscription object)
+      if (plan === 'lifetime') {
+        try {
+          const existing = await base44.asServiceRole.entities.Subscription.filter({ company_id });
+          const subData = {
+            company_id,
+            plan: 'lifetime',
+            status: 'active',
+            stripe_customer_id: session.customer,
+            owner_email: owner_email || '',
+            owner_name: owner_name || '',
+          };
+          if (existing[0]) {
+            await base44.asServiceRole.entities.Subscription.update(existing[0].id, subData);
+          } else {
+            await base44.asServiceRole.entities.Subscription.create(subData);
+          }
+
+          // Grant every active module to this company
+          const modules = await base44.asServiceRole.entities.Module.filter({ is_active: true });
+          for (const mod of modules) {
+            const existingCm = await base44.asServiceRole.entities.CompanyModule.filter({ company_id, module_key: mod.module_key });
+            if (existingCm[0]) {
+              if (existingCm[0].status !== 'active') {
+                await base44.asServiceRole.entities.CompanyModule.update(existingCm[0].id, { status: 'active', granted_by_admin: true });
+              }
+            } else {
+              await base44.asServiceRole.entities.CompanyModule.create({
+                company_id,
+                module_key: mod.module_key,
+                module_name: mod.name,
+                status: 'active',
+                granted_by_admin: true,
+                activated_at: new Date().toISOString(),
+              });
+            }
+          }
+          console.log(`Lifetime access granted to company ${company_id}: ${modules.length} modules activated.`);
+
+          // Auto-invite the owner so they can log in
+          if (owner_email) {
+            try {
+              await base44.users.inviteUser(owner_email, "user");
+              console.log(`Invited lifetime owner ${owner_email}`);
+            } catch (inviteErr) {
+              console.log(`Invite skipped: ${inviteErr.message}`);
+            }
+            try {
+              const existing_access = await base44.asServiceRole.entities.UserCompanyAccess.filter({ user_email: owner_email, company_id });
+              if (!existing_access[0]) {
+                await base44.asServiceRole.entities.UserCompanyAccess.create({
+                  user_email: owner_email,
+                  company_id,
+                  role: 'manager',
+                  user_name: owner_name || '',
+                });
+                try {
+                  const users = await base44.asServiceRole.entities.User.filter({ email: owner_email });
+                  if (users[0]) {
+                    const rec = await base44.asServiceRole.entities.UserCompanyAccess.filter({ user_email: owner_email, company_id });
+                    if (rec[0]) await base44.asServiceRole.entities.UserCompanyAccess.update(rec[0].id, { user_id: users[0].id });
+                  }
+                } catch (e) { /* non-fatal */ }
+              }
+            } catch (accessErr) {
+              console.error(`UserCompanyAccess failed: ${accessErr.message}`);
+            }
+            try {
+              await base44.asServiceRole.integrations.Core.SendEmail({
+                to: owner_email,
+                subject: "Welcome to FieldFlow Pro — Lifetime access activated!",
+                body: `
+                  <div style="font-family: sans-serif; max-width: 560px; margin: 0 auto;">
+                    <h2 style="color: #059669;">Welcome to FieldFlow Pro, ${owner_name || owner_email}!</h2>
+                    <p>Your <strong>Lifetime — All Access</strong> purchase is complete. Every feature and module is unlocked forever — no monthly fees, ever.</p>
+                    <p style="margin: 24px 0;">
+                      <a href="https://app.fieldflowpro.com/Dashboard" style="background: #059669; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: 600;">
+                        Go to My Dashboard →
+                      </a>
+                    </p>
+                    <p style="color: #64748b; font-size: 14px;">You'll receive a separate email to set your password.</p>
+                  </div>
+                `
+              });
+            } catch (emailErr) {
+              console.error(`Lifetime welcome email failed: ${emailErr.message}`);
+            }
+          }
+        } catch (lifetimeErr) {
+          console.error(`Lifetime activation failed: ${lifetimeErr.message}`);
+        }
+        return Response.json({ received: true });
+      }
+
       const stripeSub = await stripe.subscriptions.retrieve(session.subscription);
       const trialEnd = stripeSub.trial_end ? new Date(stripeSub.trial_end * 1000).toISOString() : null;
       const periodEnd = new Date(stripeSub.current_period_end * 1000).toISOString();

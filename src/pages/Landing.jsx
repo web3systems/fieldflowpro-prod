@@ -11,10 +11,45 @@ import { Badge } from "@/components/ui/badge";
 
 export default function Landing() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [lifetimeEmail, setLifetimeEmail] = useState("");
+  const [lifetimeCompany, setLifetimeCompany] = useState("");
+  const [lifetimeLoading, setLifetimeLoading] = useState(false);
 
   const handleSignIn = () => {
     base44.auth.redirectToLogin(`${window.location.origin}/Dashboard`);
   };
+
+  async function handleBuyLifetime() {
+    // Block checkout inside the iframe preview — only works from a published app
+    if (window.self !== window.top) {
+      alert("Checkout is only available from the published app. Please open the app directly to purchase.");
+      return;
+    }
+    if (!lifetimeEmail || !/.+@.+\..+/.test(lifetimeEmail)) {
+      alert("Please enter a valid email address.");
+      return;
+    }
+    setLifetimeLoading(true);
+    try {
+      const response = await base44.functions.invoke('createLifetimeCheckout', {
+        owner_email: lifetimeEmail,
+        owner_name: '',
+        company_name: lifetimeCompany || undefined,
+        success_url: `${window.location.origin}/Dashboard?lifetime=true`,
+        cancel_url: `${window.location.origin}/Landing`,
+      });
+      if (response.data?.url) {
+        window.location.href = response.data.url;
+      } else if (response.data?.error) {
+        alert(response.data.error);
+      }
+    } catch (e) {
+      console.error('Lifetime checkout error:', e);
+      alert('Something went wrong starting checkout. Please try again.');
+    } finally {
+      setLifetimeLoading(false);
+    }
+  }
 
   return (
     <div className="min-h-screen bg-white text-slate-900 font-sans">
@@ -471,7 +506,7 @@ export default function Landing() {
                   { feature: "Built-in AI workflow agent", ffp: "✅ Flow included", j: "❌ None", hp: "❌ None" },
                   { feature: "Free trial — no credit card", ffp: "✅ 14 days free", j: "⚠️ Demo required", hp: "⚠️ Demo required" },
                   { feature: "Built by service business owners", ffp: "✅ Yes", j: "❌ No", hp: "❌ No" },
-                  { feature: "Starting price", ffp: "$49/mo", j: "$39/mo (1 user only)", hp: "$59/mo (limited)" },
+                  { feature: "Starting price", ffp: "$99/mo", j: "$39/mo (1 user only)", hp: "$59/mo (limited)" },
                 ].map(({ feature, ffp, j, hp }, i) => (
                   <tr
                     key={feature}
@@ -611,7 +646,7 @@ export default function Landing() {
             {[
               {
                 name: "Starter",
-                price: "$49",
+                price: "$99",
                 period: "/mo",
                 subtitle: "Perfect for solo operators and small crews",
                 features: [
@@ -629,7 +664,7 @@ export default function Landing() {
               },
               {
                 name: "Growth",
-                price: "$99",
+                price: "$149",
                 period: "/mo",
                 subtitle: "For growing teams running multiple locations",
                 features: [
@@ -647,7 +682,7 @@ export default function Landing() {
               },
               {
                 name: "Pro",
-                price: "$199",
+                price: "$299",
                 period: "/mo",
                 subtitle: "For serious operators running multiple companies at scale",
                 features: [
@@ -708,6 +743,69 @@ export default function Landing() {
                 <p className="text-slate-400 text-xs text-center mt-3">No credit card required</p>
               </div>
             ))}
+          </div>
+
+          {/* Lifetime — One-time purchase */}
+          <div className="mt-10 sm:mt-14 max-w-3xl mx-auto">
+            <div className="relative rounded-2xl border-2 border-emerald-500 bg-gradient-to-br from-emerald-50 to-white p-6 sm:p-8 shadow-lg overflow-hidden">
+              <div className="absolute top-0 right-0 w-48 h-48 bg-emerald-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+              <div className="relative flex flex-col md:flex-row md:items-center gap-6">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Badge className="bg-emerald-600 text-white border-0 text-xs font-bold px-3 py-1">
+                      One-Time Purchase
+                    </Badge>
+                  </div>
+                  <h3 className="text-xl font-bold text-slate-900 mb-1">Lifetime — All Access</h3>
+                  <p className="text-slate-500 text-sm mb-4">
+                    Every feature, every module, every AI agent — included forever. No monthly fees, ever.
+                  </p>
+                  <ul className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 mb-4">
+                    {[
+                      "Everything in Pro, unlocked forever",
+                      "All current & future modules included",
+                      "Unlimited companies",
+                      "All AI agents included",
+                      "White label ready",
+                      "No monthly fees, ever",
+                    ].map((f) => (
+                      <li key={f} className="flex items-start gap-2 text-sm text-slate-600">
+                        <CheckCircle className="w-4 h-4 text-emerald-500 flex-shrink-0 mt-0.5" />
+                        <span>{f}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="md:w-64 flex-shrink-0 md:text-center">
+                  <div className="mb-3 md:text-center">
+                    <span className="text-4xl font-extrabold text-slate-900">$2,500</span>
+                    <span className="text-slate-400 text-sm block">one-time payment</span>
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="Company name"
+                    value={lifetimeCompany}
+                    onChange={(e) => setLifetimeCompany(e.target.value)}
+                    className="w-full h-10 px-3 rounded-lg border border-slate-300 text-sm mb-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  />
+                  <input
+                    type="email"
+                    placeholder="Your email"
+                    value={lifetimeEmail}
+                    onChange={(e) => setLifetimeEmail(e.target.value)}
+                    className="w-full h-10 px-3 rounded-lg border border-slate-300 text-sm mb-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  />
+                  <Button
+                    onClick={handleBuyLifetime}
+                    disabled={lifetimeLoading}
+                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white gap-2"
+                  >
+                    {lifetimeLoading ? "Starting checkout..." : "Buy Now"}
+                  </Button>
+                  <p className="text-slate-400 text-xs text-center mt-2">Secure checkout via Stripe</p>
+                </div>
+              </div>
+            </div>
           </div>
 
           <div className="text-center mt-10 sm:mt-14">
