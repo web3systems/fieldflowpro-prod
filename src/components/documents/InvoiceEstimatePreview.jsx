@@ -1,10 +1,72 @@
 import React from 'react';
 import { format } from 'date-fns';
 
-export default function InvoiceEstimatePreview({ 
-  document, 
-  customer, 
-  company, 
+function LineItemTable({ lineItems, primaryColor }) {
+  if (!lineItems || lineItems.length === 0) {
+    return <p className="text-sm text-slate-400 italic py-4">No line items.</p>;
+  }
+  return (
+    <table className="w-full mb-4 border-collapse">
+      <thead>
+        <tr style={{ backgroundColor: primaryColor }}>
+          <th className="px-4 py-3 text-left text-white font-semibold text-sm">Item Description</th>
+          <th className="px-4 py-3 text-center text-white font-semibold text-sm w-20">Price</th>
+          <th className="px-4 py-3 text-center text-white font-semibold text-sm w-20">Qty</th>
+          <th className="px-4 py-3 text-right text-white font-semibold text-sm w-24">Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        {lineItems.map((item, idx) => (
+          <tr key={idx} className="border-b border-slate-200">
+            <td className="px-4 py-3 text-sm text-slate-700 align-top">
+              <span>{item.description || '—'}</span>
+              {(item.notes || item.comments) && (
+                <p className="text-xs text-slate-400 italic mt-0.5">{item.notes || item.comments}</p>
+              )}
+            </td>
+            <td className="px-4 py-3 text-center text-sm text-slate-700 align-top">${(item.unit_price || 0).toFixed(2)}</td>
+            <td className="px-4 py-3 text-center text-sm text-slate-700 align-top">{item.quantity || 1}</td>
+            <td className="px-4 py-3 text-right text-sm font-semibold text-slate-900 align-top">${(item.total || 0).toFixed(2)}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+}
+
+function TotalsBlock({ data, primaryColor, accentColor }) {
+  return (
+    <div className="flex justify-end mb-4">
+      <div className="w-64 space-y-2">
+        <div className="flex justify-between text-sm">
+          <span className="text-slate-600">Subtotal:</span>
+          <span className="font-semibold">${(data.subtotal || 0).toFixed(2)}</span>
+        </div>
+        {data.tax_amount > 0 && (
+          <div className="flex justify-between text-sm">
+            <span className="text-slate-600">Tax ({(data.tax_rate || 0).toFixed(1)}%):</span>
+            <span className="font-semibold">${(data.tax_amount || 0).toFixed(2)}</span>
+          </div>
+        )}
+        {data.discount > 0 && (
+          <div className="flex justify-between text-sm">
+            <span className="text-slate-600">Discount:</span>
+            <span className="font-semibold text-red-600">-${(data.discount || 0).toFixed(2)}</span>
+          </div>
+        )}
+        <div className="flex justify-between text-lg font-bold pt-2 border-t-2" style={{ borderColor: primaryColor, color: accentColor }}>
+          <span>Total:</span>
+          <span>${(data.total || 0).toFixed(2)}</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function InvoiceEstimatePreview({
+  document,
+  customer,
+  company,
   type = 'invoice',
   template
 }) {
@@ -19,31 +81,21 @@ export default function InvoiceEstimatePreview({
   const companyEmail = template?.company_email || company?.email;
   const footerText = template?.footer_text;
 
-  const lineItems = document.options?.[0]?.line_items || document.line_items || [];
-  const subtotal = document.subtotal || 0;
-  const taxAmount = document.tax_amount || 0;
-  const discount = document.discount || 0;
-  const total = document.total || 0;
-
-  const hexToRgb = (hex) => {
-    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-    return result ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}` : '59, 130, 246';
-  };
-
-  const rgb = hexToRgb(primaryColor);
+  const hasOptions = type === 'estimate' && Array.isArray(document.options) && document.options.length > 0;
+  const options = hasOptions ? document.options : null;
 
   return (
     <div className="bg-white p-8 max-w-4xl mx-auto">
       <div className="flex gap-0" style={{ minHeight: '600px' }}>
         {/* Left Sidebar */}
-        <div 
-          className="w-32 flex flex-col items-center py-8 px-4"
+        <div
+          className="w-32 flex flex-col items-center py-8 px-4 flex-shrink-0"
           style={{ backgroundColor: primaryColor }}
         >
           {logoUrl && (
-            <img 
-              src={logoUrl} 
-              alt={company.name} 
+            <img
+              src={logoUrl}
+              alt={company.name}
               className="w-24 h-24 object-contain mb-4"
               style={{ filter: 'brightness(0) invert(1)' }}
             />
@@ -61,28 +113,35 @@ export default function InvoiceEstimatePreview({
               <h1 className="text-4xl font-bold" style={{ color: accentColor }}>
                 {type.toUpperCase()}
               </h1>
+              {type === 'estimate' && document.title && (
+                <p className="text-sm text-slate-500 mt-1">{document.title}</p>
+              )}
             </div>
             <div className="text-right text-sm space-y-2" style={{ color: accentColor }}>
               <div>
                 <p className="font-semibold">{type === 'estimate' ? 'Estimate To:' : 'Invoice To:'}</p>
-                <p className="font-bold">{customer.first_name} {customer.last_name}</p>
+                <p className="font-bold">{customer.business_name || [customer.first_name, customer.last_name].filter(Boolean).join(' ') || '—'}</p>
                 <p>{customer.address}</p>
-                <p>{customer.city}, {customer.state} {customer.zip}</p>
+                <p>{[customer.city, customer.state, customer.zip].filter(Boolean).join(', ')}</p>
               </div>
             </div>
           </div>
 
           {/* Document Details */}
-          <div className="grid grid-cols-2 gap-8 mb-12">
+          <div className="grid grid-cols-2 gap-8 mb-10">
             <div />
             <div className="text-right text-sm space-y-1" style={{ color: accentColor }}>
               {document.estimate_number && (
-                <>
-                  <p><span className="font-semibold">{type === 'estimate' ? 'Estimate' : 'Invoice'} No:</span> {document.estimate_number}</p>
-                </>
+                <p><span className="font-semibold">{type === 'estimate' ? 'Estimate' : 'Invoice'} No:</span> {document.estimate_number || document.invoice_number}</p>
+              )}
+              {document.invoice_number && (
+                <p><span className="font-semibold">Invoice No:</span> {document.invoice_number}</p>
               )}
               {document.due_date && (
                 <p><span className="font-semibold">Due Date:</span> {format(new Date(document.due_date), 'MMM d, yyyy')}</p>
+              )}
+              {document.valid_until && (
+                <p><span className="font-semibold">Valid Until:</span> {format(new Date(document.valid_until), 'MMM d, yyyy')}</p>
               )}
               {document.created_date && (
                 <p><span className="font-semibold">{type === 'estimate' ? 'Estimate' : 'Invoice'} Date:</span> {format(new Date(document.created_date), 'MMM d, yyyy')}</p>
@@ -90,72 +149,53 @@ export default function InvoiceEstimatePreview({
             </div>
           </div>
 
-          {/* Table */}
-          <table className="w-full mb-8 border-collapse">
-            <thead>
-              <tr style={{ backgroundColor: primaryColor }}>
-                <th className="px-4 py-3 text-left text-white font-semibold text-sm">Item Description</th>
-                <th className="px-4 py-3 text-center text-white font-semibold text-sm w-20">Price</th>
-                <th className="px-4 py-3 text-center text-white font-semibold text-sm w-20">Quantity</th>
-                <th className="px-4 py-3 text-right text-white font-semibold text-sm w-24">Total</th>
-              </tr>
-            </thead>
-            <tbody>
-              {lineItems.map((item, idx) => (
-                <tr key={idx} className="border-b border-slate-200 hover:bg-slate-50">
-                  <td className="px-4 py-3 text-sm text-slate-700">
-                    <span>{item.description}</span>
-                    {(item.notes || item.comments) && (
-                      <p className="text-xs text-slate-400 italic mt-0.5">{item.notes || item.comments}</p>
-                    )}
-                  </td>
-                  <td className="px-4 py-3 text-center text-sm text-slate-700">${(item.unit_price || 0).toFixed(2)}</td>
-                  <td className="px-4 py-3 text-center text-sm text-slate-700">{item.quantity || 1}</td>
-                  <td className="px-4 py-3 text-right text-sm font-semibold text-slate-900">${(item.total || 0).toFixed(2)}</td>
-                </tr>
+          {/* Line items / options */}
+          {options ? (
+            <div className="space-y-6">
+              {options.map((option, idx) => (
+                <div key={option.id || idx} className={idx > 0 ? 'pt-6 border-t-2 border-dashed border-slate-200' : ''}>
+                  <div className="mb-2">
+                    <h3 className="text-base font-bold" style={{ color: accentColor }}>
+                      Option {idx + 1}: {option.name || ''}
+                    </h3>
+                  </div>
+                  <LineItemTable lineItems={option.line_items} primaryColor={primaryColor} />
+                  {option.notes && (
+                    <div className="mb-3 bg-slate-50 p-3 rounded border-l-4 text-sm text-slate-700" style={{ borderColor: primaryColor }}>
+                      {option.notes}
+                    </div>
+                  )}
+                  <TotalsBlock data={option} primaryColor={primaryColor} accentColor={accentColor} />
+                </div>
               ))}
-            </tbody>
-          </table>
-
-          {/* Summary */}
-          <div className="grid grid-cols-3 gap-8 flex-1">
-            {/* Left column - Notes */}
-            <div className="col-span-2">
-              {document.notes && (
-                <div className="bg-slate-50 p-4 rounded border-l-4" style={{ borderColor: primaryColor }}>
-                  <p className="text-xs font-semibold text-slate-600 mb-1">NOTES</p>
-                  <p className="text-sm text-slate-700">{document.notes}</p>
-                </div>
-              )}
             </div>
+          ) : (
+            <>
+              <LineItemTable lineItems={document.line_items} primaryColor={primaryColor} />
+              <TotalsBlock data={document} primaryColor={primaryColor} accentColor={accentColor} />
+            </>
+          )}
 
-            {/* Right column - Totals */}
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span className="text-slate-600">Subtotal:</span>
-                <span className="font-semibold">${subtotal.toFixed(2)}</span>
+          {/* Scope of Work */}
+          {document.scope_of_work && (
+            <div className="mt-8">
+              <div className="text-white text-sm font-bold px-4 py-2 mb-3" style={{ backgroundColor: primaryColor }}>
+                SCOPE OF WORK
               </div>
-              {taxAmount > 0 && (
-                <div className="flex justify-between text-sm">
-                  <span className="text-slate-600">Tax ({((document.tax_rate || 0) * 100).toFixed(1)}%):</span>
-                  <span className="font-semibold">${taxAmount.toFixed(2)}</span>
-                </div>
-              )}
-              {discount > 0 && (
-                <div className="flex justify-between text-sm">
-                  <span className="text-slate-600">Discount:</span>
-                  <span className="font-semibold">-${discount.toFixed(2)}</span>
-                </div>
-              )}
-              <div 
-                className="flex justify-between text-lg font-bold pt-3 border-t-2"
-                style={{ borderColor: primaryColor, color: accentColor }}
-              >
-                <span>Grand Total:</span>
-                <span>${total.toFixed(2)}</span>
-              </div>
+              <div
+                className="prose prose-sm max-w-none text-slate-700 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:my-1 [&_p]:my-2 [&_h1]:text-lg [&_h2]:text-base [&_h3]:text-sm [&_strong]:font-semibold"
+                dangerouslySetInnerHTML={{ __html: document.scope_of_work }}
+              />
             </div>
-          </div>
+          )}
+
+          {/* Notes */}
+          {document.notes && !(hasOptions) && (
+            <div className="mt-6 bg-slate-50 p-4 rounded border-l-4" style={{ borderColor: primaryColor }}>
+              <p className="text-xs font-semibold text-slate-600 mb-1">NOTES</p>
+              <p className="text-sm text-slate-700 whitespace-pre-line">{document.notes}</p>
+            </div>
+          )}
         </div>
       </div>
 
