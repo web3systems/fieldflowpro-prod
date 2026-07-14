@@ -92,7 +92,7 @@ export default function Register() {
       <div className="flex-1 flex flex-col items-center justify-center px-4 py-12">
         <div className="text-center mb-10">
           <h1 className="text-4xl font-bold text-white mb-3">Start your free 14-day trial</h1>
-          <p className="text-blue-200 text-lg">No credit card required to start. Cancel anytime.</p>
+          <p className="text-blue-200 text-lg">Cancel anytime.</p>
         </div>
 
       {step === "plan" ? (
@@ -201,7 +201,6 @@ export default function Register() {
                 By signing up you agree to our{" "}
                 <a href="/TermsOfService" target="_blank" className="underline hover:text-white">Terms of Service</a>{" "}and{" "}
                 <a href="/PrivacyPolicy" target="_blank" className="underline hover:text-white">Privacy Policy</a>.
-                No credit card needed to start.
               </p>
             </div>
           </div>

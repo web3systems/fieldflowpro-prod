@@ -139,7 +139,7 @@ export default function Landing() {
               </div>
 
               <p className="text-slate-400 text-sm">
-                No credit card required · No setup fees · Your whole team running in under an hour
+                Your whole team running in under an hour
               </p>
             </div>
 
@@ -504,7 +504,7 @@ export default function Landing() {
                   { feature: "Flat rate — no per-user fees", ffp: "✅ Always", j: "❌ Charges per user", hp: "❌ Charges per user" },
                   { feature: "Built-in AI fraud detection", ffp: "✅ Forge included", j: "❌ None", hp: "❌ None" },
                   { feature: "Built-in AI workflow agent", ffp: "✅ Flow included", j: "❌ None", hp: "❌ None" },
-                  { feature: "Free trial — no credit card", ffp: "✅ 14 days free", j: "⚠️ Demo required", hp: "⚠️ Demo required" },
+                  { feature: "Free trial", ffp: "✅ 14 days free", j: "⚠️ Demo required", hp: "⚠️ Demo required" },
                   { feature: "Built by service business owners", ffp: "✅ Yes", j: "❌ No", hp: "❌ No" },
                   { feature: "Starting price", ffp: "$99/mo", j: "$39/mo (1 user only)", hp: "$59/mo (limited)" },
                 ].map(({ feature, ffp, j, hp }, i) => (
@@ -740,7 +740,6 @@ export default function Landing() {
                     Start Free Trial
                   </Button>
                 </Link>
-                <p className="text-slate-400 text-xs text-center mt-3">No credit card required</p>
               </div>
             ))}
           </div>
@@ -816,7 +815,7 @@ export default function Landing() {
               </a>
             </p>
             <p className="text-slate-400 text-xs">
-              All plans include flat-rate pricing, no per-user fees, all AI agents, and a free 14-day trial. No credit card required to start.
+              All plans include flat-rate pricing, no per-user fees, all AI agents, and a free 14-day trial.
             </p>
           </div>
         </div>
@@ -846,11 +845,11 @@ export default function Landing() {
             Ready to run your whole operation from one login?
           </h2>
           <p className="text-slate-400 text-base sm:text-lg mb-8 leading-relaxed">
-            Start your free 14-day trial today. No credit card required. No setup fees. Your whole team up and running in under an hour.
+            Start your free 14-day trial today. Your whole team up and running in under an hour.
           </p>
           <Link to="/Register">
             <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white gap-2 px-8 sm:px-10 w-full sm:w-auto text-base py-6 sm:py-4 shadow-lg shadow-blue-600/25">
-              Start Free Trial — No Credit Card Required <ArrowRight className="w-4 h-4" />
+              Start Free Trial <ArrowRight className="w-4 h-4" />
             </Button>
           </Link>
           <p className="text-slate-500 text-xs sm:text-sm mt-6">

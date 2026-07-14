@@ -203,7 +203,7 @@ export default function ProductOverview() {
               View Full Docs
             </Link>
           </div>
-          <p className="text-slate-400 text-sm mt-6">14-day free trial · No credit card required</p>
+          <p className="text-slate-400 text-sm mt-6">14-day free trial</p>
         </div>
       </section>
 
@@ -374,7 +374,7 @@ export default function ProductOverview() {
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-3">Simple, transparent pricing</h2>
-            <p className="text-lg text-slate-500">All plans include a 14-day free trial. No credit card required.</p>
+            <p className="text-lg text-slate-500">All plans include a 14-day free trial.</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {plans.map(plan => (

@@ -89,7 +89,7 @@ export default function OnboardingWizard({ company, onComplete }) {
               Let's get your account set up in just a few steps. This takes about 2 minutes.
             </p>
             <p className="text-sm text-slate-400 mb-8">
-              You're on a <strong className="text-blue-600">14-day free trial</strong> — no credit card needed yet.
+              You're on a <strong className="text-blue-600">14-day free trial</strong>.
             </p>
             <div className="grid grid-cols-3 gap-3 mb-8">
               {[
