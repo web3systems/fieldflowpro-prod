@@ -23,7 +23,31 @@ Deno.serve(async (req) => {
 
     await base44.asServiceRole.entities.Estimate.update(estimate_id, { status: 'approved' });
 
-    return Response.json({ success: true, message: 'Estimate approved' });
+    // Create a job from the estimate if one doesn't already exist
+    const existingJobs = await base44.asServiceRole.entities.Job.filter({ estimate_id });
+    if (existingJobs.length === 0) {
+      const opt = estimate.options && estimate.options[0];
+      const lineItems = (opt?.line_items || estimate.line_items || []).map((it: any) => ({
+        ...it,
+        category: it.category === 'labor' ? 'service'
+          : it.category === 'materials' ? 'material'
+          : it.category || 'service',
+      }));
+      await base44.asServiceRole.entities.Job.create({
+        company_id: estimate.company_id,
+        customer_id: estimate.customer_id,
+        estimate_id: estimate.id,
+        title: estimate.title,
+        description: '',
+        status: 'new',
+        total_amount: opt?.total ?? estimate.total ?? 0,
+        tax_rate: opt?.tax_rate ?? 0,
+        line_items: lineItems,
+        notes: estimate.notes || '',
+      });
+    }
+
+    return Response.json({ success: true, message: 'Estimate approved and job created' });
   } catch (error) {
     console.error('Error in approveEstimate:', error.message);
     return Response.json({ error: error.message || 'Failed to approve' }, { status: 500 });

@@ -204,8 +204,11 @@ export default function EstimateDetail() {
     setEditingInfo(false);
   }
 
-  async function handleApprove() {
-    setApproving(true);
+  async function ensureJobFromEstimate() {
+    // Guard against duplicates: if a job already links to this estimate, don't create another
+    const existing = await base44.entities.Job.filter({ estimate_id: id });
+    if (existing.length > 0) return;
+
     const opt = getOption();
     const customer = getCustomer(form.customer_id);
 
@@ -217,7 +220,6 @@ export default function EstimateDetail() {
               : item.category || "service",
     }));
 
-    await base44.entities.Estimate.update(id, { ...form, status: "approved" });
     await base44.entities.Job.create({
       company_id: activeCompany.id,
       customer_id: form.customer_id,
@@ -240,8 +242,28 @@ export default function EstimateDetail() {
       scheduled_start: form.scheduled_start || "",
       scheduled_end: form.scheduled_end || "",
     });
-    setApproving(false);
-    navigate(createPageUrl("Jobs"));
+  }
+
+  async function handleApprove() {
+    setApproving(true);
+    try {
+      await base44.entities.Estimate.update(id, { ...form, status: "approved" });
+      setForm(f => ({ ...f, status: "approved" }));
+      setEstimate(e => ({ ...e, status: "approved" }));
+      await ensureJobFromEstimate();
+    } finally {
+      setApproving(false);
+      navigate(createPageUrl("Jobs"));
+    }
+  }
+
+  async function handleStatusChange(v) {
+    setForm(f => ({ ...f, status: v }));
+    await base44.entities.Estimate.update(id, { status: v });
+    setEstimate(e => ({ ...e, status: v }));
+    if (v === "approved") {
+      await ensureJobFromEstimate();
+    }
   }
 
   async function handleDecline() {
@@ -470,11 +492,7 @@ export default function EstimateDetail() {
               <div className="pb-3 border-b border-slate-100">
                 <Label className="text-xs text-slate-500 mb-1 block">Change Status</Label>
                 <div className="flex gap-2">
-                  <Select value={form.status} onValueChange={async (v) => {
-                    setForm(f => ({ ...f, status: v }));
-                    await base44.entities.Estimate.update(id, { status: v });
-                    setEstimate(e => ({ ...e, status: v }));
-                  }}>
+                  <Select value={form.status}                   onValueChange={handleStatusChange}>
                     <SelectTrigger className="h-8 text-sm flex-1"><SelectValue /></SelectTrigger>
                     <SelectContent>{Object.keys(STATUS_STYLES).map(s => <SelectItem key={s} value={s} className="capitalize">{s}</SelectItem>)}</SelectContent>
                   </Select>
@@ -545,11 +563,7 @@ export default function EstimateDetail() {
                 </div>
                 <div className="flex items-center gap-2 pt-1">
                   <Label className="text-xs text-slate-500">Status:</Label>
-                  <Select value={form.status} onValueChange={async (v) => {
-                    setForm(f => ({ ...f, status: v }));
-                    await base44.entities.Estimate.update(id, { status: v });
-                    setEstimate(e => ({ ...e, status: v }));
-                  }}>
+                  <Select value={form.status}                   onValueChange={handleStatusChange}>
                     <SelectTrigger className="h-7 text-xs w-32"><SelectValue /></SelectTrigger>
                     <SelectContent>{Object.keys(STATUS_STYLES).map(s => <SelectItem key={s} value={s} className="capitalize">{s}</SelectItem>)}</SelectContent>
                   </Select>
