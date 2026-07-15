@@ -94,10 +94,18 @@ export default function Schedule() {
   const [tasks, setTasks] = useState([]);
   const [view, setView] = useState(Views.MONTH);
   const [date, setDate] = useState(new Date());
-  const [sheetOpen, setSheetOpen] = useState(false);
-  const [form, setForm] = useState(defaultJob);
-  const [editing, setEditing] = useState(null);
+  const [eventOpen, setEventOpen] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [eventForm, setEventForm] = useState({
+    target: "customers",
+    title: "",
+    customer_id: "",
+    date: moment().format("YYYY-MM-DD"),
+    startTime: "08:00",
+    endTime: "17:00",
+    priority: "medium",
+    notes: "",
+  });
   const [filterTech, setFilterTech] = useState("all");
   const [historyMode, setHistoryMode] = useState(false);
   const [historyRange, setHistoryRange] = useState({
@@ -291,25 +299,62 @@ export default function Schedule() {
     navigate(createPageUrl("Tasks"));
   }
 
+  function openEventModal(presetTarget, presetDate) {
+    setEventForm({
+      target: presetTarget || calendarType,
+      title: "",
+      customer_id: "",
+      date: presetDate || moment().format("YYYY-MM-DD"),
+      startTime: "08:00",
+      endTime: "17:00",
+      priority: "medium",
+      notes: "",
+    });
+    setEventOpen(true);
+  }
+
   function handleSelectSlot(slot) {
-    const date = moment(slot.start).format("YYYY-MM-DD");
-    navigate(`/NewJob?date=${date}`);
+    openEventModal(calendarType, moment(slot.start).format("YYYY-MM-DD"));
   }
 
-  async function handleSave() {
+  async function handleEventSave() {
+    if (!eventForm.title || !eventForm.date) return;
     setSaving(true);
-    const data = { ...form, company_id: activeCompany.id };
-    if (editing) {
-      await base44.entities.Job.update(editing.id, data);
-    } else {
-      await base44.entities.Job.create(data);
+    try {
+      const makesJob = eventForm.target === "customers" || eventForm.target === "both";
+      const makesTask = eventForm.target === "tasks" || eventForm.target === "both";
+      const startISO = `${eventForm.date}T${eventForm.startTime}`;
+      const endISO = `${eventForm.date}T${eventForm.endTime}`;
+      if (makesJob) {
+        await base44.entities.Job.create({
+          company_id: activeCompany.id,
+          title: eventForm.title,
+          customer_id: eventForm.customer_id || "",
+          status: "scheduled",
+          scheduled_start: startISO,
+          scheduled_end: endISO,
+          notes: eventForm.notes || "",
+        });
+      }
+      if (makesTask) {
+        await base44.entities.Task.create({
+          company_id: activeCompany.id,
+          title: eventForm.title,
+          due_date: eventForm.date,
+          priority: eventForm.priority || "medium",
+          status: "todo",
+          notes: eventForm.notes || "",
+        });
+      }
+      setEventOpen(false);
+      await loadData();
+    } finally {
+      setSaving(false);
     }
-    setSaving(false);
-    setSheetOpen(false);
-    await loadData();
   }
 
-  async function convertBookingToJob(booking) {
+
+async function convertBookingToJob(booking) {
     let customer = customers.find(c => c.email === booking.email);
     if (!customer && booking.email) {
       customer = await base44.entities.Customer.create({
@@ -344,14 +389,6 @@ export default function Schedule() {
     await loadData();
   }
 
-  const toggleTech = (techId) => {
-    setForm(f => ({
-      ...f,
-      assigned_techs: f.assigned_techs?.includes(techId)
-        ? f.assigned_techs.filter(id => id !== techId)
-        : [...(f.assigned_techs || []), techId]
-    }));
-  };
 
   const navigateCalendar = (direction) => {
     const unit = view === Views.MONTH ? 'month' : view === Views.WEEK ? 'week' : 'day';
@@ -561,15 +598,9 @@ export default function Schedule() {
                 </button>
               ))}
             </div>
-            {calendarType === "customers" ? (
-              <Button size="sm" className="gap-1.5 bg-blue-600 hover:bg-blue-700 h-8" onClick={() => navigate("/NewJob")}>
-                <Plus className="w-3.5 h-3.5" /> New Job
-              </Button>
-            ) : (
-              <Button size="sm" className="gap-1.5 bg-blue-600 hover:bg-blue-700 h-8" onClick={() => navigate(createPageUrl("Tasks"))}>
-                <Plus className="w-3.5 h-3.5" /> New Task
-              </Button>
-            )}
+            <Button size="sm" className="gap-1.5 bg-blue-600 hover:bg-blue-700 h-8" onClick={() => openEventModal(calendarType)}>
+              <Plus className="w-3.5 h-3.5" /> Add Event
+            </Button>
           </div>
         </div>
 
@@ -627,8 +658,8 @@ export default function Schedule() {
             onNavigate={setDate}
             onView={setView}
             onSelectEvent={handleSelectEvent}
-            onSelectSlot={calendarType === "customers" ? handleSelectSlot : undefined}
-            selectable={calendarType === "customers"}
+            onSelectSlot={handleSelectSlot}
+            selectable
             eventPropGetter={calendarType === "customers" ? eventStyleGetter : taskEventStyleGetter}
             components={calendarType === "customers" ? {
               event: CalendarEvent,
@@ -641,115 +672,93 @@ export default function Schedule() {
         </div>
       </div>
 
-      {/* Job Modal */}
-      {sheetOpen && (
+      {/* Add Event Modal */}
+      {eventOpen && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
             <div className="px-6 py-4 border-b flex items-center justify-between sticky top-0 bg-white rounded-t-2xl">
-              <h2 className="text-lg font-semibold text-slate-800">{editing ? "Edit Job" : "New Job"}</h2>
-              <button onClick={() => setSheetOpen(false)} className="text-slate-400 hover:text-slate-600 text-xl leading-none">×</button>
+              <h2 className="text-lg font-semibold text-slate-800">Add Event</h2>
+              <button onClick={() => setEventOpen(false)} className="text-slate-400 hover:text-slate-600 text-xl leading-none">×</button>
             </div>
             <div className="p-6 space-y-4">
               <div>
-                <Label>Job Title *</Label>
-                <Input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} placeholder="e.g. Weekly Lawn Service" />
-              </div>
-              <div>
-                <Label>Customer</Label>
-                <Select value={form.customer_id} onValueChange={v => setForm({ ...form, customer_id: v })}>
-                  <SelectTrigger><SelectValue placeholder="Select customer" /></SelectTrigger>
+                <Label>Calendar</Label>
+                <Select value={eventForm.target} onValueChange={v => setEventForm({ ...eventForm, target: v })}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    {customers.map(c => (
-                      <SelectItem key={c.id} value={c.id}>{c.first_name} {c.last_name}</SelectItem>
-                    ))}
+                    <SelectItem value="customers">Customer Schedule</SelectItem>
+                    <SelectItem value="tasks">Company Tasks / Projects</SelectItem>
+                    <SelectItem value="both">Both Calendars</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>Title *</Label>
+                <Input value={eventForm.title} onChange={e => setEventForm({ ...eventForm, title: e.target.value })} placeholder="Event title" />
+              </div>
+              {(eventForm.target === "customers" || eventForm.target === "both") && (
                 <div>
-                  <Label>Status</Label>
-                  <Select value={form.status} onValueChange={v => setForm({ ...form, status: v })}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
+                  <Label>Customer</Label>
+                  <Select value={eventForm.customer_id} onValueChange={v => setEventForm({ ...eventForm, customer_id: v })}>
+                    <SelectTrigger><SelectValue placeholder="Select customer (optional)" /></SelectTrigger>
                     <SelectContent>
-                      {STATUS_OPTIONS.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
+                      {customers.map(c => (
+                        <SelectItem key={c.id} value={c.id}>{c.first_name} {c.last_name}</SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
+              )}
+              <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <Label>Service Type</Label>
-                  <Input value={form.service_type} onChange={e => setForm({ ...form, service_type: e.target.value })} />
+                  <Label>Date *</Label>
+                  <Input type="date" value={eventForm.date} onChange={e => setEventForm({ ...eventForm, date: e.target.value })} />
                 </div>
-              </div>
-              <div className="space-y-3">
-                <div>
-                  <Label>Start</Label>
-                  <div className="flex gap-2 mt-1">
-                    <select
-                      value={form.scheduled_start?.split("T")[0] || ""}
-                      onChange={e => setForm({ ...form, scheduled_start: e.target.value + "T" + (form.scheduled_start?.split("T")[1]?.slice(0,5) || "08:00") })}
-                      className="flex-1 h-9 text-sm border border-input rounded-md bg-white px-2"
-                    >
-                      <option value="">Date</option>
-                      {Array.from({ length: 365 }, (_, i) => { const d = new Date(); d.setDate(d.getDate() + i - 30); const v = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`; return <option key={v} value={v}>{d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</option>; })}
-                    </select>
-                    <select
-                      value={form.scheduled_start?.split("T")[1]?.slice(0,5) || "08:00"}
-                      onChange={e => setForm({ ...form, scheduled_start: (form.scheduled_start?.split("T")[0] || new Date().toISOString().split("T")[0]) + "T" + e.target.value })}
-                      className="w-28 h-9 text-sm border border-input rounded-md bg-white px-2"
-                    >
-                      {Array.from({ length: 48 }, (_, i) => { const h = String(Math.floor(i/2)).padStart(2,"0"); const m = i%2===0?"00":"30"; const v = `${h}:${m}`; const label = new Date(`2000-01-01T${v}`).toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"}); return <option key={v} value={v}>{label}</option>; })}
-                    </select>
+                {eventForm.target === "tasks" ? (
+                  <div>
+                    <Label>Priority</Label>
+                    <Select value={eventForm.priority} onValueChange={v => setEventForm({ ...eventForm, priority: v })}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="low">Low</SelectItem>
+                        <SelectItem value="medium">Medium</SelectItem>
+                        <SelectItem value="high">High</SelectItem>
+                        <SelectItem value="urgent">Urgent</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
-                </div>
-                <div>
-                  <Label>End</Label>
-                  <div className="flex gap-2 mt-1">
-                    <select
-                      value={form.scheduled_end?.split("T")[0] || ""}
-                      onChange={e => setForm({ ...form, scheduled_end: e.target.value + "T" + (form.scheduled_end?.split("T")[1]?.slice(0,5) || "09:00") })}
-                      className="flex-1 h-9 text-sm border border-input rounded-md bg-white px-2"
-                    >
-                      <option value="">Date</option>
-                      {Array.from({ length: 365 }, (_, i) => { const d = new Date(); d.setDate(d.getDate() + i - 30); const v = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`; return <option key={v} value={v}>{d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</option>; })}
-                    </select>
-                    <select
-                      value={form.scheduled_end?.split("T")[1]?.slice(0,5) || "09:00"}
-                      onChange={e => setForm({ ...form, scheduled_end: (form.scheduled_end?.split("T")[0] || new Date().toISOString().split("T")[0]) + "T" + e.target.value })}
-                      className="w-28 h-9 text-sm border border-input rounded-md bg-white px-2"
-                    >
-                      {Array.from({ length: 48 }, (_, i) => { const h = String(Math.floor(i/2)).padStart(2,"0"); const m = i%2===0?"00":"30"; const v = `${h}:${m}`; const label = new Date(`2000-01-01T${v}`).toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"}); return <option key={v} value={v}>{label}</option>; })}
-                    </select>
+                ) : (
+                  <div>
+                    <Label>Time</Label>
+                    <div className="flex gap-2">
+                      <Input type="time" value={eventForm.startTime} onChange={e => setEventForm({ ...eventForm, startTime: e.target.value })} />
+                      <Input type="time" value={eventForm.endTime} onChange={e => setEventForm({ ...eventForm, endTime: e.target.value })} />
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
-              <div>
-                <Label>Address</Label>
-                <Input value={form.address} onChange={e => setForm({ ...form, address: e.target.value })} placeholder="123 Main St" />
-              </div>
-              {techs.length > 0 && (
+              {eventForm.target === "both" && (
                 <div>
-                  <Label>Assign Technicians</Label>
-                  <div className="space-y-2 mt-1.5 p-3 bg-slate-50 rounded-lg">
-                    {techs.map(t => (
-                      <label key={t.id} className="flex items-center gap-2 cursor-pointer">
-                        <Checkbox
-                          checked={form.assigned_techs?.includes(t.id)}
-                          onCheckedChange={() => toggleTech(t.id)}
-                        />
-                        <span className="text-sm text-slate-700">{t.first_name} {t.last_name}</span>
-                      </label>
-                    ))}
-                  </div>
+                  <Label>Task Priority</Label>
+                  <Select value={eventForm.priority} onValueChange={v => setEventForm({ ...eventForm, priority: v })}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="low">Low</SelectItem>
+                      <SelectItem value="medium">Medium</SelectItem>
+                      <SelectItem value="high">High</SelectItem>
+                      <SelectItem value="urgent">Urgent</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               )}
               <div>
                 <Label>Notes</Label>
-                <Textarea value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} rows={3} placeholder="Job details..." />
+                <Textarea value={eventForm.notes} onChange={e => setEventForm({ ...eventForm, notes: e.target.value })} rows={3} placeholder="Details..." />
               </div>
               <div className="flex gap-3 pt-2">
-                <Button variant="outline" onClick={() => setSheetOpen(false)} className="flex-1">Cancel</Button>
-                <Button onClick={handleSave} disabled={saving || !form.title} className="flex-1 bg-blue-600 hover:bg-blue-700">
-                  {saving ? "Saving..." : editing ? "Save Changes" : "Create Job"}
+                <Button variant="outline" onClick={() => setEventOpen(false)} className="flex-1">Cancel</Button>
+                <Button onClick={handleEventSave} disabled={saving || !eventForm.title || !eventForm.date} className="flex-1 bg-blue-600 hover:bg-blue-700">
+                  {saving ? "Adding..." : "Add Event"}
                 </Button>
               </div>
             </div>
