@@ -62,6 +62,7 @@ export default function EstimateDetail() {
   const [saving, setSaving] = useState(false);
   const [approving, setApproving] = useState(false);
   const [duplicating, setDuplicating] = useState(false);
+  const [creatingJob, setCreatingJob] = useState(false);
   const [form, setForm] = useState(null);
   const [editingInfo, setEditingInfo] = useState(false);
   const [activeOptionIdx, setActiveOptionIdx] = useState(0);
@@ -263,6 +264,16 @@ export default function EstimateDetail() {
     setEstimate(e => ({ ...e, status: v }));
     if (v === "approved") {
       await ensureJobFromEstimate();
+    }
+  }
+
+  async function handleRecreateJob() {
+    setCreatingJob(true);
+    try {
+      await ensureJobFromEstimate();
+      navigate(createPageUrl("Jobs"));
+    } finally {
+      setCreatingJob(false);
     }
   }
 
@@ -532,8 +543,13 @@ export default function EstimateDetail() {
                 </>
               )}
               {form.status === "approved" && (
-                <div className="flex items-center gap-2 p-3 bg-green-50 rounded-lg text-green-700 text-sm">
-                  <Briefcase className="w-4 h-4" /> Approved — job created.
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 p-3 bg-green-50 rounded-lg text-green-700 text-sm">
+                    <Briefcase className="w-4 h-4" /> Approved — job created.
+                  </div>
+                  <Button onClick={handleRecreateJob} disabled={creatingJob} variant="outline" className="w-full gap-2">
+                    <Briefcase className="w-4 h-4" />{creatingJob ? "Creating..." : "Recreate Job"}
+                  </Button>
                 </div>
               )}
               {form.status === "declined" && (
