@@ -347,6 +347,7 @@ export default function JobDetail() {
           customers={customers}
           onSave={handleSave}
           saving={saving}
+          onStatusChange={(s) => handleSave(s)}
         />
 
         {/* Main Content */}

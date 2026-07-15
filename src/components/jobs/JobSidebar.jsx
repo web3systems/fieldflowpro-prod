@@ -189,6 +189,17 @@ export default function JobSidebar({ job, form, setForm, customers, onSave, savi
           </div>
         )}
 
+        {/* Quick Status Change */}
+        {!editing && (
+          <div className="px-4 py-3 border-b border-slate-100">
+            <p className="text-xs text-slate-500 font-semibold uppercase tracking-wide mb-1.5">Status</p>
+            <Select value={form.status} onValueChange={onStatusChange}>
+              <SelectTrigger className="h-8 text-sm w-full"><SelectValue /></SelectTrigger>
+              <SelectContent>{STATUS_OPTIONS.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}</SelectContent>
+            </Select>
+          </div>
+        )}
+
         {/* Job Tags */}
         <div className="p-4">
           <p className="text-xs text-slate-500 font-semibold uppercase tracking-wide flex items-center gap-1 mb-2">
