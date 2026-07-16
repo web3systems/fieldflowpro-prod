@@ -66,6 +66,7 @@ export default function Landing() {
 
           {/* Desktop Nav */}
           <nav className="hidden md:flex items-center gap-8 text-sm text-slate-600">
+            <Link to="/Articles" className="hover:text-slate-900 transition-colors">Articles</Link>
             <a href="#compare" className="hover:text-slate-900 transition-colors">Compare</a>
             <a href="#why-us" className="hover:text-slate-900 transition-colors">Why Us</a>
             <a href="#ai" className="hover:text-slate-900 transition-colors">AI Features</a>
@@ -88,6 +89,7 @@ export default function Landing() {
 
         {mobileMenuOpen && (
           <div className="md:hidden border-t border-slate-100 bg-white px-4 py-4 space-y-1">
+            <Link to="/Articles" className="block px-2 py-3 text-base text-slate-700 border-b border-slate-50 active:bg-slate-50" onClick={() => setMobileMenuOpen(false)}>Articles</Link>
             {[
               { href: "#compare", label: "Compare" },
               { href: "#why-us", label: "Why Us" },
@@ -874,6 +876,7 @@ export default function Landing() {
               <p className="text-xs text-slate-500">Built by operators, for operators.</p>
             </div>
             <div className="flex gap-6 text-sm flex-wrap justify-center">
+              <Link to="/Articles" className="hover:text-white transition-colors">Articles</Link>
               <a href="#compare" className="hover:text-white transition-colors">Compare</a>
               <a href="#features" className="hover:text-white transition-colors">Features</a>
               <a href="#pricing" className="hover:text-white transition-colors">Pricing</a>

@@ -4,6 +4,7 @@ import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Calendar, Newspaper } from "lucide-react";
 import { format, parseISO } from "date-fns";
+import PublicArticlesHeader from "@/components/articles/PublicArticlesHeader";
 
 const TYPE_COLORS = {
   guide: "bg-slate-100 text-slate-700",
@@ -56,6 +57,8 @@ export default function ArticleDetail() {
   }
 
   return (
+    <>
+    <PublicArticlesHeader />
     <div className="max-w-3xl mx-auto px-4 md:px-6 py-6 pb-24 lg:pb-6">
       <Button variant="ghost" size="sm" onClick={() => navigate("/Articles")} className="gap-1 text-slate-500 mb-5">
         <ArrowLeft className="w-4 h-4" /> Articles
@@ -98,5 +101,6 @@ export default function ArticleDetail() {
         </Button>
       </div>
     </div>
+    </>
   );
 }

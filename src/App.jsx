@@ -169,8 +169,6 @@ const AuthenticatedApp = () => {
       <Route path="/Expenses" element={<LayoutWrapper currentPageName="Expenses"><Expenses /></LayoutWrapper>} />
       <Route path="/ProfitMargin" element={<LayoutWrapper currentPageName="ProfitMargin"><ProfitMargin /></LayoutWrapper>} />
       <Route path="/Documentation" element={<LayoutWrapper currentPageName="Documentation"><Documentation /></LayoutWrapper>} />
-      <Route path="/Articles" element={<LayoutWrapper currentPageName="Articles"><Articles /></LayoutWrapper>} />
-      <Route path="/ArticleDetail/:id" element={<LayoutWrapper currentPageName="Articles"><ArticleDetail /></LayoutWrapper>} />
       <Route path="/AuditLog" element={<LayoutWrapper currentPageName="AuditLog"><AuditLog /></LayoutWrapper>} />
       <Route path="/Tasks" element={<LayoutWrapper currentPageName="Tasks"><Tasks /></LayoutWrapper>} />
       <Route path="/Support" element={<LayoutWrapper currentPageName="Support"><Support /></LayoutWrapper>} />
@@ -220,6 +218,8 @@ function App() {
             <Route path="/PaymentConfirmation" element={<PaymentConfirmation />} />
             <Route path="/privacy" element={<PrivacyPolicyPublic />} />
             <Route path="/terms" element={<TermsAndConditions />} />
+            <Route path="/Articles" element={<Articles />} />
+            <Route path="/ArticleDetail/:id" element={<ArticleDetail />} />
             <Route path="*" element={<AuthenticatedApp />} />
           </Routes>
         </Router>

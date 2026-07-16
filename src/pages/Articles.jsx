@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { Newspaper, Search, Calendar, ArrowRight } from "lucide-react";
+import PublicArticlesHeader from "@/components/articles/PublicArticlesHeader";
 import { Input } from "@/components/ui/input";
 import { format, parseISO } from "date-fns";
 
@@ -53,9 +54,11 @@ export default function Articles() {
   });
 
   return (
+    <>
+    <PublicArticlesHeader />
     <div className="p-4 md:p-6 pb-24 lg:pb-6 max-w-6xl mx-auto">
       {/* Header */}
-      <div className="mb-6 flex items-center gap-3">
+        <div className="mb-6 flex items-center gap-3">
         <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white flex-shrink-0">
           <Newspaper className="w-5 h-5" />
         </div>
@@ -151,5 +154,6 @@ export default function Articles() {
         </div>
       )}
     </div>
+    </>
   );
 }
