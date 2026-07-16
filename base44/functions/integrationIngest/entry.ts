@@ -43,27 +43,47 @@ Deno.serve(async (req) => {
 
     const provider = integration.provider || 'custom';
 
-    // Normalize Thumbtack's nested payload into a flat lead record.
-    // Thumbtack sends { event: { eventType, data: { customer, request } } }
+    // Deep-search helpers: Thumbtack nests fields unpredictably (e.g. request
+    // can live inside customer), so we scan the whole payload rather than hard
+    // coding exact paths.
+    function findObjectWith(obj, key, maxDepth = 6) {
+      if (!obj || typeof obj !== 'object' || maxDepth < 0) return null;
+      if (key in obj) return obj;
+      for (const v of Object.values(obj)) {
+        if (v && typeof v === 'object') {
+          const found = findObjectWith(v, key, maxDepth - 1);
+          if (found) return found;
+        }
+      }
+      return null;
+    }
+    function pick(obj, ...keys) {
+      for (const k of keys) if (obj && obj[k]) return obj[k];
+      return '';
+    }
+
     let firstName = '', lastName = '', email = '', phone = '';
     let address = '', serviceInterest = '', source = 'other', notesPrefix = '';
 
-    const isThumbtack = provider === 'thumbtack' || (body.event && body.event.eventType);
+    const isThumbtack = provider === 'thumbtack' ||
+      (body.event && body.event.eventType) ||
+      !!findObjectWith(body, 'negotiationID');
 
     if (isThumbtack) {
-      const evt = body.event || {};
-      const data = evt.data || {};
-      const customer = data.customer || {};
-      const request = data.request || {};
-      const location = request.location || {};
-      const category = request.category || {};
+      const evt = (body.event && typeof body.event === 'object' ? body.event : body) || {};
+      const data = evt.data || evt;
 
-      firstName = customer.firstName || '';
-      lastName = customer.lastName || '';
-      phone = customer.phone || '';
-      email = customer.email || '';
-      const addressLine = [location.address1, location.address2].filter(Boolean).join(', ');
-      address = [addressLine, location.city, location.state, location.zipcode].filter(Boolean).join(', ');
+      const customer = findObjectWith(data, 'firstName') || findObjectWith(data, 'first_name') || findObjectWith(data, 'customerID') || {};
+      const request = findObjectWith(data, 'requestID') || findObjectWith(customer, 'requestID') || findObjectWith(data, 'description') || {};
+      const location = findObjectWith(request, 'address1') || findObjectWith(request, 'city') || findObjectWith(data, 'zipcode') || {};
+      const category = findObjectWith(request, 'categoryID') || (request.category && request.category.name ? request.category : {}) || {};
+
+      firstName = pick(customer, 'firstName', 'first_name');
+      lastName = pick(customer, 'lastName', 'last_name');
+      phone = pick(customer, 'phone', 'phoneNumber', 'phone_number');
+      email = pick(customer, 'email', 'email_address');
+      const addressLine = [pick(location, 'address1', 'address', 'street'), pick(location, 'address2')].filter(Boolean).join(', ');
+      address = [addressLine, pick(location, 'city'), pick(location, 'state'), pick(location, 'zipcode', 'zip', 'postalCode')].filter(Boolean).join(', ');
 
       const parts = [];
       if (evt.eventType) parts.push('Thumbtack event: ' + evt.eventType);
@@ -73,9 +93,9 @@ Deno.serve(async (req) => {
       if (details) parts.push('Details: ' + details);
       const times = (request.proposedTimes || []).map(t => t.start).filter(Boolean).join(', ');
       if (times) parts.push('Proposed times: ' + times);
-      parts.push('Thumbtack customer ID: ' + (customer.customerID || ''));
-      parts.push('Request ID: ' + (request.requestID || ''));
-      parts.push('Negotiation ID: ' + (data.negotiationID || ''));
+      if (customer.customerID) parts.push('Thumbtack customer ID: ' + customer.customerID);
+      if (request.requestID) parts.push('Request ID: ' + request.requestID);
+      if (data.negotiationID) parts.push('Negotiation ID: ' + data.negotiationID);
       notesPrefix = parts.filter(Boolean).join('\n');
       serviceInterest = category.name || request.description || 'Thumbtack lead';
       source = 'other';
