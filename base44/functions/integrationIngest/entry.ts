@@ -83,7 +83,7 @@ Deno.serve(async (req) => {
       phone = pick(customer, 'phone', 'phoneNumber', 'phone_number');
       email = pick(customer, 'email', 'email_address');
       const addressLine = [pick(location, 'address1', 'address', 'street'), pick(location, 'address2')].filter(Boolean).join(', ');
-      address = [addressLine, pick(location, 'city'), pick(location, 'state'), pick(location, 'zipcode', 'zip', 'postalCode')].filter(Boolean).join(', ');
+      address = [addressLine, pick(location, 'city'), pick(location, 'state'), pick(location, 'zipCode', 'zipcode', 'zip', 'postalCode')].filter(Boolean).join(', ');
 
       const parts = [];
       if (evt.eventType) parts.push('Thumbtack event: ' + evt.eventType);
