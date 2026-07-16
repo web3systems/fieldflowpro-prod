@@ -1,4 +1,4 @@
-import { useState, useEffect, createContext, useContext } from "react";
+import { useState, useEffect, createContext, useContext, Fragment } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { createPageUrl } from "@/utils";
@@ -39,32 +39,63 @@ function useAccessRequestCount(isSuperAdmin) {
   return count;
 }
 
-const navItems = [
-  { label: "Dashboard", icon: LayoutDashboard, page: "Dashboard" },
-  { label: "Henry (AI)", icon: Mic, page: "Henry" },
-  { label: "Leads", icon: UserPlus, page: "Leads" },
-  { label: "Customers", icon: Users, page: "Customers" },
-  { label: "Estimates", icon: FileText, page: "Estimates" },
-  { label: "Jobs", icon: Briefcase, page: "Jobs" },
-  { label: "Schedule", icon: CalendarDays, page: "Schedule" },
-  { label: "Invoices", icon: DollarSign, page: "Invoices" },
-  { label: "Payments", icon: CreditCard, page: "Payments" },
-  { label: "Notifications", icon: Bell, page: "Notifications" },
-  { label: "Messages", icon: MessageCircle, page: "Messages" },
-  { label: "Accounting", icon: Calculator, page: "Accounting" },
-  { label: "Team", icon: Wrench, page: "CompanySettings" },
-  { label: "Price Book", icon: BookOpen, page: "PriceBook" },
-  { label: "Dispatch", icon: Zap, page: "Dispatch" },
-  { label: "Work Logs", icon: ClipboardList, page: "WorkLogs" },
-  { label: "Tasks", icon: CheckSquare, page: "Tasks" },
-  { label: "Inventory", icon: Boxes, page: "Inventory" },
-  { label: "Marketplace", icon: Package, page: "Marketplace" },
-  { label: "Support", icon: MessageCircle, page: "Support" },
-  { label: "Settings", icon: Settings, page: "CompanySettings" },
-  { label: "Email Templates", icon: Mail, page: "EmailTemplateEditor" },
-  { label: "Receipt Scanner", icon: Camera, page: "ReceiptScanner" },
-  { label: "Articles", icon: Newspaper, page: "Articles" },
-  { label: "Documentation", icon: BookOpen, page: "Documentation" },
+const navGroups = [
+  // Overview
+  { items: [
+    { label: "Dashboard", icon: LayoutDashboard, page: "Dashboard" },
+    { label: "Henry (AI)", icon: Mic, page: "Henry" },
+  ] },
+  { divider: true },
+  // CRM / Sales
+  { items: [
+    { label: "Leads", icon: UserPlus, page: "Leads" },
+    { label: "Customers", icon: Users, page: "Customers" },
+  ] },
+  { divider: true },
+  // Workflow
+  { items: [
+    { label: "Estimates", icon: FileText, page: "Estimates" },
+    { label: "Jobs", icon: Briefcase, page: "Jobs" },
+    { label: "Schedule", icon: CalendarDays, page: "Schedule" },
+    { label: "Dispatch", icon: Zap, page: "Dispatch" },
+    { label: "Work Logs", icon: ClipboardList, page: "WorkLogs" },
+  ] },
+  { divider: true },
+  // Finance
+  { items: [
+    { label: "Invoices", icon: DollarSign, page: "Invoices" },
+    { label: "Payments", icon: CreditCard, page: "Payments" },
+    { label: "Accounting", icon: Calculator, page: "Accounting" },
+  ] },
+  { divider: true },
+  // Tools
+  { items: [
+    { label: "Tasks", icon: CheckSquare, page: "Tasks" },
+    { label: "Inventory", icon: Boxes, page: "Inventory" },
+    { label: "Price Book", icon: BookOpen, page: "PriceBook" },
+    { label: "Receipt Scanner", icon: Camera, page: "ReceiptScanner" },
+  ] },
+  { divider: true },
+  // Communication
+  { items: [
+    { label: "Notifications", icon: Bell, page: "Notifications" },
+    { label: "Messages", icon: MessageCircle, page: "Messages" },
+  ] },
+  { divider: true },
+  // Admin / Config
+  { items: [
+    { label: "Team", icon: Wrench, page: "CompanySettings" },
+    { label: "Email Templates", icon: Mail, page: "EmailTemplateEditor" },
+    { label: "Marketplace", icon: Package, page: "Marketplace" },
+    { label: "Settings", icon: Settings, page: "CompanySettings" },
+  ] },
+  { divider: true },
+  // Help
+  { items: [
+    { label: "Support", icon: MessageCircle, page: "Support" },
+    { label: "Articles", icon: Newspaper, page: "Articles" },
+    { label: "Documentation", icon: BookOpen, page: "Documentation" },
+  ] },
 ];
 
 
@@ -158,10 +189,19 @@ export default function Layout({ children, currentPageName }) {
   const isActive = (page) => currentPageName === page;
   const blockFinancials = isRoleFinancialBlocked(companyRole);
 
-  // Filter nav items based on role
-  const visibleNavItems = blockFinancials
-    ? navItems.filter(item => !FINANCIAL_PAGES.includes(item.page))
-    : navItems;
+  // Filter nav groups based on role (remove blocked items, drop empty groups, collapse stray dividers)
+  let visibleNavGroups = blockFinancials
+    ? navGroups
+        .map(g => g.divider ? g : { items: g.items.filter(i => !FINANCIAL_PAGES.includes(i.page)) })
+        .filter(g => g.divider || g.items.length > 0)
+    : navGroups;
+  // Collapse consecutive dividers and trim leading/trailing ones
+  visibleNavGroups = visibleNavGroups.filter((g, i) => {
+    if (!g.divider) return true;
+    const prev = visibleNavGroups[i - 1];
+    const next = visibleNavGroups[i + 1];
+    return prev && next && !prev.divider && !next.divider;
+  });
 
   // Redirect field service managers away from financial pages
   useEffect(() => {
@@ -247,23 +287,30 @@ export default function Layout({ children, currentPageName }) {
 
           {/* Nav */}
           <nav className="flex-1 px-3 py-4 overflow-y-auto space-y-0.5">
-            {visibleNavItems.map(({ label, icon: Icon, page }) => (
-              <Link
-                key={page}
-                to={createPageUrl(page)}
-                onClick={() => setSidebarOpen(false)}
-                className={`
-                  flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all
-                  ${isActive(page)
-                    ? "bg-blue-600 text-white"
-                    : "text-slate-400 hover:text-white hover:bg-slate-800"
-                  }
-                `}
-              >
-                <Icon className="w-4 h-4 flex-shrink-0" />
-                {label}
-              </Link>
-            ))}
+            {visibleNavGroups.map((group, gIdx) => group.divider ? (
+              <div key={`div-${gIdx}`} className="my-2 mx-3 border-t border-slate-700/40" />
+            ) : (
+              <Fragment key={`grp-${gIdx}`}>
+                {group.items.map(({ label, icon: Icon, page }) => (
+                  <Link
+                    key={page}
+                    to={createPageUrl(page)}
+                    onClick={() => setSidebarOpen(false)}
+                    className={`
+                      flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all
+                      ${isActive(page)
+                        ? "bg-blue-600 text-white"
+                        : "text-slate-400 hover:text-white hover:bg-slate-800"
+                      }
+                    `}
+                  >
+                    <Icon className="w-4 h-4 flex-shrink-0" />
+                    {label}
+                  </Link>
+                ))}
+              </Fragment>
+            )
+            )}
 
 
           </nav>
