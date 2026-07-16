@@ -11,6 +11,7 @@ import CompanyEmailSettingsTab from '@/components/settings/CompanyEmailSettingsT
 import SubCompaniesTab from '@/components/settings/SubCompaniesTab';
 import MarginRulesTab from '@/components/settings/MarginRulesTab';
 import ConnectorsTab from '@/components/settings/ConnectorsTab';
+import ApiWebhooksTab from '@/components/settings/ApiWebhooksTab';
 import SeoAnalyticsTab from '@/components/settings/SeoAnalyticsTab';
 import PwaInstallButton from '@/components/settings/PwaInstallButton';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -133,6 +134,7 @@ export default function CompanySettings() {
             {isOwner && isParentCompany && <TabsTrigger value="locations">Locations</TabsTrigger>}
             {!isFieldServiceManager && <TabsTrigger value="margins">Margin Rules</TabsTrigger>}
             <TabsTrigger value="connectors">Connectors</TabsTrigger>
+            {!isFieldServiceManager && <TabsTrigger value="api">API & Webhooks</TabsTrigger>}
             <TabsTrigger value="seo">SEO & Analytics</TabsTrigger>
             {isOwner && <TabsTrigger value="general">General</TabsTrigger>}
           </TabsList>
@@ -170,6 +172,12 @@ export default function CompanySettings() {
           <TabsContent value="connectors">
             <ConnectorsTab company={company} />
           </TabsContent>
+
+          {!isFieldServiceManager && (
+          <TabsContent value="api">
+            <ApiWebhooksTab company={company} />
+          </TabsContent>
+          )}
 
           <TabsContent value="seo">
             <SeoAnalyticsTab company={company} onSave={loadCompany} />

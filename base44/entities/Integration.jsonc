@@ -1,0 +1,194 @@
+{
+  "name": "Integration",
+  "type": "object",
+  "properties": {
+    "company_id": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string",
+      "description": "Display name for this integration (e.g. Thumbtack Lead Sync)"
+    },
+    "provider": {
+      "type": "string",
+      "enum": [
+        "thumbtack",
+        "angies_list",
+        "homeadvisor",
+        "zapier",
+        "make",
+        "custom"
+      ],
+      "default": "custom",
+      "description": "Which external system this connection is for"
+    },
+    "integration_type": {
+      "type": "string",
+      "enum": [
+        "incoming_webhook",
+        "outbound_api",
+        "outbound_webhook"
+      ],
+      "default": "incoming_webhook",
+      "description": "incoming_webhook = external system POSTs data to FFP; outbound_api = FFP pulls data using an API key; outbound_webhook = FFP sends events to an external URL"
+    },
+    "secret": {
+      "type": "string",
+      "description": "Secret token used to authenticate incoming webhooks (passed as ?token=)"
+    },
+    "api_key": {
+      "type": "string",
+      "description": "API key/token used for outbound API calls to the external system"
+    },
+    "webhook_url": {
+      "type": "string",
+      "description": "Target URL for outbound webhooks, or base API URL for outbound_api pulls"
+    },
+    "events": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Event types to deliver via outbound_webhook (e.g. job.created, invoice.paid)"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    },
+    "last_event_at": {
+      "type": "string",
+      "description": "Timestamp of the most recent successful event"
+    },
+    "last_error": {
+      "type": "string",
+      "description": "Most recent error message, if any"
+    }
+  },
+  "required": [
+    "company_id",
+    "name",
+    "integration_type"
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "super_admin"
+          }
+        },
+        {
+          "$and": [
+            {
+              "data.company_id": "{{user.company_id}}"
+            },
+            {
+              "$or": [
+                {
+                  "user_condition": {
+                    "role": "admin"
+                  }
+                },
+                {
+                  "user_condition": {
+                    "role": "manager"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "read": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "super_admin"
+          }
+        },
+        {
+          "$and": [
+            {
+              "data.company_id": "{{user.company_id}}"
+            },
+            {
+              "$or": [
+                {
+                  "user_condition": {
+                    "role": "admin"
+                  }
+                },
+                {
+                  "user_condition": {
+                    "role": "manager"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "super_admin"
+          }
+        },
+        {
+          "$and": [
+            {
+              "data.company_id": "{{user.company_id}}"
+            },
+            {
+              "$or": [
+                {
+                  "user_condition": {
+                    "role": "admin"
+                  }
+                },
+                {
+                  "user_condition": {
+                    "role": "manager"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "super_admin"
+          }
+        },
+        {
+          "$and": [
+            {
+              "data.company_id": "{{user.company_id}}"
+            },
+            {
+              "$or": [
+                {
+                  "user_condition": {
+                    "role": "admin"
+                  }
+                },
+                {
+                  "user_condition": {
+                    "role": "manager"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
