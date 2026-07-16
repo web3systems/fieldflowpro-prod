@@ -122,7 +122,7 @@ Deno.serve(async (req) => {
       source,
       service_interest: serviceInterest || provider,
       status: 'new',
-      notes: notesPrefix + '\n\nRaw payload:\n' + JSON.stringify(body).slice(0, 3000)
+      notes: notesPrefix
     };
 
     const lead = await base44.asServiceRole.entities.Lead.create(leadData);
