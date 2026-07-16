@@ -43,22 +43,66 @@ Deno.serve(async (req) => {
 
     const provider = integration.provider || 'custom';
 
-    // Best-effort generic mapping of common lead fields.
-    const rawName = body.name || body.full_name || [body.first_name, body.last_name].filter(Boolean).join(' ') || '';
-    const firstName = body.first_name || (rawName ? rawName.split(' ')[0] : '');
-    const lastName = body.last_name || (rawName ? rawName.split(' ').slice(1).join(' ') : '');
+    // Normalize Thumbtack's nested payload into a flat lead record.
+    // Thumbtack sends { event: { eventType, data: { customer, request } } }
+    let firstName = '', lastName = '', email = '', phone = '';
+    let address = '', serviceInterest = '', source = 'other', notesPrefix = '';
+
+    const isThumbtack = provider === 'thumbtack' || (body.event && body.event.eventType);
+
+    if (isThumbtack) {
+      const evt = body.event || {};
+      const data = evt.data || {};
+      const customer = data.customer || {};
+      const request = data.request || {};
+      const location = request.location || {};
+      const category = request.category || {};
+
+      firstName = customer.firstName || '';
+      lastName = customer.lastName || '';
+      phone = customer.phone || '';
+      email = customer.email || '';
+      const addressLine = [location.address1, location.address2].filter(Boolean).join(', ');
+      address = [addressLine, location.city, location.state, location.zipcode].filter(Boolean).join(', ');
+
+      const parts = [];
+      if (evt.eventType) parts.push('Thumbtack event: ' + evt.eventType);
+      if (category.name) parts.push('Category: ' + category.name);
+      if (request.description) parts.push('Request: ' + request.description);
+      const details = (request.details || []).map(d => (d.question ? d.question + ': ' : '') + (d.answer || '')).join('; ');
+      if (details) parts.push('Details: ' + details);
+      const times = (request.proposedTimes || []).map(t => t.start).filter(Boolean).join(', ');
+      if (times) parts.push('Proposed times: ' + times);
+      parts.push('Thumbtack customer ID: ' + (customer.customerID || ''));
+      parts.push('Request ID: ' + (request.requestID || ''));
+      parts.push('Negotiation ID: ' + (data.negotiationID || ''));
+      notesPrefix = parts.filter(Boolean).join('\n');
+      serviceInterest = category.name || request.description || 'Thumbtack lead';
+      source = 'other';
+    } else {
+      // Generic best-effort mapping of common flat lead fields.
+      const rawName = body.name || body.full_name || [body.first_name, body.last_name].filter(Boolean).join(' ') || '';
+      firstName = body.first_name || (rawName ? rawName.split(' ')[0] : '');
+      lastName = body.last_name || (rawName ? rawName.split(' ').slice(1).join(' ') : '');
+      email = body.email || body.email_address || '';
+      phone = body.phone || body.phone_number || body.mobile || '';
+      address = body.address || body.street || body.location || '';
+      serviceInterest = body.service_interest || body.service_request || body.category || body.service_type || provider;
+      source = 'other';
+      notesPrefix = 'Inbound lead via ' + provider + ' webhook';
+    }
 
     const leadData = {
       company_id: companyId,
       first_name: firstName || 'Unknown',
       last_name: lastName || '',
-      email: body.email || body.email_address || '',
-      phone: body.phone || body.phone_number || body.mobile || '',
-      address: body.address || body.street || body.location || '',
-      source: 'other',
-      service_interest: body.service_interest || body.service_request || body.category || body.service_type || provider,
+      email,
+      phone,
+      address,
+      source,
+      service_interest: serviceInterest || provider,
       status: 'new',
-      notes: 'Inbound lead via ' + provider + ' webhook.\n\nRaw payload:\n' + JSON.stringify(body).slice(0, 1200)
+      notes: notesPrefix + '\n\nRaw payload:\n' + JSON.stringify(body).slice(0, 3000)
     };
 
     const lead = await base44.asServiceRole.entities.Lead.create(leadData);
