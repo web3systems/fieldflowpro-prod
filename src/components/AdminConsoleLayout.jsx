@@ -4,7 +4,7 @@ import { base44 } from "@/api/base44Client";
 import {
   ShieldCheck, Building2, UsersRound,
   BarChart3, ClipboardList, LayoutDashboard, Menu, X, LogOut,
-  ArrowLeft, ChevronRight
+  ArrowLeft, ChevronRight, FileText
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
@@ -14,6 +14,7 @@ const adminNavItems = [
   { label: "Users", icon: UsersRound, path: "/admin/users" },
   { label: "Reports", icon: BarChart3, path: "/admin/reports" },
   { label: "Audit Log", icon: ClipboardList, path: "/admin/audit-log" },
+  { label: "Article Creator", icon: FileText, path: "/admin/articles" },
 ];
 
 export default function AdminConsoleLayout({ children }) {

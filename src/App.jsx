@@ -39,6 +39,9 @@ import TermsOfService from './pages/TermsOfService';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import CustomerPortal from './pages/CustomerPortal';
 import Documentation from './pages/Documentation';
+import Articles from './pages/Articles';
+import ArticleDetail from './pages/ArticleDetail';
+import AdminArticles from './pages/AdminArticles';
 import AuditLog from './pages/AuditLog';
 import Tasks from './pages/Tasks';
 import Support from './pages/Support';
@@ -166,6 +169,8 @@ const AuthenticatedApp = () => {
       <Route path="/Expenses" element={<LayoutWrapper currentPageName="Expenses"><Expenses /></LayoutWrapper>} />
       <Route path="/ProfitMargin" element={<LayoutWrapper currentPageName="ProfitMargin"><ProfitMargin /></LayoutWrapper>} />
       <Route path="/Documentation" element={<LayoutWrapper currentPageName="Documentation"><Documentation /></LayoutWrapper>} />
+      <Route path="/Articles" element={<LayoutWrapper currentPageName="Articles"><Articles /></LayoutWrapper>} />
+      <Route path="/ArticleDetail/:id" element={<LayoutWrapper currentPageName="Articles"><ArticleDetail /></LayoutWrapper>} />
       <Route path="/AuditLog" element={<LayoutWrapper currentPageName="AuditLog"><AuditLog /></LayoutWrapper>} />
       <Route path="/Tasks" element={<LayoutWrapper currentPageName="Tasks"><Tasks /></LayoutWrapper>} />
       <Route path="/Support" element={<LayoutWrapper currentPageName="Support"><Support /></LayoutWrapper>} />
@@ -188,6 +193,7 @@ const AuthenticatedApp = () => {
       <Route path="/admin/users" element={<AdminConsoleLayout><SaaSUsers /></AdminConsoleLayout>} />
       <Route path="/admin/reports" element={<AdminConsoleLayout><Reports /></AdminConsoleLayout>} />
       <Route path="/admin/audit-log" element={<AdminConsoleLayout><AuditLog /></AdminConsoleLayout>} />
+      <Route path="/admin/articles" element={<AdminConsoleLayout><AdminArticles /></AdminConsoleLayout>} />
 
       <Route path="*" element={<PageNotFound />} />
     </Routes>
