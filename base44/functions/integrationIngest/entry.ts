@@ -71,7 +71,7 @@ Deno.serve(async (req) => {
 
     if (isThumbtack) {
       const evt = (body.event && typeof body.event === 'object' ? body.event : body) || {};
-      const data = evt.data || evt;
+      const data = body.data || evt.data || evt;
 
       const customer = findObjectWith(data, 'firstName') || findObjectWith(data, 'first_name') || findObjectWith(data, 'customerID') || {};
       const request = findObjectWith(data, 'requestID') || findObjectWith(customer, 'requestID') || findObjectWith(data, 'description') || {};
