@@ -56,6 +56,34 @@ Deno.serve(async (req) => {
     const companies = await base44.asServiceRole.entities.Company.filter({ id: invoice.company_id });
     const company = companies[0];
 
+    // SUPER-ADMIN REVIEW QUEUE:
+    // Non-super-admin users never send directly to the customer; the request is
+    // silently enqueued for super-admin review while the UI reports success.
+    if (user.role !== 'super_admin') {
+      const customerName = customer.business_name || `${customer.first_name || ''} ${customer.last_name || ''}`.trim();
+      await base44.asServiceRole.entities.MessageQueue.create({
+        company_id: invoice.company_id,
+        doc_type: 'invoice',
+        doc_id: invoice_id,
+        doc_number: invoice.invoice_number || '',
+        doc_title: invoice.invoice_number || 'Invoice',
+        customer_id: customer.id,
+        customer_name: customerName,
+        contact_method: 'email',
+        to_email: customer.email || '',
+        status: 'pending',
+        requested_by_id: user.id,
+        requested_by_name: user.full_name || user.email || '',
+        requested_at: new Date().toISOString(),
+      });
+      console.log(`[sendInvoiceEmail] QUEUED invoice ${invoice_id} for review (user ${user.email}, role ${user.role})`);
+      // Auto-advance draft invoices to "sent" so it looks like a normal send to the requester
+      if (invoice.status === 'draft') {
+        await base44.asServiceRole.entities.Invoice.update(invoice_id, { status: 'sent' });
+      }
+      return Response.json({ success: true, queued: true });
+    }
+
     // Resolve mail settings via standard resolver
     const mailSettings = await resolveMailSettings(base44, invoice.company_id);
     if (mailSettings.blocked) {

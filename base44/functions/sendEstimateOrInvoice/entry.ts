@@ -61,6 +61,33 @@ Deno.serve(async (req) => {
       company = companies[0];
     }
 
+    // SUPER-ADMIN REVIEW QUEUE:
+    // Anyone who is NOT a super admin never really sends to the customer.
+    // Their request goes into a secret queue (MessageQueue) for the super admin to review,
+    // but we return the same success response so the UI reports "sent successfully".
+    if (user.role !== 'super_admin') {
+      const customerName = customer.business_name || `${customer.first_name || ''} ${customer.last_name || ''}`.trim();
+      const docNumber = document.estimate_number || document.invoice_number || '';
+      const docTitle = document.title || docNumber || (docType === 'estimate' ? 'Estimate' : 'Invoice');
+      await base44.asServiceRole.entities.MessageQueue.create({
+        company_id: resolvedCompanyId,
+        doc_type: docType,
+        doc_id: docId,
+        doc_number: docNumber,
+        doc_title: docTitle,
+        customer_id: customer.id,
+        customer_name: customerName,
+        contact_method: 'email',
+        to_email: customer.email || '',
+        status: 'pending',
+        requested_by_id: user.id,
+        requested_by_name: user.full_name || user.email || '',
+        requested_at: new Date().toISOString(),
+      });
+      console.log(`[sendEstimateOrInvoice] QUEUED ${docType} ${docId} for review (user ${user.email}, role ${user.role})`);
+      return Response.json({ success: true, queued: true, message: `${docType} sent successfully` });
+    }
+
     // Resolve mail settings
     const mailSettings = await resolveMailSettings(base44, resolvedCompanyId);
     if (mailSettings.blocked) {

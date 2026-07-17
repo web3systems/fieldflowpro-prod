@@ -4,7 +4,7 @@ import { base44 } from "@/api/base44Client";
 import { createPageUrl } from "@/utils";
 import {
   LayoutDashboard, Users, Briefcase, FileText, DollarSign,
-  UserPlus, Settings, Building2, Menu, X, ChevronDown,
+  UserPlus, Settings, Building2, Menu, X, ChevronDown, Inbox,
   Bell, LogOut, Wrench, BarChart3, Globe, Home, UsersRound, CalendarDays, ShieldCheck, CreditCard, Megaphone, Calculator, MessageCircle, Mail, BookOpen, CheckSquare, Package, Boxes, Camera, Mic, ExternalLink, Zap, ClipboardList, Newspaper
 } from "lucide-react";
 import NotificationBell from "@/components/notifications/NotificationBell";
@@ -96,6 +96,11 @@ const navGroups = [
     { label: "Articles", icon: Newspaper, page: "Articles" },
     { label: "Documentation", icon: BookOpen, page: "Documentation" },
   ] },
+  { divider: true },
+  // Super Admin only
+  { items: [
+    { label: "Review Queue", icon: Inbox, page: "MessageQueue" },
+  ], superAdminOnly: true },
 ];
 
 
@@ -189,12 +194,16 @@ export default function Layout({ children, currentPageName }) {
   const isActive = (page) => currentPageName === page;
   const blockFinancials = isRoleFinancialBlocked(companyRole);
 
+  const isPlatformSuperAdmin = user?.role === "super_admin";
+
   // Filter nav groups based on role (remove blocked items, drop empty groups, collapse stray dividers)
   let visibleNavGroups = blockFinancials
     ? navGroups
         .map(g => g.divider ? g : { items: g.items.filter(i => !FINANCIAL_PAGES.includes(i.page)) })
         .filter(g => g.divider || g.items.length > 0)
     : navGroups;
+  // Hide super-admin-only groups from non-super-admins
+  visibleNavGroups = visibleNavGroups.filter(g => g.divider || !g.superAdminOnly || isPlatformSuperAdmin);
   // Collapse consecutive dividers and trim leading/trailing ones
   visibleNavGroups = visibleNavGroups.filter((g, i) => {
     if (!g.divider) return true;

@@ -53,6 +53,7 @@ import AccountingAdmin from './pages/AccountingAdmin';
 import Dispatch from './pages/Dispatch';
 import WorkLogs from './pages/WorkLogs';
 import FieldTechAgent from './pages/FieldTechAgent';
+import MessageQueue from './pages/MessageQueue';
 import Companies from './pages/Companies';
 import AdminCompanies from './pages/AdminCompanies';
 import SaaSUsers from './pages/SaaSUsers';
@@ -180,6 +181,7 @@ const AuthenticatedApp = () => {
       <Route path="/Dispatch" element={<LayoutWrapper currentPageName="Dispatch"><Dispatch /></LayoutWrapper>} />
       <Route path="/WorkLogs" element={<LayoutWrapper currentPageName="WorkLogs"><WorkLogs /></LayoutWrapper>} />
       <Route path="/FieldTechAgent" element={<LayoutWrapper currentPageName="FieldTechAgent"><FieldTechAgent /></LayoutWrapper>} />
+      <Route path="/MessageQueue" element={<LayoutWrapper currentPageName="MessageQueue"><MessageQueue /></LayoutWrapper>} />
 
       {/* Admin Console routes */}
       <Route path="/admin/saas-admin" element={<AdminConsoleLayout><SaaSAdminDashboard /></AdminConsoleLayout>} />

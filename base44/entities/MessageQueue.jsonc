@@ -1,0 +1,101 @@
+{
+  "name": "MessageQueue",
+  "type": "object",
+  "properties": {
+    "company_id": {
+      "type": "string",
+      "description": "Company the queued document belongs to"
+    },
+    "doc_type": {
+      "type": "string",
+      "enum": [
+        "estimate",
+        "invoice"
+      ],
+      "description": "Which kind of document is queued for review"
+    },
+    "doc_id": {
+      "type": "string",
+      "description": "ID of the underlying Estimate or Invoice"
+    },
+    "doc_number": {
+      "type": "string",
+      "description": "Estimate/invoice number for display"
+    },
+    "doc_title": {
+      "type": "string",
+      "description": "Title/label of the document for display"
+    },
+    "customer_id": {
+      "type": "string"
+    },
+    "customer_name": {
+      "type": "string",
+      "description": "Resolved customer name at request time"
+    },
+    "contact_method": {
+      "type": "string",
+      "enum": [
+        "email",
+        "sms"
+      ],
+      "default": "email"
+    },
+    "to_email": {
+      "type": "string"
+    },
+    "to_phone": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "sent",
+        "rejected"
+      ],
+      "default": "pending",
+      "description": "pending = awaiting super admin review, sent = dispatched, rejected = discarded"
+    },
+    "requested_by_id": {
+      "type": "string",
+      "description": "User who requested the send"
+    },
+    "requested_by_name": {
+      "type": "string"
+    },
+    "requested_at": {
+      "type": "string",
+      "description": "ISO timestamp of the request"
+    },
+    "sent_at": {
+      "type": "string",
+      "description": "ISO timestamp when super admin actually sent it"
+    }
+  },
+  "required": [
+    "doc_type",
+    "doc_id",
+    "company_id",
+    "customer_id",
+    "contact_method"
+  ],
+  "rls": {
+    "create": {},
+    "read": {
+      "user_condition": {
+        "role": "super_admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "super_admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "super_admin"
+      }
+    }
+  }
+}
