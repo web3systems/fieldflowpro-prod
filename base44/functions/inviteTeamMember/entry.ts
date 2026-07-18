@@ -42,17 +42,32 @@ Deno.serve(async (req) => {
     const fullName = `${first_name} ${last_name}`;
     const platformRole = assignments.some(a => a.role === 'admin') ? 'admin' : 'user';
 
-    // 1. Invite the user — sends acceptance link email (clicking it verifies them)
-    await base44.users.inviteUser(email, platformRole);
+    // 1. Register the user directly — no platform verification email is sent.
+    //    This skips the separate "Accept Invitation" email so the employee only
+    //    receives our branded welcome email (with credentials + login link).
+    let registerErr = null;
+    try {
+      await base44.auth.register({ email, password: finalPassword, fullName });
+      console.log(`[inviteTeamMember] registered user ${email}`);
+    } catch (err) {
+      // If the email is already registered (e.g. re-invite), that's fine — proceed.
+      const msg = err?.data?.detail?.[0]?.msg || err?.message || String(err);
+      console.log(`[inviteTeamMember] register result for ${email}: ${msg}`);
+      if (!/already|exists/i.test(msg)) {
+        registerErr = msg;
+      }
+    }
+    if (registerErr) {
+      return Response.json({ error: 'Could not create user account: ' + registerErr }, { status: 500 });
+    }
 
-    // 2. Wait for user record, then set password + role directly (no PendingPassword)
+    // 2. Wait for the user record, then set role if elevated.
     let userId = null;
     for (let attempt = 0; attempt < 12; attempt++) {
       if (attempt > 0) await new Promise(r => setTimeout(r, 1000));
       const users = await base44.asServiceRole.entities.User.filter({ email });
       if (users.length > 0) {
         userId = users[0].id;
-        await base44.asServiceRole.entities.User.update(userId, { password: finalPassword });
         if (platformRole === 'admin') {
           await base44.asServiceRole.entities.User.update(userId, { role: 'admin' });
         }
@@ -107,7 +122,7 @@ Deno.serve(async (req) => {
            <span style="color:#374151;">Email: <strong>${email}</strong></span><br>
            <span style="color:#374151;">Password: <strong>${finalPassword}</strong></span>
          </p>
-         <p style="color:#6b7280;font-size:13px;">Step 1: Check your inbox for an invitation email from FieldFlow Pro and click <strong>"Accept Invitation"</strong> to verify your account.<br>Step 2: Sign in with the credentials above.</p>`;
+         <p style="color:#6b7280;font-size:13px;">No verification step is needed — just click the button below and sign in with the credentials above.</p>`;
 
     const resend = new Resend(Deno.env.get('RESEND_API_KEY'));
     const appUrl = Deno.env.get('APP_URL') || 'https://app.fieldflowpro.com';
@@ -123,7 +138,7 @@ Deno.serve(async (req) => {
           <p><strong>${manager.full_name}</strong> has added you to <strong>${companyDisplay}</strong>.</p>
           ${generatedNote}
           <p style="margin:24px 0;">
-            <a href="${appUrl}/Dashboard" style="background:#3b82f6;color:white;padding:12px 28px;text-decoration:none;border-radius:6px;display:inline-block;font-weight:600;">Go to Dashboard →</a>
+            <a href="${appUrl}/Dashboard" style="background:#3b82f6;color:white;padding:12px 28px;text-decoration:none;border-radius:6px;display:inline-block;font-weight:600;">Sign In & Go to Dashboard →</a>
           </p>
           <p style="color:#6b7280;font-size:13px;">If the button doesn't work, copy and paste this link into your browser:<br>${appUrl}/Dashboard</p>
           <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0;">
