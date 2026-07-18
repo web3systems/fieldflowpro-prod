@@ -67,7 +67,7 @@ export default function MessageQueue() {
     }
   }
 
-  if (user && user.role !== "super_admin") {
+  if (user && user.role !== "super_admin" && user.role !== "admin") {
     return (
       <div className="p-6 text-center text-slate-500 pt-20">
         <ShieldCheck className="w-8 h-8 mx-auto mb-3 text-slate-300" />
