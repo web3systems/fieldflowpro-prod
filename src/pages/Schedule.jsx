@@ -402,7 +402,7 @@ async function convertBookingToJob(booking) {
   };
 
   return (
-    <div className="flex overflow-hidden" style={{ height: 'calc(100vh - 57px)' }}>
+    <div className="flex overflow-hidden" style={{ height: 'calc(var(--app-vh) - 57px)' }}>
       {/* Pending bookings sidebar — only in customer calendar */}
       {calendarType === "customers" && bookings.length > 0 && (
         <div className="w-72 flex-shrink-0 border-r border-slate-200 bg-white flex flex-col overflow-hidden">

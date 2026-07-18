@@ -76,7 +76,7 @@ export default function Messages() {
   }
 
   return (
-    <div className="flex h-[calc(100vh-64px)] overflow-hidden">
+    <div className="flex h-[calc(var(--app-vh)-64px)] overflow-hidden">
       {/* Left: Thread list */}
       <div className={`w-full md:w-80 lg:w-96 flex-shrink-0 flex flex-col border-r border-slate-200 bg-white ${selectedCustomer ? "hidden md:flex" : "flex"}`}>
         <div className="p-4 border-b border-slate-200">

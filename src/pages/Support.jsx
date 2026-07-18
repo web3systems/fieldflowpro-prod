@@ -88,7 +88,7 @@ function AIChat({ user, activeCompany }) {
   }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-280px)] min-h-96">
+    <div className="flex flex-col h-[calc(var(--app-vh)-280px)] min-h-96">
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50 rounded-xl border border-slate-200">
         {messages.length === 0 && (

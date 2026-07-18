@@ -91,7 +91,7 @@ export default function PortalSupport({ customer, company }) {
   }
 
   return (
-    <div className="flex flex-col" style={{ height: "calc(100vh - 180px)", minHeight: "400px" }}>
+    <div className="flex flex-col" style={{ height: "calc(var(--app-vh) - 180px)", minHeight: "400px" }}>
       <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50 rounded-xl border border-slate-200">
         {messages.length === 0 && (
           <div className="text-center py-12 text-slate-400">

@@ -68,7 +68,7 @@ export default function DocManagerTab() {
 
   if (editing !== null) {
     return (
-      <div className="h-[calc(100vh-220px)] flex flex-col">
+      <div className="h-[calc(var(--app-vh)-220px)] flex flex-col">
         <DocArticleEditor
           article={editing === "new" ? null : editing}
           onSave={() => { setEditing(null); loadArticles(); }}
