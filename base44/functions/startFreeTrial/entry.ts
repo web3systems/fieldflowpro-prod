@@ -18,6 +18,17 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'An account with this email already exists. Please sign in.' }, { status: 400 });
     }
 
+    // Prevent invited employees from accidentally creating a brand-new orphan
+    // company through the public Register form. If this email already has
+    // team access to any company, they are an existing team member — not a
+    // new owner. They should sign in instead.
+    const existingAccess = await base44.asServiceRole.entities.UserCompanyAccess.filter({ user_email: owner_email });
+    if (existingAccess.length > 0) {
+      return Response.json({
+        error: 'This email is already part of a team. Please sign in with your existing account instead of starting a new trial.',
+      }, { status: 400 });
+    }
+
     const company = await base44.asServiceRole.entities.Company.create({
       name: company_name,
       email: owner_email,

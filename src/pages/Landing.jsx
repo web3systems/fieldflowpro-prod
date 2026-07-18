@@ -1,5 +1,5 @@
-import { Link } from "react-router-dom";
-import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import {
   Menu, X, ArrowRight, Hammer, Sparkles, Building2, Star,
@@ -14,10 +14,21 @@ export default function Landing() {
   const [lifetimeEmail, setLifetimeEmail] = useState("");
   const [lifetimeCompany, setLifetimeCompany] = useState("");
   const [lifetimeLoading, setLifetimeLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleSignIn = () => {
     base44.auth.redirectToLogin(`${window.location.origin}/Dashboard`);
   };
+
+  // If a user is already signed in (e.g. bouncing back from Google OAuth),
+  // skip the marketing page and route them straight to their workspace.
+  useEffect(() => {
+    let cancelled = false;
+    base44.auth.isAuthenticated().then(authed => {
+      if (authed && !cancelled) navigate("/Dashboard", { replace: true });
+    }).catch(() => {});
+    return () => { cancelled = true; };
+  }, [navigate]);
 
   async function handleBuyLifetime() {
     // Block checkout inside the iframe preview — only works from a published app
