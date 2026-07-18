@@ -194,7 +194,7 @@ export default function Layout({ children, currentPageName }) {
   const isActive = (page) => currentPageName === page;
   const blockFinancials = isRoleFinancialBlocked(companyRole);
 
-  const isPlatformSuperAdmin = user?.role === "super_admin";
+  const isPlatformSuperAdmin = user?.role === "super_admin" || user?.role === "admin";
 
   // Filter nav groups based on role (remove blocked items, drop empty groups, collapse stray dividers)
   let visibleNavGroups = blockFinancials
