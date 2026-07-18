@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -9,6 +9,12 @@ export default function LeadActivity({ leadId, companyId, activities, onActivity
   const [adding, setAdding] = useState(false);
   const [noteText, setNoteText] = useState("");
   const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    const handler = () => onActivityAdded();
+    window.addEventListener("lead-activity-refresh", handler);
+    return () => window.removeEventListener("lead-activity-refresh", handler);
+  }, [onActivityAdded]);
 
   async function addNote() {
     if (!noteText.trim()) return;

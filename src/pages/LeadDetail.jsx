@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent } from "@/components/ui/card";
 import LeadSidebar from "@/components/leads/LeadSidebar";
 import LeadActivity from "@/components/leads/LeadActivity";
+import LeadReplyBox from "@/components/leads/LeadReplyBox";
 
 const STAGES = [
   { value: "new", label: "New", color: "bg-blue-100 text-blue-700", dot: "bg-blue-500" },
@@ -222,6 +223,7 @@ export default function LeadDetail() {
             </CardContent>
           </Card>
 
+          <LeadReplyBox lead={lead} />
           <LeadActivity
             leadId={id}
             companyId={lead.company_id}
