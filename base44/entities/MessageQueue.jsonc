@@ -83,19 +83,46 @@
   "rls": {
     "create": {},
     "read": {
-      "user_condition": {
-        "role": "super_admin"
-      }
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "super_admin"
+          }
+        }
+      ]
     },
     "update": {
-      "user_condition": {
-        "role": "super_admin"
-      }
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "super_admin"
+          }
+        }
+      ]
     },
     "delete": {
-      "user_condition": {
-        "role": "super_admin"
-      }
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "super_admin"
+          }
+        }
+      ]
     }
   }
 }
