@@ -229,8 +229,8 @@ export default function Layout({ children, currentPageName }) {
         {/* Sidebar */}
         <aside className={`
           fixed inset-y-0 left-0 z-50 w-64 bg-slate-900 flex flex-col transition-transform duration-300
-          lg:relative lg:translate-x-0
-          ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
+          lg:relative lg:translate-x-0 lg:pointer-events-auto
+          ${sidebarOpen ? "translate-x-0 pointer-events-auto" : "-translate-x-full pointer-events-none"}
         `}>
           {/* Logo */}
           <div className="flex items-center justify-between px-5 py-5 border-b border-slate-700/50">
@@ -353,8 +353,10 @@ export default function Layout({ children, currentPageName }) {
           {/* Top bar */}
           <header className="bg-white border-b border-slate-200 px-4 py-3 flex items-center gap-4 flex-shrink-0">
             <button
+              type="button"
               onClick={() => setSidebarOpen(true)}
-              className="lg:hidden text-slate-500 hover:text-slate-900"
+              aria-label="Open menu"
+              className="lg:hidden text-slate-500 hover:text-slate-900 min-w-[44px] min-h-[44px] flex items-center justify-center -ml-2 p-2"
             >
               <Menu className="w-5 h-5" />
             </button>
