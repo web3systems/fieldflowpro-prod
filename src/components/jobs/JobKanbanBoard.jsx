@@ -73,7 +73,7 @@ export default function JobKanbanBoard({ jobs, customers, techs, onStatusChange,
 
   return (
     <DragDropContext onDragEnd={handleDragEnd}>
-      <div className="flex gap-4 overflow-x-auto pb-4 md:pb-0 snap-x snap-mandatory">
+      <div className="flex gap-4 overflow-x-auto pb-5 overscroll-x-contain w-full">
         {visibleColumns.map(column => (
           <div
             key={column.key}
