@@ -137,14 +137,19 @@ export default function JobDetail() {
   async function generateInvoice(collectPayment = false) {
     setInvoiceActionLoading(true);
 
-    // Prevent duplicate invoices — if an active (non-void) invoice exists, navigate to it
+    // If an active (non-void) invoice already exists, confirm before voiding & regenerating
     const existingForJob = await base44.entities.Invoice.filter({ job_id: id });
     const activeInvoice = existingForJob.find(inv => inv.status !== "void");
     if (activeInvoice && !collectPayment) {
-      setInvoiceActionLoading(false);
-      toast({ title: "Invoice already exists", description: `Invoice #${activeInvoice.invoice_number || activeInvoice.id.slice(-4)} is already linked to this job.`, variant: "destructive" });
-      navigate(`/InvoiceDetail/${activeInvoice.id}`);
-      return;
+      const proceed = window.confirm(
+        `An active invoice (${activeInvoice.invoice_number || "#" + activeInvoice.id.slice(-4)}) already exists.\n\nClick OK to void it and generate a new invoice from the current line items, or Cancel to view the existing invoice.`
+      );
+      if (!proceed) {
+        setInvoiceActionLoading(false);
+        navigate(`/InvoiceDetail/${activeInvoice.id}`);
+        return;
+      }
+      await base44.entities.Invoice.update(activeInvoice.id, { status: "void" }).catch(() => {});
     }
 
     let line_items = form.line_items || [];
