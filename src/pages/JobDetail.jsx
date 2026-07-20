@@ -477,6 +477,8 @@ export default function JobDetail() {
             setForm={setForm}
             companyId={activeCompany?.id}
             onSave={handleSave}
+            onGenerateInvoice={() => generateInvoice(false)}
+            invoiceLoading={invoiceActionLoading}
           />
 
           {/* Margin Review */}

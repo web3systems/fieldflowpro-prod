@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import PriceBookPicker from "@/components/services/PriceBookPicker";
 import { base44 } from "@/api/base44Client";
-import { Plus, ChevronDown, ChevronUp, Check } from "lucide-react";
+import { Plus, ChevronDown, ChevronUp, Check, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import LineItemRow from "@/components/services/LineItemRow";
@@ -9,7 +9,7 @@ import DraggableLineItemsSection from "@/components/services/DraggableLineItemsS
 
 const emptyItem = { description: "", quantity: 1, unit_price: 0, total: 0, category: "service" };
 
-export default function JobLineItemsSection({ form, setForm, companyId, onSave }) {
+export default function JobLineItemsSection({ form, setForm, companyId, onSave, onGenerateInvoice, invoiceLoading }) {
   const [services, setServices] = useState([]);
   const [expanded, setExpanded] = useState(true);
   const [pickerType, setPickerType] = useState(null); // "service" | "material"
@@ -156,13 +156,28 @@ export default function JobLineItemsSection({ form, setForm, companyId, onSave }
             </div>
           </div>
 
-          <div className="px-5 pb-4">
+          <div className="px-5 pb-4 flex items-center gap-2 flex-wrap">
             <Button size="sm" onClick={() => {
               const tot = subtotal + taxAmount - (form.discount || 0);
               onSave({ line_items: lineItems, tax_rate: taxRate, total_amount: tot });
             }} className="gap-1 bg-blue-600 hover:bg-blue-700 text-xs">
               <Check className="w-3 h-3" /> Save Line Items
             </Button>
+            {onGenerateInvoice && (
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={invoiceLoading}
+                onClick={async () => {
+                  const tot = subtotal + taxAmount - (form.discount || 0);
+                  try { await onSave?.({ line_items: lineItems, tax_rate: taxRate, total_amount: tot }); } catch {}
+                  onGenerateInvoice();
+                }}
+                className="gap-1 border-slate-300 text-slate-700 hover:bg-slate-50 text-xs"
+              >
+                <FileText className="w-3 h-3" /> {invoiceLoading ? "Creating..." : "Create / Re-create Invoice"}
+              </Button>
+            )}
           </div>
         </div>
       )}
