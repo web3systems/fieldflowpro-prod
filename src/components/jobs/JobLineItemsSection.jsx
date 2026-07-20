@@ -54,8 +54,9 @@ export default function JobLineItemsSection({ form, setForm, companyId, onSave }
   }
 
   const subtotal = lineItems.reduce((s, i) => s + (i.total || 0), 0);
+  const taxableSubtotal = lineItems.filter(i => i.category === "material").reduce((s, i) => s + (i.total || 0), 0);
   const taxRate = form.tax_rate || 0;
-  const taxAmount = subtotal * (taxRate / 100);
+  const taxAmount = taxableSubtotal * (taxRate / 100);
   const total = subtotal + taxAmount - (form.discount || 0);
 
   return (
