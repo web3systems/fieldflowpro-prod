@@ -106,10 +106,48 @@
   ],
   "rls": {
     "create": {
-      "data.company_id": "{{user.company_id}}"
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "super_admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "manager"
+          }
+        },
+        {
+          "data.company_id": "{{user.company_id}}"
+        }
+      ]
     },
     "read": {
-      "data.company_id": "{{user.company_id}}"
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "super_admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "manager"
+          }
+        },
+        {
+          "data.company_id": "{{user.company_id}}"
+        }
+      ]
     },
     "update": {
       "$or": [
@@ -119,6 +157,11 @@
         {
           "user_condition": {
             "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "super_admin"
           }
         },
         {
@@ -133,6 +176,11 @@
         {
           "user_condition": {
             "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "super_admin"
           }
         },
         {
