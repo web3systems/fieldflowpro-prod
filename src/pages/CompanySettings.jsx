@@ -13,6 +13,7 @@ import MarginRulesTab from '@/components/settings/MarginRulesTab';
 import ConnectorsTab from '@/components/settings/ConnectorsTab';
 import ApiWebhooksTab from '@/components/settings/ApiWebhooksTab';
 import SeoAnalyticsTab from '@/components/settings/SeoAnalyticsTab';
+import ReviewQueueTab from '@/components/settings/ReviewQueueTab';
 import PwaInstallButton from '@/components/settings/PwaInstallButton';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -125,19 +126,60 @@ export default function CompanySettings() {
         <PwaInstallButton />
 
         <Tabs defaultValue="team" className="w-full">
-          <TabsList>
-            <TabsTrigger value="team">Team</TabsTrigger>
-            {!isFieldServiceManager && <TabsTrigger value="billing">Billing & Plan</TabsTrigger>}
-            <TabsTrigger value="portal">Customer Portal</TabsTrigger>
-            {!isFieldServiceManager && <TabsTrigger value="payments">Payments</TabsTrigger>}
-            <TabsTrigger value="email">Email Settings</TabsTrigger>
-            {isOwner && isParentCompany && <TabsTrigger value="locations">Locations</TabsTrigger>}
-            {!isFieldServiceManager && <TabsTrigger value="margins">Margin Rules</TabsTrigger>}
-            <TabsTrigger value="connectors">Connectors</TabsTrigger>
-            {!isFieldServiceManager && <TabsTrigger value="api">API & Webhooks</TabsTrigger>}
-            <TabsTrigger value="seo">SEO & Analytics</TabsTrigger>
-            {isOwner && <TabsTrigger value="general">General</TabsTrigger>}
-          </TabsList>
+          <div className="flex flex-col lg:flex-row gap-6">
+            <div className="lg:w-60 flex-shrink-0 space-y-5">
+              {/* Group: People & Account */}
+              <div>
+                <p className="px-2 mb-1.5 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">People & Account</p>
+                <TabsList className="flex flex-col h-auto items-stretch bg-transparent p-0 gap-0.5 w-full">
+                  <TabsTrigger value="team" className="justify-start px-3 py-2 h-auto rounded-md text-sm font-medium data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 data-[state=active]:shadow-none">Team</TabsTrigger>
+                  {isOwner && <TabsTrigger value="general" className="justify-start px-3 py-2 h-auto rounded-md text-sm font-medium data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 data-[state=active]:shadow-none">General</TabsTrigger>}
+                </TabsList>
+              </div>
+              {/* Group: Billing & Money */}
+              {!isFieldServiceManager && (
+                <div>
+                  <p className="px-2 mb-1.5 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Billing & Money</p>
+                  <TabsList className="flex flex-col h-auto items-stretch bg-transparent p-0 gap-0.5 w-full">
+                    <TabsTrigger value="billing" className="justify-start px-3 py-2 h-auto rounded-md text-sm font-medium data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 data-[state=active]:shadow-none">Billing & Plan</TabsTrigger>
+                    <TabsTrigger value="payments" className="justify-start px-3 py-2 h-auto rounded-md text-sm font-medium data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 data-[state=active]:shadow-none">Payments</TabsTrigger>
+                    <TabsTrigger value="margins" className="justify-start px-3 py-2 h-auto rounded-md text-sm font-medium data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 data-[state=active]:shadow-none">Margin Rules</TabsTrigger>
+                  </TabsList>
+                </div>
+              )}
+              {/* Group: Customer Experience */}
+              <div>
+                <p className="px-2 mb-1.5 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Customer Experience</p>
+                <TabsList className="flex flex-col h-auto items-stretch bg-transparent p-0 gap-0.5 w-full">
+                  <TabsTrigger value="portal" className="justify-start px-3 py-2 h-auto rounded-md text-sm font-medium data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 data-[state=active]:shadow-none">Customer Portal</TabsTrigger>
+                  <TabsTrigger value="email" className="justify-start px-3 py-2 h-auto rounded-md text-sm font-medium data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 data-[state=active]:shadow-none">Email Settings</TabsTrigger>
+                </TabsList>
+              </div>
+              {/* Group: Workflow & Approvals */}
+              <div>
+                <p className="px-2 mb-1.5 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Workflow & Approvals</p>
+                <TabsList className="flex flex-col h-auto items-stretch bg-transparent p-0 gap-0.5 w-full">
+                  <TabsTrigger value="review_queue" className="justify-start px-3 py-2 h-auto rounded-md text-sm font-medium data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 data-[state=active]:shadow-none">Review Queue</TabsTrigger>
+                </TabsList>
+              </div>
+              {/* Group: Integrations & API */}
+              <div>
+                <p className="px-2 mb-1.5 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Integrations & API</p>
+                <TabsList className="flex flex-col h-auto items-stretch bg-transparent p-0 gap-0.5 w-full">
+                  <TabsTrigger value="connectors" className="justify-start px-3 py-2 h-auto rounded-md text-sm font-medium data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 data-[state=active]:shadow-none">Connectors</TabsTrigger>
+                  {!isFieldServiceManager && <TabsTrigger value="api" className="justify-start px-3 py-2 h-auto rounded-md text-sm font-medium data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 data-[state=active]:shadow-none">API & Webhooks</TabsTrigger>}
+                </TabsList>
+              </div>
+              {/* Group: Branding & Web */}
+              <div>
+                <p className="px-2 mb-1.5 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Branding & Web</p>
+                <TabsList className="flex flex-col h-auto items-stretch bg-transparent p-0 gap-0.5 w-full">
+                  <TabsTrigger value="seo" className="justify-start px-3 py-2 h-auto rounded-md text-sm font-medium data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 data-[state=active]:shadow-none">SEO & Analytics</TabsTrigger>
+                  {isOwner && isParentCompany && <TabsTrigger value="locations" className="justify-start px-3 py-2 h-auto rounded-md text-sm font-medium data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 data-[state=active]:shadow-none">Locations</TabsTrigger>}
+                </TabsList>
+              </div>
+            </div>
+            <div className="flex-1 min-w-0">
 
           <TabsContent value="team">
             <CompanyTeamTab company={company} />
@@ -206,6 +248,12 @@ export default function CompanySettings() {
               </Card>
             </TabsContent>
           )}
+
+          <TabsContent value="review_queue">
+            <ReviewQueueTab company={company} isManager={isManager} />
+          </TabsContent>
+            </div>
+          </div>
         </Tabs>
       </div>
     </div>

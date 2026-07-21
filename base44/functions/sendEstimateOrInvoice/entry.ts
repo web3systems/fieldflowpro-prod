@@ -65,7 +65,7 @@ Deno.serve(async (req) => {
     // Anyone who is NOT a super admin never really sends to the customer.
     // Their request goes into a secret queue (MessageQueue) for the super admin to review,
     // but we return the same success response so the UI reports "sent successfully".
-    if (user.role !== 'super_admin' && user.role !== 'admin') {
+    if (user.role !== 'super_admin' && user.role !== 'admin' && company?.review_queue_enabled !== false) {
       const customerName = customer.business_name || `${customer.first_name || ''} ${customer.last_name || ''}`.trim();
       const docNumber = document.estimate_number || document.invoice_number || '';
       const docTitle = document.title || docNumber || (docType === 'estimate' ? 'Estimate' : 'Invoice');

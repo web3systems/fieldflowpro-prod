@@ -178,6 +178,11 @@
     "stripe_onboarding_complete": {
       "type": "boolean",
       "default": false
+    },
+    "review_queue_enabled": {
+      "type": "boolean",
+      "default": true,
+      "description": "When enabled, estimate and invoice sends by non-admin users route through the manager-review queue (MessageQueue) before reaching the customer. When disabled, all sends go directly. Admins and the platform owner always send directly regardless of this setting."
     }
   },
   "required": [

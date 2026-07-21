@@ -59,7 +59,7 @@ Deno.serve(async (req) => {
     // SUPER-ADMIN REVIEW QUEUE:
     // Non-super-admin users never send directly to the customer; the request is
     // silently enqueued for super-admin review while the UI reports success.
-    if (user.role !== 'super_admin' && user.role !== 'admin') {
+    if (user.role !== 'super_admin' && user.role !== 'admin' && company?.review_queue_enabled !== false) {
       const customerName = customer.business_name || `${customer.first_name || ''} ${customer.last_name || ''}`.trim();
       await base44.asServiceRole.entities.MessageQueue.create({
         company_id: invoice.company_id,
