@@ -3,13 +3,16 @@ import { base44 } from "@/api/base44Client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { CreditCard, ExternalLink, CheckCircle, AlertCircle, Loader2, RefreshCw } from "lucide-react";
+import { CreditCard, ExternalLink, CheckCircle, AlertCircle, Loader2, RefreshCw, Trash2 } from "lucide-react";
 
 export default function StripeConnectCard({ company }) {
   const [status, setStatus] = useState(null);
   const [loading, setLoading] = useState(true);
   const [connecting, setConnecting] = useState(false);
   const [connectError, setConnectError] = useState(null);
+  const [successMessage, setSuccessMessage] = useState(null);
+  const [justReturned, setJustReturned] = useState(false);
+  const [disconnecting, setDisconnecting] = useState(false);
 
   useEffect(() => {
     if (company?.id) checkStatus();
@@ -19,11 +22,22 @@ export default function StripeConnectCard({ company }) {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get("stripe_return") === "true" || params.get("stripe_refresh") === "true") {
+      setJustReturned(true);
       checkStatus();
       // Clean up URL
       window.history.replaceState({}, "", window.location.pathname);
     }
   }, []);
+
+  // Surface a success message when Stripe onboarding completes right after a return
+  useEffect(() => {
+    if (justReturned && status) {
+      if (status.onboarding_complete) {
+        setSuccessMessage("✓ Stripe connected successfully! You can now accept online payments.");
+      }
+      setJustReturned(false);
+    }
+  }, [justReturned, status]);
 
   async function checkStatus() {
     setLoading(true);
@@ -60,6 +74,20 @@ export default function StripeConnectCard({ company }) {
     if (res.data?.url) window.open(res.data.url, "_blank");
   }
 
+  async function disconnectStripe() {
+    if (!confirm("Disconnect Stripe? Customers will not be able to pay invoices online until you reconnect.")) return;
+    setDisconnecting(true);
+    setSuccessMessage(null);
+    try {
+      await base44.functions.invoke("stripeConnect", { action: "disconnect", company_id: company.id });
+      await checkStatus();
+    } catch (e) {
+      setConnectError(e.message || "Failed to disconnect Stripe");
+    } finally {
+      setDisconnecting(false);
+    }
+  }
+
   if (loading) {
     return (
       <Card className="border-0 shadow-sm">
@@ -85,26 +113,26 @@ export default function StripeConnectCard({ company }) {
         {/* Status Banner */}
         <div className={`p-4 rounded-xl flex items-start gap-3 ${
           isComplete ? "bg-green-50 border border-green-200" :
-          needsMoreInfo ? "bg-amber-50 border border-amber-200" :
-          "bg-slate-50 border border-slate-200"
+          needsMoreInfo ? "bg-amber-50 border-amber-200" :
+          "bg-yellow-50 border-2 border-yellow-300"
         }`}>
           {isComplete ? (
             <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
           ) : (
-            <AlertCircle className={`w-5 h-5 flex-shrink-0 mt-0.5 ${needsMoreInfo ? "text-amber-500" : "text-slate-400"}`} />
+            <AlertCircle className={`w-5 h-5 flex-shrink-0 mt-0.5 ${needsMoreInfo ? "text-amber-500" : "text-yellow-600"}`} />
           )}
-          <div>
-            <p className={`text-sm font-medium ${isComplete ? "text-green-800" : needsMoreInfo ? "text-amber-800" : "text-slate-700"}`}>
+          <div className="flex-1">
+            <p className={`text-sm font-medium ${isComplete ? "text-green-800" : needsMoreInfo ? "text-amber-800" : "text-yellow-800"}`}>
               {isComplete ? "Stripe account connected" :
                needsMoreInfo ? "Onboarding incomplete" :
-               "No Stripe account connected"}
+               "⚠️ Stripe is not connected. Customers cannot pay invoices online."}
             </p>
-            <p className={`text-xs mt-0.5 ${isComplete ? "text-green-600" : needsMoreInfo ? "text-amber-600" : "text-slate-500"}`}>
+            <p className={`text-xs mt-0.5 ${isComplete ? "text-green-600" : needsMoreInfo ? "text-amber-600" : "text-yellow-700"}`}>
               {isComplete
                 ? `Payments for ${company.name} go directly to your Stripe account.`
                 : needsMoreInfo
                 ? "Your account was created but Stripe needs more information before you can accept payments."
-                : "Connect a Stripe account to accept card payments from customers."}
+                : "Connect a Stripe account to allow customers to pay invoices by card."}
             </p>
             {isConnected && (
               <p className="text-xs text-slate-400 mt-1 font-mono">{status.account_id}</p>
@@ -124,18 +152,35 @@ export default function StripeConnectCard({ company }) {
           </div>
         )}
 
+        {/* Success message */}
+        {successMessage && (
+          <div className="p-3 bg-green-50 border border-green-200 rounded-lg flex items-start gap-2">
+            <CheckCircle className="w-4 h-4 text-green-600 flex-shrink-0 mt-0.5" />
+            <p className="text-xs text-green-700 font-medium">{successMessage}</p>
+          </div>
+        )}
+
         {/* Actions */}
         <div className="flex flex-wrap gap-2">
           {!isComplete && (
-            <Button onClick={connectStripe} disabled={connecting} className="gap-2 bg-blue-600 hover:bg-blue-700">
+            <Button onClick={connectStripe} disabled={connecting} className="gap-2 bg-yellow-500 hover:bg-yellow-600 text-black font-semibold">
               {connecting ? <Loader2 className="w-4 h-4 animate-spin" /> : <CreditCard className="w-4 h-4" />}
-              {connecting ? "Redirecting..." : needsMoreInfo ? "Complete Onboarding" : "Connect Stripe Account"}
+              {connecting ? "Redirecting..." : needsMoreInfo ? "Complete Onboarding" : "Connect Stripe"}
             </Button>
           )}
           {isComplete && (
-            <Button onClick={openDashboard} variant="outline" className="gap-2">
-              <ExternalLink className="w-4 h-4" /> Open Stripe Dashboard
-            </Button>
+            <>
+              <div className="flex items-center gap-1.5 mr-auto px-2 py-1 rounded-md bg-green-100 text-green-700 text-xs font-semibold">
+                <CheckCircle className="w-3.5 h-3.5" /> Connected
+              </div>
+              <Button onClick={openDashboard} variant="outline" className="gap-2">
+                <ExternalLink className="w-4 h-4" /> Dashboard
+              </Button>
+              <Button onClick={disconnectStripe} disabled={disconnecting} variant="outline" className="gap-2 border-red-200 text-red-600 hover:bg-red-50">
+                {disconnecting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                {disconnecting ? "Disconnecting..." : "Disconnect"}
+              </Button>
+            </>
           )}
           <Button onClick={checkStatus} variant="ghost" size="icon" title="Refresh status">
             <RefreshCw className="w-4 h-4" />

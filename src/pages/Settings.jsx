@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useApp } from "../Layout";
-import { Settings, Save, Building2, User, Link, Copy, Code2, Bell, MessageSquare, CheckCircle, CreditCard } from "lucide-react";
+import { Settings, Save, Building2, User, Link, Copy, Code2, Bell, MessageSquare, CheckCircle, CreditCard, AlertCircle } from "lucide-react";
 import StripeConnectCard from "../components/settings/StripeConnectCard";
 import BillingCard from "../components/settings/BillingCard";
 import { Switch } from "@/components/ui/switch";
@@ -26,6 +26,9 @@ export default function SettingsPage() {
   const [userPrefs, setUserPrefs] = useState({ sms_consent: false, marketing_consent: false, notifications_enabled: true, phone: "" });
   const [savingPrefs, setSavingPrefs] = useState(false);
   const [savedPrefs, setSavedPrefs] = useState(false);
+  const [activeTab, setActiveTab] = useState("company");
+
+  const stripeNotConnected = activeCompany && (!activeCompany.stripe_account_id || !activeCompany.stripe_onboarding_complete);
 
   useEffect(() => {
     loadUser();
@@ -72,7 +75,20 @@ export default function SettingsPage() {
         <p className="text-slate-500 text-sm mt-0.5">Manage your account and company settings</p>
       </div>
 
-      <Tabs defaultValue="company">
+      {stripeNotConnected && (
+        <div className="mb-4 p-4 bg-yellow-50 border-2 border-yellow-300 rounded-xl flex items-start gap-3">
+          <AlertCircle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+          <div className="flex-1">
+            <p className="text-sm font-semibold text-yellow-800">⚠️ Stripe is not connected</p>
+            <p className="text-xs text-yellow-700 mt-0.5">Your customers cannot pay invoices online until you connect Stripe.</p>
+          </div>
+          <Button size="sm" className="bg-yellow-500 hover:bg-yellow-600 text-black font-semibold flex-shrink-0" onClick={() => setActiveTab("payments")}>
+            Connect Stripe
+          </Button>
+        </div>
+      )}
+
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="mb-6">
           <TabsTrigger value="company" className="gap-2">
             <Building2 className="w-4 h-4" /> Company
