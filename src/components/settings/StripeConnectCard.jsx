@@ -50,19 +50,32 @@ export default function StripeConnectCard({ company }) {
   }
 
   async function connectStripe() {
+    setConnectError(null);
+    // Stripe onboarding pages refuse to render inside an iframe (the app
+    // builder preview embeds the app in one). Block the attempt so we don't
+    // get stuck in "Redirecting..." and tell the user to use the published URL.
+    if (typeof window !== "undefined" && window.self !== window.top) {
+      setConnectError("Stripe connect works only from a published app. Open the published app URL (not the builder preview) to connect Stripe.");
+      return;
+    }
     setConnecting(true);
-    const returnUrl = `${window.location.origin}/Settings?stripe_return=true`;
-    const res = await base44.functions.invoke("stripeConnect", {
-      action: status?.connected ? "get_onboarding_link" : "create_account",
-      company_id: company.id,
-      return_url: returnUrl,
-      refresh_url: `${window.location.origin}/Settings?stripe_refresh=true`
-    });
-    setConnecting(false);
-    if (res.data?.url) {
-      window.location.href = res.data.url;
-    } else if (res.data?.error) {
-      setConnectError(res.data.error);
+    try {
+      const returnUrl = `${window.location.origin}/Settings?stripe_return=true`;
+      const res = await base44.functions.invoke("stripeConnect", {
+        action: status?.connected ? "get_onboarding_link" : "create_account",
+        company_id: company.id,
+        return_url: returnUrl,
+        refresh_url: `${window.location.origin}/Settings?stripe_refresh=true`
+      });
+      if (res.data?.url) {
+        window.location.href = res.data.url;
+      } else if (res.data?.error) {
+        setConnectError(res.data.error);
+      }
+    } catch (e) {
+      setConnectError(e?.message || "Failed to connect Stripe");
+    } finally {
+      setConnecting(false);
     }
   }
 
