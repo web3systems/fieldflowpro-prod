@@ -1,4 +1,5 @@
 import { jsPDF } from "jspdf";
+import { base44 } from "@/api/base44Client";
 
 // HoneyDo brand accent
 const HONEYDO_GREEN = "#00c98d";
@@ -22,6 +23,50 @@ async function loadImageAsBase64(url) {
       reader.readAsDataURL(blob);
     });
   } catch {
+    return null;
+  }
+}
+
+// Fetches a QR code PNG (base64) for a URL via the public QuickChart QR API.
+// Returns null if the network call fails so PDFs can still print the URL text.
+async function fetchQrCodeBase64(url) {
+  try {
+    const qrUrl = `https://quickchart.io/qr?text=${encodeURIComponent(url)}&size=240&margin=2`;
+    const res = await fetch(qrUrl);
+    if (!res.ok) return null;
+    const blob = await res.blob();
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result);
+      reader.onerror = () => resolve(null);
+      reader.readAsDataURL(blob);
+    });
+  } catch {
+    return null;
+  }
+}
+
+// Builds a Stripe Checkout Session URL for the invoice via the createStripeCheckout
+// backend function (which honors the connected account's stripe_account_id).
+// Returns null if Stripe is not connected or the invoice is already paid, so the
+// PDF falls back to the offline payment instructions.
+async function fetchPaymentUrlForInvoice(invoice, company) {
+  if (!company?.stripe_account_id || !company?.stripe_onboarding_complete) return null;
+  if (!invoice?.id) return null;
+  const amountDue = (invoice.total || 0) - (invoice.amount_paid || 0);
+  if (amountDue <= 0) return null;
+  try {
+    const baseUrl = typeof window !== "undefined" && window.location?.origin
+      ? window.location.origin
+      : (company?.website || "https://app.fieldflowpro.com");
+    const res = await base44.functions.invoke("createStripeCheckout", {
+      invoice_id: invoice.id,
+      success_url: baseUrl,
+      cancel_url: baseUrl,
+    });
+    return res?.data?.url || null;
+  } catch (err) {
+    console.warn("Failed to create Stripe payment link for PDF:", err?.message || err);
     return null;
   }
 }
@@ -316,12 +361,99 @@ function buildFooter(doc, company, accentRgb) {
   doc.text(`${company?.name || ""} • Generated ${new Date().toLocaleDateString()}`, 105, footerY + 5, { align: "center" });
 }
 
+async function buildPaymentSection(doc, company, paymentUrl, startY, accentRgb) {
+  const { r, g, b } = accentRgb;
+  let y = startY;
+
+  // The payment section takes ~55mm. Start on a fresh page if there isn't enough
+  // room so it doesn't collide with the footer or get clipped.
+  if (y > 215) { doc.addPage(); y = 20; }
+
+  // Horizontal rule separating the section from line items
+  y += 4;
+  doc.setDrawColor(r, g, b);
+  doc.setLineWidth(0.5);
+  doc.line(16, y, 194, y);
+  y += 5;
+
+  // Heading
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(10);
+  doc.setTextColor(r, g, b);
+  doc.text("PAYMENT OPTIONS", 16, y);
+  y += 7;
+
+  if (paymentUrl) {
+    // Instruction line
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8);
+    doc.setTextColor(100, 116, 139);
+    doc.text("Scan QR code or visit the link below to pay online", 16, y);
+    y += 5;
+
+    const QR_SIZE = 28;
+    const QR_X = 16;
+    const TEXT_X = QR_X + QR_SIZE + 6;
+
+    // "Pay Online:" label to the right of the QR code
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(9);
+    doc.setTextColor(30, 41, 59);
+    doc.text("Pay Online:", TEXT_X, y);
+
+    // URL — printed (readable on printed copies) and clickable in digital PDFs
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8);
+    doc.setTextColor(37, 99, 235);
+    const urlLines = doc.splitTextToSize(paymentUrl, 140);
+    let urlY = y + 6;
+    urlLines.forEach((line, idx) => {
+      if (idx === 0) {
+        doc.textWithLink(line, TEXT_X, urlY, { url: paymentUrl });
+      } else {
+        doc.text(line, TEXT_X, urlY);
+      }
+      urlY += 4;
+    });
+
+    // QR code (left) — fetched last so the URL text still renders even on failure
+    const qrBase64 = await fetchQrCodeBase64(paymentUrl);
+    if (qrBase64) {
+      doc.addImage(qrBase64, "PNG", QR_X, y - 1, QR_SIZE, QR_SIZE, undefined, "FAST");
+    }
+
+    y += QR_SIZE + 4;
+  } else {
+    // Fallback when Stripe is not connected
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    doc.setTextColor(30, 41, 59);
+    if (company?.phone) {
+      doc.text(`To pay by phone, call ${company.phone}`, 16, y);
+      y += 5;
+    }
+    if (company?.name) {
+      doc.text(`To pay by check, make payable to ${company.name}`, 16, y);
+      y += 5;
+    }
+    if (!company?.phone && !company?.name) {
+      doc.text("Please contact our office to arrange payment.", 16, y);
+      y += 5;
+    }
+  }
+
+  return y;
+}
+
 // ─── Public exports ──────────────────────────────────────────────────────────
 
 export async function downloadInvoicePdf(invoice, customer, company) {
   const doc = new jsPDF();
   const accentRgb = hexToRgb(HONEYDO_GREEN);
-  const logoBase64 = await loadImageAsBase64(LOGO_URL);
+  const [logoBase64, paymentUrl] = await Promise.all([
+    loadImageAsBase64(LOGO_URL),
+    fetchPaymentUrlForInvoice(invoice, company),
+  ]);
 
   let y = buildInvoiceHeader(doc, company, logoBase64, accentRgb);
 
@@ -356,6 +488,8 @@ export async function downloadInvoicePdf(invoice, customer, company) {
     y += 4;
     doc.text(doc.splitTextToSize(invoice.notes, 170), 16, y);
   }
+
+  y = await buildPaymentSection(doc, company, paymentUrl, y, accentRgb);
 
   buildFooter(doc, company, accentRgb);
   doc.save(`Invoice-${invoice.invoice_number || "draft"}.pdf`);
