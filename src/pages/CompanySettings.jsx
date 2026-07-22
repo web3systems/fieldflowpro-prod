@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useApp } from '@/layout.jsx';
+import { useApp } from '@/Layout';
 import CompanyTeamTab from '@/components/settings/CompanyTeamTab';
 import CompanyBillingTab from '@/components/settings/CompanyBillingTab';
 import CustomerPortalSettingsTab from '@/components/settings/CustomerPortalSettingsTab';
