@@ -94,6 +94,12 @@ Deno.serve(async (req) => {
     const companyName = company?.name || 'FieldFlow Pro';
     const primaryColor = company?.primary_color || '#2563eb';
 
+    // Deep-link the portal button to the specific invoice so the customer lands
+    // directly on this invoice (and its Pay button) rather than the portal home.
+    const payUrl = portal_url
+      ? `${portal_url}${portal_url.includes('?') ? '&' : '?'}invoice_id=${encodeURIComponent(invoice.id)}`
+      : null;
+
     const lineItemsHtml = (invoice.line_items || []).length > 0 ? `
       <table style="width:100%;border-collapse:collapse;margin:16px 0;">
         <tr style="background:#f1f5f9;">
@@ -122,7 +128,7 @@ Deno.serve(async (req) => {
           ${invoice.due_date ? `<div style="color:#64748b;margin-top:4px;">Due ${new Date(invoice.due_date).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})}</div>` : ''}
         </div>
         ${lineItemsHtml}
-        ${portal_url ? `<div style="text-align:center;margin:24px 0;"><a href="${portal_url}" style="display:inline-block;background:${primaryColor};color:white;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:600;font-size:15px;">View &amp; Pay Invoice →</a></div>` : ''}
+        ${payUrl ? `<div style="text-align:center;margin:24px 0;"><a href="${payUrl}" style="display:inline-block;background:${primaryColor};color:white;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:600;font-size:15px;">View &amp; Pay Invoice →</a></div>` : ''}
         ${invoice.notes ? `<p style="color:#64748b;font-size:14px;background:#f8fafc;padding:12px;border-radius:6px;border-left:3px solid #e2e8f0;">${invoice.notes}</p>` : ''}
         <p style="color:#94a3b8;font-size:12px;margin-top:24px;">Questions? Contact ${company?.email || company?.phone || 'us'}.</p>
       </div>`

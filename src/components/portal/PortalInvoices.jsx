@@ -1,6 +1,6 @@
 import { format } from "date-fns";
 import { DollarSign, ChevronDown, ChevronUp, CheckCircle, AlertCircle, Clock } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Badge } from "@/components/ui/badge";
 import { base44 } from "@/api/base44Client";
 
@@ -16,6 +16,24 @@ export default function PortalInvoices({ invoices, company }) {
   const accentColor = company?.primary_color || "#2563eb";
   const [expanded, setExpanded] = useState({});
   const [paying, setPaying] = useState({});
+  const rowRefs = useRef({});
+
+  // Auto-open (and scroll to) the invoice the customer clicked "Pay" on in their email.
+  useEffect(() => {
+    const targetId = window.__portalInvoiceTarget || new URLSearchParams(window.location.search).get("invoice_id");
+    if (!targetId || !invoices.length) return;
+    const match = invoices.find(i => i.id === targetId);
+    if (match) {
+      setExpanded(e => ({ ...e, [match.id]: true }));
+      // Defer the scroll until React has painted the expanded card
+      requestAnimationFrame(() => {
+        rowRefs.current[match.id]?.scrollIntoView({ behavior: "smooth", block: "center" });
+      });
+      // Clear so it only runs once per link
+      window.__portalInvoiceTarget = null;
+      window.history.replaceState({}, "", window.location.pathname);
+    }
+  }, [invoices]);
 
   async function handlePay(inv) {
     const isInIframe = window.self !== window.top;
@@ -66,7 +84,7 @@ export default function PortalInvoices({ invoices, company }) {
             const isOpen = expanded[inv.id];
 
             return (
-              <div key={inv.id} className={`bg-white rounded-2xl border shadow-sm overflow-hidden ${canPay ? "border-slate-200" : "border-slate-100"}`}>
+              <div key={inv.id} ref={el => { rowRefs.current[inv.id] = el; }} className={`bg-white rounded-2xl border shadow-sm overflow-hidden ${canPay ? "border-slate-200" : "border-slate-100"}`}>
                 <button className="w-full text-left p-4" onClick={() => setExpanded(e => ({ ...e, [inv.id]: !e[inv.id] }))}>
                   <div className="flex items-start gap-3">
                     <div className="flex-1 min-w-0">

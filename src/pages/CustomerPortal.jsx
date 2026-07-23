@@ -36,6 +36,7 @@ export default function CustomerPortal() {
       setActiveTab("estimates");
     } else if (params.has("invoice_id")) {
       setActiveTab("invoices");
+      window.__portalInvoiceTarget = params.get("invoice_id");
     }
   }, []);
 
