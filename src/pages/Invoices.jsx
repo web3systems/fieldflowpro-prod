@@ -188,12 +188,16 @@ export default function Invoices() {
     setSendingEmail(true);
     try {
       const portalUrl = window.location.origin + "/CustomerPortal";
-      await base44.functions.invoke("sendInvoiceEmail", {
+      const res = await base44.functions.invoke("sendInvoiceEmail", {
         invoice_id: editing.id,
         portal_url: portalUrl,
       });
+      if (res?.data?.error) throw new Error(res.data.error);
       await base44.entities.Invoice.update(editing.id, { status: "sent" });
-      alert("Invoice sent successfully!");
+      // Non-admin sends are silently routed to the manager review queue — surface it.
+      alert(res?.data?.queued
+        ? "Submitted to the manager review queue. The customer will receive the email once approved and sent from the Review Queue."
+        : "Invoice sent successfully!");
       setSheetOpen(false);
       await loadData();
     } catch (err) {

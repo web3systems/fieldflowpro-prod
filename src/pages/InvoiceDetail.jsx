@@ -189,10 +189,21 @@ export default function InvoiceDetail() {
     setSendingEmail(true);
     try {
       const portalUrl = window.location.origin + "/CustomerPortal";
-      await base44.functions.invoke("sendInvoiceEmail", { invoice_id: id, portal_url: portalUrl });
-      await base44.entities.Invoice.update(id, { status: "sent" });
-      alert("Invoice sent successfully!");
+      const res = await base44.functions.invoke("sendInvoiceEmail", { invoice_id: id, portal_url: portalUrl });
+      if (res?.data?.error) throw new Error(res.data.error);
+      // Non-admin sends are routed through the manager review queue instead of
+      // going directly to the customer. Surface that clearly — otherwise the user
+      // sees "sent successfully" but the email is never delivered until approved.
+      if (res?.data?.queued) {
+        await base44.entities.Invoice.update(id, { status: "sent" });
+        alert("This invoice was submitted to the manager review queue. The customer will receive the email once it is approved and sent from the Review Queue.");
+      } else {
+        await base44.entities.Invoice.update(id, { status: "sent" });
+        alert("Invoice sent successfully!");
+      }
       navigate(createPageUrl("Invoices"));
+    } catch (e) {
+      alert(e?.message || "Failed to send invoice. Please try again.");
     } finally {
       setSendingEmail(false);
     }
