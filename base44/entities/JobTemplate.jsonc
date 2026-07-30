@@ -1,0 +1,189 @@
+{
+  "name": "JobTemplate",
+  "type": "object",
+  "properties": {
+    "company_id": {
+      "type": "string",
+      "description": "Company this template belongs to. Templates are reusable job blueprints and are scoped per company."
+    },
+    "name": {
+      "type": "string",
+      "description": "Display name of the template (e.g. \"Lawn Maintenance Visit\", \"HVAC Tune-Up\")"
+    },
+    "description": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string",
+      "description": "Optional grouping or department for this template (e.g. Maintenance, Install, Repair)"
+    },
+    "service_type": {
+      "type": "string"
+    },
+    "default_priority": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "urgent"
+      ],
+      "default": "medium"
+    },
+    "default_tax_rate": {
+      "type": "number",
+      "default": 0,
+      "description": "Default tax rate (%) applied when this template is used to create a job"
+    },
+    "estimated_labor_hours": {
+      "type": "number",
+      "default": 0,
+      "description": "Total estimated labor hours for this job type (auto-overridden by per-line labor hours if present)"
+    },
+    "line_items": {
+      "type": "array",
+      "description": "Predefined line items for this job type \u2014 description, category, quantity, unit price, and per-line labor hours.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "description": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "service",
+              "material"
+            ],
+            "default": "service"
+          },
+          "quantity": {
+            "type": "number",
+            "default": 1
+          },
+          "unit_price": {
+            "type": "number",
+            "default": 0
+          },
+          "total": {
+            "type": "number",
+            "default": 0
+          },
+          "labor_hours": {
+            "type": "number",
+            "default": 0,
+            "description": "Hours of labor represented by this line item"
+          }
+        }
+      }
+    },
+    "checklist": {
+      "type": "array",
+      "description": "Default job checklist seeded when the template is applied to a new job.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "item": {
+            "type": "string"
+          },
+          "completed": {
+            "type": "boolean",
+            "default": false
+          }
+        }
+      }
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Inactive templates do not appear as options when creating a new job, but can be reactivated later."
+    },
+    "sort_order": {
+      "type": "number",
+      "default": 0
+    }
+  },
+  "required": [
+    "company_id",
+    "name"
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "super_admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "manager"
+          }
+        },
+        {
+          "data.company_id": "{{user.company_id}}"
+        }
+      ]
+    },
+    "read": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "super_admin"
+          }
+        },
+        {
+          "data.company_id": "{{user.company_id}}"
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "super_admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "manager"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "super_admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "manager"
+          }
+        }
+      ]
+    }
+  }
+}

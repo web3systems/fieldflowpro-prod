@@ -4,9 +4,10 @@ import { base44 } from "@/api/base44Client";
 import { useApp } from "../Layout";
 import {
   ArrowLeft, Plus, Briefcase, User, Calendar, FileText,
-  List, Tag, Clock, Trash2, X, Pencil, UserCircle, RefreshCw
+  List, Tag, Clock, Trash2, X, Pencil, UserCircle, RefreshCw, Layers
 } from "lucide-react";
 import LineItemRow from "@/components/services/LineItemRow";
+import TemplatePicker from "@/components/jobs/TemplatePicker";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -135,6 +136,33 @@ export default function NewJob() {
     const c = customers.find(c => c.id === id);
     return c ? `${c.first_name} ${c.last_name}` : "";
   };
+
+  function applyTemplate(t) {
+    if (!t) return;
+    const items = (t.line_items || []).map((i) => ({
+      description: i.description || "",
+      category: i.category || "service",
+      quantity: parseFloat(i.quantity) || 1,
+      unit_price: parseFloat(i.unit_price) || 0,
+      total: (i.total || 0) || (parseFloat(i.quantity) || 1) * (parseFloat(i.unit_price) || 0),
+    }));
+    const taxRate = parseFloat(t.default_tax_rate) || parseFloat(form.tax_rate) || 0;
+    const subtotal = items.reduce((s, i) => s + (i.total || 0), 0);
+    const tax = subtotal * (taxRate / 100);
+    const checklist = (t.checklist || []).map((c) => ({ item: c.item || "", completed: false }));
+    setForm((prev) => ({
+      ...prev,
+      title: prev.title || t.name,
+      description: t.description || prev.description || "",
+      service_type: t.service_type || prev.service_type || "",
+      priority: t.default_priority || prev.priority,
+      tax_rate: taxRate,
+      line_items: items,
+      checklist,
+      subtotal,
+      total_amount: subtotal + tax,
+    }));
+  }
 
   async function handleSave() {
     if (!form.title) return;
@@ -365,6 +393,19 @@ export default function NewJob() {
 
         {/* Right Main */}
         <div className="flex-1 p-4 md:p-6 space-y-5">
+
+          {/* Template Picker */}
+          <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 flex items-center justify-between gap-3">
+            <div className="min-w-0">
+              <h3 className="text-sm font-semibold text-emerald-900 flex items-center gap-1.5">
+                <Layers className="w-4 h-4 flex-shrink-0" /> Start from a template
+              </h3>
+              <p className="text-xs text-emerald-700 mt-0.5">
+                Auto-fill line items, descriptions, checklist, and labor hours from a saved job type.
+              </p>
+            </div>
+            <TemplatePicker onApply={applyTemplate} />
+          </div>
 
           {/* Notes */}
           <div className="bg-white border border-slate-200 rounded-xl p-4">

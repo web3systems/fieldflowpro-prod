@@ -5,7 +5,7 @@ import { createPageUrl } from "@/utils";
 import {
   LayoutDashboard, Users, Briefcase, FileText, DollarSign,
   UserPlus, Settings, Building2, Menu, X, ChevronDown, Inbox,
-  Bell, LogOut, Wrench, BarChart3, Globe, Home, UsersRound, CalendarDays, ShieldCheck, CreditCard, Megaphone, Calculator, MessageCircle, Mail, BookOpen, CheckSquare, Package, Boxes, Camera, Mic, ExternalLink, Zap, ClipboardList, Newspaper
+  Bell, LogOut, Wrench, BarChart3, Globe, Home, UsersRound, CalendarDays, ShieldCheck, CreditCard, Megaphone, Calculator, MessageCircle, Mail, BookOpen, CheckSquare, Package, Boxes, Camera, Mic, ExternalLink, Zap, ClipboardList, Newspaper, Layers
 } from "lucide-react";
 import NotificationBell from "@/components/notifications/NotificationBell";
 import SeoHead from "@/components/seo/SeoHead";
@@ -74,6 +74,7 @@ const navGroups = [
     { label: "Inventory", icon: Boxes, page: "Inventory" },
     { label: "Price Book", icon: BookOpen, page: "PriceBook" },
     { label: "Receipt Scanner", icon: Camera, page: "ReceiptScanner" },
+    { label: "Templates", icon: Layers, page: "JobTemplates" },
   ] },
   { divider: true },
   // Communication
