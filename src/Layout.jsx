@@ -5,8 +5,9 @@ import { createPageUrl } from "@/utils";
 import {
   LayoutDashboard, Users, Briefcase, FileText, DollarSign,
   UserPlus, Settings, Building2, Menu, X, ChevronDown, Inbox,
-  Bell, LogOut, Wrench, BarChart3, Globe, Home, UsersRound, CalendarDays, ShieldCheck, CreditCard, Megaphone, Calculator, MessageCircle, Mail, BookOpen, CheckSquare, Package, Boxes, Camera, Mic, ExternalLink, Zap, ClipboardList, Newspaper, Layers
+  Bell, LogOut, Wrench, BarChart3, Globe, Home, UsersRound, CalendarDays, ShieldCheck, CreditCard, Megaphone, Calculator, MessageCircle, Mail, BookOpen, CheckSquare, Package, Boxes, Camera, Mic, ExternalLink, Zap, ClipboardList, Newspaper, Layers, Clock, MapPin
 } from "lucide-react";
+import useActiveTimeClockTracker from "@/hooks/useActiveTimeClockTracker";
 import NotificationBell from "@/components/notifications/NotificationBell";
 import SeoHead from "@/components/seo/SeoHead";
 import GlobalChatPanel from "@/components/chat/GlobalChatPanel";
@@ -59,6 +60,7 @@ const navGroups = [
     { label: "Schedule", icon: CalendarDays, page: "Schedule" },
     { label: "Dispatch", icon: Zap, page: "Dispatch" },
     { label: "Work Logs", icon: ClipboardList, page: "WorkLogs" },
+    { label: "Time Clock", icon: Clock, page: "TimeClock" },
   ] },
   { divider: true },
   // Finance
@@ -75,6 +77,7 @@ const navGroups = [
     { label: "Price Book", icon: BookOpen, page: "PriceBook" },
     { label: "Receipt Scanner", icon: Camera, page: "ReceiptScanner" },
     { label: "Templates", icon: Layers, page: "JobTemplates" },
+    { label: "Team Live Map", icon: MapPin, page: "TimeClockMap", managerOnly: true },
   ] },
   { divider: true },
   // Communication
@@ -196,6 +199,8 @@ export default function Layout({ children, currentPageName }) {
   const blockFinancials = isRoleFinancialBlocked(companyRole);
 
   const isPlatformSuperAdmin = user?.role === "super_admin" || user?.role === "admin";
+  const isManagerPlus = ["admin", "super_admin", "manager"].includes(user?.role) || ["admin", "super_admin", "manager"].includes(companyRole);
+  const timeClock = useActiveTimeClockTracker(activeCompany?.id, user?.id, user?.full_name || user?.email);
 
   // Filter nav groups based on role (remove blocked items, drop empty groups, collapse stray dividers)
   let visibleNavGroups = blockFinancials
@@ -225,7 +230,7 @@ export default function Layout({ children, currentPageName }) {
   }
 
   return (
-    <AppContext.Provider value={{ user, activeCompany, companyRole, companies, companiesLoading, switchCompany, refreshCompanies: loadCompanies }}>
+    <AppContext.Provider value={{ user, activeCompany, companyRole, companies, companiesLoading, switchCompany, refreshCompanies: loadCompanies, timeClock }}>
       <div className="flex h-screen bg-slate-50 overflow-hidden">
         {/* Sidebar */}
         <aside className={`
@@ -301,7 +306,7 @@ export default function Layout({ children, currentPageName }) {
               <div key={`div-${gIdx}`} className="my-2 mx-3 border-t border-slate-700/40" />
             ) : (
               <Fragment key={`grp-${gIdx}`}>
-                {group.items.map(({ label, icon: Icon, page }) => (
+                {group.items.filter(item => !item.managerOnly || isManagerPlus).map(({ label, icon: Icon, page }) => (
                   <Link
                     key={page}
                     to={createPageUrl(page)}

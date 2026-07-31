@@ -1,0 +1,194 @@
+{
+  "name": "TimeClockEntry",
+  "type": "object",
+  "properties": {
+    "company_id": {
+      "type": "string",
+      "description": "Company this time-clock session belongs to"
+    },
+    "user_id": {
+      "type": "string",
+      "description": "The team member who is on the clock for this session"
+    },
+    "user_name": {
+      "type": "string",
+      "description": "Display name of the worker (snapshot at punch-in)"
+    },
+    "job_id": {
+      "type": "string",
+      "description": "Optional job this session is associated with"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "punched_in",
+        "punched_out"
+      ],
+      "default": "punched_in"
+    },
+    "punched_in_at": {
+      "type": "string",
+      "description": "ISO timestamp when the worker punched in"
+    },
+    "punched_out_at": {
+      "type": "string",
+      "description": "ISO timestamp when the worker punched out"
+    },
+    "duration_minutes": {
+      "type": "number",
+      "default": 0,
+      "description": "Total duration of the session in minutes (set on punch-out)"
+    },
+    "punch_in_location": {
+      "type": "object",
+      "properties": {
+        "lat": {
+          "type": "number"
+        },
+        "lng": {
+          "type": "number"
+        },
+        "accuracy": {
+          "type": "number"
+        }
+      },
+      "description": "GPS coordinates captured at punch-in"
+    },
+    "punch_out_location": {
+      "type": "object",
+      "properties": {
+        "lat": {
+          "type": "number"
+        },
+        "lng": {
+          "type": "number"
+        },
+        "accuracy": {
+          "type": "number"
+        }
+      },
+      "description": "GPS coordinates captured at punch-out"
+    },
+    "latitude": {
+      "type": "number",
+      "description": "Most recent live latitude \u2014 used by the team map for current position"
+    },
+    "longitude": {
+      "type": "number",
+      "description": "Most recent live longitude \u2014 used by the team map for current position"
+    },
+    "accuracy": {
+      "type": "number",
+      "description": "Accuracy in meters of the most recent GPS sample"
+    },
+    "last_location_at": {
+      "type": "string",
+      "description": "ISO timestamp of the most recent GPS sample"
+    },
+    "location_history": {
+      "type": "array",
+      "description": "GPS samples captured while on the clock, oldest first. Capped to a rolling window client-side.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "lat": {
+            "type": "number"
+          },
+          "lng": {
+            "type": "number"
+          },
+          "ts": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "required": [
+    "company_id",
+    "user_id",
+    "user_name"
+  ],
+  "rls": {
+    "create": {
+      "data.company_id": "{{user.company_id}}"
+    },
+    "read": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "super_admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "manager"
+          }
+        },
+        {
+          "$and": [
+            {
+              "data.user_id": "{{user.id}}"
+            },
+            {
+              "data.company_id": "{{user.company_id}}"
+            }
+          ]
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "super_admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "manager"
+          }
+        },
+        {
+          "$and": [
+            {
+              "data.user_id": "{{user.id}}"
+            },
+            {
+              "data.company_id": "{{user.company_id}}"
+            }
+          ]
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "super_admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "manager"
+          }
+        }
+      ]
+    }
+  }
+}
