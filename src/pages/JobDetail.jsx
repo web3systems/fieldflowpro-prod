@@ -24,6 +24,7 @@ import JobActivityFeed from "@/components/jobs/JobActivityFeed";
 import WorkLogSection from "@/components/jobs/WorkLogSection";
 import JobTasksSection from "@/components/jobs/JobTasksSection";
 import JobMarginReview from "@/components/jobs/JobMarginReview";
+import JobProfitSummary from "@/components/jobs/JobProfitSummary";
 import AttachDocumentModal from "@/components/jobs/AttachDocumentModal";
 import DepositRequestModal from "@/components/jobs/DepositRequestModal";
 import JobDepositStatus from "@/components/jobs/JobDepositStatus";
@@ -470,6 +471,9 @@ export default function JobDetail() {
             onGenerateInvoice={() => generateInvoice(false)}
             invoiceLoading={invoiceActionLoading}
           />
+
+          {/* Profit Summary */}
+          <JobProfitSummary invoices={existingInvoices} form={form} marginRule={marginRule} />
 
           {/* Line Items */}
           <JobLineItemsSection
