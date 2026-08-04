@@ -60,6 +60,24 @@ function FitBounds({ entries }) {
   return null;
 }
 
+function fmtDuration(ms) {
+  if (!ms || ms < 0) return "0m";
+  const min = Math.floor(ms / 60000);
+  const h = Math.floor(min / 60);
+  if (h > 0) return `${h}h ${min % 60}m`;
+  return `${min}m`;
+}
+
+function Recenter({ selected }) {
+  const map = useMap();
+  useEffect(() => {
+    if (selected?.latitude != null) {
+      map.setView([selected.latitude, selected.longitude], Math.max(map.getZoom() || 4, 15), { animate: true });
+    }
+  }, [selected?.id, selected?.latitude, selected?.longitude]);
+  return null;
+}
+
 export default function TimeClockMap() {
   const { user, activeCompany, companyRole } = useApp();
   const isAdmin =
@@ -131,6 +149,8 @@ export default function TimeClockMap() {
   }
 
   const located = entries.filter((e) => e.latitude != null && e.longitude != null);
+  const freshCount = entries.filter((e) => e.last_location_at && Date.now() - new Date(e.last_location_at).getTime() < 5 * 60 * 1000).length;
+  const staleCount = entries.length - freshCount;
   const initialCenter = located[0] ? [located[0].latitude, located[0].longitude] : [39.5, -98.35];
 
   return (
@@ -151,6 +171,21 @@ export default function TimeClockMap() {
         Tracks update live as team members move while on the clock (about every 30 seconds).
       </p>
 
+      <div className="grid grid-cols-3 gap-3 mb-4">
+        <div className="bg-white border border-slate-200 rounded-lg p-3">
+          <p className="text-xs text-slate-500">On the clock</p>
+          <p className="text-xl font-bold text-slate-900">{entries.length}</p>
+        </div>
+        <div className="bg-white border border-slate-200 rounded-lg p-3">
+          <p className="text-xs text-slate-500 flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-emerald-500" />Fresh GPS</p>
+          <p className="text-xl font-bold text-emerald-700">{freshCount}</p>
+        </div>
+        <div className="bg-white border border-slate-200 rounded-lg p-3">
+          <p className="text-xs text-slate-500 flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-slate-300" />Stale / no GPS</p>
+          <p className="text-xl font-bold text-slate-500">{staleCount}</p>
+        </div>
+      </div>
+
       {loading && entries.length === 0 ? (
         <div className="p-12 flex items-center justify-center">
           <Loader2 className="w-6 h-6 text-slate-300 animate-spin" />
@@ -168,6 +203,7 @@ export default function TimeClockMap() {
               <MapContainer center={initialCenter} zoom={4} style={{ height: "100%", width: "100%" }}>
                 <TileLayer url={TILE_URL} attribution={TILE_ATTR} />
                 <FitBounds entries={entries} />
+                <Recenter selected={selected} />
                 {located.map((e, i) => {
                   const fresh = e.last_location_at && Date.now() - new Date(e.last_location_at).getTime() < 5 * 60 * 1000;
                   return (
@@ -240,12 +276,48 @@ export default function TimeClockMap() {
                       <p className="text-xs text-slate-400">
                         {hasLoc ? `Last seen ${fmtAgo(e.last_location_at)}` : "No GPS yet"}
                       </p>
+                      {e.punched_in_at && (
+                        <p className="text-[10px] text-slate-400 font-mono">
+                          {fmtDuration(Date.now() - new Date(e.punched_in_at).getTime())} on clock
+                        </p>
+                      )}
                     </div>
                   </button>
                 );
               })}
             </div>
           </Card>
+
+          {selected && (
+            <Card className="lg:w-72 p-4 space-y-2">
+              <div className="flex items-center justify-between">
+                <p className="font-semibold text-slate-800">{selected.user_name}</p>
+                <button onClick={() => setSelected(null)} className="text-slate-400 hover:text-slate-600 text-xs">✕</button>
+              </div>
+              {selected.punched_in_at && (
+                <div className="flex justify-between text-sm">
+                  <span className="text-slate-500">On clock</span>
+                  <span className="font-mono font-medium text-slate-700">
+                    {fmtDuration(Date.now() - new Date(selected.punched_in_at).getTime())}
+                  </span>
+                </div>
+              )}
+              <div className="flex justify-between text-sm">
+                <span className="text-slate-500">Last seen</span>
+                <span className="font-medium text-slate-700">{fmtAgo(selected.last_location_at)}</span>
+              </div>
+              {selected.accuracy != null && (
+                <div className="flex justify-between text-sm">
+                  <span className="text-slate-500">Accuracy</span>
+                  <span className="font-medium text-slate-700">±{Math.round(selected.accuracy)}m</span>
+                </div>
+              )}
+              <div className="flex justify-between text-sm">
+                <span className="text-slate-500">Trail points</span>
+                <span className="font-medium text-slate-700">{(selected.location_history || []).length}</span>
+              </div>
+            </Card>
+          )}
         </div>
       )}
     </div>
