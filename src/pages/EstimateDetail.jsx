@@ -22,6 +22,7 @@ import ServicePicker from "@/components/services/ServicePicker";
 import DraggableLineItemsSection from "@/components/services/DraggableLineItemsSection";
 import { downloadEstimatePdf } from "../components/documents/generatePdf";
 import InvoiceEstimatePreview from "@/components/documents/InvoiceEstimatePreview";
+import MarginRulesStrip from "@/components/estimates/MarginRulesStrip";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 
@@ -563,6 +564,7 @@ export default function EstimateDetail() {
 
         {/* Main content */}
         <div className="flex-1 min-w-0 space-y-4">
+          <MarginRulesStrip companyId={activeCompany?.id} />
           {/* Mobile summary */}
           <div className="lg:hidden space-y-3">
             <Card className="border-0 shadow-sm">
