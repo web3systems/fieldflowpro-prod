@@ -1,6 +1,6 @@
 import { useState } from "react";
 import {
-  ChevronDown, ChevronUp, TrendingUp, TrendingDown, Wrench, Package, Info, Calculator,
+  ChevronDown, ChevronUp, TrendingUp, TrendingDown, Wrench, Package, Info, Calculator, ShieldCheck,
 } from "lucide-react";
 
 function fmt(n) {
@@ -107,12 +107,32 @@ export default function JobProfitSummary({ invoices = [], form, marginRule }) {
             />
           </div>
 
-          {missingMarginRule && (
-            <p className="text-xs text-slate-400 flex items-center gap-1">
-              <Info className="w-3 h-3 flex-shrink-0" />
-              Using default {defaultMarkup}% markup to estimate cost basis. Configure your company's Margin Rules in Settings for an accurate picture.
+          <div className="border-t border-slate-100 pt-3 space-y-2">
+            <p className="text-xs font-semibold text-slate-600 flex items-center gap-1">
+              <ShieldCheck className="w-3 h-3 text-violet-500" /> Active Margin Rules
             </p>
-          )}
+            <div className="flex flex-wrap gap-1.5 text-xs">
+              <span className="bg-slate-100 text-slate-600 px-2 py-1 rounded">Default {defaultMarkup}% markup</span>
+              {marginRule?.labor_markup_pct != null && (
+                <span className="bg-slate-100 text-slate-600 px-2 py-1 rounded">Labor {marginRule.labor_markup_pct}%</span>
+              )}
+              {marginRule?.materials_markup_pct != null && (
+                <span className="bg-slate-100 text-slate-600 px-2 py-1 rounded">Materials {marginRule.materials_markup_pct}%</span>
+              )}
+              {marginRule?.min_total_amount > 0 && (
+                <span className="bg-slate-100 text-slate-600 px-2 py-1 rounded">Min ${fmt(marginRule.min_total_amount)}</span>
+              )}
+              {marginRule?.auto_approve && (
+                <span className="bg-emerald-100 text-emerald-700 px-2 py-1 rounded font-medium">Auto-approve ON</span>
+              )}
+            </div>
+            {missingMarginRule && (
+              <p className="text-xs text-slate-400 flex items-center gap-1">
+                <Info className="w-3 h-3 flex-shrink-0" />
+                No rules configured — using {defaultMarkup}% default. Set your Margin Rules in Settings for an accurate picture.
+              </p>
+            )}
+          </div>
         </div>
       )}
     </div>
