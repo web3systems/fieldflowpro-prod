@@ -440,6 +440,7 @@ export default function JobDetail() {
                   onDepositUpdated={(updated) => {
                     setDepositData({ deposit_amount: updated.deposit_amount, deposit_status: updated.deposit_status, deposit_paid_date: updated.deposit_paid_date, deposit_stripe_link: updated.deposit_stripe_link });
                     setJob(j => ({ ...j, ...updated }));
+                    setForm(f => ({ ...f, line_items: updated.line_items || f.line_items, total_amount: updated.total_amount ?? f.total_amount, deposit_status: "paid", deposit_paid_date: updated.deposit_paid_date }));
                   }}
                 />
               );

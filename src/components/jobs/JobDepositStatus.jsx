@@ -13,12 +13,39 @@ export default function JobDepositStatus({ job, onDepositUpdated }) {
   async function handleMarkPaid() {
     setMarking(true);
     const today = new Date().toISOString().split("T")[0];
+
+    // Add a "Deposit Paid" line item (negative) so the deposit carries over to
+    // the invoice generated from this job's line items.
+    const latest = await base44.entities.Job.get(job.id).catch(() => job);
+    const currentItems = latest.line_items || [];
+    const hasDepositLine = currentItems.some(i => i.category === "deposit" || i.description === "Deposit Paid");
+    let newItems = currentItems;
+    let newTotal = latest.total_amount || 0;
+    if (!hasDepositLine && deposit_amount > 0) {
+      newItems = [...currentItems, {
+        description: "Deposit Paid",
+        quantity: 1,
+        unit_price: -deposit_amount,
+        total: -deposit_amount,
+        category: "deposit",
+      }];
+      newTotal = newItems.reduce((s, i) => s + (i.total || 0), 0);
+    }
+
     await base44.entities.Job.update(job.id, {
       deposit_status: "paid",
       deposit_paid_date: today,
+      line_items: newItems,
+      total_amount: newTotal,
     });
     setMarking(false);
-    if (onDepositUpdated) onDepositUpdated({ ...job, deposit_status: "paid", deposit_paid_date: today });
+    if (onDepositUpdated) onDepositUpdated({
+      ...job,
+      deposit_status: "paid",
+      deposit_paid_date: today,
+      line_items: newItems,
+      total_amount: newTotal,
+    });
   }
 
   function copyLink() {
