@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import LineItemRow from "@/components/services/LineItemRow";
+import JobProfitSummary from "@/components/jobs/JobProfitSummary";
 
 const defaultItem = { description: "", quantity: 1, unit_price: 0, total: 0, service_id: null };
 const defaultForm = {
@@ -32,6 +33,7 @@ export default function NewEstimate() {
   const [showNewCustomer, setShowNewCustomer] = useState(false);
   const [newCustomer, setNewCustomer] = useState({ first_name: "", last_name: "", phone: "", email: "" });
   const [savingCustomer, setSavingCustomer] = useState(false);
+  const [marginRule, setMarginRule] = useState(null);
 
   useEffect(() => {
     if (!activeCompany) return;
@@ -40,10 +42,12 @@ export default function NewEstimate() {
       base44.entities.Technician.filter({ company_id: activeCompany.id }),
       base44.entities.Service.filter({ company_id: activeCompany.id, is_active: true }),
       base44.entities.Estimate.filter({ company_id: activeCompany.id }),
-    ]).then(([c, t, s, ests]) => {
+      base44.entities.MarginRule.filter({ company_id: activeCompany.id }).catch(() => []),
+    ]).then(([c, t, s, ests, rules]) => {
       setCustomers(c);
       setTechnicians(t);
       setServices(s);
+      setMarginRule(rules[0] || null);
       const num = `EST-${String(ests.length + 1).padStart(4, "0")}`;
       const tax_rate = activeCompany?.default_tax_rate || 0;
       setForm(f => ({ ...f, estimate_number: num, tax_rate }));
@@ -372,6 +376,9 @@ export default function NewEstimate() {
               </div>
             </div>
           </div>
+
+          {/* Profit Summary — visible while building, not on saved estimate */}
+          <JobProfitSummary invoices={[]} form={{ ...form, total_amount: form.total, receipts: [] }} marginRule={marginRule} />
 
           {/* Checklist */}
           <div className="bg-white border border-slate-200 rounded-xl p-4">
