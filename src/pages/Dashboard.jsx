@@ -26,6 +26,16 @@ const statusColors = {
   cancelled: "bg-red-100 text-red-700",
 };
 
+// A job is "scheduled on" a date if its main scheduled_start falls on that date
+// OR any of its appointments (multi-visit schedule) fall on that date.
+function jobScheduledOnDate(job, dateStr) {
+  const matches = (val) => {
+    if (!val) return false;
+    try { return format(new Date(val), "yyyy-MM-dd") === dateStr; } catch { return false; }
+  };
+  return matches(job.scheduled_start) || (job.appointments || []).some(a => matches(a.scheduled_start));
+}
+
 export default function Dashboard() {
   const { activeCompany, companies, companiesLoading, user: appUser, companyRole } = useApp();
   const isFieldServiceManager = companyRole === 'field_service_manager';
@@ -145,12 +155,7 @@ export default function Dashboard() {
 
   const myJobs = myTech ? jobs.filter(j => j.assigned_techs?.includes(myTech.id) && ["new","scheduled","in_progress"].includes(j.status)) : [];
   const activeJobs = jobs.filter(j => ["in_progress", "scheduled", "new"].includes(j.status));
-  const todayJobs = jobs.filter(j => {
-    if (!j.scheduled_start) return false;
-    try {
-      return format(new Date(j.scheduled_start), "yyyy-MM-dd") === format(new Date(), "yyyy-MM-dd");
-    } catch { return false; }
-  });
+  const todayJobs = jobs.filter(j => jobScheduledOnDate(j, format(new Date(), "yyyy-MM-dd")));
   const totalRevenue = invoices.filter(i => i.status === "paid").reduce((s, i) => s + (i.total || 0), 0);
   const pendingRevenue = invoices.filter(i => ["sent", "viewed", "overdue"].includes(i.status)).reduce((s, i) => s + (i.total || 0), 0);
   const newLeads = leads.filter(l => l.status === "new").length;
@@ -275,10 +280,8 @@ export default function Dashboard() {
   tomorrow.setDate(tomorrow.getDate() + 1);
   const tomorrowStr = format(tomorrow, "yyyy-MM-dd");
   const tomorrowJobs = jobs.filter(j => {
-    if (!j.scheduled_start || ["completed","cancelled"].includes(j.status)) return false;
-    try {
-      return format(new Date(j.scheduled_start), "yyyy-MM-dd") === tomorrowStr;
-    } catch { return false; }
+    if (["completed","cancelled"].includes(j.status)) return false;
+    return jobScheduledOnDate(j, tomorrowStr);
   });
   const inProgressJobs = jobs.filter(j => j.status === "in_progress");
 
