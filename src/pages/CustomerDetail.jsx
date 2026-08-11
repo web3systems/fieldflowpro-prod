@@ -16,6 +16,7 @@ import AssignRecordModal from "@/components/customers/AssignRecordModal";
 import CustomerSmsPanel from "@/components/customers/CustomerSmsPanel";
 import CustomerReviews from "@/components/reviews/CustomerReviews";
 import RequestReviewModal from "@/components/reviews/RequestReviewModal";
+import CustomerLifecyclePanel from "@/components/customers/CustomerLifecyclePanel";
 
 const statusStyle = {
   active: "bg-green-100 text-green-700",
@@ -162,152 +163,15 @@ export default function CustomerDetail() {
             />
           </div>
 
-          {/* Jobs */}
-          <div className="bg-white rounded-xl shadow-sm border p-4">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-semibold text-slate-700 flex items-center gap-1.5">
-                <Briefcase className="w-4 h-4 text-slate-500" /> Jobs ({jobs.length})
-              </h3>
-              <div className="flex gap-1">
-                <Button size="sm" variant="outline" className="text-xs gap-1" onClick={() => setAssignModal("job")}>
-                  <Link2 className="w-3 h-3" /> Assign Existing
-                </Button>
-                <Button size="sm" variant="outline" className="text-xs gap-1" onClick={() => navigate(createPageUrl(`Jobs?customer_id=${id}`))}>
-                  <Briefcase className="w-3 h-3" /> New Job
-                </Button>
-              </div>
-            </div>
-            {jobs.length === 0 ? (
-              <p className="text-sm text-slate-400 py-4 text-center">No jobs yet.</p>
-            ) : (
-              <div className="space-y-2">
-                {jobs.sort((a, b) => new Date(b.created_date) - new Date(a.created_date)).map(job => (
-                  <div key={job.id} onClick={() => navigate(`/JobDetail/${job.id}`)} className="flex items-center justify-between p-2.5 rounded-lg border border-slate-100 hover:bg-slate-50 cursor-pointer">
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-slate-800 truncate">{job.title}</p>
-                      <p className="text-xs text-slate-400">
-                        {job.scheduled_start ? format(new Date(job.scheduled_start), "MMM d, yyyy") : format(new Date(job.created_date), "MMM d, yyyy")}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-2 ml-2">
-                      <Badge className={`text-xs ${job.status === "completed" ? "bg-green-100 text-green-700" : job.status === "in_progress" ? "bg-amber-100 text-amber-700" : job.status === "cancelled" ? "bg-red-100 text-red-700" : "bg-blue-100 text-blue-700"}`}>
-                        {job.status?.replace("_", " ")}
-                      </Badge>
-                      {job.total_amount > 0 && <span className="text-xs font-semibold text-slate-700">${job.total_amount.toLocaleString()}</span>}
-                      <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Estimates */}
-          <div className="bg-white rounded-xl shadow-sm border p-4">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-semibold text-slate-700 flex items-center gap-1.5">
-                <FileText className="w-4 h-4 text-slate-500" /> Estimates ({estimates.length})
-              </h3>
-              <div className="flex gap-1">
-                <Button size="sm" variant="outline" className="text-xs gap-1" onClick={() => setAssignModal("estimate")}>
-                  <Link2 className="w-3 h-3" /> Assign Existing
-                </Button>
-                <Button size="sm" variant="outline" className="text-xs gap-1" onClick={() => navigate(createPageUrl(`Estimates?customer_id=${id}`))}>
-                  <FileText className="w-3 h-3" /> New Estimate
-                </Button>
-              </div>
-            </div>
-            {estimates.length === 0 ? (
-              <p className="text-sm text-slate-400 py-4 text-center">No estimates yet.</p>
-            ) : (
-              <div className="space-y-2">
-                {estimates.sort((a, b) => new Date(b.created_date) - new Date(a.created_date)).map(est => (
-                  <div key={est.id} onClick={() => navigate(`/EstimateDetail/${est.id}`)} className="flex items-center justify-between p-2.5 rounded-lg border border-slate-100 hover:bg-slate-50 cursor-pointer">
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-slate-800 truncate">{est.title || est.estimate_number || "Estimate"}</p>
-                      <p className="text-xs text-slate-400">{format(new Date(est.created_date), "MMM d, yyyy")}</p>
-                    </div>
-                    <div className="flex items-center gap-2 ml-2">
-                      <Badge className={`text-xs ${est.status === "approved" ? "bg-green-100 text-green-700" : est.status === "declined" ? "bg-red-100 text-red-700" : est.status === "sent" ? "bg-blue-100 text-blue-700" : "bg-gray-100 text-gray-600"}`}>
-                        {est.status}
-                      </Badge>
-                      {est.total > 0 && <span className="text-xs font-semibold text-slate-700">${est.total.toLocaleString()}</span>}
-                      <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Invoices */}
-          <div className="bg-white rounded-xl shadow-sm border p-4">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-semibold text-slate-700 flex items-center gap-1.5">
-                <DollarSign className="w-4 h-4 text-slate-500" /> Invoices ({invoices.length})
-              </h3>
-              <div className="flex gap-1">
-                <Button size="sm" variant="outline" className="text-xs gap-1" onClick={() => setAssignModal("invoice")}>
-                  <Link2 className="w-3 h-3" /> Assign Existing
-                </Button>
-                <Button size="sm" variant="outline" className="text-xs gap-1" onClick={() => navigate(createPageUrl(`Invoices?customer_id=${id}`))}>
-                  <DollarSign className="w-3 h-3" /> New Invoice
-                </Button>
-              </div>
-            </div>
-            {invoices.length === 0 ? (
-              <p className="text-sm text-slate-400 py-4 text-center">No invoices yet.</p>
-            ) : (
-              <div className="space-y-2">
-                {invoices.sort((a, b) => new Date(b.created_date) - new Date(a.created_date)).map(inv => (
-                  <div key={inv.id} onClick={() => navigate(`/InvoiceDetail/${inv.id}`)} className="flex items-center justify-between p-2.5 rounded-lg border border-slate-100 hover:bg-slate-50 cursor-pointer">
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-slate-800 truncate">Invoice #{inv.invoice_number || inv.id.slice(-6)}</p>
-                      <p className="text-xs text-slate-400">{format(new Date(inv.created_date), "MMM d, yyyy")}</p>
-                    </div>
-                    <div className="flex items-center gap-2 ml-2">
-                      <Badge className={`text-xs ${inv.status === "paid" ? "bg-green-100 text-green-700" : inv.status === "overdue" ? "bg-red-100 text-red-700" : inv.status === "sent" ? "bg-blue-100 text-blue-700" : "bg-gray-100 text-gray-600"}`}>
-                        {inv.status}
-                      </Badge>
-                      {inv.total > 0 && <span className="text-xs font-semibold text-slate-700">${inv.total.toLocaleString()}</span>}
-                      <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Payments */}
-          {payments.length > 0 && (
-            <div className="bg-white rounded-xl shadow-sm border p-4">
-              <h3 className="text-sm font-semibold text-slate-700 flex items-center gap-1.5 mb-3">
-                <CreditCard className="w-4 h-4 text-slate-500" /> Payment History ({payments.length})
-              </h3>
-              <div className="space-y-2">
-                {payments.map(pmt => {
-                  const inv = invoices.find(i => i.id === pmt.invoice_id);
-                  return (
-                    <div key={pmt.id} className="flex items-center justify-between p-2.5 rounded-lg border border-slate-100 bg-slate-50">
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-slate-800">
-                          ${(pmt.amount || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                          <span className="ml-2 text-xs font-normal text-slate-500 capitalize">{pmt.payment_type?.replace("_", " ")} · {pmt.payment_method}</span>
-                        </p>
-                        <p className="text-xs text-slate-400">
-                          {pmt.received_date ? format(new Date(pmt.received_date), "MMM d, yyyy") : "—"}
-                          {inv && <span className="ml-2">Invoice #{inv.invoice_number || inv.id.slice(-6)}</span>}
-                          {pmt.recorded_by && <span className="ml-2">by {pmt.recorded_by}</span>}
-                          {pmt.notes && <span className="ml-2">· {pmt.notes}</span>}
-                        </p>
-                      </div>
-                      <span className="ml-3 text-xs font-semibold text-green-600 bg-green-50 px-2 py-0.5 rounded-full border border-green-100">Paid</span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
+          {/* Unified Lifecycle Panel */}
+          <CustomerLifecyclePanel
+            customer={customer}
+            estimates={estimates}
+            jobs={jobs}
+            invoices={invoices}
+            payments={payments}
+            onAssign={setAssignModal}
+          />
 
           <CustomerReviews
             customerId={id}
