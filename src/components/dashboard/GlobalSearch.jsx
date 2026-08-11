@@ -148,24 +148,6 @@ export default function GlobalSearch({ jobs, customers, invoices, leads, estimat
         </button>
       </div>
 
-      {/* Filter chips */}
-      <div className="flex gap-2 mt-2.5 flex-wrap">
-        {FILTERS.map(f => (
-          <button
-            key={f.key}
-            onClick={() => setFilter(f.key)}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all border ${
-              filter === f.key
-                ? "bg-blue-600 text-white border-blue-600 shadow-sm"
-                : "bg-white text-slate-600 border-slate-200 hover:border-blue-300 hover:text-blue-600"
-            }`}
-          >
-            {f.icon && <f.icon className="w-3 h-3" />}
-            {f.label}
-          </button>
-        ))}
-      </div>
-
       {/* AI Answer */}
       {(aiLoading || aiResponse) && (
         <div className="mt-3 bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-2xl p-4 flex gap-3 items-start">
