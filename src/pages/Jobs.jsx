@@ -22,6 +22,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { format } from "date-fns";
 import UsageLimitBanner from "@/components/subscription/UsageLimitBanner";
+import CustomerPicker from "@/components/customers/CustomerPicker";
 
 const STATUS_OPTIONS = [
   { value: "new", label: "New", color: "bg-blue-100 text-blue-700 border-blue-200" },
@@ -119,7 +120,7 @@ export default function Jobs() {
       if (i !== idx) return item;
       const updated = { ...item, [field]: value };
       if (field === "quantity" || field === "unit_price") {
-        updated.total = (parseFloat(updated.quantity) || 0) * (parseFloat(updated.unit_price) || 0);
+        updated.total = Number(((parseFloat(updated.quantity) || 0) * (parseFloat(updated.unit_price) || 0)).toFixed(2));
       }
       return updated;
     });
@@ -132,9 +133,9 @@ export default function Jobs() {
   }
 
   function recalcTotals(items) {
-    const subtotal = items.reduce((sum, i) => sum + (parseFloat(i.total) || 0), 0);
-    const tax = subtotal * ((parseFloat(form.tax_rate) || 0) / 100);
-    setForm(prev => ({ ...prev, line_items: items, subtotal, total_amount: subtotal + tax }));
+    const subtotal = Number(items.reduce((sum, i) => sum + (parseFloat(i.total) || 0), 0).toFixed(2));
+    const tax = Number((subtotal * ((parseFloat(form.tax_rate) || 0) / 100)).toFixed(2));
+    setForm(prev => ({ ...prev, line_items: items, subtotal, total_amount: Number((subtotal + tax).toFixed(2)) }));
   }
 
   function selectServiceForItem(idx, serviceId) {
@@ -142,7 +143,7 @@ export default function Jobs() {
     if (!svc) return;
     const items = (form.line_items || []).map((item, i) => {
       if (i !== idx) return item;
-      const updated = { ...item, description: svc.name, unit_price: svc.unit_price || 0, total: (parseFloat(item.quantity) || 1) * (svc.unit_price || 0) };
+      const updated = { ...item, description: svc.name, unit_price: svc.unit_price || 0, total: Number(((parseFloat(item.quantity) || 1) * (svc.unit_price || 0)).toFixed(2)) };
       return updated;
     });
     recalcTotals(items);
@@ -157,6 +158,7 @@ export default function Jobs() {
   }
 
   async function handleSave() {
+    if (!form.title || !form.customer_id) return;
     setSaving(true);
     const data = { ...form, company_id: activeCompany.id };
     const wasCompleted = editing && editing.status !== "completed" && form.status === "completed";
@@ -485,7 +487,7 @@ export default function Jobs() {
               </div>
               <div className="flex gap-2 flex-shrink-0">
                 <Button variant="outline" size="sm" onClick={() => setSheetOpen(false)} className="gap-1"><ArrowLeft className="w-4 h-4" /> Back</Button>
-                <Button size="sm" onClick={handleSave} disabled={saving || !form.title} className="bg-blue-600 hover:bg-blue-700">
+                <Button size="sm" onClick={handleSave} disabled={saving || !form.title || !form.customer_id} className="bg-blue-600 hover:bg-blue-700">
                   {saving ? "Saving..." : editing ? "Save Changes" : "Create Job"}
                 </Button>
               </div>
@@ -500,38 +502,15 @@ export default function Jobs() {
                 <div className="bg-white border rounded-lg p-3">
                   <div className="flex items-center gap-2 mb-2">
                     <UserCircle className="w-4 h-4 text-slate-500" />
-                    <span className="font-semibold text-sm text-slate-700">Customer</span>
+                    <span className="font-semibold text-sm text-slate-700">Customer *</span>
                   </div>
-                  <Input
-                    placeholder="Name, email, phone, or address"
-                    value={customerSearch}
-                    onChange={e => setCustomerSearch(e.target.value)}
-                    className="text-sm h-8 mb-2"
+                  <CustomerPicker
+                    customers={customers}
+                    value={form.customer_id}
+                    onChange={cid => setForm({ ...form, customer_id: cid })}
+                    companyId={activeCompany?.id}
+                    onCustomersUpdate={c => setCustomers(prev => [...prev, c])}
                   />
-                  {customerSearch && (
-                    <div className="border rounded-md bg-white shadow-sm max-h-40 overflow-y-auto mb-2">
-                      {customers.filter(c =>
-                        `${c.first_name} ${c.last_name} ${c.email} ${c.phone}`.toLowerCase().includes(customerSearch.toLowerCase())
-                      ).map(c => (
-                        <button
-                          key={c.id}
-                          className="w-full text-left px-3 py-1.5 text-sm hover:bg-slate-50 border-b last:border-b-0"
-                          onClick={() => { setForm({ ...form, customer_id: c.id }); setCustomerSearch(`${c.first_name} ${c.last_name}`); }}
-                        >
-                          {c.first_name} {c.last_name}
-                          {c.phone && <span className="text-slate-400 text-xs ml-1">· {c.phone}</span>}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                  {form.customer_id && !customerSearch.includes(" ") && (
-                    <div className="text-sm text-slate-600 font-medium">
-                      {getCustomerName(form.customer_id)}
-                    </div>
-                  )}
-                  <Link to="/Customers?new=1" className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700 mt-1" onClick={() => setSheetOpen(false)}>
-                    <Plus className="w-3.5 h-3.5" /> New customer
-                  </Link>
                 </div>
 
                 {/* Schedule */}
@@ -822,8 +801,8 @@ export default function Jobs() {
                         <button onClick={() => {
                           const rate = parseFloat(prompt("Enter tax rate %", form.tax_rate || 0));
                           if (!isNaN(rate)) {
-                            const tax = (form.subtotal || 0) * rate / 100;
-                            setForm(prev => ({ ...prev, tax_rate: rate, total_amount: (prev.subtotal || 0) + tax }));
+                            const tax = Number(((form.subtotal || 0) * rate / 100).toFixed(2));
+                            setForm(prev => ({ ...prev, tax_rate: rate, total_amount: Number(((prev.subtotal || 0) + tax).toFixed(2)) }));
                           }
                         }}>
                           <Pencil className="w-3.5 h-3.5 text-blue-500" />

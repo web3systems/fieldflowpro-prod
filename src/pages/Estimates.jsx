@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/select";
 import { format } from "date-fns";
 import LineItemRow from "@/components/services/LineItemRow";
+import CustomerPicker from "@/components/customers/CustomerPicker";
 
 const STATUS_STYLES = {
   draft: "bg-gray-100 text-gray-600",
@@ -30,6 +31,7 @@ const STATUS_STYLES = {
   approved: "bg-green-100 text-green-700",
   declined: "bg-red-100 text-red-700",
   expired: "bg-orange-100 text-orange-700",
+  closed: "bg-slate-200 text-slate-600",
 };
 
 const defaultItem = { description: "", quantity: 1, unit_price: 0, total: 0, service_id: null };
@@ -104,12 +106,12 @@ export default function Estimates() {
     } else {
       items[index] = { ...items[index], [field]: value };
       if (field === "quantity" || field === "unit_price") {
-        items[index].total = (items[index].quantity || 0) * (items[index].unit_price || 0);
+        items[index].total = Number(((items[index].quantity || 0) * (items[index].unit_price || 0)).toFixed(2));
       }
     }
-    const subtotal = items.reduce((s, i) => s + (i.total || 0), 0);
-    const tax_amount = subtotal * ((form.tax_rate || 0) / 100);
-    const total = subtotal + tax_amount - (form.discount || 0);
+    const subtotal = Number(items.reduce((s, i) => s + (i.total || 0), 0).toFixed(2));
+    const tax_amount = Number((subtotal * ((form.tax_rate || 0) / 100)).toFixed(2));
+    const total = Number((subtotal + tax_amount - (form.discount || 0)).toFixed(2));
     setForm({ ...form, line_items: items, subtotal, tax_amount, total });
   }
 
@@ -126,17 +128,17 @@ export default function Estimates() {
     } else {
       items.push(service);
     }
-    const subtotal = items.reduce((s, i) => s + (i.total || 0), 0);
-    const tax_amount = subtotal * ((form.tax_rate || 0) / 100);
-    const total = subtotal + tax_amount - (form.discount || 0);
+    const subtotal = Number(items.reduce((s, i) => s + (i.total || 0), 0).toFixed(2));
+    const tax_amount = Number((subtotal * ((form.tax_rate || 0) / 100)).toFixed(2));
+    const total = Number((subtotal + tax_amount - (form.discount || 0)).toFixed(2));
     setForm({ ...form, line_items: items, subtotal, tax_amount, total });
   }
 
   function removeItem(index) {
     const items = form.line_items.filter((_, i) => i !== index);
-    const subtotal = items.reduce((s, i) => s + (i.total || 0), 0);
-    const tax_amount = subtotal * ((form.tax_rate || 0) / 100);
-    const total = subtotal + tax_amount - (form.discount || 0);
+    const subtotal = Number(items.reduce((s, i) => s + (i.total || 0), 0).toFixed(2));
+    const tax_amount = Number((subtotal * ((form.tax_rate || 0) / 100)).toFixed(2));
+    const total = Number((subtotal + tax_amount - (form.discount || 0)).toFixed(2));
     setForm({ ...form, line_items: items, subtotal, tax_amount, total });
   }
 
@@ -153,6 +155,7 @@ export default function Estimates() {
   }
 
   async function handleSave() {
+    if (!form.customer_id) return;
     setSaving(true);
     const data = { ...form, company_id: activeCompany.id };
     if (editing) {
@@ -167,9 +170,7 @@ export default function Estimates() {
 
   async function handleApprove() {
     setApproving(true);
-    // Mark estimate as approved
-    await base44.entities.Estimate.update(editing.id, { status: "approved" });
-    // Create a job from this estimate
+    // Create a job from this estimate with line items copied forward
     const job = await base44.entities.Job.create({
       company_id: activeCompany.id,
       customer_id: form.customer_id,
@@ -177,9 +178,14 @@ export default function Estimates() {
       title: form.title,
       description: form.notes || "",
       status: "new",
+      line_items: form.line_items,
+      subtotal: form.subtotal,
+      tax_rate: form.tax_rate,
       total_amount: form.total,
       service_type: "",
     });
+    // Close the estimate and link it to the new job
+    await base44.entities.Estimate.update(editing.id, { status: "closed", job_id: job.id });
     setApproving(false);
     setSheetOpen(false);
     await loadData();
@@ -381,44 +387,14 @@ export default function Estimates() {
 
               {/* Customer selector */}
               <div className="p-4 border-b border-slate-200">
-                <div className="flex items-center justify-between mb-1.5">
-                  <Label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Customer</Label>
-                  {form.customer_id && (
-                    <button onClick={() => setForm({ ...form, customer_id: null })} className="text-xs text-red-400 hover:text-red-600 flex items-center gap-0.5">
-                      <X className="w-3 h-3" /> Clear
-                    </button>
-                  )}
-                </div>
-                <Select value={form.customer_id || ""} onValueChange={v => { setForm({ ...form, customer_id: v }); setShowNewCustomer(false); }}>
-                  <SelectTrigger className="bg-white text-sm"><SelectValue placeholder="Select customer..." /></SelectTrigger>
-                  <SelectContent>
-                    {customers.map(c => (
-                      <SelectItem key={c.id} value={c.id}>{c.first_name} {c.last_name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {!showNewCustomer && (
-                  <button onClick={() => setShowNewCustomer(true)} className="mt-2 text-xs text-blue-600 hover:text-blue-700 font-medium flex items-center gap-0.5">
-                    <Plus className="w-3 h-3" /> New customer
-                  </button>
-                )}
-                {showNewCustomer && (
-                  <div className="mt-2 p-3 bg-white border border-slate-200 rounded-lg space-y-2">
-                    <p className="text-xs font-semibold text-slate-600">New Customer</p>
-                    <div className="flex gap-1.5">
-                      <Input value={newCustomer.first_name} onChange={e => setNewCustomer(n => ({ ...n, first_name: e.target.value }))} placeholder="First name" className="text-xs h-8" />
-                      <Input value={newCustomer.last_name} onChange={e => setNewCustomer(n => ({ ...n, last_name: e.target.value }))} placeholder="Last name" className="text-xs h-8" />
-                    </div>
-                    <Input value={newCustomer.phone} onChange={e => setNewCustomer(n => ({ ...n, phone: e.target.value }))} placeholder="Phone (optional)" className="text-xs h-8" />
-                    <Input value={newCustomer.email} onChange={e => setNewCustomer(n => ({ ...n, email: e.target.value }))} placeholder="Email (optional)" className="text-xs h-8" />
-                    <div className="flex gap-1.5 pt-1">
-                      <Button size="sm" variant="outline" onClick={() => setShowNewCustomer(false)} className="flex-1 text-xs h-7">Cancel</Button>
-                      <Button size="sm" onClick={handleCreateNewCustomer} disabled={savingCustomer || !newCustomer.first_name || !newCustomer.last_name} className="flex-1 text-xs h-7 bg-blue-600 hover:bg-blue-700">
-                        {savingCustomer ? "Saving..." : "Add"}
-                      </Button>
-                    </div>
-                  </div>
-                )}
+                <Label className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5 block">Customer *</Label>
+                <CustomerPicker
+                  customers={customers}
+                  value={form.customer_id}
+                  onChange={cid => setForm({ ...form, customer_id: cid })}
+                  companyId={activeCompany?.id}
+                  onCustomersUpdate={c => setCustomers(prev => [...prev, c])}
+                />
               </div>
 
               {/* Customer card — shown when customer is selected */}
@@ -639,7 +615,7 @@ export default function Estimates() {
                 )}
                 <div className="flex gap-2 pt-1">
                   <Button variant="outline" onClick={() => setSheetOpen(false)} className="flex-1 text-sm">Cancel</Button>
-                  <Button onClick={handleSave} disabled={saving || !form.title} className="flex-1 bg-blue-600 hover:bg-blue-700 text-sm">
+                  <Button onClick={handleSave} disabled={saving || !form.title || !form.customer_id} className="flex-1 bg-blue-600 hover:bg-blue-700 text-sm">
                     {saving ? "Saving..." : editing ? "Save" : "Create"}
                   </Button>
                 </div>

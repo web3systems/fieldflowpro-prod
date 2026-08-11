@@ -7,6 +7,7 @@ import {
   List, Tag, Clock, Trash2, X, Pencil, UserCircle, RefreshCw, Layers
 } from "lucide-react";
 import LineItemRow from "@/components/services/LineItemRow";
+import CustomerPicker from "@/components/customers/CustomerPicker";
 import TemplatePicker from "@/components/jobs/TemplatePicker";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -98,24 +99,24 @@ export default function NewJob() {
     } else {
       items[index] = { ...items[index], [field]: value };
       if (field === "quantity" || field === "unit_price") {
-        items[index].total = (items[index].quantity || 0) * (items[index].unit_price || 0);
+        items[index].total = Number(((items[index].quantity || 0) * (items[index].unit_price || 0)).toFixed(2));
       }
     }
-    const subtotal = items.reduce((s, i) => s + (i.total || 0), 0);
-    const tax = subtotal * ((parseFloat(form.tax_rate) || 0) / 100);
-    setForm(prev => ({ ...prev, line_items: items, subtotal, total_amount: subtotal + tax }));
+    const subtotal = Number(items.reduce((s, i) => s + (i.total || 0), 0).toFixed(2));
+    const tax = Number((subtotal * ((parseFloat(form.tax_rate) || 0) / 100)).toFixed(2));
+    setForm(prev => ({ ...prev, line_items: items, subtotal, total_amount: Number((subtotal + tax).toFixed(2)) }));
   }
 
   function removeLineItem(idx) {
     const items = (form.line_items || []).filter((_, i) => i !== idx);
-    const subtotal = items.reduce((s, i) => s + (i.total || 0), 0);
-    const tax = subtotal * ((parseFloat(form.tax_rate) || 0) / 100);
-    setForm(prev => ({ ...prev, line_items: items, subtotal, total_amount: subtotal + tax }));
+    const subtotal = Number(items.reduce((s, i) => s + (i.total || 0), 0).toFixed(2));
+    const tax = Number((subtotal * ((parseFloat(form.tax_rate) || 0) / 100)).toFixed(2));
+    setForm(prev => ({ ...prev, line_items: items, subtotal, total_amount: Number((subtotal + tax).toFixed(2)) }));
   }
 
   function addLineItem(type) {
     const items = [...(form.line_items || []), { category: type, description: "", quantity: 1, unit_price: 0, total: 0 }];
-    const subtotal = items.reduce((s, i) => s + (i.total || 0), 0);
+    const subtotal = Number(items.reduce((s, i) => s + (i.total || 0), 0).toFixed(2));
     setForm(prev => ({ ...prev, line_items: items, subtotal, total_amount: subtotal }));
   }
 
@@ -125,11 +126,11 @@ export default function NewJob() {
     const items = (form.line_items || []).map((item, i) => {
       if (i !== idx) return item;
       const qty = parseFloat(item.quantity) || 1;
-      return { ...item, description: svc.name, unit_price: svc.unit_price || 0, total: qty * (svc.unit_price || 0) };
+      return { ...item, description: svc.name, unit_price: svc.unit_price || 0, total: Number((qty * (svc.unit_price || 0)).toFixed(2)) };
     });
-    const subtotal = items.reduce((s, i) => s + (i.total || 0), 0);
-    const tax = subtotal * ((parseFloat(form.tax_rate) || 0) / 100);
-    setForm(prev => ({ ...prev, line_items: items, subtotal, total_amount: subtotal + tax }));
+    const subtotal = Number(items.reduce((s, i) => s + (i.total || 0), 0).toFixed(2));
+    const tax = Number((subtotal * ((parseFloat(form.tax_rate) || 0) / 100)).toFixed(2));
+    setForm(prev => ({ ...prev, line_items: items, subtotal, total_amount: Number((subtotal + tax).toFixed(2)) }));
   }
 
   const getCustomerName = (id) => {
@@ -147,8 +148,8 @@ export default function NewJob() {
       total: (i.total || 0) || (parseFloat(i.quantity) || 1) * (parseFloat(i.unit_price) || 0),
     }));
     const taxRate = parseFloat(t.default_tax_rate) || parseFloat(form.tax_rate) || 0;
-    const subtotal = items.reduce((s, i) => s + (i.total || 0), 0);
-    const tax = subtotal * (taxRate / 100);
+    const subtotal = Number(items.reduce((s, i) => s + (i.total || 0), 0).toFixed(2));
+    const tax = Number((subtotal * (taxRate / 100)).toFixed(2));
     const checklist = (t.checklist || []).map((c) => ({ item: c.item || "", completed: false }));
     setForm((prev) => ({
       ...prev,
@@ -160,12 +161,12 @@ export default function NewJob() {
       line_items: items,
       checklist,
       subtotal,
-      total_amount: subtotal + tax,
+      total_amount: Number((subtotal + tax).toFixed(2)),
     }));
   }
 
   async function handleSave() {
-    if (!form.title) return;
+    if (!form.title || !form.customer_id) return;
     setSaving(true);
     const created = await base44.entities.Job.create({ ...form, company_id: activeCompany.id });
     setSaving(false);
@@ -190,7 +191,7 @@ export default function NewJob() {
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" onClick={() => navigate("/Jobs")}>Cancel</Button>
-          <Button onClick={handleSave} disabled={saving || !form.title} className="bg-blue-600 hover:bg-blue-700">
+          <Button onClick={handleSave} disabled={saving || !form.title || !form.customer_id} className="bg-blue-600 hover:bg-blue-700">
             {saving ? "Creating..." : "Create Job"}
           </Button>
         </div>
@@ -228,41 +229,15 @@ export default function NewJob() {
           <div className="bg-slate-50 border rounded-lg p-3">
             <div className="flex items-center gap-2 mb-2">
               <UserCircle className="w-4 h-4 text-slate-500" />
-              <span className="font-semibold text-sm text-slate-700">Customer</span>
+              <span className="font-semibold text-sm text-slate-700">Customer *</span>
             </div>
-            <Input
-              placeholder="Search by name, phone..."
-              value={customerSearch}
-              onChange={e => setCustomerSearch(e.target.value)}
-              className="text-sm h-8 mb-2"
+            <CustomerPicker
+              customers={customers}
+              value={form.customer_id}
+              onChange={cid => setForm({ ...form, customer_id: cid })}
+              companyId={activeCompany?.id}
+              onCustomersUpdate={c => setCustomers(prev => [...prev, c])}
             />
-            {customerSearch && (
-              <div className="border rounded-md bg-white shadow-sm max-h-40 overflow-y-auto mb-2">
-                {customers.filter(c =>
-                  `${c.first_name} ${c.last_name} ${c.email} ${c.phone}`.toLowerCase().includes(customerSearch.toLowerCase())
-                ).map(c => (
-                  <button
-                    key={c.id}
-                    className="w-full text-left px-3 py-1.5 text-sm hover:bg-slate-50 border-b last:border-b-0"
-                    onClick={() => { setForm({ ...form, customer_id: c.id }); setCustomerSearch(`${c.first_name} ${c.last_name}`); }}
-                  >
-                    {c.first_name} {c.last_name}
-                    {c.phone && <span className="text-slate-400 text-xs ml-1">· {c.phone}</span>}
-                  </button>
-                ))}
-              </div>
-            )}
-            {form.customer_id && (
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-slate-700 font-medium">{getCustomerName(form.customer_id)}</span>
-                <button onClick={() => { setForm({ ...form, customer_id: "" }); setCustomerSearch(""); }} className="text-slate-400 hover:text-red-500">
-                  <X className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            )}
-            <Link to="/Customers?new=1" className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700 mt-2">
-              <Plus className="w-3 h-3" /> New customer
-            </Link>
           </div>
 
           {/* Schedule */}
@@ -546,7 +521,7 @@ export default function NewJob() {
           {/* Bottom Save */}
           <div className="flex gap-3 pb-8">
             <Button variant="outline" onClick={() => navigate("/Jobs")} className="flex-1">Cancel</Button>
-            <Button onClick={handleSave} disabled={saving || !form.title} className="flex-1 bg-blue-600 hover:bg-blue-700">
+            <Button onClick={handleSave} disabled={saving || !form.title || !form.customer_id} className="flex-1 bg-blue-600 hover:bg-blue-700">
               {saving ? "Creating..." : "Create Job"}
             </Button>
           </div>

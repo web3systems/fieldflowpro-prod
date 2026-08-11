@@ -22,7 +22,8 @@
         "viewed",
         "approved",
         "declined",
-        "expired"
+        "expired",
+        "closed"
       ],
       "default": "draft"
     },
@@ -140,7 +141,8 @@
       "type": "string"
     },
     "job_id": {
-      "type": "string"
+      "type": "string",
+      "description": "ID of the Job created when this estimate was approved. Once set, the estimate is 'closed' and no longer tracks the job's lifecycle."
     }
   },
   "required": [

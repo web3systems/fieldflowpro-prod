@@ -51,7 +51,7 @@ const defaultJob = {
 export default function JobDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { activeCompany } = useApp();
+  const { activeCompany, user } = useApp();
 
   const [job, setJob] = useState(null);
   const [customers, setCustomers] = useState([]);
@@ -112,8 +112,23 @@ export default function JobDetail() {
     } else {
       dataToSave = form;
     }
+    const oldStatus = job?.status;
+    const newStatus = dataToSave.status;
     await base44.entities.Job.update(id, dataToSave);
     setJob(j => ({ ...j, ...dataToSave }));
+    // Audit log for status changes
+    if (oldStatus && newStatus && oldStatus !== newStatus) {
+      base44.entities.AuditLog.create({
+        company_id: activeCompany.id,
+        action: "status_change",
+        entity_type: "Job",
+        entity_id: id,
+        notes: `Status changed from "${oldStatus}" to "${newStatus}"`,
+        performed_by_id: user?.id,
+        performed_by_name: user?.full_name,
+        performed_by_email: user?.email,
+      }).catch(() => {});
+    }
     setSaving(false);
     toast({ title: "Job saved!" });
     // Prompt to generate invoice if just marked completed and no invoice exists
@@ -189,8 +204,9 @@ export default function JobDetail() {
       line_items,
       subtotal,
       tax_rate: form.tax_rate || 0,
-      tax_amount: subtotal * ((form.tax_rate || 0) / 100),
-      total: invoiceTotal,
+      tax_amount: Number((subtotal * ((form.tax_rate || 0) / 100)).toFixed(2)),
+      discount: form.discount || 0,
+      total: Number(invoiceTotal.toFixed(2)),
       amount_paid: totalAlreadyPaid,
       ...(newStatus === "paid" ? { paid_date: new Date().toISOString().split("T")[0] } : {}),
     });
