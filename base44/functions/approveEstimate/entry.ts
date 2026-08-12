@@ -26,6 +26,14 @@ Deno.serve(async (req) => {
     // Create a job from the estimate if one doesn't already exist
     const existingJobs = await base44.asServiceRole.entities.Job.filter({ estimate_id });
     if (existingJobs.length === 0) {
+      // Generate sequential job number per company
+      const companyJobs = await base44.asServiceRole.entities.Job.filter({ company_id: estimate.company_id });
+      const maxNum = companyJobs.reduce((max: number, j: any) => {
+        const m = j.job_number?.match(/JOB-(\d+)/);
+        return m ? Math.max(max, parseInt(m[1])) : max;
+      }, 0);
+      const job_number = `JOB-${String(maxNum + 1).padStart(4, '0')}`;
+
       const opt = estimate.options && estimate.options[0];
       const lineItems = (opt?.line_items || estimate.line_items || []).map((it: any) => ({
         ...it,
@@ -38,6 +46,7 @@ Deno.serve(async (req) => {
         customer_id: estimate.customer_id,
         estimate_id: estimate.id,
         title: estimate.title,
+        job_number,
         description: '',
         status: 'new',
         total_amount: opt?.total ?? estimate.total ?? 0,

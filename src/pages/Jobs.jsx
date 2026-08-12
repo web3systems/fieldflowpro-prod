@@ -9,6 +9,7 @@ import {
   Pencil, Tag, List, Paperclip, UserCircle, Clock, Trash2, ArrowLeft, LayoutList, Columns, ArrowUp, ArrowDown
 } from "lucide-react";
 import JobKanbanBoard from "@/components/jobs/JobKanbanBoard";
+import JobsMetricsBar from "@/components/jobs/JobsMetricsBar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -33,6 +34,14 @@ const STATUS_OPTIONS = [
   { value: "completed", label: "Completed", color: "bg-green-100 text-green-700 border-green-200" },
   { value: "cancelled", label: "Cancelled", color: "bg-red-100 text-red-700 border-red-200" },
   { value: "on_hold", label: "On Hold", color: "bg-gray-100 text-gray-700 border-gray-200" },
+  { value: "archived", label: "Archived", color: "bg-gray-100 text-gray-500 border-gray-200" },
+];
+
+const COMPUTED_STATUS_OPTIONS = [
+  { value: "late", label: "Late", color: "bg-red-100 text-red-700 border-red-200" },
+  { value: "action_required", label: "Action Required", color: "bg-yellow-100 text-yellow-700 border-yellow-200" },
+  { value: "requires_invoicing", label: "Requires Invoicing", color: "bg-orange-100 text-orange-700 border-orange-200" },
+  { value: "ending_within_30_days", label: "Ending Within 30 Days", color: "bg-indigo-100 text-indigo-700 border-indigo-200" },
 ];
 
 const PRIORITY_OPTIONS = [
@@ -66,6 +75,7 @@ export default function Jobs() {
   const [invoicePromptJob, setInvoicePromptJob] = useState(null); // job that just completed
   const [invoiceActionLoading, setInvoiceActionLoading] = useState(false);
   const [services, setServices] = useState([]);
+  const [invoices, setInvoices] = useState([]);
   const [privateNoteTab, setPrivateNoteTab] = useState("job"); // "job" | "customer"
   const [customerSearch, setCustomerSearch] = useState("");
   const [anytime, setAnytime] = useState(false);
@@ -97,16 +107,18 @@ export default function Jobs() {
 
   async function loadData() {
     setLoading(true);
-    const [j, c, t, s] = await Promise.all([
+    const [j, c, t, s, invs] = await Promise.all([
       base44.entities.Job.filter({ company_id: activeCompany.id }),
       base44.entities.Customer.filter({ company_id: activeCompany.id }),
       base44.entities.Technician.filter({ company_id: activeCompany.id }),
       base44.entities.Service.filter({ company_id: activeCompany.id, is_active: true }),
+      base44.entities.Invoice.filter({ company_id: activeCompany.id }),
     ]);
     setJobs(j);
     setCustomers(c);
     setTechs(t);
     setServices(s);
+    setInvoices(invs);
     setLoading(false);
   }
 
@@ -165,6 +177,12 @@ export default function Jobs() {
     if (editing) {
       await base44.entities.Job.update(editing.id, data);
     } else {
+      // Assign sequential job number
+      const maxNum = jobs.reduce((max, j) => {
+        const m = j.job_number?.match(/JOB-(\d+)/);
+        return m ? Math.max(max, parseInt(m[1])) : max;
+      }, 0);
+      data.job_number = `JOB-${String(maxNum + 1).padStart(4, '0')}`;
       await base44.entities.Job.create(data);
     }
     setSaving(false);
@@ -246,11 +264,44 @@ export default function Jobs() {
     return c ? `${c.first_name} ${c.last_name}` : "—";
   };
 
+  const invoiceJobIds = new Set(invoices.map(inv => inv.job_id).filter(Boolean));
+  const _now = new Date();
+  const _30DaysFromNow = new Date(); _30DaysFromNow.setDate(_30DaysFromNow.getDate() + 30);
+
+  const isJobLate = (job) => {
+    if (["completed", "cancelled", "archived"].includes(job.status)) return false;
+    if (!job.scheduled_start) return false;
+    return new Date(job.scheduled_start) < _now;
+  };
+  const isJobRequiresInvoicing = (job) => job.status === "completed" && !invoiceJobIds.has(job.id);
+  const isJobActionRequired = (job) => job.status === "on_hold";
+  const isJobEndingWithin30Days = (job) => {
+    if (!job.scheduled_end) return false;
+    const end = new Date(job.scheduled_end);
+    return end >= _now && end <= _30DaysFromNow;
+  };
+
+  const statusCounts = {};
+  STATUS_OPTIONS.forEach(s => { statusCounts[s.value] = 0; });
+  jobs.forEach(j => { statusCounts[j.status] = (statusCounts[j.status] || 0) + 1; });
+  const computedCounts = {
+    late: jobs.filter(isJobLate).length,
+    action_required: jobs.filter(isJobActionRequired).length,
+    requires_invoicing: jobs.filter(isJobRequiresInvoicing).length,
+    ending_within_30_days: jobs.filter(isJobEndingWithin30Days).length,
+  };
+
   const filtered = jobs.filter(j => {
     const q = search.toLowerCase();
     const customerName = getCustomerName(j.customer_id).toLowerCase();
     const matchSearch = !search || j.title?.toLowerCase().includes(q) || customerName.includes(q);
-    const matchStatus = filterStatus === "all" || j.status === filterStatus;
+    let matchStatus;
+    if (filterStatus === "all") matchStatus = true;
+    else if (filterStatus === "late") matchStatus = isJobLate(j);
+    else if (filterStatus === "action_required") matchStatus = isJobActionRequired(j);
+    else if (filterStatus === "requires_invoicing") matchStatus = isJobRequiresInvoicing(j);
+    else if (filterStatus === "ending_within_30_days") matchStatus = isJobEndingWithin30Days(j);
+    else matchStatus = j.status === filterStatus;
     return matchSearch && matchStatus;
   }).sort((a, b) => {
     if (!sortField) return 0;
@@ -265,6 +316,7 @@ export default function Jobs() {
   return (
     <div className="relative min-h-full p-4 md:p-6 pb-24 lg:pb-6 space-y-5 max-w-7xl mx-auto">
       <UsageLimitBanner subscription={subscription} metric="jobs_per_month" currentCount={jobs.length} />
+      {!loading && jobs.length > 0 && <JobsMetricsBar jobs={jobs} invoiceJobIds={invoiceJobIds} />}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Jobs</h1>
@@ -308,9 +360,13 @@ export default function Jobs() {
             <SelectValue placeholder="Status" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Status</SelectItem>
+            <SelectItem value="all">All Status ({jobs.length})</SelectItem>
             {STATUS_OPTIONS.map(s => (
-              <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+              <SelectItem key={s.value} value={s.value}>{s.label} ({statusCounts[s.value] || 0})</SelectItem>
+            ))}
+            <div className="my-1 border-t border-slate-100" />
+            {COMPUTED_STATUS_OPTIONS.map(s => (
+              <SelectItem key={s.value} value={s.value}>{s.label} ({computedCounts[s.value] || 0})</SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -381,6 +437,9 @@ export default function Jobs() {
                 <div className="flex items-start gap-3">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
+                      {job.job_number && (
+                        <span className="text-xs font-mono font-semibold text-slate-400">{job.job_number}</span>
+                      )}
                       <h3 className="font-bold text-slate-900">{getCustomerName(job.customer_id)}</h3>
                       <Badge className={`text-xs border ${getStatusStyle(job.status)}`}>
                         {job.status?.replace("_", " ")}

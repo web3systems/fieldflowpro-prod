@@ -14,6 +14,10 @@
     "title": {
       "type": "string"
     },
+    "job_number": {
+      "type": "string",
+      "description": "Auto-incrementing job number per company (format: JOB-0001)"
+    },
     "description": {
       "type": "string"
     },
@@ -27,7 +31,8 @@
         "invoiced",
         "completed",
         "cancelled",
-        "on_hold"
+        "on_hold",
+        "archived"
       ],
       "default": "new"
     },
