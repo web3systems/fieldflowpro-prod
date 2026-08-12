@@ -71,14 +71,16 @@ export default function NewEstimate() {
       }
     }
     const subtotal = Number(items.reduce((s, i) => s + (i.total || 0), 0).toFixed(2));
-    const tax_amount = Number((subtotal * ((form.tax_rate || 0) / 100)).toFixed(2));
+    const taxable = Number(items.filter(i => i.category === "material").reduce((s, i) => s + (i.total || 0), 0).toFixed(2));
+    const tax_amount = Number((taxable * ((form.tax_rate || 0) / 100)).toFixed(2));
     setForm({ ...form, line_items: items, subtotal, tax_amount, total: Number((subtotal + tax_amount - (form.discount || 0)).toFixed(2)) });
   }
 
   function removeItem(index) {
     const items = form.line_items.filter((_, i) => i !== index);
     const subtotal = Number(items.reduce((s, i) => s + (i.total || 0), 0).toFixed(2));
-    const tax_amount = Number((subtotal * ((form.tax_rate || 0) / 100)).toFixed(2));
+    const taxable = Number(items.filter(i => i.category === "material").reduce((s, i) => s + (i.total || 0), 0).toFixed(2));
+    const tax_amount = Number((taxable * ((form.tax_rate || 0) / 100)).toFixed(2));
     setForm({ ...form, line_items: items, subtotal, tax_amount, total: Number((subtotal + tax_amount - (form.discount || 0)).toFixed(2)) });
   }
 
@@ -333,11 +335,12 @@ export default function NewEstimate() {
               </div>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-slate-600">Tax rate</span>
+                  <span className="text-sm text-slate-600">Tax rate <span className="text-xs text-slate-400">(materials only)</span></span>
                   <Input type="number" value={form.tax_rate} onChange={e => {
                     const tax_rate = parseFloat(e.target.value) || 0;
-                    const tax_amount = form.subtotal * (tax_rate / 100);
-                    setForm({ ...form, tax_rate, tax_amount, total: form.subtotal + tax_amount - (form.discount || 0) });
+                    const taxable = (form.line_items || []).filter(i => i.category === "material").reduce((s, i) => s + (i.total || 0), 0);
+                    const tax_amount = Number((taxable * (tax_rate / 100)).toFixed(2));
+                    setForm({ ...form, tax_rate, tax_amount, total: Number((form.subtotal + tax_amount - (form.discount || 0)).toFixed(2)) });
                   }} className="w-16 h-7 text-sm bg-white" />
                   <span className="text-xs text-slate-400">%</span>
                 </div>
