@@ -191,7 +191,7 @@ export default function CustomerLifecyclePanel({ customer, estimates, jobs, invo
           <Button size="sm" variant="outline" className="text-xs gap-1" onClick={() => goNew("NewEstimate")}>
             <Plus className="w-3.5 h-3.5" /> Estimate
           </Button>
-          <Button size="sm" variant="outline" className="text-xs gap-1" onClick={() => goNew("NewJob")}>
+          <Button size="sm" variant="outline" className="text-xs gap-1" onClick={() => goNew("NewEstimate")}>
             <Plus className="w-3.5 h-3.5" /> Job
           </Button>
           <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-xs gap-1" onClick={() => goNew("NewInvoice")}>

@@ -272,8 +272,8 @@ export default function JobTemplates() {
         )}
 
         <div className="pt-2">
-          <Link to="/NewJob" className="text-xs text-blue-600 hover:underline">
-            ← Back to creating a job
+          <Link to="/NewEstimate" className="text-xs text-blue-600 hover:underline">
+            ← Back to creating an estimate
           </Link>
         </div>
       </div>

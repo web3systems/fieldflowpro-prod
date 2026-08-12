@@ -97,7 +97,7 @@ export default function Schedule() {
   const [eventOpen, setEventOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [eventForm, setEventForm] = useState({
-    target: "customers",
+    type: "estimate",
     title: "",
     customer_id: "",
     date: moment().format("YYYY-MM-DD"),
@@ -299,9 +299,9 @@ export default function Schedule() {
     navigate(createPageUrl("Tasks"));
   }
 
-  function openEventModal(presetTarget, presetDate) {
+  function openEventModal(presetDate) {
     setEventForm({
-      target: presetTarget || calendarType,
+      type: calendarType === "tasks" ? "task" : "estimate",
       title: "",
       customer_id: "",
       date: presetDate || moment().format("YYYY-MM-DD"),
@@ -314,38 +314,33 @@ export default function Schedule() {
   }
 
   function handleSelectSlot(slot) {
-    openEventModal(calendarType, moment(slot.start).format("YYYY-MM-DD"));
+    openEventModal(moment(slot.start).format("YYYY-MM-DD"));
   }
 
   async function handleEventSave() {
+    // New Estimate / New Job both go to estimate creation (jobs require estimates first)
+    if (eventForm.type === "estimate" || eventForm.type === "job") {
+      const params = new URLSearchParams();
+      if (eventForm.date) params.set("date", eventForm.date);
+      if (eventForm.customer_id) params.set("customer_id", eventForm.customer_id);
+      const qs = params.toString();
+      navigate(`/NewEstimate${qs ? "?" + qs : ""}`);
+      setEventOpen(false);
+      return;
+    }
+
+    // Company Task / Project — create a task
     if (!eventForm.title || !eventForm.date) return;
     setSaving(true);
     try {
-      const makesJob = eventForm.target === "customers" || eventForm.target === "both";
-      const makesTask = eventForm.target === "tasks" || eventForm.target === "both";
-      const startISO = `${eventForm.date}T${eventForm.startTime}`;
-      const endISO = `${eventForm.date}T${eventForm.endTime}`;
-      if (makesJob) {
-        await base44.entities.Job.create({
-          company_id: activeCompany.id,
-          title: eventForm.title,
-          customer_id: eventForm.customer_id || "",
-          status: "scheduled",
-          scheduled_start: startISO,
-          scheduled_end: endISO,
-          notes: eventForm.notes || "",
-        });
-      }
-      if (makesTask) {
-        await base44.entities.Task.create({
-          company_id: activeCompany.id,
-          title: eventForm.title,
-          due_date: eventForm.date,
-          priority: eventForm.priority || "medium",
-          status: "todo",
-          notes: eventForm.notes || "",
-        });
-      }
+      await base44.entities.Task.create({
+        company_id: activeCompany.id,
+        title: eventForm.title,
+        due_date: eventForm.date,
+        priority: eventForm.priority || "medium",
+        status: "todo",
+        notes: eventForm.notes || "",
+      });
       setEventOpen(false);
       await loadData();
     } finally {
@@ -598,7 +593,7 @@ async function convertBookingToJob(booking) {
                 </button>
               ))}
             </div>
-            <Button size="sm" className="gap-1.5 bg-blue-600 hover:bg-blue-700 h-8" onClick={() => openEventModal(calendarType)}>
+            <Button size="sm" className="gap-1.5 bg-blue-600 hover:bg-blue-700 h-8" onClick={() => openEventModal()}>
               <Plus className="w-3.5 h-3.5" /> Add Event
             </Button>
           </div>
@@ -682,23 +677,34 @@ async function convertBookingToJob(booking) {
             </div>
             <div className="p-6 space-y-4">
               <div>
-                <Label>Calendar</Label>
-                <Select value={eventForm.target} onValueChange={v => setEventForm({ ...eventForm, target: v })}>
+                <Label>Type</Label>
+                <Select value={eventForm.type} onValueChange={v => setEventForm({ ...eventForm, type: v })}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="customers">Customer Schedule</SelectItem>
-                    <SelectItem value="tasks">Company Tasks / Projects</SelectItem>
-                    <SelectItem value="both">Both Calendars</SelectItem>
+                    <SelectItem value="estimate">New Estimate</SelectItem>
+                    <SelectItem value="job">New Job</SelectItem>
+                    <SelectItem value="task">Company Task / Project</SelectItem>
                   </SelectContent>
                 </Select>
+                {(eventForm.type === "estimate" || eventForm.type === "job") && (
+                  <p className="text-xs text-slate-400 mt-1.5">
+                    Jobs start with an estimate — you'll be taken to the estimate creation page{(eventForm.type === "job") ? " (the job is created automatically when the estimate is approved)" : ""}.
+                  </p>
+                )}
               </div>
-              <div>
-                <Label>Title *</Label>
-                <Input value={eventForm.title} onChange={e => setEventForm({ ...eventForm, title: e.target.value })} placeholder="Event title" />
-              </div>
-              {(eventForm.target === "customers" || eventForm.target === "both") && (
+
+              {/* Title — only for tasks (estimates/jobs get their title on the estimate page) */}
+              {eventForm.type === "task" && (
                 <div>
-                  <Label>Customer</Label>
+                  <Label>Title *</Label>
+                  <Input value={eventForm.title} onChange={e => setEventForm({ ...eventForm, title: e.target.value })} placeholder="Task title" />
+                </div>
+              )}
+
+              {/* Customer — for estimates/jobs */}
+              {(eventForm.type === "estimate" || eventForm.type === "job") && (
+                <div>
+                  <Label>Customer (optional)</Label>
                   <Select value={eventForm.customer_id} onValueChange={v => setEventForm({ ...eventForm, customer_id: v })}>
                     <SelectTrigger><SelectValue placeholder="Select customer (optional)" /></SelectTrigger>
                     <SelectContent>
@@ -709,12 +715,13 @@ async function convertBookingToJob(booking) {
                   </Select>
                 </div>
               )}
+
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <Label>Date *</Label>
                   <Input type="date" value={eventForm.date} onChange={e => setEventForm({ ...eventForm, date: e.target.value })} />
                 </div>
-                {eventForm.target === "tasks" ? (
+                {eventForm.type === "task" ? (
                   <div>
                     <Label>Priority</Label>
                     <Select value={eventForm.priority} onValueChange={v => setEventForm({ ...eventForm, priority: v })}>
@@ -737,28 +744,23 @@ async function convertBookingToJob(booking) {
                   </div>
                 )}
               </div>
-              {eventForm.target === "both" && (
+
+              {/* Notes — only for tasks */}
+              {eventForm.type === "task" && (
                 <div>
-                  <Label>Task Priority</Label>
-                  <Select value={eventForm.priority} onValueChange={v => setEventForm({ ...eventForm, priority: v })}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="low">Low</SelectItem>
-                      <SelectItem value="medium">Medium</SelectItem>
-                      <SelectItem value="high">High</SelectItem>
-                      <SelectItem value="urgent">Urgent</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <Label>Notes</Label>
+                  <Textarea value={eventForm.notes} onChange={e => setEventForm({ ...eventForm, notes: e.target.value })} rows={3} placeholder="Details..." />
                 </div>
               )}
-              <div>
-                <Label>Notes</Label>
-                <Textarea value={eventForm.notes} onChange={e => setEventForm({ ...eventForm, notes: e.target.value })} rows={3} placeholder="Details..." />
-              </div>
+
               <div className="flex gap-3 pt-2">
                 <Button variant="outline" onClick={() => setEventOpen(false)} className="flex-1">Cancel</Button>
-                <Button onClick={handleEventSave} disabled={saving || !eventForm.title || !eventForm.date} className="flex-1 bg-blue-600 hover:bg-blue-700">
-                  {saving ? "Adding..." : "Add Event"}
+                <Button
+                  onClick={handleEventSave}
+                  disabled={eventForm.type === "task" ? (saving || !eventForm.title || !eventForm.date) : !eventForm.date}
+                  className="flex-1 bg-blue-600 hover:bg-blue-700"
+                >
+                  {eventForm.type === "task" ? (saving ? "Adding..." : "Add Task") : "Go to Estimate Creation"}
                 </Button>
               </div>
             </div>

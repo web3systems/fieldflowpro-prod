@@ -303,7 +303,7 @@ export default function OnboardingWizard({ company, onComplete }) {
             </p>
             <div className="grid grid-cols-2 gap-3 mb-6">
               {[
-                { label: "Create a Job", href: "/NewJob", icon: Zap, color: "bg-blue-600 text-white" },
+                { label: "Create an Estimate", href: "/NewEstimate", icon: Zap, color: "bg-blue-600 text-white" },
                 { label: "Add a Customer", href: "/Customers", icon: Building2, color: "bg-slate-900 text-white" },
                 { label: "Send an Estimate", href: "/NewEstimate", icon: ArrowRight, color: "bg-purple-600 text-white" },
                 { label: "View Settings", href: "/CompanySettings", icon: Building2, color: "bg-slate-100 text-slate-800" },

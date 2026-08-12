@@ -126,7 +126,7 @@ export default function CustomerDetail() {
           <Button size="sm" variant="outline" onClick={() => navigate(createPageUrl(`Estimates?customer_id=${id}`))} className="gap-1 text-xs hidden sm:flex">
             <FileText className="w-3.5 h-3.5" /> New Estimate
           </Button>
-          <Button size="sm" variant="outline" onClick={() => navigate(createPageUrl(`Jobs?customer_id=${id}`))} className="gap-1 text-xs hidden sm:flex">
+          <Button size="sm" variant="outline" onClick={() => navigate(createPageUrl(`NewEstimate?customer_id=${id}`))} className="gap-1 text-xs hidden sm:flex">
             <Briefcase className="w-3.5 h-3.5" /> New Job
           </Button>
           <Button size="sm" className="bg-blue-600 hover:bg-blue-700 gap-1 text-xs" onClick={() => navigate(createPageUrl(`Invoices?customer_id=${id}`))}>

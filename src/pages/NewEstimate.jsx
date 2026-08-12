@@ -57,8 +57,11 @@ export default function NewEstimate() {
       setForm(f => ({ ...f, estimate_number: num, tax_rate }));
     });
 
-    const customerId = new URLSearchParams(window.location.search).get("customer_id");
+    const params = new URLSearchParams(window.location.search);
+    const customerId = params.get("customer_id");
+    const date = params.get("date");
     if (customerId) setForm(f => ({ ...f, customer_id: customerId }));
+    if (date) setForm(f => ({ ...f, scheduled_start: `${date}T08:00`, scheduled_end: `${date}T17:00` }));
   }, [activeCompany]);
 
   function updateItem(index, field, value) {

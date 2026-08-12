@@ -358,7 +358,7 @@ export default function Customers() {
                     View
                   </button>
                   <button
-                    onClick={() => navigate(`/NewJob?customer_id=${customer.id}`)}
+                    onClick={() => navigate(`/NewEstimate?customer_id=${customer.id}`)}
                     className="flex-1 h-10 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium transition-colors"
                   >
                     New Job
@@ -402,7 +402,7 @@ export default function Customers() {
                 <button onClick={() => { setSheetOpen(false); navigate(`/NewEstimate?customer_id=${editing.id}`); }} className="flex-1 flex flex-col items-center gap-1.5 py-2.5 rounded-lg bg-blue-500 hover:bg-blue-600 transition-colors text-white shadow-sm">
                   <FileText className="w-4 h-4" /><span className="text-xs font-medium">New Estimate</span>
                 </button>
-                <button onClick={() => { setSheetOpen(false); navigate(`/NewJob?customer_id=${editing.id}`); }} className="flex-1 flex flex-col items-center gap-1.5 py-2.5 rounded-lg bg-purple-500 hover:bg-purple-600 transition-colors text-white shadow-sm">
+                <button onClick={() => { setSheetOpen(false); navigate(`/NewEstimate?customer_id=${editing.id}`); }} className="flex-1 flex flex-col items-center gap-1.5 py-2.5 rounded-lg bg-purple-500 hover:bg-purple-600 transition-colors text-white shadow-sm">
                   <Briefcase className="w-4 h-4" /><span className="text-xs font-medium">New Job</span>
                 </button>
                 <button onClick={() => { setSheetOpen(false); navigate(`/NewInvoice?customer_id=${editing.id}`); }} className="flex-1 flex flex-col items-center gap-1.5 py-2.5 rounded-lg bg-green-500 hover:bg-green-600 transition-colors text-white shadow-sm">

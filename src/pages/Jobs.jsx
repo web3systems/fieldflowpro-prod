@@ -90,7 +90,7 @@ export default function Jobs() {
       const params = new URLSearchParams(window.location.search);
       const customerId = params.get("customer_id");
       if (customerId) {
-        navigate(`/NewJob?customer_id=${customerId}`);
+        navigate(`/NewEstimate?customer_id=${customerId}`);
       }
     }
   }, [activeCompany]);
@@ -150,7 +150,7 @@ export default function Jobs() {
   }
 
   function openCreate() {
-    navigate("/NewJob");
+    navigate("/NewEstimate");
   }
 
   function openEdit(job) {
@@ -286,7 +286,7 @@ export default function Jobs() {
             </button>
           </div>
           <Button onClick={openCreate} className="gap-2 bg-blue-600 hover:bg-blue-700">
-            <Plus className="w-4 h-4" /> New Job
+            <Plus className="w-4 h-4" /> New Estimate
           </Button>
         </div>
       </div>
