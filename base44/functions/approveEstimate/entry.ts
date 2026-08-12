@@ -44,6 +44,7 @@ Deno.serve(async (req) => {
         tax_rate: opt?.tax_rate ?? 0,
         line_items: lineItems,
         notes: estimate.notes || '',
+        scope_of_work: estimate.scope_of_work || '',
       });
     }
 

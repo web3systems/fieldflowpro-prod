@@ -151,6 +151,63 @@
         }
       }
     },
+    "scope_of_work": {
+      "type": "string",
+      "description": "Original statement of work carried over from the approved estimate. Rich-text HTML."
+    },
+    "scope_of_work_revisions": {
+      "type": "array",
+      "description": "Additional statements of work added after job creation (e.g. change orders, project additions). Each can be sent for e-signature.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "content": {
+            "type": "string",
+            "description": "Rich-text HTML content of the revision"
+          },
+          "created_at": {
+            "type": "string"
+          },
+          "created_by": {
+            "type": "string"
+          },
+          "created_by_name": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "pending",
+              "signed",
+              "declined"
+            ],
+            "default": "draft"
+          },
+          "sent_at": {
+            "type": "string"
+          },
+          "sent_to_email": {
+            "type": "string"
+          },
+          "signed_by_name": {
+            "type": "string"
+          },
+          "signed_at": {
+            "type": "string"
+          },
+          "signature_ip": {
+            "type": "string"
+          }
+        }
+      }
+    },
     "line_items": {
       "type": "array",
       "description": "Line items transferred from the estimate (labor & materials)",

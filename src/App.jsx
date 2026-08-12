@@ -53,6 +53,7 @@ import AccountingAdmin from './pages/AccountingAdmin';
 import Dispatch from './pages/Dispatch';
 import WorkLogs from './pages/WorkLogs';
 import FieldTechAgent from './pages/FieldTechAgent';
+import SowSign from './pages/SowSign';
 import MessageQueue from './pages/MessageQueue';
 import JobTemplates from './pages/JobTemplates';
 import TimeClock from './pages/TimeClock';
@@ -222,6 +223,7 @@ function App() {
             <Route path="/TermsOfService" element={<TermsOfService />} />
             <Route path="/PrivacyPolicy" element={<PrivacyPolicy />} />
             <Route path="/CustomerPortal" element={<CustomerPortal />} />
+            <Route path="/SowSign/:jobId/:revisionId" element={<SowSign />} />
             <Route path="/ProductOverview" element={<ProductOverview />} />
             <Route path="/PaymentConfirmation" element={<PaymentConfirmation />} />
             <Route path="/privacy" element={<PrivacyPolicyPublic />} />

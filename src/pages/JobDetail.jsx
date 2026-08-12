@@ -25,6 +25,7 @@ import WorkLogSection from "@/components/jobs/WorkLogSection";
 import JobTasksSection from "@/components/jobs/JobTasksSection";
 import JobMarginReview from "@/components/jobs/JobMarginReview";
 import JobProfitSummary from "@/components/jobs/JobProfitSummary";
+import JobScopeOfWorkSection from "@/components/jobs/JobScopeOfWorkSection";
 import AttachDocumentModal from "@/components/jobs/AttachDocumentModal";
 import DepositRequestModal from "@/components/jobs/DepositRequestModal";
 import JobDepositStatus from "@/components/jobs/JobDepositStatus";
@@ -491,6 +492,14 @@ export default function JobDetail() {
 
           {/* Profit Summary */}
           <JobProfitSummary invoices={existingInvoices} form={form} marginRule={marginRule} />
+
+          {/* Statement of Work & Change Orders */}
+          <JobScopeOfWorkSection
+            job={job}
+            form={form}
+            setForm={setForm}
+            onSave={handleSave}
+          />
 
           {/* Line Items */}
           <JobLineItemsSection

@@ -243,6 +243,7 @@ export default function EstimateDetail() {
       checklist: form.checklist || [],
       scheduled_start: form.scheduled_start || "",
       scheduled_end: form.scheduled_end || "",
+      scope_of_work: form.scope_of_work || "",
     });
   }
 
