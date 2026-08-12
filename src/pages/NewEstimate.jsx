@@ -14,6 +14,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import LineItemRow from "@/components/services/LineItemRow";
 import JobProfitSummary from "@/components/jobs/JobProfitSummary";
 import CustomerPicker from "@/components/customers/CustomerPicker";
+import ReactQuill from "react-quill";
+import "react-quill/dist/quill.snow.css";
 
 const defaultItem = { description: "", quantity: 1, unit_price: 0, total: 0, service_id: null };
 const defaultForm = {
@@ -21,6 +23,7 @@ const defaultForm = {
   line_items: [{ ...defaultItem }], subtotal: 0, tax_rate: 0,
   tax_amount: 0, discount: 0, total: 0,
   notes: "", valid_until: "", assigned_techs: [], checklist: [],
+  scope_of_work: "",
 };
 
 export default function NewEstimate() {
@@ -351,6 +354,22 @@ export default function NewEstimate() {
                 <span>${(form.total || 0).toFixed(2)}</span>
               </div>
             </div>
+          </div>
+
+          {/* Statement of Work */}
+          <div className="bg-white border border-slate-200 rounded-xl p-4">
+            <h3 className="text-sm font-semibold text-slate-800 mb-2 flex items-center gap-1.5">
+              <FileText className="w-4 h-4 text-slate-400" />
+              Statement of Work
+              <span className="text-xs font-normal text-slate-400 ml-1">— optional, renders in PDF</span>
+            </h3>
+            <ReactQuill
+              theme="snow"
+              value={form.scope_of_work || ""}
+              onChange={val => setForm(f => ({ ...f, scope_of_work: val }))}
+              placeholder="Describe the full scope: project phases, exclusions, materials spec, terms, site requirements..."
+              style={{ minHeight: 160 }}
+            />
           </div>
 
           {/* Profit Summary — visible while building, not on saved estimate */}
