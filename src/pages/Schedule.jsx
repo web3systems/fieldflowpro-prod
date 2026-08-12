@@ -760,7 +760,7 @@ async function convertBookingToJob(booking) {
                   disabled={eventForm.type === "task" ? (saving || !eventForm.title || !eventForm.date) : !eventForm.date}
                   className="flex-1 bg-blue-600 hover:bg-blue-700"
                 >
-                  {eventForm.type === "task" ? (saving ? "Adding..." : "Add Task") : "Go to Estimate Creation"}
+                  {eventForm.type === "task" ? (saving ? "Adding..." : "Add Task") : "Add New"}
                 </Button>
               </div>
             </div>
