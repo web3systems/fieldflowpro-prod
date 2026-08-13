@@ -36,6 +36,14 @@
       "type": "string",
       "description": "Rich-text scope of work / statement of work. Renders as a separate section in the PDF."
     },
+    "scheduled_start": {
+      "type": "string",
+      "description": "Scheduled start date/time carried over to the job when the estimate is approved"
+    },
+    "scheduled_end": {
+      "type": "string",
+      "description": "Scheduled end date/time carried over to the job when the estimate is approved"
+    },
     "options": {
       "type": "array",
       "description": "Multiple estimate options the customer can choose from",
