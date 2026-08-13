@@ -214,6 +214,14 @@ export default function EstimateDetail() {
     const opt = getOption();
     const customer = getCustomer(form.customer_id);
 
+    // Generate sequential job number per company
+    const companyJobs = await base44.entities.Job.filter({ company_id: activeCompany.id });
+    const maxNum = companyJobs.reduce((max, j) => {
+      const m = j.job_number?.match(/JOB-(\d+)/);
+      return m ? Math.max(max, parseInt(m[1])) : max;
+    }, 0);
+    const job_number = `JOB-${String(maxNum + 1).padStart(4, '0')}`;
+
     // Normalize line item categories: estimate uses "labor"/"materials", job uses "service"/"material"
     const lineItems = (opt?.line_items || []).map(item => ({
       ...item,
@@ -227,6 +235,7 @@ export default function EstimateDetail() {
       customer_id: form.customer_id,
       estimate_id: id,
       title: form.title,
+      job_number,
       description: form.description || "",
       status: form.scheduled_start ? "scheduled" : "new",
       total_amount: opt?.total || form.total,

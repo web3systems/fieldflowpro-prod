@@ -168,7 +168,16 @@ export default function NewJob() {
   async function handleSave() {
     if (!form.title || !form.customer_id) return;
     setSaving(true);
-    const created = await base44.entities.Job.create({ ...form, company_id: activeCompany.id });
+    // Auto-upgrade to "scheduled" if a date is set but status is still "new"
+    const status = form.scheduled_start && form.status === "new" ? "scheduled" : form.status;
+    // Generate sequential job number per company
+    const companyJobs = await base44.entities.Job.filter({ company_id: activeCompany.id });
+    const maxNum = companyJobs.reduce((max, j) => {
+      const m = j.job_number?.match(/JOB-(\d+)/);
+      return m ? Math.max(max, parseInt(m[1])) : max;
+    }, 0);
+    const job_number = `JOB-${String(maxNum + 1).padStart(4, '0')}`;
+    const created = await base44.entities.Job.create({ ...form, status, job_number, company_id: activeCompany.id });
     setSaving(false);
     navigate(`/JobDetail/${created.id}`);
   }

@@ -30,10 +30,19 @@ Deno.serve(async (req) => {
       nextEnd = new Date(nextStart.getTime() + duration).toISOString();
     }
 
+    // Generate sequential job number per company
+    const companyJobs = await base44.asServiceRole.entities.Job.filter({ company_id: data.company_id });
+    const maxNum = companyJobs.reduce((max, j) => {
+      const m = j.job_number?.match(/JOB-(\d+)/);
+      return m ? Math.max(max, parseInt(m[1])) : max;
+    }, 0);
+    const job_number = `JOB-${String(maxNum + 1).padStart(4, '0')}`;
+
     const newJob = {
       company_id: data.company_id,
       customer_id: data.customer_id,
       title: data.title,
+      job_number,
       description: data.description || '',
       status: 'scheduled',
       priority: data.priority || 'medium',
