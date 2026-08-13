@@ -228,7 +228,7 @@ export default function EstimateDetail() {
       estimate_id: id,
       title: form.title,
       description: form.description || "",
-      status: "new",
+      status: form.scheduled_start ? "scheduled" : "new",
       total_amount: opt?.total || form.total,
       tax_rate: opt?.tax_rate || 0,
       service_type: form.service_type || "",
