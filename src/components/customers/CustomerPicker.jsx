@@ -71,21 +71,22 @@ export default function CustomerPicker({ customers, value, onChange, companyId, 
   }
 
   return (
-    <div ref={containerRef} className="space-y-2">
+    <div ref={containerRef} className="relative space-y-2">
       <div className="relative">
-        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
+        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
         <Input
           placeholder="Search by name, phone, email..."
           value={search}
           onChange={e => { setSearch(e.target.value); setOpen(true); }}
           onFocus={() => setOpen(true)}
+          onClick={() => setOpen(true)}
           className="pl-8 text-sm h-9"
           autoComplete="off"
         />
       </div>
 
       {open && (
-        <div className="border rounded-md bg-white shadow-lg max-h-60 overflow-y-auto z-50">
+        <div className="absolute top-full left-0 right-0 mt-1 border rounded-md bg-white shadow-lg max-h-60 overflow-y-auto z-[100]">
           {filtered.length === 0 ? (
             <div className="px-3 py-3 text-xs text-slate-500">
               {customers.length === 0 ? "No customers found. " : "No matches. "}

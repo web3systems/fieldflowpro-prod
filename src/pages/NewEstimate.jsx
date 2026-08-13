@@ -143,10 +143,10 @@ export default function NewEstimate() {
       {/* Body */}
       <div className="flex flex-col md:flex-row flex-1 max-w-7xl mx-auto w-full">
         {/* Left Sidebar */}
-        <div className="w-full md:w-72 flex-shrink-0 bg-white border-r border-slate-200 flex flex-col">
+        <div className="w-full md:w-72 flex-shrink-0 bg-white border-r border-slate-200 flex flex-col overflow-visible">
 
           {/* Customer */}
-          <div className="p-4 border-b border-slate-200">
+          <div className="p-4 border-b border-slate-200 relative z-[90]">
             <Label className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5 block">Customer *</Label>
             <CustomerPicker
               customers={customers}
