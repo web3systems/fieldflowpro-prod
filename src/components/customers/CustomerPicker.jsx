@@ -17,7 +17,11 @@ export default function CustomerPicker({ customers, value, onChange, companyId, 
       if (!containerRef.current?.contains(e.target)) setOpen(false);
     }
     document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
+    document.addEventListener("touchstart", handleClick);
+    return () => {
+      document.removeEventListener("mousedown", handleClick);
+      document.removeEventListener("touchstart", handleClick);
+    };
   }, []);
 
   const selected = customers.find(c => c.id === value);
@@ -26,7 +30,7 @@ export default function CustomerPicker({ customers, value, onChange, companyId, 
     ? customers.filter(c =>
         `${c.first_name} ${c.last_name} ${c.business_name || ""} ${c.email} ${c.phone} ${c.city || ""}`.toLowerCase().includes(q)
       ).slice(0, 20)
-    : [];
+    : customers.slice(0, 20);
 
   async function handleCreate() {
     if (!newCust.first_name || !newCust.last_name) return;
@@ -56,8 +60,8 @@ export default function CustomerPicker({ customers, value, onChange, companyId, 
             </div>
           </div>
           <div className="flex items-center gap-1 flex-shrink-0">
-            <button onClick={() => { setOpen(true); setSearch(""); }} className="text-xs text-blue-600 hover:text-blue-700 px-1.5">Change</button>
-            <button onClick={() => onChange("")} className="text-slate-400 hover:text-red-500 p-1">
+            <button type="button" onClick={() => { setOpen(true); setSearch(""); }} className="text-xs text-blue-600 hover:text-blue-700 px-1.5">Change</button>
+            <button type="button" onClick={() => onChange("")} className="text-slate-400 hover:text-red-500 p-1">
               <X className="w-3.5 h-3.5" />
             </button>
           </div>
@@ -75,30 +79,33 @@ export default function CustomerPicker({ customers, value, onChange, companyId, 
           value={search}
           onChange={e => { setSearch(e.target.value); setOpen(true); }}
           onFocus={() => setOpen(true)}
-          className="pl-8 text-sm h-8"
+          className="pl-8 text-sm h-9"
+          autoComplete="off"
         />
       </div>
 
-      {open && q && (
-        <div className="border rounded-md bg-white shadow-sm max-h-48 overflow-y-auto">
+      {open && (
+        <div className="border rounded-md bg-white shadow-lg max-h-60 overflow-y-auto z-50">
           {filtered.length === 0 ? (
-            <div className="px-3 py-2 text-xs text-slate-400">
-              No matches.{" "}
-              <button onClick={() => { setShowNew(true); setOpen(false); }} className="text-blue-600 hover:underline font-medium">
-                Create new customer
+            <div className="px-3 py-3 text-xs text-slate-500">
+              {customers.length === 0 ? "No customers found. " : "No matches. "}
+              <button type="button" onClick={() => { setShowNew(true); setOpen(false); }} className="text-blue-600 hover:underline font-medium">
+                Add a new customer
               </button>
             </div>
           ) : (
             filtered.map(c => (
               <button
+                type="button"
                 key={c.id}
-                className="w-full text-left px-3 py-1.5 text-sm hover:bg-slate-50 border-b last:border-b-0 flex items-center gap-2"
+                className="w-full text-left px-3 py-2 text-sm hover:bg-slate-50 border-b last:border-b-0 flex items-center gap-2"
                 onClick={() => { onChange(c.id); setSearch(""); setOpen(false); }}
               >
                 <UserCircle className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
-                <div className="min-w-0">
+                <div className="min-w-0 flex-1">
                   <span className="font-medium">{c.first_name} {c.last_name}</span>
                   {c.phone && <span className="text-slate-400 text-xs ml-1">· {c.phone}</span>}
+                  {c.email && !c.phone && <span className="text-slate-400 text-xs ml-1">· {c.email}</span>}
                 </div>
               </button>
             ))
@@ -107,7 +114,7 @@ export default function CustomerPicker({ customers, value, onChange, companyId, 
       )}
 
       {!showNew && (
-        <button onClick={() => setShowNew(true)} className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700 font-medium">
+        <button type="button" onClick={() => setShowNew(true)} className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700 font-medium">
           <Plus className="w-3 h-3" /> New customer
         </button>
       )}
@@ -122,8 +129,8 @@ export default function CustomerPicker({ customers, value, onChange, companyId, 
           <Input value={newCust.phone} onChange={e => setNewCust(n => ({ ...n, phone: e.target.value }))} placeholder="Phone (optional)" className="text-xs h-8" />
           <Input value={newCust.email} onChange={e => setNewCust(n => ({ ...n, email: e.target.value }))} placeholder="Email (optional)" className="text-xs h-8" />
           <div className="flex gap-1.5">
-            <Button size="sm" variant="outline" onClick={() => setShowNew(false)} className="flex-1 text-xs h-7">Cancel</Button>
-            <Button size="sm" onClick={handleCreate} disabled={saving || !newCust.first_name || !newCust.last_name} className="flex-1 text-xs h-7 bg-blue-600 hover:bg-blue-700">
+            <Button type="button" size="sm" variant="outline" onClick={() => setShowNew(false)} className="flex-1 text-xs h-7">Cancel</Button>
+            <Button type="button" size="sm" onClick={handleCreate} disabled={saving || !newCust.first_name || !newCust.last_name} className="flex-1 text-xs h-7 bg-blue-600 hover:bg-blue-700">
               {saving ? "Saving..." : "Add Customer"}
             </Button>
           </div>
