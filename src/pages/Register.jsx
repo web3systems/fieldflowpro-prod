@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Check, Globe, Zap, Shield, Star } from "lucide-react";
+import GoogleIcon from "@/components/GoogleIcon";
 
 const SIGNUP_PLANS = ["starter", "growth", "pro"];
 
@@ -50,6 +51,10 @@ export default function Register() {
     }
     setLoading(false);
   }
+
+  const handleGoogle = () => {
+    base44.auth.loginWithProvider("google", window.location.origin + "/Dashboard");
+  };
 
   if (step === 'welcome') {
     const loginUrl = `${window.location.origin}/Dashboard`;
@@ -166,6 +171,23 @@ export default function Register() {
                 <strong className="text-white">{PLANS[selectedPlan].name}</strong> — ${PLANS[selectedPlan].price}/mo
                 <span className="ml-2 text-green-300 text-xs">14 days free</span>
               </p>
+            </div>
+
+            <Button
+              variant="outline"
+              className="w-full h-12 text-sm font-medium mb-4 bg-white/10 border-white/20 text-white hover:bg-white/20"
+              onClick={handleGoogle}
+            >
+              <GoogleIcon className="w-5 h-5 mr-2" />
+              Continue with Google
+            </Button>
+            <div className="relative mb-4">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-white/20" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-white/10 px-3 text-blue-300">or</span>
+              </div>
             </div>
 
             <div className="space-y-4">
