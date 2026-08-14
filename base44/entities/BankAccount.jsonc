@@ -46,41 +46,53 @@
     "name"
   ],
   "rls": {
-    "create": {
-      "user_condition": {
-        "role": {
-          "$in": [
-            "admin",
-            "manager"
-          ]
-        }
-      },
-      "data.company_id": "{{user.company_id}}"
-    },
     "read": {
-      "data.company_id": "{{user.company_id}}"
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "data.company_id": "{{user.data.company_id}}"
+        }
+      ]
+    },
+    "create": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "data.company_id": "{{user.data.company_id}}"
+        }
+      ]
     },
     "update": {
-      "user_condition": {
-        "role": {
-          "$in": [
-            "admin",
-            "manager"
-          ]
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "data.company_id": "{{user.data.company_id}}"
         }
-      },
-      "data.company_id": "{{user.company_id}}"
+      ]
     },
     "delete": {
-      "user_condition": {
-        "role": {
-          "$in": [
-            "admin",
-            "manager"
-          ]
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "data.company_id": "{{user.data.company_id}}"
         }
-      },
-      "data.company_id": "{{user.company_id}}"
+      ]
     }
   }
 }
