@@ -77,6 +77,17 @@ export default function InvoiceDetail() {
     setServices(svcs);
     if (invs.length > 0) {
       const inv = invs[0];
+      // Normalize line item categories to invoice convention (plural: "labor"/"materials").
+      // Jobs use singular ("service"/"material"); estimates use plural ("labor"/"materials").
+      // Without this, job-sourced materials appear under Labor and aren't taxed.
+      if (inv.line_items) {
+        inv.line_items = inv.line_items.map(item => ({
+          ...item,
+          category: item.category === "material" ? "materials"
+                  : item.category === "service" ? "labor"
+                  : item.category
+        }));
+      }
       setInvoice(inv);
       setForm({ ...defaultForm, ...inv });
       // Load ledger payments for this invoice (and its job if linked)
@@ -140,7 +151,7 @@ export default function InvoiceDetail() {
 
   function recalc(items) {
     const subtotal = items.reduce((s, i) => s + (i.total || 0), 0);
-    const taxableSubtotal = items.filter(i => i.category === "materials").reduce((s, i) => s + (i.total || 0), 0);
+    const taxableSubtotal = items.filter(i => i.category === "materials" || i.category === "material").reduce((s, i) => s + (i.total || 0), 0);
     const tax_amount = taxableSubtotal * ((form.tax_rate || 0) / 100);
     const total = subtotal + tax_amount - (form.discount || 0);
     setForm(f => ({ ...f, line_items: items, subtotal, tax_amount, total }));
@@ -602,8 +613,8 @@ export default function InvoiceDetail() {
 
 
               {(() => {
-                const laborSubtotal = (form.line_items || []).filter(i => i.category !== "materials").reduce((s, i) => s + (i.total || 0), 0);
-                const materialsSubtotal = (form.line_items || []).filter(i => i.category === "materials").reduce((s, i) => s + (i.total || 0), 0);
+                const laborSubtotal = (form.line_items || []).filter(i => i.category !== "materials" && i.category !== "material").reduce((s, i) => s + (i.total || 0), 0);
+                const materialsSubtotal = (form.line_items || []).filter(i => i.category === "materials" || i.category === "material").reduce((s, i) => s + (i.total || 0), 0);
                 return (
                 <div className="mt-3 p-3 bg-slate-50 rounded-lg space-y-1.5">
                   <div className="flex justify-between text-sm">

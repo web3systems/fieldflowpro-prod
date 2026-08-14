@@ -139,7 +139,9 @@ export default function EstimateDetail() {
 
   function recalcOption(items, opt) {
     const subtotal = items.reduce((s, i) => s + (i.total || 0), 0);
-    const tax_amount = subtotal * ((opt.tax_rate || 0) / 100);
+    // Tax materials only (both "materials" and "material" variants for safety)
+    const taxable = items.filter(i => i.category === "materials" || i.category === "material").reduce((s, i) => s + (i.total || 0), 0);
+    const tax_amount = taxable * ((opt.tax_rate || 0) / 100);
     const total = subtotal + tax_amount - (opt.discount || 0);
     updateOption({ ...opt, line_items: items, subtotal, tax_amount, total });
   }
@@ -270,9 +272,12 @@ export default function EstimateDetail() {
   }
 
   async function handleStatusChange(v) {
-    setForm(f => ({ ...f, status: v }));
-    await base44.entities.Estimate.update(id, { status: v });
-    setEstimate(e => ({ ...e, status: v }));
+    const updatedForm = { ...form, status: v };
+    setForm(updatedForm);
+    // Save the full form — not just the status — so unsaved line item / SOW
+    // changes are persisted before creating a job from the estimate.
+    await base44.entities.Estimate.update(id, updatedForm);
+    setEstimate(e => ({ ...e, ...updatedForm }));
     if (v === "approved") {
       await ensureJobFromEstimate();
     }

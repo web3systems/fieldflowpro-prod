@@ -221,7 +221,19 @@ export default function Jobs() {
       }
     }
     if (line_items.length === 0 && job.total_amount) {
-      line_items = [{ description: job.title, quantity: 1, unit_price: job.total_amount, total: job.total_amount }];
+      // If the job has its own line items (e.g. created directly, not from an estimate),
+      // use those — normalizing categories to the invoice convention (plural).
+      if (job.line_items && job.line_items.length > 0) {
+        line_items = job.line_items.map(item => ({
+          ...item,
+          category: item.category === "material" ? "materials"
+                  : item.category === "service" ? "labor"
+                  : item.category
+        }));
+        subtotal = job.line_items.reduce((s, i) => s + (i.total || 0), 0);
+      } else {
+        line_items = [{ description: job.title, quantity: 1, unit_price: job.total_amount, total: job.total_amount }];
+      }
     }
     const invoiceCount = await base44.entities.Invoice.list();
     const invoice_number = `INV-${String((invoiceCount.length || 0) + 1).padStart(4, "0")}`;

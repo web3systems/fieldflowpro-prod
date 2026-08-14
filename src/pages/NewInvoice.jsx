@@ -52,7 +52,9 @@ export default function NewInvoice() {
 
   function calcTotals(items, tax_rate, discount) {
     const subtotal = items.reduce((s, i) => s + (i.total || 0), 0);
-    const tax_amount = subtotal * ((tax_rate || 0) / 100);
+    // Tax materials only — consistent with InvoiceDetail and estimate flow
+    const taxable = items.filter(i => i.category === "materials" || i.category === "material").reduce((s, i) => s + (i.total || 0), 0);
+    const tax_amount = taxable * ((tax_rate || 0) / 100);
     return { subtotal, tax_amount, total: subtotal + tax_amount - (discount || 0) };
   }
 
