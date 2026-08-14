@@ -180,6 +180,10 @@ export default function Layout({ children, currentPageName }) {
       const found = list.find(c => c.id === saved) || list[0];
       setActiveCompany(found || null);
       setCompanyRole(found?.user_role || null);
+      // Persist company_id to the user's profile so RLS scoping works
+      if (found && found.id !== user.company_id) {
+        base44.auth.updateMe({ company_id: found.id }).catch(() => {});
+      }
     } catch (e) {
       console.error('loadCompanies error:', e);
     } finally {
@@ -192,6 +196,8 @@ export default function Layout({ children, currentPageName }) {
     setActiveCompany(company);
     setCompanyRole(company?.user_role || null);
     localStorage.setItem("activeCompanyId", company.id);
+    // Persist to user profile so RLS scoping updates for the new company
+    base44.auth.updateMe({ company_id: company.id }).catch(() => {});
   }
 
   const isSuperAdmin = user?.role === "super_admin" || user?.role === "admin" || user?.role === "manager";
