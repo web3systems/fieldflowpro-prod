@@ -202,10 +202,18 @@ export default function EstimateDetail() {
   // --- Save / actions ---
   async function handleSave() {
     setSaving(true);
-    await base44.entities.Estimate.update(id, form);
-    setEstimate({ ...estimate, ...form });
-    setSaving(false);
-    setEditingInfo(false);
+    try {
+      // Strip built-in fields that shouldn't be in the update payload
+      const { id: _id, created_date, updated_date, created_by_id, ...updateData } = form;
+      await base44.entities.Estimate.update(id, updateData);
+      setEstimate({ ...estimate, ...form });
+      setEditingInfo(false);
+    } catch (err) {
+      console.error("Save failed:", err);
+      alert("Failed to save estimate: " + (err?.message || "Unknown error"));
+    } finally {
+      setSaving(false);
+    }
   }
 
   async function ensureJobFromEstimate() {
