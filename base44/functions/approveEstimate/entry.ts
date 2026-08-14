@@ -3,17 +3,24 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
+    const user = await base44.auth.me();
+    if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+
     const { estimate_id, customer_id } = await req.json();
 
     if (!estimate_id || !customer_id) {
       return Response.json({ error: 'estimate_id and customer_id required' }, { status: 400 });
     }
 
-    // Verify customer owns this estimate
+    // Verify caller has access to the company that owns this estimate
     const estimates = await base44.asServiceRole.entities.Estimate.filter({ id: estimate_id });
     const estimate = estimates[0];
     if (!estimate || estimate.customer_id !== customer_id) {
       return Response.json({ error: 'Unauthorized' }, { status: 403 });
+    }
+    const isAdmin = user.role === 'admin' || user.role === 'super_admin';
+    if (!isAdmin && user.company_id !== estimate.company_id) {
+      return Response.json({ error: 'Forbidden — no access to this company' }, { status: 403 });
     }
 
     // Only allow action on pending estimates

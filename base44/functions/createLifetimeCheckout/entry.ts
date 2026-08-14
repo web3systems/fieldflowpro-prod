@@ -60,27 +60,10 @@ Deno.serve(async (req) => {
       allow_promotion_codes: true,
     });
 
-    // Upsert subscription record as pending lifetime
-    if (resolvedCompanyId) {
-      const existing = await base44.asServiceRole.entities.Subscription.filter({ company_id: resolvedCompanyId });
-      if (existing[0]) {
-        await base44.asServiceRole.entities.Subscription.update(existing[0].id, {
-          plan: 'lifetime',
-          stripe_customer_id: customerId,
-          owner_email,
-          owner_name: owner_name || '',
-        });
-      } else {
-        await base44.asServiceRole.entities.Subscription.create({
-          company_id: resolvedCompanyId,
-          plan: 'lifetime',
-          status: 'active',
-          stripe_customer_id: customerId,
-          owner_email,
-          owner_name: owner_name || '',
-        });
-      }
-    }
+    // NOTE: Subscription activation is deferred to the Stripe webhook
+    // (checkout.session.completed) — never grant lifetime access before
+    // payment is confirmed. The checkout session metadata carries the
+    // company_id and plan so the webhook can upsert the subscription safely.
 
     console.log(`Lifetime checkout created for ${owner_email}`);
     return Response.json({ url: session.url });

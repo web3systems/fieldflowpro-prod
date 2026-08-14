@@ -40,7 +40,10 @@ Deno.serve(async (req) => {
 
     const finalPassword = password || generatePassword();
     const fullName = `${first_name} ${last_name}`;
-    const platformRole = assignments.some(a => a.role === 'admin') ? 'admin' : 'user';
+    // Only existing platform admins can grant the platform admin role.
+    // Company-level assignment roles (owner/manager/etc.) must NOT escalate
+    // the invitee's platform-wide User.role.
+    const platformRole = (isAdmin && assignments.some(a => a.role === 'admin')) ? 'admin' : 'user';
 
     // 1. Register the user directly — no platform verification email is sent.
     //    This skips the separate "Accept Invitation" email so the employee only
