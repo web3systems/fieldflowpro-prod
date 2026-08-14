@@ -150,54 +150,59 @@
     "company_id"
   ],
   "rls": {
-    "create": {
-      " $or": [
-        {
-          "data.company_id": "{{user.company_id}}"
-        },
+    "read": {
+      "$or": [
         {
           "user_condition": {
             "role": "admin"
           }
-        }
-      ]
-    },
-    "read": {
-      " $or": [
+        },
         {
-          "data.company_id": "{{user.company_id}}"
+          "data.company_id": "{{user.data.company_id}}"
         },
         {
           "data.portal_user_id": "{{user.id}}"
-        },
+        }
+      ]
+    },
+    "create": {
+      "$or": [
         {
           "user_condition": {
             "role": "admin"
           }
+        },
+        {
+          "user_condition": {
+            "role": "service_role"
+          }
+        },
+        {
+          "data.company_id": "{{user.data.company_id}}"
         }
       ]
     },
     "update": {
-      " $or": [
-        {
-          "data.company_id": "{{user.company_id}}"
-        },
+      "$or": [
         {
           "user_condition": {
             "role": "admin"
           }
+        },
+        {
+          "data.company_id": "{{user.data.company_id}}"
         }
       ]
     },
     "delete": {
-      " $or": [
-        {
-          "data.company_id": "{{user.company_id}}"
-        },
+      "$or": [
         {
           "user_condition": {
             "role": "admin"
           }
+        },
+        {
+          "data.company_id": "{{user.data.company_id}}"
         }
       ]
     }
