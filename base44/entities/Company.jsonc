@@ -189,32 +189,37 @@
     "name"
   ],
   "rls": {
+    "read": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "id": "{{user.data.company_id}}"
+        }
+      ]
+    },
     "create": {
       "user_condition": {
         "role": "admin"
       }
     },
-    "read": {
-      " $or": [
-        {
-          "id": "{{user.company_id}}"
-        },
-        {
-          "user_condition": {
-            "role": "admin"
-          }
-        }
-      ]
-    },
     "update": {
-      " $or": [
-        {
-          "id": "{{user.company_id}}"
-        },
+      "$or": [
         {
           "user_condition": {
             "role": "admin"
           }
+        },
+        {
+          "user_condition": {
+            "role": "service_role"
+          }
+        },
+        {
+          "id": "{{user.data.company_id}}"
         }
       ]
     },
