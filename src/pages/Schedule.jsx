@@ -142,7 +142,11 @@ export default function Schedule() {
     );
   }, [jobs, filterTech]);
 
-  const CALENDAR_JOB_STATUSES = new Set(["scheduled", "in_progress", "completed"]);
+  // Jobs are shown on the calendar based on whether they have a scheduled date,
+  // NOT based on their status. Only cancelled and archived jobs are hidden.
+  // This prevents the recurring bug where jobs with status "new" but a valid
+  // scheduled_start date were invisible on the calendar.
+  const CALENDAR_HIDDEN_STATUSES = new Set(["cancelled", "archived"]);
 
   const tasksByDate = useMemo(() => {
     const map = {};
@@ -207,8 +211,9 @@ export default function Schedule() {
 
       const hasAppointments = (j.appointments || []).length > 0;
 
-      // Legacy scheduled_start: only show if no appointments and status is calendar-eligible
-      if (!hasAppointments && j.scheduled_start && CALENDAR_JOB_STATUSES.has(j.status)) {
+      // Show any job that has a scheduled_start date, unless it's cancelled/archived.
+      // Status determines the event color, not whether it appears.
+      if (!hasAppointments && j.scheduled_start && !CALENDAR_HIDDEN_STATUSES.has(j.status)) {
         result.push({
           id: j.id,
           title: customerName ? `${j.title} · ${customerName}` : j.title,
@@ -611,7 +616,7 @@ async function convertBookingToJob(booking) {
         <div className="flex gap-4 flex-wrap mb-2 flex-shrink-0">
           {calendarType === "customers" ? (
             <>
-              {STATUS_OPTIONS.filter(s => CALENDAR_JOB_STATUSES.has(s.value)).map(s => (
+              {STATUS_OPTIONS.filter(s => !CALENDAR_HIDDEN_STATUSES.has(s.value)).map(s => (
                 <span key={s.value} className="flex items-center gap-1.5 text-xs text-slate-500">
                   <span className="w-2.5 h-2.5 rounded-sm flex-shrink-0" style={{ backgroundColor: s.color }} />
                   {s.label}
