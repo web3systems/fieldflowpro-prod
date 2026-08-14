@@ -10,6 +10,10 @@
         "customer"
       ],
       "default": "user"
+    },
+    "company_id": {
+      "type": "string",
+      "description": "The user's currently active company ID, used for RLS scoping. Set by the app when the user switches companies via base44.auth.updateMe()."
     }
   }
 }
