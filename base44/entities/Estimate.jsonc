@@ -159,61 +159,54 @@
     "title"
   ],
   "rls": {
-    "read": {
-      "$or": [
+    "create": {
+      " $or": [
+        {
+          "data.company_id": "{{user.company_id}}"
+        },
         {
           "user_condition": {
             "role": "admin"
           }
-        },
-        {
-          "data.company_id": "{{user.data.company_id}}"
         }
       ]
     },
-    "create": {
-      "$or": [
+    "read": {
+      " $or": [
+        {
+          "data.company_id": "{{user.company_id}}"
+        },
+        {
+          "data.customer_id": "{{user.customer_id}}"
+        },
         {
           "user_condition": {
             "role": "admin"
           }
-        },
-        {
-          "user_condition": {
-            "role": "service_role"
-          }
-        },
-        {
-          "data.company_id": "{{user.data.company_id}}"
         }
       ]
     },
     "update": {
-      "$or": [
+      " $or": [
+        {
+          "data.company_id": "{{user.company_id}}"
+        },
         {
           "user_condition": {
             "role": "admin"
           }
-        },
-        {
-          "user_condition": {
-            "role": "service_role"
-          }
-        },
-        {
-          "data.company_id": "{{user.data.company_id}}"
         }
       ]
     },
     "delete": {
-      "$or": [
+      " $or": [
+        {
+          "data.company_id": "{{user.company_id}}"
+        },
         {
           "user_condition": {
             "role": "admin"
           }
-        },
-        {
-          "data.company_id": "{{user.data.company_id}}"
         }
       ]
     }
