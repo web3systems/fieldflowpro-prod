@@ -42,6 +42,7 @@ import Documentation from './pages/Documentation';
 import Articles from './pages/Articles';
 import ArticleDetail from './pages/ArticleDetail';
 import AdminArticles from './pages/AdminArticles';
+import EstimatorConfig from './pages/EstimatorConfig';
 import AuditLog from './pages/AuditLog';
 import Tasks from './pages/Tasks';
 import Support from './pages/Support';
@@ -181,6 +182,7 @@ function App() {
               <Route path="/admin/reports" element={<AdminConsoleLayout><Reports /></AdminConsoleLayout>} />
               <Route path="/admin/audit-log" element={<AdminConsoleLayout><AuditLog /></AdminConsoleLayout>} />
               <Route path="/admin/articles" element={<AdminConsoleLayout><AdminArticles /></AdminConsoleLayout>} />
+              <Route path="/admin/estimator-config" element={<AdminConsoleLayout><EstimatorConfig /></AdminConsoleLayout>} />
             </Route>
 
             <Route path="*" element={<PageNotFound />} />

@@ -1,0 +1,73 @@
+{
+  "name": "EstimatorConfig",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Label for this config record (e.g. 'default')"
+    },
+    "labor_rate": {
+      "type": "number",
+      "default": 85,
+      "description": "Company labor bill rate ($/hour) used across all estimate templates"
+    },
+    "material_markup_pct": {
+      "type": "number",
+      "default": 30,
+      "description": "Material markup percentage over raw cost applied to all material lines"
+    },
+    "job_type_costs": {
+      "type": "object",
+      "description": "Per-job-type cost overrides. Keyed by job type id (fence, flooring, roofing, ...). Each value is an object of { paramId: numericValue } overriding the defaults declared in estimateJobTypes.js.",
+      "properties": {}
+    }
+  },
+  "required": [
+    "name"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "super_admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "manager"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "super_admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

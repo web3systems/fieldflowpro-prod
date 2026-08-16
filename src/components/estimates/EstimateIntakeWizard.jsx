@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { JOB_TYPES, getJobType, calcTotals } from "@/lib/estimateJobTypes";
 import {
@@ -21,6 +21,13 @@ export default function EstimateIntakeWizard({ onApply, onSkip }) {
   const [selectedId, setSelectedId] = useState(null);
   const [answers, setAnswers] = useState({});
   const [search, setSearch] = useState("");
+  const [estimatorConfig, setEstimatorConfig] = useState(null);
+
+  useEffect(() => {
+    base44.entities.EstimatorConfig.list()
+      .then(recs => setEstimatorConfig(recs[0] || null))
+      .catch(() => setEstimatorConfig(null));
+  }, []);
 
   const selected = getJobType(selectedId);
 
@@ -39,7 +46,7 @@ export default function EstimateIntakeWizard({ onApply, onSkip }) {
 
   async function startEstimate() {
     if (!selected) return;
-    const template = selected.build(answers);
+    const template = selected.build(answers, estimatorConfig);
     setReviewing(true);
     setReviewResult(null);
     try {
@@ -190,7 +197,7 @@ export default function EstimateIntakeWizard({ onApply, onSkip }) {
 
             {/* Preview of generated template */}
             {Object.keys(answers).length > 0 && (() => {
-              const preview = selected.build(answers);
+              const preview = selected.build(answers, estimatorConfig);
               const totals = calcTotals(preview.line_items);
               return (
                 <div className="bg-slate-50 border border-slate-200 rounded-lg p-3 space-y-2">
