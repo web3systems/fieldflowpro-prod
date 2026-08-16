@@ -807,6 +807,12 @@ export default function EstimateDetail() {
             service_type: form.title,
           }}
           companyIndustry={activeCompany?.industry}
+          onApplyFix={(correctedItems) => {
+            const opt = getOption();
+            if (!opt) return;
+            const items = correctedItems.map(i => ({ ...i, service_id: null }));
+            recalcOption(items, opt);
+          }}
         />
       )}
     </div>

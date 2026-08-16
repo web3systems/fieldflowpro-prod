@@ -438,7 +438,17 @@ export default function NewEstimate() {
           </div>
 
           {/* AI Estimate Reviewer — watches the form and pops up suggestions */}
-          <EstimateAISuggestion form={form} companyIndustry={activeCompany?.industry} />
+          <EstimateAISuggestion
+            form={form}
+            companyIndustry={activeCompany?.industry}
+            onApplyFix={(correctedItems) => {
+              const items = correctedItems.map(i => ({ ...i, service_id: null }));
+              const subtotal = Number(items.reduce((s, i) => s + (i.total || 0), 0).toFixed(2));
+              const taxable = Number(items.filter(i => i.category === "material").reduce((s, i) => s + (i.total || 0), 0).toFixed(2));
+              const tax_amount = Number((taxable * ((form.tax_rate || 0) / 100)).toFixed(2));
+              setForm({ ...form, line_items: items, subtotal, tax_amount, total: Number((subtotal + tax_amount - (form.discount || 0)).toFixed(2)) });
+            }}
+          />
 
           {/* Bottom Save */}
           <div className="flex gap-3 pb-8">

@@ -11,9 +11,10 @@ import { Sparkles, X, AlertTriangle, Lightbulb, Loader2, TrendingDown, ListCheck
  *   form          — the estimate form object (title, line_items, total, scope_of_work, service_type)
  *   companyIndustry — optional trade/industry hint
  */
-export default function EstimateAISuggestion({ form, companyIndustry }) {
+export default function EstimateAISuggestion({ form, companyIndustry, onApplyFix }) {
   const [suggestion, setSuggestion] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [fixing, setFixing] = useState(false);
   const [dismissed, setDismissed] = useState(false);
   const [lastSignature, setLastSignature] = useState("");
   const debounceRef = useRef(null);
@@ -77,6 +78,38 @@ export default function EstimateAISuggestion({ form, companyIndustry }) {
     }
   }
 
+  async function handleFix() {
+    if (!onApplyFix || fixing) return;
+    setFixing(true);
+    try {
+      const res = await base44.functions.invoke("analyzeEstimateBid", {
+        title: form.title,
+        line_items: form.line_items,
+        total: form.total,
+        scope_of_work: form.scope_of_work,
+        service_type: form.service_type || form.title,
+        company_industry: companyIndustry,
+        apply_corrections: true,
+      });
+      const data = res?.data || res;
+      if (data?.corrected_line_items?.length) {
+        const corrected = data.corrected_line_items.map(li => ({
+          description: li.description,
+          category: li.category,
+          quantity: Number(li.quantity) || 0,
+          unit_price: Number(li.unit_price) || 0,
+          total: Number(li.total) || 0,
+        }));
+        onApplyFix(corrected);
+        setDismissed(true);
+      }
+    } catch (e) {
+      // silent
+    } finally {
+      setFixing(false);
+    }
+  }
+
   if (dismissed) return null;
 
   // Loading indicator (subtle, bottom-right)
@@ -137,14 +170,26 @@ export default function EstimateAISuggestion({ form, companyIndustry }) {
       </div>
 
       {/* Footer */}
-      <div className="px-4 py-2.5 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
+      <div className="px-4 py-2.5 bg-slate-50 border-t border-slate-100 flex items-center justify-between gap-2">
         <span className="text-[11px] text-slate-400 flex items-center gap-1">
           <AlertTriangle className="w-3 h-3" />
           AI guidance — verify before acting
         </span>
-        <button onClick={() => setDismissed(true)} className="text-xs font-medium text-slate-500 hover:text-slate-700">
-          Dismiss
-        </button>
+        <div className="flex items-center gap-2">
+          <button onClick={() => setDismissed(true)} className="text-xs font-medium text-slate-500 hover:text-slate-700">
+            Dismiss
+          </button>
+          {onApplyFix && (
+            <button
+              onClick={handleFix}
+              disabled={fixing}
+              className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-lg bg-amber-500 text-white hover:bg-amber-600 disabled:opacity-60"
+            >
+              {fixing ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
+              {fixing ? "Fixing…" : "Fix"}
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );
