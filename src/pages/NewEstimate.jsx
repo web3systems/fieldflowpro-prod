@@ -15,6 +15,8 @@ import LineItemRow from "@/components/services/LineItemRow";
 import JobProfitSummary from "@/components/jobs/JobProfitSummary";
 import CustomerPicker from "@/components/customers/CustomerPicker";
 import EstimateAISuggestion from "@/components/estimates/EstimateAISuggestion";
+import EstimateIntakeWizard from "@/components/estimates/EstimateIntakeWizard";
+import { calcTotals } from "@/lib/estimateJobTypes";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 
@@ -39,6 +41,22 @@ export default function NewEstimate() {
   const [newCustomer, setNewCustomer] = useState({ first_name: "", last_name: "", phone: "", email: "" });
   const [savingCustomer, setSavingCustomer] = useState(false);
   const [marginRule, setMarginRule] = useState(null);
+  const [intakeDone, setIntakeDone] = useState(false);
+
+  function applyIntakeTemplate(template) {
+    const totals = calcTotals(template.line_items, activeCompany?.default_tax_rate || 0);
+    setForm(f => ({
+      ...f,
+      title: template.title,
+      scope_of_work: template.scope_of_work,
+      line_items: template.line_items,
+      checklist: template.checklist || [],
+      subtotal: totals.subtotal,
+      tax_amount: totals.tax_amount,
+      total: totals.total,
+    }));
+    setIntakeDone(true);
+  }
 
   useEffect(() => {
     if (!activeCompany) return;
@@ -113,6 +131,15 @@ export default function NewEstimate() {
   const selectedCustomer = customers.find(c => c.id === form.customer_id);
   const address = selectedCustomer ? [selectedCustomer.address, selectedCustomer.city, selectedCustomer.state, selectedCustomer.zip].filter(Boolean).join(", ") : "";
   const mapsQuery = encodeURIComponent(address);
+
+  if (!intakeDone) {
+    return (
+      <EstimateIntakeWizard
+        onApply={applyIntakeTemplate}
+        onSkip={() => setIntakeDone(true)}
+      />
+    );
+  }
 
   return (
     <div className="min-h-full bg-slate-50 flex flex-col">
