@@ -107,8 +107,8 @@ Deno.serve(async (req) => {
         const MB_API_KEY = Deno.env.get("MESSAGEBIRD_API_KEY");
         const MB_ORIGINATOR = Deno.env.get("MESSAGEBIRD_ORIGINATOR");
 
-        if (!MB_API_KEY || !MB_ORIGINATOR) {
-          console.error('[sendReviewRequest] MessageBird not configured');
+        if (!MB_API_KEY) {
+          console.error('[sendReviewRequest] Bird not configured');
           results.sms = { error: 'SMS not configured' };
         } else {
           const smsBody = `Hi ${firstName}! Thanks for choosing ${companyName}${job ? ` for "${jobTitle}"` : ''}. We'd love your feedback!${reviewUrl ? ' ' + reviewUrl : ' Please let us know how we did.'}`;
@@ -116,18 +116,20 @@ Deno.serve(async (req) => {
           let toPhone = String(customer.phone).replace(/\D/g, '');
           if (toPhone.length === 10) toPhone = '+1' + toPhone;
           else if (!String(customer.phone).trim().startsWith('+')) toPhone = '+' + toPhone;
-          const resp = await fetch('https://rest.messagebird.com/messages', {
+          const smsPayload: Record<string, unknown> = { to: toPhone, text: smsBody, category: 'marketing' };
+          if (MB_ORIGINATOR) smsPayload.from = MB_ORIGINATOR;
+          const resp = await fetch('https://us1.platform.bird.com/v1/sms/messages', {
             method: 'POST',
             headers: {
-              'Authorization': `AccessKey ${MB_API_KEY}`,
+              'Authorization': `Bearer ${MB_API_KEY}`,
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ recipients: [toPhone], originator: MB_ORIGINATOR, body: smsBody }),
+            body: JSON.stringify(smsPayload),
           });
-          const smsResult = await resp.json();
+          const smsResult = await resp.json().catch(() => ({}));
           if (!resp.ok) {
             console.error('[sendReviewRequest] SMS error:', JSON.stringify(smsResult));
-            results.sms = { error: smsResult.errors?.[0]?.description || 'SMS failed' };
+            results.sms = { error: smsResult.error?.message || 'SMS failed' };
           } else {
             results.sms = { sent: true };
             console.log(`[sendReviewRequest] SMS sent to ${customer.phone}`);

@@ -7,22 +7,27 @@ Deno.serve(async (req) => {
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
     const apiKey = Deno.env.get('MESSAGEBIRD_API_KEY');
-    const originator = Deno.env.get('MESSAGEBIRD_ORIGINATOR');
-    if (!apiKey || !originator) {
-      return Response.json({ error: 'MessageBird credentials not configured' }, { status: 500 });
-    }
+    if (!apiKey) return Response.json({ error: 'Bird API key not configured' }, { status: 500 });
 
-    const resp = await fetch('https://rest.messagebird.com/messages', {
+    const originator = Deno.env.get('MESSAGEBIRD_ORIGINATOR');
+    const payload: Record<string, unknown> = {
+      to: '+18023995955',
+      text: 'FieldFlow Pro Bird SMS test — system online.',
+      category: 'marketing',
+    };
+    if (originator) payload.from = originator;
+
+    const resp = await fetch('https://us1.platform.bird.com/v1/sms/messages', {
       method: 'POST',
-      headers: { 'Authorization': `AccessKey ${apiKey}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ recipients: ['+18023995955'], originator, body: 'FieldFlow Pro MessageBird test — system online.' }),
+      headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
     });
-    const data = await resp.json();
+    const data = await resp.json().catch(() => ({}));
     if (!resp.ok) {
-      console.error('MessageBird test error:', JSON.stringify(data));
-      return Response.json({ error: 'MessageBird failed', detail: data }, { status: 500 });
+      console.error('Bird test error:', JSON.stringify(data));
+      return Response.json({ error: 'Bird send failed', detail: data }, { status: 500 });
     }
-    return Response.json({ success: true, id: data.id });
+    return Response.json({ success: true, id: data.id, status: data.status });
   } catch (err) {
     console.error('sendTestSms error:', err.message);
     return Response.json({ error: err.message }, { status: 500 });

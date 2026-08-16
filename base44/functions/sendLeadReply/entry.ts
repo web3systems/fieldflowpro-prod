@@ -64,8 +64,8 @@ Deno.serve(async (req) => {
 
       const apiKey = Deno.env.get('MESSAGEBIRD_API_KEY');
       const originator = Deno.env.get('MESSAGEBIRD_ORIGINATOR');
-      if (!apiKey || !originator) {
-        console.error('[sendLeadReply] MessageBird credentials not configured');
+      if (!apiKey) {
+        console.error('[sendLeadReply] Bird API key not configured');
         return Response.json({ error: 'SMS not configured' }, { status: 500 });
       }
 
@@ -73,15 +73,18 @@ Deno.serve(async (req) => {
       if (toPhone.length === 10) toPhone = '+1' + toPhone;
       else if (!lead.phone.trim().startsWith('+')) toPhone = '+' + toPhone;
 
-      const sms = await fetch('https://rest.messagebird.com/messages', {
+      const smsPayload: Record<string, unknown> = { to: toPhone, text: message, category: 'marketing' };
+      if (originator) smsPayload.from = originator;
+
+      const sms = await fetch('https://us1.platform.bird.com/v1/sms/messages', {
         method: 'POST',
-        headers: { 'Authorization': `AccessKey ${apiKey}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ recipients: [toPhone], originator, body: message }),
+        headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify(smsPayload),
       });
-      const smsData = await sms.json();
+      const smsData = await sms.json().catch(() => ({}));
       if (!sms.ok) {
-        console.error('[sendLeadReply] MessageBird error:', JSON.stringify(smsData));
-        return Response.json({ error: smsData.errors?.[0]?.description || 'SMS failed' }, { status: 500 });
+        console.error('[sendLeadReply] Bird error:', JSON.stringify(smsData));
+        return Response.json({ error: smsData.error?.message || 'SMS failed' }, { status: 500 });
       }
     } else {
       if (!lead.email) return Response.json({ error: 'Lead has no email address' }, { status: 400 });
