@@ -106,7 +106,7 @@ Deno.serve(async (req) => {
       } else {
         const TWILIO_ACCOUNT_SID = Deno.env.get("TWILIO_ACCOUNT_SID");
         const TWILIO_AUTH_TOKEN = Deno.env.get("TWILIO_AUTH_TOKEN");
-        const TWILIO_FROM_NUMBER = Deno.env.get("TWILIO_FROM_NUMBER");
+        const TWILIO_FROM_NUMBER = Deno.env.get("TWILIO_PHONE_NUMBER");
 
         if (!TWILIO_ACCOUNT_SID || !TWILIO_AUTH_TOKEN || !TWILIO_FROM_NUMBER) {
           console.error('[sendReviewRequest] Twilio not configured');
@@ -114,13 +114,17 @@ Deno.serve(async (req) => {
         } else {
           const smsBody = `Hi ${firstName}! Thanks for choosing ${companyName}${job ? ` for "${jobTitle}"` : ''}. We'd love your feedback!${reviewUrl ? ' ' + reviewUrl : ' Please let us know how we did.'}`;
           const twilioUrl = `https://api.twilio.com/2010-04-01/Accounts/${TWILIO_ACCOUNT_SID}/Messages.json`;
+          // Normalize phone to E.164
+          let toPhone = String(customer.phone).replace(/\D/g, '');
+          if (toPhone.length === 10) toPhone = '+1' + toPhone;
+          else if (!String(customer.phone).trim().startsWith('+')) toPhone = '+' + toPhone;
           const resp = await fetch(twilioUrl, {
             method: 'POST',
             headers: {
               'Authorization': 'Basic ' + btoa(`${TWILIO_ACCOUNT_SID}:${TWILIO_AUTH_TOKEN}`),
               'Content-Type': 'application/x-www-form-urlencoded',
             },
-            body: new URLSearchParams({ To: customer.phone, From: TWILIO_FROM_NUMBER, Body: smsBody }).toString(),
+            body: new URLSearchParams({ To: toPhone, From: TWILIO_FROM_NUMBER, Body: smsBody }).toString(),
           });
           const smsResult = await resp.json();
           if (smsResult.error_code) {
