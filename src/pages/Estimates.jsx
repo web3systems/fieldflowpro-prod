@@ -62,8 +62,8 @@ export default function Estimates() {
   const [showNewCustomer, setShowNewCustomer] = useState(false);
   const [newCustomer, setNewCustomer] = useState({ first_name: "", last_name: "", phone: "", email: "" });
   const [savingCustomer, setSavingCustomer] = useState(false);
-  const [sortField, setSortField] = useState("");
-  const [sortDir, setSortDir] = useState("asc");
+  const [sortField, setSortField] = useState("created_date");
+  const [sortDir, setSortDir] = useState("desc");
 
   useEffect(() => {
     if (activeCompany) loadData();
