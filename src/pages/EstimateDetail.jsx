@@ -23,6 +23,7 @@ import DraggableLineItemsSection from "@/components/services/DraggableLineItemsS
 import { downloadEstimatePdf } from "../components/documents/generatePdf";
 import InvoiceEstimatePreview from "@/components/documents/InvoiceEstimatePreview";
 import MarginRulesStrip from "@/components/estimates/MarginRulesStrip";
+import EstimateAISuggestion from "@/components/estimates/EstimateAISuggestion";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 
@@ -794,6 +795,20 @@ export default function EstimateDetail() {
           </div>
         </div>
       </div>
+
+      {/* AI Estimate Reviewer — watches the active option and pops up suggestions */}
+      {form && getOption() && (
+        <EstimateAISuggestion
+          form={{
+            title: form.title,
+            line_items: getOption().line_items,
+            total: getOption().total,
+            scope_of_work: form.scope_of_work,
+            service_type: form.title,
+          }}
+          companyIndustry={activeCompany?.industry}
+        />
+      )}
     </div>
   );
 }

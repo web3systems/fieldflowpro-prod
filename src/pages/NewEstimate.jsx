@@ -14,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import LineItemRow from "@/components/services/LineItemRow";
 import JobProfitSummary from "@/components/jobs/JobProfitSummary";
 import CustomerPicker from "@/components/customers/CustomerPicker";
+import EstimateAISuggestion from "@/components/estimates/EstimateAISuggestion";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 
@@ -408,6 +409,9 @@ export default function NewEstimate() {
               </div>
             )}
           </div>
+
+          {/* AI Estimate Reviewer — watches the form and pops up suggestions */}
+          <EstimateAISuggestion form={form} companyIndustry={activeCompany?.industry} />
 
           {/* Bottom Save */}
           <div className="flex gap-3 pb-8">
