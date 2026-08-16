@@ -141,12 +141,12 @@ export default function CompanyBillingTab({ company }) {
             {trialExpired ? 'Subscribe to Continue' : 'Choose a Plan'}
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {['starter', 'professional', 'enterprise'].map(planKey => {
+            {['starter', 'growth', 'pro'].map(planKey => {
               const plan = PLANS[planKey];
               const isCurrent = currentPlan === planKey && isActive;
               return (
-                <Card key={planKey} className={`relative ${planKey === 'professional' ? 'border-blue-400 border-2' : ''} ${isCurrent ? 'border-green-400 border-2' : ''}`}>
-                  {planKey === 'professional' && (
+                <Card key={planKey} className={`relative ${planKey === 'growth' ? 'border-blue-400 border-2' : ''} ${isCurrent ? 'border-green-400 border-2' : ''}`}>
+                  {planKey === 'growth' && (
                     <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full">
                       Popular
                     </div>
@@ -173,8 +173,8 @@ export default function CompanyBillingTab({ company }) {
                       <Button
                         onClick={() => handleChoosePlan(planKey)}
                         disabled={!!checkoutLoading}
-                        className={`w-full ${planKey === 'professional' ? 'bg-blue-600 hover:bg-blue-700' : ''}`}
-                        variant={planKey === 'professional' ? 'default' : 'outline'}
+                        className={`w-full ${planKey === 'growth' ? 'bg-blue-600 hover:bg-blue-700' : ''}`}
+                        variant={planKey === 'growth' ? 'default' : 'outline'}
                       >
                         {checkoutLoading === planKey ? 'Loading...' : 'Subscribe'}
                       </Button>
