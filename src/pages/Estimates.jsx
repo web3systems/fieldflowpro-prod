@@ -352,6 +352,9 @@ export default function Estimates() {
                         <span className="text-xs text-slate-400">Valid until {format(new Date(est.valid_until), "MMM d, yyyy")}</span>
                       )}
                     </div>
+                    {est.created_date && (
+                      <span className="text-xs text-slate-400">Created {format(new Date(est.created_date), "MMM d, yyyy")}</span>
+                    )}
                   </div>
                   <div className="flex items-center gap-3 flex-shrink-0">
                     <span className="text-base font-bold text-slate-800">${(est.total || 0).toLocaleString()}</span>
