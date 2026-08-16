@@ -62,10 +62,11 @@ Deno.serve(async (req) => {
     if (contact_method === 'sms') {
       if (!lead.phone) return Response.json({ error: 'Lead has no phone number' }, { status: 400 });
 
-      const apiKey = Deno.env.get('MESSAGEBIRD_API_KEY');
-      const originator = Deno.env.get('MESSAGEBIRD_ORIGINATOR');
-      if (!apiKey) {
-        console.error('[sendLeadReply] Bird API key not configured');
+      const accountSid = Deno.env.get('TWILIO_ACCOUNT_SID');
+      const authToken = Deno.env.get('TWILIO_AUTH_TOKEN');
+      const fromNumber = Deno.env.get('TWILIO_FROM_NUMBER');
+      if (!accountSid || !authToken || !fromNumber) {
+        console.error('[sendLeadReply] Twilio not configured');
         return Response.json({ error: 'SMS not configured' }, { status: 500 });
       }
 
@@ -73,18 +74,23 @@ Deno.serve(async (req) => {
       if (toPhone.length === 10) toPhone = '+1' + toPhone;
       else if (!lead.phone.trim().startsWith('+')) toPhone = '+' + toPhone;
 
-      const smsPayload: Record<string, unknown> = { to: toPhone, text: message, category: 'marketing' };
-      if (originator) smsPayload.from = originator;
+      const smsParams = new URLSearchParams();
+      smsParams.append('From', fromNumber);
+      smsParams.append('To', toPhone);
+      smsParams.append('Body', message);
 
-      const sms = await fetch('https://us1.platform.bird.com/v1/sms/messages', {
+      const sms = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`, {
         method: 'POST',
-        headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify(smsPayload),
+        headers: {
+          'Authorization': 'Basic ' + btoa(`${accountSid}:${authToken}`),
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: smsParams.toString(),
       });
       const smsData = await sms.json().catch(() => ({}));
       if (!sms.ok) {
-        console.error('[sendLeadReply] Bird error:', JSON.stringify(smsData));
-        return Response.json({ error: smsData.error?.message || 'SMS failed' }, { status: 500 });
+        console.error('[sendLeadReply] Twilio error:', JSON.stringify(smsData));
+        return Response.json({ error: smsData.message || 'SMS failed' }, { status: 500 });
       }
     } else {
       if (!lead.email) return Response.json({ error: 'Lead has no email address' }, { status: 400 });

@@ -6,28 +6,32 @@ Deno.serve(async (req) => {
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const apiKey = Deno.env.get('MESSAGEBIRD_API_KEY');
-    if (!apiKey) return Response.json({ error: 'Bird API key not configured' }, { status: 500 });
+    const accountSid = Deno.env.get('TWILIO_ACCOUNT_SID');
+    const authToken = Deno.env.get('TWILIO_AUTH_TOKEN');
+    const fromNumber = Deno.env.get('TWILIO_FROM_NUMBER');
+    if (!accountSid || !authToken || !fromNumber) {
+      return Response.json({ error: 'Twilio not configured' }, { status: 500 });
+    }
 
-    const originator = Deno.env.get('MESSAGEBIRD_ORIGINATOR');
-    const payload: Record<string, unknown> = {
-      to: '+18023995955',
-      text: 'FieldFlow Pro Bird SMS test — system online.',
-      category: 'marketing',
-    };
-    if (originator) payload.from = originator;
+    const params = new URLSearchParams();
+    params.append('From', fromNumber);
+    params.append('To', '+18023995955');
+    params.append('Body', 'FieldFlow Pro Twilio SMS test — system online.');
 
-    const resp = await fetch('https://us1.platform.bird.com/v1/sms/messages', {
+    const resp = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`, {
       method: 'POST',
-      headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
+      headers: {
+        'Authorization': 'Basic ' + btoa(`${accountSid}:${authToken}`),
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: params.toString(),
     });
     const data = await resp.json().catch(() => ({}));
     if (!resp.ok) {
-      console.error('Bird test error:', JSON.stringify(data));
-      return Response.json({ error: 'Bird send failed', detail: data }, { status: 500 });
+      console.error('Twilio test error:', JSON.stringify(data));
+      return Response.json({ error: 'Twilio send failed', detail: data }, { status: 500 });
     }
-    return Response.json({ success: true, id: data.id, status: data.status });
+    return Response.json({ success: true, id: data.sid, status: data.status });
   } catch (err) {
     console.error('sendTestSms error:', err.message);
     return Response.json({ error: err.message }, { status: 500 });

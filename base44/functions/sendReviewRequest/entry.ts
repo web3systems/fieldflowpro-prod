@@ -104,11 +104,12 @@ Deno.serve(async (req) => {
         console.warn('[sendReviewRequest] No phone for customer, skipping SMS');
         results.sms = { error: 'No phone on file' };
       } else {
-        const MB_API_KEY = Deno.env.get("MESSAGEBIRD_API_KEY");
-        const MB_ORIGINATOR = Deno.env.get("MESSAGEBIRD_ORIGINATOR");
+        const TW_ACCOUNT_SID = Deno.env.get("TWILIO_ACCOUNT_SID");
+        const TW_AUTH_TOKEN = Deno.env.get("TWILIO_AUTH_TOKEN");
+        const TW_FROM_NUMBER = Deno.env.get("TWILIO_FROM_NUMBER");
 
-        if (!MB_API_KEY) {
-          console.error('[sendReviewRequest] Bird not configured');
+        if (!TW_ACCOUNT_SID || !TW_AUTH_TOKEN || !TW_FROM_NUMBER) {
+          console.error('[sendReviewRequest] Twilio not configured');
           results.sms = { error: 'SMS not configured' };
         } else {
           const smsBody = `Hi ${firstName}! Thanks for choosing ${companyName}${job ? ` for "${jobTitle}"` : ''}. We'd love your feedback!${reviewUrl ? ' ' + reviewUrl : ' Please let us know how we did.'}`;
@@ -116,20 +117,22 @@ Deno.serve(async (req) => {
           let toPhone = String(customer.phone).replace(/\D/g, '');
           if (toPhone.length === 10) toPhone = '+1' + toPhone;
           else if (!String(customer.phone).trim().startsWith('+')) toPhone = '+' + toPhone;
-          const smsPayload: Record<string, unknown> = { to: toPhone, text: smsBody, category: 'marketing' };
-          if (MB_ORIGINATOR) smsPayload.from = MB_ORIGINATOR;
-          const resp = await fetch('https://us1.platform.bird.com/v1/sms/messages', {
+          const smsParams = new URLSearchParams();
+          smsParams.append('From', TW_FROM_NUMBER);
+          smsParams.append('To', toPhone);
+          smsParams.append('Body', smsBody);
+          const resp = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${TW_ACCOUNT_SID}/Messages.json`, {
             method: 'POST',
             headers: {
-              'Authorization': `Bearer ${MB_API_KEY}`,
-              'Content-Type': 'application/json',
+              'Authorization': 'Basic ' + btoa(`${TW_ACCOUNT_SID}:${TW_AUTH_TOKEN}`),
+              'Content-Type': 'application/x-www-form-urlencoded',
             },
-            body: JSON.stringify(smsPayload),
+            body: smsParams.toString(),
           });
           const smsResult = await resp.json().catch(() => ({}));
           if (!resp.ok) {
             console.error('[sendReviewRequest] SMS error:', JSON.stringify(smsResult));
-            results.sms = { error: smsResult.error?.message || 'SMS failed' };
+            results.sms = { error: smsResult.message || 'SMS failed' };
           } else {
             results.sms = { sent: true };
             console.log(`[sendReviewRequest] SMS sent to ${customer.phone}`);
