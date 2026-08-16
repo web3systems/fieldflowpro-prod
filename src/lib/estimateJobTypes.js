@@ -54,39 +54,42 @@ export const JOB_TYPES = [
     build(a) {
       const lf = Number(a.linear_ft) || 0;
       const height = Number(a.height_ft) || 6;
-      const posts = Math.max(2, Math.ceil(lf / 8) + 1);
+      const panelWidth = 8;
+      const panels = Math.max(1, Math.ceil(lf / panelWidth));
+      const posts = Math.max(2, panels + 1);
       const isReplace = a.install_type === "Replacement";
       const tearOffHours = isReplace ? lf * 0.1 : 0;
-      const installHours = lf * 0.15 + tearOffHours;
+      // Pre-built panels install faster than stick-building: ~0.08 hr/LF
+      const installHours = lf * 0.08 + tearOffHours;
       const items = [
-        labor(installHours, `Labor — ${a.install_type || "install"} fence (${lf} LF × ${height}ft)`),
+        labor(installHours, `Labor — ${a.install_type || "install"} fence (${lf} LF × ${height}ft, pre-built panels)`),
         material("4x4 pressure-treated posts", posts, 28),
         material("80lb concrete mix (bags)", posts, 7.5),
-        material("2x4 horizontal rails", Math.ceil(lf / 8) * 2, 12),
       ];
-      if (a.fence_type === "Cedar privacy" || a.fence_type === "Stockade") {
-        items.push(material("Cedar pickets", Math.ceil(lf / 0.5), 6.5));
-      } else if (a.fence_type === "Chain-link") {
-        items.push(material("Chain-link fabric roll (per LF)", lf, 4.5));
-        items.push(material("Top rail & tension wire (per LF)", lf, 3.5));
-      } else if (a.fence_type === "Vinyl/PVC") {
-        items.push(material("Vinyl privacy panels (8ft)", Math.ceil(lf / 8), 95));
-      } else if (a.fence_type === "Split rail") {
-        items.push(material("Split-rail posts", posts, 22));
-        items.push(material("Split rails (2x per section)", Math.ceil(lf / 10) * 2, 14));
-      } else {
-        items.push(material("Fence boards/panels", Math.ceil(lf / 8), 60));
-      }
-      items.push(material("Screws / fasteners / hardware (lot)", 1, 45));
+      // Pre-built panel line — one per fence type (panels are 8ft wide)
+      const panelCostByType = {
+        "Cedar privacy": 95,
+        "Stockade": 85,
+        "Chain-link": 75,
+        "Vinyl/PVC": 140,
+        "Split rail": 60,
+        "Other": 80,
+      };
+      const panelCost = panelCostByType[a.fence_type] ?? 80;
+      const panelLabel = a.fence_type === "Split rail"
+        ? `Pre-built split-rail sections (${panelWidth}ft)`
+        : `Pre-built ${a.fence_type || "fence"} panels (${panelWidth}ft × ${height}ft)`;
+      items.push(material(panelLabel, panels, panelCost));
+      items.push(material("Panel hardware / brackets / screws (lot)", 1, 45));
       if (isReplace) items.push(material("Debris haul-away & disposal", 1, 150));
       return {
         title: `${a.fence_type || "Fence"} ${a.install_type || "Install"} — ${lf} LF`,
-        scope_of_work: `<p><strong>${a.fence_type || "Fence"} ${a.install_type || "Install"}</strong></p><p>Install ${lf} linear feet of ${height}ft ${a.fence_type || "fence"} at the property. Includes post setting in concrete, rail and picket/panel installation, hardware, and site cleanup${isReplace ? ". Existing fence to be removed and hauled away first." : "."}</p><p>Exclusions: gate hardware (quoted separately if needed), rock/obstruction excavation, landscape restoration beyond fence line.</p>`,
+        scope_of_work: `<p><strong>${a.fence_type || "Fence"} ${a.install_type || "Install"}</strong></p><p>Install ${lf} linear feet of ${height}ft ${a.fence_type || "fence"} at the property using pre-built ${panelWidth}ft panels. Includes post setting in concrete, panel hanging/attachment, hardware, and site cleanup${isReplace ? ". Existing fence to be removed and hauled away first." : "."}</p><p>Exclusions: gate hardware (quoted separately if needed), rock/obstruction excavation, landscape restoration beyond fence line.</p>`,
         line_items: items,
         checklist: [
           { item: "Verify property lines / utilities (Dig Safe)", completed: false },
           { item: "Set posts plumb in concrete", completed: false },
-          { item: "Install rails and pickets/panels", completed: false },
+          { item: "Hang and secure pre-built panels", completed: false },
           { item: "Cleanup and final walk-through", completed: false },
         ],
       };
