@@ -38,7 +38,7 @@ export default async function(req: Request): Promise<Response> {
 
     let body = {};
     try { body = await req.json(); } catch { /* empty */ }
-    const { title, line_items, total, scope_of_work, service_type, company_industry } = body;
+    const { title, line_items, total, scope_of_work, service_type, company_industry, apply_corrections } = body;
 
     // Need at least a title and some line items to review meaningfully
     if (!title || !Array.isArray(line_items) || line_items.length === 0) {
@@ -62,7 +62,14 @@ Estimate to review:
 Line items:
 ${itemsSummary}
 
-Analyze this estimate. Flag low bids and missing standard tasks for this job type. If everything looks reasonable, return should_alert=false.`;
+Analyze this estimate. Flag low bids and missing standard tasks for this job type. If everything looks reasonable, return should_alert=false.${apply_corrections ? `
+
+CORRECTION MODE: You are also returning a corrected version of the line items. Apply these fixes to the original line_items:
+1. Raise any labor line with unit_price below $85/hr up to $85/hr (recompute its total = quantity × unit_price).
+2. Raise any material line whose unit_price is at/below raw cost to include the 30% markup (recompute total).
+3. Add any missing standard line items you flagged in issues (e.g. posts/concrete, hardware, prep, disposal, sundries). Give each a realistic Chittenden County price with the 30% markup already applied for materials.
+4. Keep the original line items' descriptions and categories intact where possible; only adjust prices or add new lines.
+5. Return the FULL corrected line_items array (originals with fixes + any new lines) in corrected_line_items, each with { description, category, quantity, unit_price, total }.` : ''}`;
 
     const jsonSchema = {
       type: 'object',
@@ -81,7 +88,24 @@ Analyze this estimate. Flag low bids and missing standard tasks for this job typ
             required: ['type', 'message', 'suggestion']
           }
         },
-        summary: { type: 'string' }
+        summary: { type: 'string' },
+        ...(apply_corrections ? {
+          corrected_line_items: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                description: { type: 'string' },
+                category: { type: 'string', enum: ['service', 'material'] },
+                quantity: { type: 'number' },
+                unit_price: { type: 'number' },
+                total: { type: 'number' }
+              },
+              required: ['description', 'category', 'quantity', 'unit_price', 'total']
+            }
+          },
+          corrections_applied: { type: 'string' }
+        } : {})
       },
       required: ['should_alert', 'issues', 'summary']
     };

@@ -1,9 +1,10 @@
 import { useState } from "react";
+import { base44 } from "@/api/base44Client";
 import { JOB_TYPES, getJobType, calcTotals } from "@/lib/estimateJobTypes";
 import {
   Fence, Grid2x2, Home, PaintRoller, Truck, CloudRain,
   DoorClosed, Hammer, Plug, Wrench, Zap, House,
-  ArrowRight, ArrowLeft, Check, Search
+  ArrowRight, ArrowLeft, Check, Search, Loader2, AlertTriangle, Sparkles
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -33,10 +34,48 @@ export default function EstimateIntakeWizard({ onApply, onSkip }) {
     setAnswers(prev => ({ ...prev, [qId]: value }));
   }
 
-  function startEstimate() {
+  const [reviewing, setReviewing] = useState(false);
+  const [reviewResult, setReviewResult] = useState(null);
+
+  async function startEstimate() {
     if (!selected) return;
     const template = selected.build(answers);
-    onApply(template);
+    setReviewing(true);
+    setReviewResult(null);
+    try {
+      const res = await base44.functions.invoke('analyzeEstimateBid', {
+        title: template.title,
+        line_items: template.line_items,
+        total: calcTotals(template.line_items).total,
+        scope_of_work: template.scope_of_work,
+        service_type: selected.label,
+        apply_corrections: true,
+      });
+      const data = res?.data || res;
+      if (data?.corrected_line_items?.length) {
+        const corrected = data.corrected_line_items.map(li => ({
+          description: li.description,
+          category: li.category,
+          quantity: Number(li.quantity) || 0,
+          unit_price: Number(li.unit_price) || 0,
+          total: Number(li.total) || 0,
+        }));
+        template.line_items = corrected;
+        template._reviewNotes = {
+          issues: data.issues || [],
+          summary: data.summary || '',
+          corrections_applied: data.corrections_applied || '',
+        };
+      }
+      setReviewResult(data);
+      // Brief pause so the user sees the review summary, then apply
+      setTimeout(() => onApply(template), 1200);
+    } catch (e) {
+      // If review fails, just apply the original template
+      onApply(template);
+    } finally {
+      setReviewing(false);
+    }
   }
 
   const filtered = JOB_TYPES.filter(j =>
@@ -175,12 +214,40 @@ export default function EstimateIntakeWizard({ onApply, onSkip }) {
               );
             })()}
 
+            {/* Review result */}
+            {reviewResult && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 space-y-2">
+                <p className="text-xs font-semibold text-blue-700 flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5" /> AI Review Complete
+                </p>
+                <p className="text-xs text-slate-600">{reviewResult.summary}</p>
+                {(reviewResult.issues || []).length > 0 && (
+                  <div className="space-y-1">
+                    {reviewResult.issues.map((iss, i) => (
+                      <div key={i} className="flex items-start gap-1.5 text-xs text-slate-600">
+                        <AlertTriangle className="w-3 h-3 mt-0.5 flex-shrink-0 text-amber-500" />
+                        <span>{iss.message} — <em className="text-slate-500">{iss.suggestion}</em></span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {reviewResult.corrections_applied && (
+                  <p className="text-xs text-blue-700 font-medium pt-1">{reviewResult.corrections_applied}</p>
+                )}
+                <p className="text-xs text-slate-400 pt-1">Opening estimate with corrections applied…</p>
+              </div>
+            )}
+
             <div className="flex justify-end gap-2 pt-2">
-              <Button variant="outline" onClick={() => setStep("choose")}>
+              <Button variant="outline" onClick={() => setStep("choose")} disabled={reviewing}>
                 <ArrowLeft className="w-4 h-4" /> Back
               </Button>
-              <Button onClick={startEstimate} className="bg-blue-600 hover:bg-blue-700 gap-1.5">
-                Build Estimate <ArrowRight className="w-4 h-4" />
+              <Button onClick={startEstimate} disabled={reviewing} className="bg-blue-600 hover:bg-blue-700 gap-1.5">
+                {reviewing ? (
+                  <><Loader2 className="w-4 h-4 animate-spin" /> Reviewing & fixing…</>
+                ) : (
+                  <>Build Estimate <ArrowRight className="w-4 h-4" /></>
+                )}
               </Button>
             </div>
           </div>
