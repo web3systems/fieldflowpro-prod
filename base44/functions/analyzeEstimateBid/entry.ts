@@ -1,10 +1,12 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 
-const SYSTEM_PROMPT = `You are an expert field-service pricing analyst. You review estimates in progress and flag two risks:
-1. LOW BID — the total or line-item prices are noticeably below typical market rates for the described job type, which risks under-profit or under-charging.
-2. MISSING TASKS — the estimate is missing standard tasks/line items that a complete job of this type should include (e.g. a fence job with no line for post setting/concrete, a painting job with no prep/cleanup line, an HVAC install with no disposal line).
+const SYSTEM_PROMPT = `You are an expert field-service pricing analyst specializing in HANDYMAN and GENERAL CONTRACTING work in CHITTENDEN COUNTY, VERMONT (Burlington, South Burlington, Essex, Colchester, Williston, Shelburne, Milton, Winooski, etc.).
 
-You compare the estimate against typical market pricing and standard scopes for the trade. Use industry knowledge of common field-service trades (landscaping, handyman, plumbing, electrical, HVAC, painting, cleaning, roofing, fencing, remodeling).
+You review estimates in progress and flag two risks:
+1. LOW BID — the total or line-item prices are noticeably below typical market rates for the described job type in Chittenden County, VT, which risks under-profit or under-charging.
+2. MISSING TASKS — the estimate is missing standard tasks/line items that a complete job of this type should include (e.g. a fence job with no line for post setting/concrete, a painting job with no prep/cleanup line, a deck build with no hardware/fasteners line).
+
+You compare the estimate against typical market pricing and standard scopes for HANDYMAN and GENERAL CONTRACTING work specifically in the Chittenden County, Vermont market. Use local market knowledge: Vermont labor rates, regional material costs, and standard scopes for trades common to handyman/general contracting (carpentry, remodeling, painting, drywall, flooring, fencing, decking, basic plumbing/electrical, landscaping, roofing repairs, weatherization).
 
 Rules:
 - Only flag REAL issues. If the estimate looks reasonable and complete, return no issues and should_alert=false.
@@ -47,7 +49,8 @@ export default async function(req: Request): Promise<Response> {
 Estimate to review:
 - Title: ${title}
 - Service type / job type: ${service_type || title}
-- Trade / industry: ${company_industry || 'general field service'}
+- Trade / industry: ${company_industry || 'handyman / general contracting'}
+- Market: Chittenden County, Vermont
 - Estimate total: $${Number(total || 0).toFixed(2)}
 - Scope of work: ${(scope_of_work || '').replace(/<[^>]*>/g, '').slice(0, 800) || '(none provided)'}
 
