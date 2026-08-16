@@ -1,5 +1,34 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 
+// MessageBird SMS helper (inlined — no local imports in Deno functions)
+async function sendSmsMessageBird(toPhoneRaw: string, body: string) {
+  const apiKey = Deno.env.get('MESSAGEBIRD_API_KEY');
+  const originator = Deno.env.get('MESSAGEBIRD_ORIGINATOR');
+  if (!apiKey || !originator) {
+    return { ok: false, status: 500, error: 'MessageBird credentials not configured' };
+  }
+
+  // Normalize to E.164
+  let toPhone = String(toPhoneRaw).replace(/\D/g, '');
+  if (toPhone.length === 10) toPhone = '+1' + toPhone;
+  else if (!String(toPhoneRaw).trim().startsWith('+')) toPhone = '+' + toPhone;
+
+  const resp = await fetch('https://rest.messagebird.com/messages', {
+    method: 'POST',
+    headers: {
+      'Authorization': `AccessKey ${apiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ recipients: [toPhone], originator, body }),
+  });
+  const data = await resp.json();
+  if (!resp.ok) {
+    console.error('MessageBird SMS error:', JSON.stringify(data));
+    return { ok: false, status: resp.status, error: data.errors?.[0]?.description || data.message || 'MessageBird failed' };
+  }
+  return { ok: true, id: data.id, href: data.href };
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -7,47 +36,13 @@ Deno.serve(async (req) => {
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
     const { to_phone, message } = await req.json();
-
     if (!to_phone || !message) {
       return Response.json({ error: 'to_phone and message are required' }, { status: 400 });
     }
 
-    const accountSid = Deno.env.get('TWILIO_ACCOUNT_SID');
-    const authToken = Deno.env.get('TWILIO_AUTH_TOKEN');
-    const fromPhone = Deno.env.get('TWILIO_PHONE_NUMBER');
-
-    if (!accountSid || !authToken || !fromPhone) {
-      return Response.json({ error: 'Twilio credentials not configured' }, { status: 500 });
-    }
-
-    // Normalize phone number — add +1 if no country code
-    let toPhone = to_phone.replace(/\D/g, '');
-    if (toPhone.length === 10) toPhone = '+1' + toPhone;
-    else if (!toPhone.startsWith('+')) toPhone = '+' + toPhone;
-
-    const response = await fetch(
-      `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-          'Authorization': 'Basic ' + btoa(`${accountSid}:${authToken}`)
-        },
-        body: new URLSearchParams({
-          To: toPhone,
-          From: fromPhone,
-          Body: message
-        }).toString()
-      }
-    );
-
-    const data = await response.json();
-    if (!response.ok) {
-      console.error('Twilio SMS error:', JSON.stringify(data));
-      return Response.json({ error: data.message || 'Twilio failed' }, { status: 500 });
-    }
-
-    return Response.json({ success: true, sid: data.sid, status: data.status });
+    const result = await sendSmsMessageBird(to_phone, message);
+    if (!result.ok) return Response.json({ error: result.error }, { status: result.status });
+    return Response.json({ success: true, id: result.id });
   } catch (err) {
     console.error('sendCustomerSms error:', err.message);
     return Response.json({ error: err.message }, { status: 500 });
