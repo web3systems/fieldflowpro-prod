@@ -104,32 +104,30 @@ Deno.serve(async (req) => {
         console.warn('[sendReviewRequest] No phone for customer, skipping SMS');
         results.sms = { error: 'No phone on file' };
       } else {
-        const TWILIO_ACCOUNT_SID = Deno.env.get("TWILIO_ACCOUNT_SID");
-        const TWILIO_AUTH_TOKEN = Deno.env.get("TWILIO_AUTH_TOKEN");
-        const TWILIO_FROM_NUMBER = Deno.env.get("TWILIO_PHONE_NUMBER");
+        const MB_API_KEY = Deno.env.get("MESSAGEBIRD_API_KEY");
+        const MB_ORIGINATOR = Deno.env.get("MESSAGEBIRD_ORIGINATOR");
 
-        if (!TWILIO_ACCOUNT_SID || !TWILIO_AUTH_TOKEN || !TWILIO_FROM_NUMBER) {
-          console.error('[sendReviewRequest] Twilio not configured');
+        if (!MB_API_KEY || !MB_ORIGINATOR) {
+          console.error('[sendReviewRequest] MessageBird not configured');
           results.sms = { error: 'SMS not configured' };
         } else {
           const smsBody = `Hi ${firstName}! Thanks for choosing ${companyName}${job ? ` for "${jobTitle}"` : ''}. We'd love your feedback!${reviewUrl ? ' ' + reviewUrl : ' Please let us know how we did.'}`;
-          const twilioUrl = `https://api.twilio.com/2010-04-01/Accounts/${TWILIO_ACCOUNT_SID}/Messages.json`;
           // Normalize phone to E.164
           let toPhone = String(customer.phone).replace(/\D/g, '');
           if (toPhone.length === 10) toPhone = '+1' + toPhone;
           else if (!String(customer.phone).trim().startsWith('+')) toPhone = '+' + toPhone;
-          const resp = await fetch(twilioUrl, {
+          const resp = await fetch('https://rest.messagebird.com/messages', {
             method: 'POST',
             headers: {
-              'Authorization': 'Basic ' + btoa(`${TWILIO_ACCOUNT_SID}:${TWILIO_AUTH_TOKEN}`),
-              'Content-Type': 'application/x-www-form-urlencoded',
+              'Authorization': `AccessKey ${MB_API_KEY}`,
+              'Content-Type': 'application/json',
             },
-            body: new URLSearchParams({ To: toPhone, From: TWILIO_FROM_NUMBER, Body: smsBody }).toString(),
+            body: JSON.stringify({ recipients: [toPhone], originator: MB_ORIGINATOR, body: smsBody }),
           });
           const smsResult = await resp.json();
-          if (smsResult.error_code) {
-            console.error('[sendReviewRequest] SMS error:', smsResult.error_message);
-            results.sms = { error: smsResult.error_message };
+          if (!resp.ok) {
+            console.error('[sendReviewRequest] SMS error:', JSON.stringify(smsResult));
+            results.sms = { error: smsResult.errors?.[0]?.description || 'SMS failed' };
           } else {
             results.sms = { sent: true };
             console.log(`[sendReviewRequest] SMS sent to ${customer.phone}`);

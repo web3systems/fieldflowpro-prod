@@ -62,33 +62,26 @@ Deno.serve(async (req) => {
     if (contact_method === 'sms') {
       if (!lead.phone) return Response.json({ error: 'Lead has no phone number' }, { status: 400 });
 
-      const accountSid = Deno.env.get('TWILIO_ACCOUNT_SID');
-      const authToken = Deno.env.get('TWILIO_AUTH_TOKEN');
-      const fromPhone = Deno.env.get('TWILIO_PHONE_NUMBER');
-      if (!accountSid || !authToken || !fromPhone) {
-        console.error('[sendLeadReply] Twilio credentials not configured');
+      const apiKey = Deno.env.get('MESSAGEBIRD_API_KEY');
+      const originator = Deno.env.get('MESSAGEBIRD_ORIGINATOR');
+      if (!apiKey || !originator) {
+        console.error('[sendLeadReply] MessageBird credentials not configured');
         return Response.json({ error: 'SMS not configured' }, { status: 500 });
       }
 
       let toPhone = lead.phone.replace(/\D/g, '');
       if (toPhone.length === 10) toPhone = '+1' + toPhone;
-      else if (!toPhone.startsWith('+')) toPhone = '+' + toPhone;
+      else if (!lead.phone.trim().startsWith('+')) toPhone = '+' + toPhone;
 
-      const sms = await fetch(
-        `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'Authorization': 'Basic ' + btoa(`${accountSid}:${authToken}`),
-          },
-          body: new URLSearchParams({ To: toPhone, From: fromPhone, Body: message }).toString(),
-        }
-      );
+      const sms = await fetch('https://rest.messagebird.com/messages', {
+        method: 'POST',
+        headers: { 'Authorization': `AccessKey ${apiKey}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ recipients: [toPhone], originator, body: message }),
+      });
       const smsData = await sms.json();
       if (!sms.ok) {
-        console.error('[sendLeadReply] Twilio error:', JSON.stringify(smsData));
-        return Response.json({ error: smsData.message || 'SMS failed' }, { status: 500 });
+        console.error('[sendLeadReply] MessageBird error:', JSON.stringify(smsData));
+        return Response.json({ error: smsData.errors?.[0]?.description || 'SMS failed' }, { status: 500 });
       }
     } else {
       if (!lead.email) return Response.json({ error: 'Lead has no email address' }, { status: 400 });
