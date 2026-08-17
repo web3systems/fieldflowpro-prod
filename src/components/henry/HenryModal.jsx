@@ -27,13 +27,13 @@ function speak(text, onEnd) {
   window.speechSynthesis.cancel();
   const utt = new SpeechSynthesisUtterance(text);
   utt.rate = 0.92;
-  utt.pitch = 1.0;
+  utt.pitch = 0.82; // deeper, masculine tone
   const voices = window.speechSynthesis.getVoices();
-  const preferred = voices.find(v =>
-    v.name.includes('Google UK English Male') ||
-    v.name.includes('Daniel') ||
-    v.name.includes('Alex')
-  ) || voices.find(v => v.lang?.startsWith('en')) || voices[0];
+  const maleNames = ['Google UK English Male', 'Microsoft David', 'Daniel', 'Alex', 'Ralph', 'Oliver', 'Arthur', 'Microsoft Guy', 'Google US English Male'];
+  const preferred = voices.find(v => maleNames.some(n => v.name.includes(n))) ||
+    voices.find(v => v.name.toLowerCase().includes('male')) ||
+    voices.find(v => v.lang?.startsWith('en')) ||
+    voices[0];
   if (preferred) utt.voice = preferred;
   if (onEnd) utt.onend = onEnd;
   window.speechSynthesis.speak(utt);
