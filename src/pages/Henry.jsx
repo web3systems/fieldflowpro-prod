@@ -2,8 +2,8 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { Mic, MicOff, Zap, Briefcase, Users, FileText, Sun, Send, DollarSign, Calculator, TrendingUp, Wrench, Calendar, Clock, MapPin, Bell, MessageCircle, Package, Camera, CheckSquare, BookOpen, BarChart3, Home, CreditCard, Megaphone, Phone, Hammer, PaintBucket, Trees, Snowflake, Leaf, Truck, ClipboardList, Target, Lightbulb, AlertTriangle, Star, MessageSquare } from "lucide-react";
-import { henryAsk, buildHenryContext, getHenryVoiceConfig, getHenryOpeningQuestions, HENRY_ICON_MAP, isJobScheduledOnDate } from "@/lib/henryBrain";
-import { detectAction, findJobByNumber, normalizeStatus, createInvoiceFromJob } from "@/lib/henryActions";
+import { buildHenryContext, getHenryVoiceConfig, getHenryOpeningQuestions, HENRY_ICON_MAP, isJobScheduledOnDate } from "@/lib/henryBrain";
+import { henryDecideAction, runHenryAction } from "@/lib/henryActions";
 
 // Resolve lucide icon components by name from the shared map.
 const HENRY_ICONS = {
@@ -192,7 +192,7 @@ export default function Henry() {
         const pa = pendingActionRef.current;
         if (/\b(yes|yeah|yep|sure|do it|go ahead|please|confirm|ok|okay|yup)\b/i.test(cmd)) {
           pendingActionRef.current = null;
-          if (pa.type === 'create_invoice') await runCreateInvoice(pa.job, pa.company);
+          await executePending(pa);
           return;
         }
         if (/\b(no|nope|nah|don't|do not|cancel|negative)\b/i.test(cmd)) {
@@ -204,31 +204,27 @@ export default function Henry() {
         pendingActionRef.current = null;
       }
 
-      // 2) Detect a direct action (status change, invoice creation)
-      const action = detectAction(cmd);
-      if (action) {
-        await runAction(action);
+      // 2) Fast-path keyword shortcuts (rich read-only briefings)
+      if (cmd.includes('morning briefing') || cmd.includes('briefing')) {
+        await doBriefing();
+        return;
+      }
+      if (cmd.includes('open jobs') || cmd.includes("jobs today") || cmd.includes("today's jobs")) {
+        await doOpenJobs();
         return;
       }
 
-      // 3) Keyword shortcuts + free-form fallback
-      if (cmd.includes('morning briefing') || cmd.includes('briefing')) {
-        await doBriefing();
-      } else if (cmd.includes('open jobs') || cmd.includes('jobs today') || cmd.includes('jobs')) {
-        await doOpenJobs();
-      } else if (cmd.includes('dispatch')) {
-        henrySay("Who would you like to dispatch? Please say the technician's name.");
-      } else if (cmd.includes('create estimate') || cmd.includes('estimate')) {
-        henrySay("Navigating to estimates now.", () => navigate('/NewEstimate'));
-      } else if (cmd.includes('customers')) {
-        henrySay("Opening customers.", () => navigate('/Customers'));
-      } else if (cmd.includes('invoices')) {
-        henrySay("Opening invoices.", () => navigate('/Invoices'));
-      } else {
-        // Free-form question → route to Henry's trained brain (LLM)
-        const ctx = await buildHenryContext(company, user);
-        const reply = await henryAsk(cmd, ctx, company?.henry_training);
-        henrySay(reply);
+      // 3) General dispatcher: Henry decides to act or reply (LLM)
+      const active = await ensureCompany();
+      const ctx = await buildHenryContext(active, user);
+      const decision = await henryDecideAction(cmd, ctx, active?.henry_training);
+      henrySay(decision.text);
+      if (decision.kind === 'action' && decision.action) {
+        if (decision.confirm) {
+          pendingActionRef.current = { action: decision.action, params: decision.params, company: active };
+        } else {
+          await executeAction(decision.action, decision.params, active);
+        }
       }
     } catch (e) {
       henrySay("Sorry, I ran into an issue. Please try again.");
@@ -323,51 +319,23 @@ export default function Henry() {
     henrySay(response);
   }
 
-  // --- Direct action execution (status changes, invoice creation) ---
+  // --- Action execution (driven by the henryActions registry) ---
 
-  async function runAction(action) {
-    const active = await ensureCompany();
-    if (!active?.id) { henrySay("No company found. Please set up your company first."); return; }
-    if (action.action === 'change_job_status') {
-      await runChangeJobStatus(active, action.job_number, action.status);
-    } else if (action.action === 'create_invoice') {
-      await runCreateInvoiceForNumber(active, action.job_number);
-    }
-  }
-
-  async function runChangeJobStatus(activeCompany, jobNumber, statusWord) {
-    const job = await findJobByNumber(activeCompany.id, jobNumber);
-    if (!job) { henrySay(`I couldn't find a job number ${jobNumber} for ${activeCompany.name}.`); return; }
-    const status = normalizeStatus(statusWord);
-    if (!status) { henrySay(`I didn't recognize the status "${statusWord}". Try: scheduled, in progress, completed, cancelled, or on hold.`); return; }
-    await base44.entities.Job.update(job.id, { status });
-    base44.entities.AuditLog.create({
-      company_id: activeCompany.id, action: "status_change", entity_type: "Job", entity_id: job.id,
-      notes: `Status changed to "${status}" by Henry AI`,
-      performed_by_id: user?.id, performed_by_name: user?.full_name, performed_by_email: user?.email,
-    }).catch(() => {});
-    const label = job.job_number || `job ${jobNumber}`;
-    henrySay(`Done — I marked ${label} (${job.title}) as ${status.replace('_', ' ')}.`);
-    // When a job is completed, offer to create the invoice (yes/no follow-up)
-    if (status === 'completed') {
-      const existing = await base44.entities.Invoice.filter({ job_id: job.id }).catch(() => []);
-      const hasActive = existing.some(i => i.status !== "void");
-      if (!hasActive) {
-        pendingActionRef.current = { type: 'create_invoice', job, company: activeCompany };
-        setTimeout(() => henrySay(`Would you like me to create an invoice for this job?`), 700);
+  async function executeAction(name, params, activeCompany) {
+    try {
+      const result = await runHenryAction(name, params, { company: activeCompany, user, navigate });
+      if (result?.reply) henrySay(result.reply);
+      if (result?.followup) {
+        pendingActionRef.current = { action: result.followup.action, params: result.followup.params, company: activeCompany };
+        setTimeout(() => henrySay(result.followup.question), 700);
       }
+    } catch (e) {
+      henrySay("I ran into an issue performing that action.");
     }
   }
 
-  async function runCreateInvoiceForNumber(activeCompany, jobNumber) {
-    const job = await findJobByNumber(activeCompany.id, jobNumber);
-    if (!job) { henrySay(`I couldn't find a job number ${jobNumber} for ${activeCompany.name}.`); return; }
-    await runCreateInvoice(job, activeCompany);
-  }
-
-  async function runCreateInvoice(job, activeCompany) {
-    const invoice = await createInvoiceFromJob(job, activeCompany);
-    henrySay(`I created invoice ${invoice.invoice_number} for $${(invoice.total || 0).toFixed(2)}. Opening it now.`, () => navigate(`/InvoiceDetail/${invoice.id}`));
+  async function executePending(pa) {
+    await executeAction(pa.action, pa.params, pa.company);
   }
 
   const triggerQuickAction = useCallback((command) => {
