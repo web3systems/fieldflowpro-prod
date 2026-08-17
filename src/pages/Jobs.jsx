@@ -174,10 +174,6 @@ export default function Jobs() {
     setSaving(true);
     const data = { ...form, company_id: activeCompany.id };
     const wasCompleted = editing && editing.status !== "completed" && form.status === "completed";
-    // Auto-upgrade to "scheduled" if a date is set but status is still "new"
-    if (data.scheduled_start && data.status === "new") {
-      data.status = "scheduled";
-    }
     if (editing) {
       await base44.entities.Job.update(editing.id, data);
     } else {
