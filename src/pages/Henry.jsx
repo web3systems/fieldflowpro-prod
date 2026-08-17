@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { Mic, MicOff, Zap, Briefcase, Users, FileText, Sun, Send, DollarSign, Calculator, TrendingUp, Wrench, Calendar, Clock, MapPin, Bell, MessageCircle, Package, Camera, CheckSquare, BookOpen, BarChart3, Home, CreditCard, Megaphone, Phone, Hammer, PaintBucket, Trees, Snowflake, Leaf, Truck, ClipboardList, Target, Lightbulb, AlertTriangle, Star, MessageSquare } from "lucide-react";
 import { henryAsk, buildHenryContext, getHenryVoiceConfig, getHenryOpeningQuestions, HENRY_ICON_MAP, isJobScheduledOnDate } from "@/lib/henryBrain";
+import { detectAction, findJobByNumber, normalizeStatus, createInvoiceFromJob } from "@/lib/henryActions";
 
 // Resolve lucide icon components by name from the shared map.
 const HENRY_ICONS = {
@@ -64,6 +65,7 @@ export default function Henry() {
   const recognitionRef = useRef(null);
   const messagesEndRef = useRef(null);
   const initialized = useRef(false);
+  const pendingActionRef = useRef(null);
 
   const addMessage = useCallback((role, text) => {
     setMessages(prev => [...prev, { role, text, id: Date.now() + Math.random() }]);
@@ -185,6 +187,31 @@ export default function Henry() {
   const handleCommand = useCallback(async (cmd) => {
     setIsLoading(true);
     try {
+      // 1) Handle a pending yes/no follow-up from a previous action
+      if (pendingActionRef.current) {
+        const pa = pendingActionRef.current;
+        if (/\b(yes|yeah|yep|sure|do it|go ahead|please|confirm|ok|okay|yup)\b/i.test(cmd)) {
+          pendingActionRef.current = null;
+          if (pa.type === 'create_invoice') await runCreateInvoice(pa.job, pa.company);
+          return;
+        }
+        if (/\b(no|nope|nah|don't|do not|cancel|negative)\b/i.test(cmd)) {
+          pendingActionRef.current = null;
+          henrySay("No problem, I'll leave it as is. Anything else?");
+          return;
+        }
+        // Not a yes/no → treat as a brand-new command; clear pending and continue
+        pendingActionRef.current = null;
+      }
+
+      // 2) Detect a direct action (status change, invoice creation)
+      const action = detectAction(cmd);
+      if (action) {
+        await runAction(action);
+        return;
+      }
+
+      // 3) Keyword shortcuts + free-form fallback
       if (cmd.includes('morning briefing') || cmd.includes('briefing')) {
         await doBriefing();
       } else if (cmd.includes('open jobs') || cmd.includes('jobs today') || cmd.includes('jobs')) {
@@ -294,6 +321,53 @@ export default function Henry() {
       response += `${i + 1}: ${j.title}, ${j.status.replace('_', ' ')}, at ${addr}. `;
     });
     henrySay(response);
+  }
+
+  // --- Direct action execution (status changes, invoice creation) ---
+
+  async function runAction(action) {
+    const active = await ensureCompany();
+    if (!active?.id) { henrySay("No company found. Please set up your company first."); return; }
+    if (action.action === 'change_job_status') {
+      await runChangeJobStatus(active, action.job_number, action.status);
+    } else if (action.action === 'create_invoice') {
+      await runCreateInvoiceForNumber(active, action.job_number);
+    }
+  }
+
+  async function runChangeJobStatus(activeCompany, jobNumber, statusWord) {
+    const job = await findJobByNumber(activeCompany.id, jobNumber);
+    if (!job) { henrySay(`I couldn't find a job number ${jobNumber} for ${activeCompany.name}.`); return; }
+    const status = normalizeStatus(statusWord);
+    if (!status) { henrySay(`I didn't recognize the status "${statusWord}". Try: scheduled, in progress, completed, cancelled, or on hold.`); return; }
+    await base44.entities.Job.update(job.id, { status });
+    base44.entities.AuditLog.create({
+      company_id: activeCompany.id, action: "status_change", entity_type: "Job", entity_id: job.id,
+      notes: `Status changed to "${status}" by Henry AI`,
+      performed_by_id: user?.id, performed_by_name: user?.full_name, performed_by_email: user?.email,
+    }).catch(() => {});
+    const label = job.job_number || `job ${jobNumber}`;
+    henrySay(`Done — I marked ${label} (${job.title}) as ${status.replace('_', ' ')}.`);
+    // When a job is completed, offer to create the invoice (yes/no follow-up)
+    if (status === 'completed') {
+      const existing = await base44.entities.Invoice.filter({ job_id: job.id }).catch(() => []);
+      const hasActive = existing.some(i => i.status !== "void");
+      if (!hasActive) {
+        pendingActionRef.current = { type: 'create_invoice', job, company: activeCompany };
+        setTimeout(() => henrySay(`Would you like me to create an invoice for this job?`), 700);
+      }
+    }
+  }
+
+  async function runCreateInvoiceForNumber(activeCompany, jobNumber) {
+    const job = await findJobByNumber(activeCompany.id, jobNumber);
+    if (!job) { henrySay(`I couldn't find a job number ${jobNumber} for ${activeCompany.name}.`); return; }
+    await runCreateInvoice(job, activeCompany);
+  }
+
+  async function runCreateInvoice(job, activeCompany) {
+    const invoice = await createInvoiceFromJob(job, activeCompany);
+    henrySay(`I created invoice ${invoice.invoice_number} for $${(invoice.total || 0).toFixed(2)}. Opening it now.`, () => navigate(`/InvoiceDetail/${invoice.id}`));
   }
 
   const triggerQuickAction = useCallback((command) => {
