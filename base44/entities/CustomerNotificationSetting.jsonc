@@ -19,6 +19,10 @@
         "sms": {
           "type": "boolean",
           "default": false
+        },
+        "whatsapp": {
+          "type": "boolean",
+          "default": false
         }
       }
     },

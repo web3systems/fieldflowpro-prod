@@ -6,12 +6,13 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Mail, Phone, CheckCircle, ChevronDown, ChevronUp } from "lucide-react";
+import { Mail, Phone, MessageCircle, CheckCircle, ChevronDown, ChevronUp } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 
 const CHANNELS = [
   { key: "email", label: "Email", icon: Mail, description: "Send emails to customers" },
   { key: "sms", label: "SMS", icon: Phone, description: "Send text messages to customers" },
+  { key: "whatsapp", label: "WhatsApp", icon: MessageCircle, description: "Send WhatsApp messages via Twilio (templates required for business-initiated)" },
 ];
 
 const EVENTS = [
@@ -29,7 +30,7 @@ const EVENTS = [
 
 const DEFAULT_SETTINGS = {
   is_enabled: true,
-  channels: { email: true, sms: false },
+  channels: { email: true, sms: false, whatsapp: false },
   events: {
     booking_confirmed: true, booking_reminder: true,
     job_scheduled: true, job_on_the_way: false, job_completed: true,
