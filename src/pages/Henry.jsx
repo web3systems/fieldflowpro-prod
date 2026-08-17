@@ -139,21 +139,43 @@ export default function Henry() {
     }
     const recognition = new SR();
     recognition.lang = 'en-US';
+    recognition.continuous = false;
     recognition.interimResults = false;
     recognition.maxAlternatives = 1;
     recognitionRef.current = recognition;
 
+    let processed = false;
     recognition.onstart = () => setIsListening(true);
     recognition.onend = () => setIsListening(false);
     recognition.onerror = () => setIsListening(false);
     recognition.onresult = (e) => {
-      const said = e.results[0][0].transcript.toLowerCase().trim();
+      if (processed) return; // guard against Chrome firing multiple final results
+      processed = true;
+      const last = e.results.length - 1;
+      const said = e.results[last][0].transcript.toLowerCase().trim();
+      try { recognition.stop(); } catch (_) {}
       setTranscript(said);
       addMessage("user", said);
       handleCommand(said);
     };
     recognition.start();
-  }, [henrySay, addMessage]);
+  }, [henrySay, addMessage, handleCommand]);
+
+  // Resolve the active company, re-fetching if it isn't loaded yet (race guard
+  // for when the user speaks before init() finishes loading companies).
+  const ensureCompany = useCallback(async () => {
+    if (company?.id) return company;
+    try {
+      const res = await base44.functions.invoke('getUserCompanies', {});
+      const list = res?.data?.companies || [];
+      const saved = localStorage.getItem('activeCompanyId');
+      const found = list.find(c => c.id === saved) || list[0] || null;
+      if (found) setCompany(found);
+      return found;
+    } catch {
+      return null;
+    }
+  }, [company]);
 
   const stopListening = useCallback(() => {
     recognitionRef.current?.stop();
@@ -189,7 +211,8 @@ export default function Henry() {
   }, [company, weather, henrySay, navigate, user]);
 
   async function doBriefing() {
-    const companyId = company?.id;
+    const active = await ensureCompany();
+    const companyId = active?.id;
     const firstName = user?.full_name?.split(' ')[0] || 'there';
     const dateStr = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
 
@@ -249,7 +272,8 @@ export default function Henry() {
   }
 
   async function doOpenJobs() {
-    const companyId = company?.id;
+    const active = await ensureCompany();
+    const companyId = active?.id;
     if (!companyId) { henrySay("No company found. Please set up your company first."); return; }
 
     const today = new Date().toISOString().split('T')[0];

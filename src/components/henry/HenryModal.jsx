@@ -113,19 +113,25 @@ export default function HenryModal({ onClose, company, user }) {
     recognitionRef.current?.stop();
     const recognition = new SR();
     recognition.lang = 'en-US';
+    recognition.continuous = false;
     recognition.interimResults = false;
     recognition.maxAlternatives = 1;
     recognitionRef.current = recognition;
+    let processed = false;
     recognition.onstart = () => setIsListening(true);
     recognition.onend = () => setIsListening(false);
     recognition.onerror = () => setIsListening(false);
     recognition.onresult = (e) => {
-      const said = e.results[0][0].transcript.toLowerCase().trim();
+      if (processed) return; // guard against Chrome firing multiple final results
+      processed = true;
+      const last = e.results.length - 1;
+      const said = e.results[last][0].transcript.toLowerCase().trim();
+      try { recognition.stop(); } catch (_) {}
       addMessage("user", said);
       handleCommand(said);
     };
     recognition.start();
-  }, [henrySay, addMessage]);
+  }, [henrySay, addMessage, handleCommand]);
 
   const stopListening = useCallback(() => {
     recognitionRef.current?.stop();
