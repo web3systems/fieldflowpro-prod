@@ -105,6 +105,7 @@ export default function Schedule() {
     endTime: "17:00",
     priority: "medium",
     notes: "",
+    assigned_to_id: "",
   });
   const [filterTech, setFilterTech] = useState("all");
   const [historyMode, setHistoryMode] = useState(false);
@@ -314,6 +315,7 @@ export default function Schedule() {
       endTime: "17:00",
       priority: "medium",
       notes: "",
+      assigned_to_id: "",
     });
     setEventOpen(true);
   }
@@ -338,6 +340,7 @@ export default function Schedule() {
     if (!eventForm.title || !eventForm.date) return;
     setSaving(true);
     try {
+      const assignedTech = techs.find(t => t.id === eventForm.assigned_to_id);
       await base44.entities.Task.create({
         company_id: activeCompany.id,
         title: eventForm.title,
@@ -345,6 +348,8 @@ export default function Schedule() {
         priority: eventForm.priority || "medium",
         status: "todo",
         notes: eventForm.notes || "",
+        assigned_to_id: eventForm.assigned_to_id || "",
+        assigned_to_name: assignedTech ? `${assignedTech.first_name} ${assignedTech.last_name}` : "",
       });
       setEventOpen(false);
       await loadData();
@@ -694,8 +699,12 @@ async function convertBookingToJob(booking) {
                 <Select value={eventForm.type} onValueChange={v => setEventForm({ ...eventForm, type: v })}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="estimate">New Estimate</SelectItem>
-                    <SelectItem value="job">New Job</SelectItem>
+                    {calendarType === "customers" && (
+                      <>
+                        <SelectItem value="estimate">New Estimate</SelectItem>
+                        <SelectItem value="job">New Job</SelectItem>
+                      </>
+                    )}
                     <SelectItem value="task">Company Task / Project</SelectItem>
                   </SelectContent>
                 </Select>
@@ -711,6 +720,22 @@ async function convertBookingToJob(booking) {
                 <div>
                   <Label>Title *</Label>
                   <Input value={eventForm.title} onChange={e => setEventForm({ ...eventForm, title: e.target.value })} placeholder="Task title" />
+                </div>
+              )}
+
+              {/* Assign To — only for tasks */}
+              {eventForm.type === "task" && (
+                <div>
+                  <Label>Assign To</Label>
+                  <Select value={eventForm.assigned_to_id || "unassigned"} onValueChange={v => setEventForm({ ...eventForm, assigned_to_id: v === "unassigned" ? "" : v })}>
+                    <SelectTrigger><SelectValue placeholder="Unassigned" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="unassigned">Unassigned</SelectItem>
+                      {techs.map(t => (
+                        <SelectItem key={t.id} value={t.id}>{t.first_name} {t.last_name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               )}
 
