@@ -66,6 +66,7 @@ export default function Henry() {
   const messagesEndRef = useRef(null);
   const initialized = useRef(false);
   const pendingActionRef = useRef(null);
+  const handleCommandRef = useRef(null);
 
   const addMessage = useCallback((role, text) => {
     setMessages(prev => [...prev, { role, text, id: Date.now() + Math.random() }]);
@@ -158,10 +159,10 @@ export default function Henry() {
       try { recognition.stop(); } catch (_) {}
       setTranscript(said);
       addMessage("user", said);
-      handleCommand(said);
+      handleCommandRef.current?.(said);
     };
     recognition.start();
-  }, [henrySay, addMessage, handleCommand]);
+  }, [henrySay, addMessage]);
 
   // Resolve the active company, re-fetching if it isn't loaded yet (race guard
   // for when the user speaks before init() finishes loading companies).
@@ -232,6 +233,10 @@ export default function Henry() {
       setIsLoading(false);
     }
   }, [company, weather, henrySay, navigate, user]);
+
+  // Keep the ref in sync so startListening (declared above handleCommand) can
+  // call the latest handler without a forward const reference (TDZ-safe).
+  useEffect(() => { handleCommandRef.current = handleCommand; }, [handleCommand]);
 
   async function doBriefing() {
     const active = await ensureCompany();
