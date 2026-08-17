@@ -1,13 +1,18 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
-import { Mic, MicOff, Zap, Briefcase, Users, FileText, Sun, Send } from "lucide-react";
+import { Mic, MicOff, Zap, Briefcase, Users, FileText, Sun, Send, DollarSign, Calculator, TrendingUp, Wrench } from "lucide-react";
+import { henryAsk, buildHenryContext } from "@/lib/henryBrain";
 
 const QUICK_ACTIONS = [
   { label: "Morning Briefing", command: "morning briefing", icon: Sun },
-  { label: "Open Jobs", command: "open jobs", icon: Briefcase },
-  { label: "Dispatch Tech", command: "dispatch", icon: Zap },
+  { label: "Today's Jobs", command: "open jobs", icon: Briefcase },
+  { label: "Dispatch a Tech", command: "dispatch", icon: Zap },
   { label: "Create Estimate", command: "create estimate", icon: FileText },
+  { label: "Price a Repair", command: "price a repair job", icon: Wrench },
+  { label: "Profit & Cash Flow", command: "profit and cash flow check", icon: DollarSign },
+  { label: "Reconcile Books", command: "reconcile my books", icon: Calculator },
+  { label: "Growth Strategy", command: "growth strategy", icon: TrendingUp },
 ];
 
 function getGreeting() {
@@ -162,14 +167,17 @@ export default function Henry() {
       } else if (cmd.includes('invoices')) {
         henrySay("Opening invoices.", () => navigate('/Invoices'));
       } else {
-        henrySay("I heard: " + cmd + ". I'm not sure how to help with that yet. Try saying 'morning briefing' or 'open jobs'.");
+        // Free-form question → route to Henry's trained brain (LLM)
+        const ctx = await buildHenryContext(company, user);
+        const reply = await henryAsk(cmd, ctx);
+        henrySay(reply);
       }
     } catch (e) {
       henrySay("Sorry, I ran into an issue. Please try again.");
     } finally {
       setIsLoading(false);
     }
-  }, [company, weather, henrySay, navigate]);
+  }, [company, weather, henrySay, navigate, user]);
 
   async function doBriefing() {
     const companyId = company?.id;
@@ -358,7 +366,7 @@ export default function Henry() {
             }
           }}
           disabled={isListening || isLoading}
-          placeholder="Or type a command..."
+          placeholder="Ask Henry anything…"
           className="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-slate-200 placeholder:text-slate-500 text-sm focus:outline-none focus:border-blue-500 disabled:opacity-50"
         />
         <button

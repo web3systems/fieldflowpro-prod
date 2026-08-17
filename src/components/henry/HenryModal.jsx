@@ -1,13 +1,18 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
-import { X, Mic, MicOff, Zap, Briefcase, FileText, Sun } from "lucide-react";
+import { X, Mic, MicOff, Zap, Briefcase, FileText, Sun, DollarSign, Calculator, TrendingUp, Wrench, Send } from "lucide-react";
+import { henryAsk, buildHenryContext } from "@/lib/henryBrain";
 
 const QUICK_ACTIONS = [
-  { label: "Morning Briefing", command: "morning briefing", icon: Sun },
-  { label: "Open Jobs", command: "open jobs", icon: Briefcase },
-  { label: "Dispatch Tech", command: "dispatch", icon: Zap },
-  { label: "Create Estimate", command: "create estimate", icon: FileText },
+  { label: "Briefing", command: "morning briefing", icon: Sun },
+  { label: "Today's Jobs", command: "open jobs", icon: Briefcase },
+  { label: "Dispatch", command: "dispatch", icon: Zap },
+  { label: "Estimate", command: "create estimate", icon: FileText },
+  { label: "Price a Repair", command: "price a repair job", icon: Wrench },
+  { label: "Profit & Cash", command: "profit and cash flow check", icon: DollarSign },
+  { label: "Reconcile Books", command: "reconcile my books", icon: Calculator },
+  { label: "Growth", command: "growth strategy", icon: TrendingUp },
 ];
 
 function getGreeting() {
@@ -41,6 +46,7 @@ export default function HenryModal({ onClose, company, user }) {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [weather, setWeather] = useState(null);
+  const [textInput, setTextInput] = useState("");
   const recognitionRef = useRef(null);
   const messagesEndRef = useRef(null);
   const initialized = useRef(false);
@@ -133,14 +139,17 @@ export default function HenryModal({ onClose, company, user }) {
       } else if (cmd.includes('invoices')) {
         henrySay("Opening invoices.", () => { handleClose(); navigate('/Invoices'); });
       } else {
-        henrySay(`I heard: "${cmd}". Try saying "morning briefing" or "open jobs".`);
+        // Free-form question → route to Henry's trained brain (LLM)
+        const ctx = await buildHenryContext(company, user);
+        const reply = await henryAsk(cmd, ctx);
+        henrySay(reply);
       }
     } catch (e) {
       henrySay("Sorry, I ran into an issue. Please try again.");
     } finally {
       setIsLoading(false);
     }
-  }, [company, weather, henrySay, navigate]);
+  }, [company, weather, henrySay, navigate, user]);
 
   async function doBriefing() {
     const companyId = company?.id;
@@ -320,8 +329,40 @@ export default function HenryModal({ onClose, company, user }) {
             {isListening ? 'Listening… tap to stop' :
              isSpeaking ? 'Henry is speaking…' :
              isLoading ? 'Processing…' :
-             'Tap to speak'}
+             'Tap to speak or type below'}
           </p>
+          {/* Free-text chat — no opening question required */}
+          <div className="w-full max-w-sm mt-4 flex gap-2 px-1">
+            <input
+              type="text"
+              value={textInput}
+              onChange={e => setTextInput(e.target.value)}
+              onKeyDown={e => {
+                if (e.key === "Enter" && textInput.trim() && !isLoading && !isSpeaking) {
+                  const msg = textInput.trim();
+                  setTextInput("");
+                  addMessage("user", msg);
+                  handleCommand(msg);
+                }
+              }}
+              disabled={isListening || isLoading}
+              placeholder="Ask Henry anything…"
+              className="flex-1 bg-slate-800/80 border border-slate-700 rounded-xl px-3.5 py-2.5 text-slate-200 placeholder:text-slate-500 text-sm focus:outline-none focus:border-blue-500 disabled:opacity-50"
+            />
+            <button
+              onClick={() => {
+                if (!textInput.trim() || isLoading || isSpeaking) return;
+                const msg = textInput.trim();
+                setTextInput("");
+                addMessage("user", msg);
+                handleCommand(msg);
+              }}
+              disabled={!textInput.trim() || isLoading || isSpeaking || isListening}
+              className="w-11 h-11 rounded-xl bg-blue-600 hover:bg-blue-500 flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex-shrink-0"
+            >
+              <Send className="w-4 h-4 text-white" />
+            </button>
+          </div>
         </div>
       </div>
     </div>
