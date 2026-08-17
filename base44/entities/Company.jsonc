@@ -187,6 +187,27 @@
     "henry_training": {
       "type": "string",
       "description": "Custom training instructions appended to Henry the AI's system prompt for this company (processes, tone, policies, domain knowledge)."
+    },
+    "henry_opening_questions": {
+      "type": "array",
+      "description": "Custom opening questions (quick actions) shown on the Henry AI landing screen for this company.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "command": {
+            "type": "string"
+          },
+          "icon": {
+            "type": "string"
+          }
+        }
+      }
     }
   },
   "required": [

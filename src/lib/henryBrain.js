@@ -80,3 +80,45 @@ export function getHenryVoiceConfig() {
   }
   return { voice, pitch, rate };
 }
+
+// --- Opening Questions (quick actions shown on the Henry landing screen) ---
+
+// Map of icon name -> lucide-react component. Imported lazily by the pages
+// to avoid pulling every icon into the settings bundle. Keep the keys in sync
+// with HENRY_ICON_OPTIONS below.
+export const HENRY_ICON_MAP = {
+  Sun: "Sun", Briefcase: "Briefcase", Zap: "Zap", FileText: "FileText",
+  Wrench: "Wrench", DollarSign: "DollarSign", Calculator: "Calculator",
+  TrendingUp: "TrendingUp", Users: "Users", Calendar: "Calendar",
+  Clock: "Clock", MapPin: "MapPin", Bell: "Bell", MessageCircle: "MessageCircle",
+  Package: "Package", Camera: "Camera", CheckSquare: "CheckSquare",
+  BookOpen: "BookOpen", BarChart3: "BarChart3", Home: "Home",
+  CreditCard: "CreditCard", Megaphone: "Megaphone", Phone: "Phone",
+  Hammer: "Hammer", PaintBucket: "PaintBucket", Trees: "Trees",
+  Snowflake: "Snowflake", Leaf: "Leaf", Truck: "Truck",
+  ClipboardList: "ClipboardList", Target: "Target", Lightbulb: "Lightbulb",
+  AlertTriangle: "AlertTriangle", Star: "Star", Send: "Send",
+};
+
+// Options shown in the settings icon dropdown (name only).
+export const HENRY_ICON_OPTIONS = Object.keys(HENRY_ICON_MAP);
+
+// Default opening questions — used when a company has none saved yet.
+export const HENRY_DEFAULT_QUESTIONS = [
+  { id: "q1", label: "Morning Briefing", command: "morning briefing", icon: "Sun" },
+  { id: "q2", label: "Today's Jobs", command: "open jobs", icon: "Briefcase" },
+  { id: "q3", label: "Dispatch a Tech", command: "dispatch", icon: "Zap" },
+  { id: "q4", label: "Create Estimate", command: "create estimate", icon: "FileText" },
+  { id: "q5", label: "Price a Repair", command: "price a repair job", icon: "Wrench" },
+  { id: "q6", label: "Profit & Cash Flow", command: "profit and cash flow check", icon: "DollarSign" },
+  { id: "q7", label: "Reconcile Books", command: "reconcile my books", icon: "Calculator" },
+  { id: "q8", label: "Growth Strategy", command: "growth strategy", icon: "TrendingUp" },
+];
+
+// Resolve a company's saved opening questions, falling back to defaults.
+// Returns an array of { id, label, command, icon }.
+export function getHenryOpeningQuestions(company) {
+  const saved = company?.henry_opening_questions;
+  if (Array.isArray(saved) && saved.length > 0) return saved;
+  return HENRY_DEFAULT_QUESTIONS;
+}

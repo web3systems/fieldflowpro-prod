@@ -1,19 +1,24 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
-import { Mic, MicOff, Zap, Briefcase, Users, FileText, Sun, Send, DollarSign, Calculator, TrendingUp, Wrench } from "lucide-react";
-import { henryAsk, buildHenryContext, getHenryVoiceConfig } from "@/lib/henryBrain";
+import { Mic, MicOff, Zap, Briefcase, Users, FileText, Sun, Send, DollarSign, Calculator, TrendingUp, Wrench, Calendar, Clock, MapPin, Bell, MessageCircle, Package, Camera, CheckSquare, BookOpen, BarChart3, Home, CreditCard, Megaphone, Phone, Hammer, PaintBucket, Trees, Snowflake, Leaf, Truck, ClipboardList, Target, Lightbulb, AlertTriangle, Star, MessageSquare } from "lucide-react";
+import { henryAsk, buildHenryContext, getHenryVoiceConfig, getHenryOpeningQuestions, HENRY_ICON_MAP } from "@/lib/henryBrain";
 
-const QUICK_ACTIONS = [
-  { label: "Morning Briefing", command: "morning briefing", icon: Sun },
-  { label: "Today's Jobs", command: "open jobs", icon: Briefcase },
-  { label: "Dispatch a Tech", command: "dispatch", icon: Zap },
-  { label: "Create Estimate", command: "create estimate", icon: FileText },
-  { label: "Price a Repair", command: "price a repair job", icon: Wrench },
-  { label: "Profit & Cash Flow", command: "profit and cash flow check", icon: DollarSign },
-  { label: "Reconcile Books", command: "reconcile my books", icon: Calculator },
-  { label: "Growth Strategy", command: "growth strategy", icon: TrendingUp },
-];
+// Resolve lucide icon components by name from the shared map.
+const HENRY_ICONS = {
+  Sun, Briefcase, Zap, FileText, Wrench, DollarSign, Calculator, TrendingUp,
+  Users, Calendar, Clock, MapPin, Bell, MessageCircle, Package, Camera,
+  CheckSquare, BookOpen, BarChart3, Home, CreditCard, Megaphone, Phone,
+  Hammer, PaintBucket, Trees, Snowflake, Leaf, Truck, ClipboardList, Target,
+  Lightbulb, AlertTriangle, Star, Send, MessageSquare,
+};
+
+function resolveQuickActions(company) {
+  return getHenryOpeningQuestions(company).map(q => ({
+    ...q,
+    icon: HENRY_ICONS[q.icon] || HENRY_ICON_MAP[q.icon] && HENRY_ICONS[HENRY_ICON_MAP[q.icon]] || MessageSquare,
+  }));
+}
 
 function getGreeting() {
   const h = new Date().getHours();
@@ -342,9 +347,9 @@ export default function Henry() {
 
       {/* Quick actions */}
       <div className="w-full max-w-2xl grid grid-cols-2 sm:grid-cols-4 gap-3">
-        {QUICK_ACTIONS.map(({ label, command, icon: Icon }) => (
+        {resolveQuickActions(company).map(({ id, label, command, icon: Icon }) => (
           <button
-            key={label}
+            key={id || label}
             onClick={() => triggerQuickAction(command)}
             disabled={isListening || isLoading}
             className={`flex flex-col items-center gap-2 px-3 py-4 rounded-xl border border-slate-700 bg-slate-800/60 hover:bg-slate-700/80 hover:border-blue-500/50 transition-all text-slate-300 hover:text-white text-xs font-medium disabled:opacity-40 disabled:cursor-not-allowed ${isSpeaking ? 'animate-pulse' : ''}`}
