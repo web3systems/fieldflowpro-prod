@@ -55,8 +55,28 @@ export async function buildHenryContext(company, user) {
 }
 
 // Ask Henry a free-form question. Returns a plain string reply.
-export async function henryAsk(userMessage, context) {
-  const prompt = `${HENRY_SYSTEM_PROMPT}\n\n--- CURRENT CONTEXT ---\n${context || "No company context available."}\n--- END CONTEXT ---\n\nEmployee asks: "${userMessage}"\n\nRespond as Henry, in plain text (no markdown headings, no bullet asterisks). Be concise and actionable.`;
+// `extraTraining` is the company-specific custom training text from Settings.
+export async function henryAsk(userMessage, context, extraTraining) {
+  const trainingBlock = extraTraining && extraTraining.trim()
+    ? `\n\n--- COMPANY-SPECIFIC TRAINING (follow these closely) ---\n${extraTraining.trim()}\n--- END COMPANY TRAINING ---`
+    : "";
+  const prompt = `${HENRY_SYSTEM_PROMPT}${trainingBlock}\n\n--- CURRENT CONTEXT ---\n${context || "No company context available."}\n--- END CONTEXT ---\n\nEmployee asks: "${userMessage}"\n\nRespond as Henry, in plain text (no markdown headings, no bullet asterisks). Be concise and actionable.`;
   const res = await base44.integrations.Core.InvokeLLM({ prompt, model: "automatic" });
   return typeof res === "string" ? res : res?.data || res?.response || String(res);
+}
+
+// Shared voice selection — reads the user's choices from localStorage
+// (set in Settings → Henry AI). Returns { voice, pitch, rate } for the
+// speechSynthesis utterance, or null if no voice configured.
+export function getHenryVoiceConfig() {
+  if (typeof window === "undefined" || !window.speechSynthesis) return { pitch: 0.82, rate: 0.9 };
+  const uri = localStorage.getItem("henry_voice_uri");
+  const pitch = parseFloat(localStorage.getItem("henry_pitch") || "0.82");
+  const rate = parseFloat(localStorage.getItem("henry_rate") || "0.9");
+  let voice = null;
+  if (uri) {
+    const voices = window.speechSynthesis.getVoices();
+    voice = voices.find(v => v.voiceURI === uri) || null;
+  }
+  return { voice, pitch, rate };
 }

@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useApp } from "../Layout";
-import { Settings, Save, Building2, User, Link, Copy, Code2, Bell, MessageSquare, CheckCircle, CreditCard, AlertCircle } from "lucide-react";
+import { Settings, Save, Building2, User, Link, Copy, Code2, Bell, MessageSquare, CheckCircle, CreditCard, AlertCircle, Mic } from "lucide-react";
 import StripeConnectCard from "../components/settings/StripeConnectCard";
 import BillingCard from "../components/settings/BillingCard";
+import HenrySettingsTab from "../components/settings/HenrySettingsTab";
 import { Switch } from "@/components/ui/switch";
 import BookingEmbedModal from "../components/booking/BookingEmbedModal";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -101,6 +102,9 @@ export default function SettingsPage() {
           </TabsTrigger>
           <TabsTrigger value="billing" className="gap-2">
             <CreditCard className="w-4 h-4" /> Billing
+          </TabsTrigger>
+          <TabsTrigger value="henry" className="gap-2">
+            <Mic className="w-4 h-4" /> Henry AI
           </TabsTrigger>
         </TabsList>
 
@@ -300,6 +304,16 @@ export default function SettingsPage() {
         <TabsContent value="billing">
           {activeCompany ? (
             <BillingCard company={activeCompany} />
+          ) : (
+            <Card className="border-0 shadow-sm">
+              <CardContent className="p-8 text-center text-slate-400">No company selected.</CardContent>
+            </Card>
+          )}
+        </TabsContent>
+
+        <TabsContent value="henry">
+          {activeCompany ? (
+            <HenrySettingsTab company={activeCompany} onSaved={refreshCompanies} />
           ) : (
             <Card className="border-0 shadow-sm">
               <CardContent className="p-8 text-center text-slate-400">No company selected.</CardContent>

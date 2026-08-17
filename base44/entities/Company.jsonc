@@ -183,6 +183,10 @@
       "type": "boolean",
       "default": true,
       "description": "When enabled, estimate and invoice sends by non-admin users route through the manager-review queue (MessageQueue) before reaching the customer. When disabled, all sends go directly. Admins and the platform owner always send directly regardless of this setting."
+    },
+    "henry_training": {
+      "type": "string",
+      "description": "Custom training instructions appended to Henry the AI's system prompt for this company (processes, tone, policies, domain knowledge)."
     }
   },
   "required": [

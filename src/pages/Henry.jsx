@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { Mic, MicOff, Zap, Briefcase, Users, FileText, Sun, Send, DollarSign, Calculator, TrendingUp, Wrench } from "lucide-react";
-import { henryAsk, buildHenryContext } from "@/lib/henryBrain";
+import { henryAsk, buildHenryContext, getHenryVoiceConfig } from "@/lib/henryBrain";
 
 const QUICK_ACTIONS = [
   { label: "Morning Briefing", command: "morning briefing", icon: Sun },
@@ -26,16 +26,21 @@ function speak(text, onEnd) {
   if (!window.speechSynthesis) return;
   window.speechSynthesis.cancel();
   const utt = new SpeechSynthesisUtterance(text);
-  utt.rate = 0.9;
-  utt.pitch = 0.82; // deeper, masculine tone
-  // Prefer a male voice
-  const voices = window.speechSynthesis.getVoices();
-  const maleNames = ['Google UK English Male', 'Microsoft David', 'Daniel', 'Alex', 'Ralph', 'Oliver', 'Arthur', 'Microsoft Guy', 'Google US English Male'];
-  const preferred = voices.find(v => maleNames.some(n => v.name.includes(n))) ||
-    voices.find(v => v.name.toLowerCase().includes('male')) ||
-    voices.find(v => v.lang?.startsWith('en')) ||
-    voices[0];
-  if (preferred) utt.voice = preferred;
+  const cfg = getHenryVoiceConfig();
+  utt.rate = cfg.rate;
+  utt.pitch = cfg.pitch;
+  if (cfg.voice) {
+    utt.voice = cfg.voice;
+  } else {
+    // Fallback: prefer a male voice if no explicit selection
+    const voices = window.speechSynthesis.getVoices();
+    const maleNames = ['Google UK English Male', 'Microsoft David', 'Daniel', 'Alex', 'Ralph', 'Oliver', 'Arthur', 'Microsoft Guy', 'Google US English Male'];
+    const preferred = voices.find(v => maleNames.some(n => v.name.includes(n))) ||
+      voices.find(v => v.name.toLowerCase().includes('male')) ||
+      voices.find(v => v.lang?.startsWith('en')) ||
+      voices[0];
+    if (preferred) utt.voice = preferred;
+  }
   if (onEnd) utt.onend = onEnd;
   window.speechSynthesis.speak(utt);
 }
@@ -168,7 +173,7 @@ export default function Henry() {
       } else {
         // Free-form question → route to Henry's trained brain (LLM)
         const ctx = await buildHenryContext(company, user);
-        const reply = await henryAsk(cmd, ctx);
+        const reply = await henryAsk(cmd, ctx, company?.henry_training);
         henrySay(reply);
       }
     } catch (e) {
