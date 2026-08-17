@@ -17,6 +17,21 @@
     "invoice_number": {
       "type": "string"
     },
+    "subject": {
+      "type": "string",
+      "description": "Short title or subject line for the invoice"
+    },
+    "payment_terms": {
+      "type": "string",
+      "enum": [
+        "due_on_receipt",
+        "net_7",
+        "net_14",
+        "net_30",
+        "custom"
+      ],
+      "default": "due_on_receipt"
+    },
     "status": {
       "type": "string",
       "enum": [
@@ -93,6 +108,10 @@
       "default": 0
     },
     "due_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "issued_date": {
       "type": "string",
       "format": "date"
     },

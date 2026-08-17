@@ -16,12 +16,14 @@ import AssignRecordModal from "@/components/customers/AssignRecordModal";
 import CustomerSmsPanel from "@/components/customers/CustomerSmsPanel";
 import CustomerReviews from "@/components/reviews/CustomerReviews";
 import RequestReviewModal from "@/components/reviews/RequestReviewModal";
-import CustomerLifecyclePanel from "@/components/customers/CustomerLifecyclePanel";
+import WorkOverview from "@/components/customers/WorkOverview";
+import CustomerSummaryPanel from "@/components/customers/CustomerSummaryPanel";
+import { Phone, Mail } from "lucide-react";
 
 const statusStyle = {
-  active: "bg-green-100 text-green-700",
+  active: "bg-blue-100 text-blue-700",
   inactive: "bg-gray-100 text-gray-600",
-  lead: "bg-blue-100 text-blue-700",
+  lead: "bg-amber-100 text-amber-700",
 };
 
 export default function CustomerDetail() {
@@ -35,6 +37,7 @@ export default function CustomerDetail() {
   const [activities, setActivities] = useState([]);
   const [technicians, setTechnicians] = useState([]);
   const [payments, setPayments] = useState([]);
+  const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [sendingInvite, setSendingInvite] = useState(false);
   const [assignModal, setAssignModal] = useState(null); // "job" | "estimate" | "invoice"
@@ -42,13 +45,14 @@ export default function CustomerDetail() {
 
   const loadData = useCallback(async () => {
     if (!id) return;
-    const [cust, j, est, inv, acts, techs] = await Promise.all([
+    const [cust, j, est, inv, acts, techs, bk] = await Promise.all([
       base44.entities.Customer.filter({ id }),
       base44.entities.Job.filter({ customer_id: id }),
       base44.entities.Estimate.filter({ customer_id: id }),
       base44.entities.Invoice.filter({ customer_id: id }),
       base44.entities.Activity.filter({ related_to_id: id }),
       activeCompany ? base44.entities.Technician.filter({ company_id: activeCompany.id }) : Promise.resolve([]),
+      base44.entities.ServiceBooking.filter({ customer_id: id }),
     ]);
     if (cust.length > 0) setCustomer(cust[0]);
     setJobs(j);
@@ -56,6 +60,7 @@ export default function CustomerDetail() {
     setInvoices(inv);
     setActivities(acts.sort((a, b) => new Date(b.created_date) - new Date(a.created_date)));
     setTechnicians(techs);
+    setBookings(bk);
     // Load payments for all invoices belonging to this customer
     const invoiceIds = inv.map(i => i.id);
     if (invoiceIds.length > 0) {
@@ -135,20 +140,40 @@ export default function CustomerDetail() {
         </div>
       </div>
 
-      {/* Split Layout */}
-      <div className="flex gap-5">
-        {/* Left sidebar */}
-        <div className="w-64 flex-shrink-0 space-y-4 hidden lg:block">
-          <CustomerSidebar
-            customer={customer}
-            invoices={invoices}
-            onUpdate={handleUpdate}
-            onPortalInvite={handlePortalInvite}
-            sendingInvite={sendingInvite}
-            onPreviewPortal={handlePreviewPortal}
-          />
+      {/* Info Bar: phone/email | payment terms */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-5">
+        <div className="bg-white border border-slate-200 rounded-xl p-4 flex items-center gap-3">
+          <div className="w-9 h-9 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
+            <Phone className="w-4 h-4 text-blue-600" />
+          </div>
+          <div className="min-w-0">
+            <p className="text-xs text-slate-500">Phone</p>
+            <p className="text-sm font-medium text-slate-800 truncate">{customer.phone || "—"}</p>
+          </div>
+          <div className="w-px h-8 bg-slate-200 mx-2" />
+          <div className="w-9 h-9 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
+            <Mail className="w-4 h-4 text-blue-600" />
+          </div>
+          <div className="min-w-0">
+            <p className="text-xs text-slate-500">Email</p>
+            <p className="text-sm font-medium text-slate-800 truncate">{customer.email || "—"}</p>
+          </div>
         </div>
+        <div className="bg-white border border-slate-200 rounded-xl p-4 flex items-center gap-3">
+          <div className="w-9 h-9 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
+            <CreditCard className="w-4 h-4 text-blue-600" />
+          </div>
+          <div className="min-w-0">
+            <p className="text-xs text-slate-500">Payment Terms</p>
+            <p className="text-sm font-medium text-slate-800">
+              {customer.customer_type === "business" ? "Net 30 (Business)" : "Due on Receipt"}
+            </p>
+          </div>
+        </div>
+      </div>
 
+      {/* Split Layout: main content + right summary panel */}
+      <div className="flex gap-5">
         {/* Main content */}
         <div className="flex-1 min-w-0 space-y-4">
           {/* Mobile sidebar summary */}
@@ -163,29 +188,32 @@ export default function CustomerDetail() {
             />
           </div>
 
-          {/* Unified Lifecycle Panel */}
-          <CustomerLifecyclePanel
+          <WorkOverview
             customer={customer}
+            bookings={bookings}
             estimates={estimates}
             jobs={jobs}
             invoices={invoices}
-            payments={payments}
-            onAssign={setAssignModal}
           />
 
-          <CustomerReviews
-            customerId={id}
-            companyId={customer.company_id}
-            onRequestReview={() => setShowReviewModal(true)}
-          />
           <CustomerSmsPanel customer={customer} />
           <CustomerTasks customer={customer} onUpdate={handleUpdate} />
           <CustomerAddresses customer={customer} onUpdate={handleUpdate} />
+        </div>
+
+        {/* Right summary panel */}
+        <div className="w-72 flex-shrink-0 space-y-4 hidden lg:block">
+          <CustomerSummaryPanel customer={customer} invoices={invoices} />
           <CustomerNotes
             customerId={id}
             companyId={customer.company_id}
             activities={activities}
             onActivityAdded={loadData}
+          />
+          <CustomerReviews
+            customerId={id}
+            companyId={customer.company_id}
+            onRequestReview={() => setShowReviewModal(true)}
           />
         </div>
       </div>

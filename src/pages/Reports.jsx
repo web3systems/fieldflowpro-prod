@@ -14,6 +14,9 @@ import {
   RevenueVsJobsChart, RepeatVsNewCustomersChart, CollectionEfficiencyChart,
 } from "@/components/reports/ReportWidgets";
 import CustomDashboardBuilder from "@/components/reports/CustomDashboardBuilder";
+import InsightsOverview from "@/components/reports/InsightsOverview";
+import RevenueBySourceDonut from "@/components/reports/RevenueBySourceDonut";
+import RevenueHeatmap from "@/components/reports/RevenueHeatmap";
 import { differenceInDays } from "date-fns";
 
 function parseDate(raw) {
@@ -39,6 +42,8 @@ export default function Reports() {
   const [customers, setCustomers] = useState([]);
   const [leads, setLeads] = useState([]);
   const [technicians, setTechnicians] = useState([]);
+  const [estimates, setEstimates] = useState([]);
+  const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(false);
 
   // Load company list for admin picker
@@ -59,14 +64,17 @@ export default function Reports() {
 
   async function loadData() {
     setLoading(true);
-    const [j, inv, c, l, t] = await Promise.all([
+    const [j, inv, c, l, t, est, bk] = await Promise.all([
       base44.entities.Job.filter({ company_id: activeCompany.id }),
       base44.entities.Invoice.filter({ company_id: activeCompany.id }),
       base44.entities.Customer.filter({ company_id: activeCompany.id }),
       base44.entities.Lead.filter({ company_id: activeCompany.id }),
       base44.entities.Technician.filter({ company_id: activeCompany.id }),
+      base44.entities.Estimate.filter({ company_id: activeCompany.id }),
+      base44.entities.ServiceBooking.filter({ company_id: activeCompany.id }),
     ]);
     setJobs(j); setInvoices(inv); setCustomers(c); setLeads(l); setTechnicians(t);
+    setEstimates(est); setBookings(bk);
     setLoading(false);
   }
 
@@ -138,6 +146,12 @@ export default function Reports() {
         )}
       </div>
 
+      {/* Insights Overview — key metrics with % change */}
+      <div>
+        <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-3">This Month at a Glance</h2>
+        <InsightsOverview leads={leads} bookings={bookings} estimates={estimates} jobs={jobs} invoices={invoices} />
+      </div>
+
       {/* KPI Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
         {kpis.map(({ label, value, icon: Icon, color, bg }) => (
@@ -169,10 +183,18 @@ export default function Reports() {
         </TabsList>
 
         {/* OVERVIEW */}
-        <TabsContent value="overview" className="mt-4">
-          <div className="grid lg:grid-cols-2 gap-6">
+        <TabsContent value="overview" className="mt-4 space-y-6">
+          {/* Revenue chart section */}
+          <div>
+            <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-3">Revenue</h2>
             <RevenueAreaChart invoices={invoices} />
-            <JobVolumeChart jobs={jobs} />
+          </div>
+          {/* Donut + Heatmap */}
+          <div className="grid lg:grid-cols-2 gap-6">
+            <RevenueBySourceDonut leads={leads} customers={customers} invoices={invoices} />
+            <RevenueHeatmap jobs={jobs} invoices={invoices} />
+          </div>
+          <div className="grid lg:grid-cols-2 gap-6">
             <OutstandingVsPaidChart invoices={invoices} />
             <JobStatusPieChart jobs={jobs} />
             <RevenueVsJobsChart jobs={jobs} invoices={invoices} />
