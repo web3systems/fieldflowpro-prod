@@ -14,10 +14,11 @@ import ConnectorsTab from '@/components/settings/ConnectorsTab';
 import ApiWebhooksTab from '@/components/settings/ApiWebhooksTab';
 import SeoAnalyticsTab from '@/components/settings/SeoAnalyticsTab';
 import ReviewQueueTab from '@/components/settings/ReviewQueueTab';
+import HenrySettingsTab from '@/components/settings/HenrySettingsTab';
 import PwaInstallButton from '@/components/settings/PwaInstallButton';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { User, Mail, Shield, Building2 } from 'lucide-react';
+import { User, Mail, Shield, Building2, Mic } from 'lucide-react';
 
 export default function CompanySettings() {
   const { activeCompany, user, refreshCompanies, companyRole } = useApp();
@@ -162,6 +163,13 @@ export default function CompanySettings() {
                   <TabsTrigger value="review_queue" className="justify-start px-3 py-2 h-auto rounded-md text-sm font-medium data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 data-[state=active]:shadow-none">Review Queue</TabsTrigger>
                 </TabsList>
               </div>
+              {/* Group: AI Assistant */}
+              <div>
+                <p className="px-2 mb-1.5 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">AI Assistant</p>
+                <TabsList className="flex flex-col h-auto items-stretch bg-transparent p-0 gap-0.5 w-full">
+                  <TabsTrigger value="henry" className="justify-start px-3 py-2 h-auto rounded-md text-sm font-medium data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 data-[state=active]:shadow-none gap-2"><Mic className="w-3.5 h-3.5" />Henry AI</TabsTrigger>
+                </TabsList>
+              </div>
               {/* Group: Integrations & API */}
               <div>
                 <p className="px-2 mb-1.5 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Integrations & API</p>
@@ -251,6 +259,10 @@ export default function CompanySettings() {
 
           <TabsContent value="review_queue">
             <ReviewQueueTab company={company} isManager={isManager} />
+          </TabsContent>
+
+          <TabsContent value="henry">
+            <HenrySettingsTab company={company} onSaved={loadCompany} />
           </TabsContent>
             </div>
           </div>
