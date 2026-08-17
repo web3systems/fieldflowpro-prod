@@ -122,3 +122,28 @@ export function getHenryOpeningQuestions(company) {
   if (Array.isArray(saved) && saved.length > 0) return saved;
   return HENRY_DEFAULT_QUESTIONS;
 }
+
+// Does this job have an appointment (or legacy scheduled_start) on the given
+// YYYY-MM-DD date? Jobs were migrated from a single scheduled_start field to
+// an appointments[] array, so we check both.
+export function isJobScheduledOnDate(job, dateStr) {
+  if (!job) return false;
+  if (job.scheduled_start && job.scheduled_start.startsWith(dateStr)) return true;
+  const appts = job.appointments;
+  if (Array.isArray(appts) && appts.some(a => a?.scheduled_start && a.scheduled_start.startsWith(dateStr))) return true;
+  return false;
+}
+
+// Earliest scheduled datetime for a job across scheduled_start + appointments.
+export function earliestJobStart(job) {
+  if (!job) return null;
+  const candidates = [];
+  if (job.scheduled_start) candidates.push(job.scheduled_start);
+  if (Array.isArray(job.appointments)) {
+    for (const a of job.appointments) {
+      if (a?.scheduled_start) candidates.push(a.scheduled_start);
+    }
+  }
+  if (!candidates.length) return null;
+  return candidates.sort((a, b) => new Date(a) - new Date(b))[0];
+}

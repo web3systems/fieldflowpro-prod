@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { Mic, MicOff, Zap, Briefcase, Users, FileText, Sun, Send, DollarSign, Calculator, TrendingUp, Wrench, Calendar, Clock, MapPin, Bell, MessageCircle, Package, Camera, CheckSquare, BookOpen, BarChart3, Home, CreditCard, Megaphone, Phone, Hammer, PaintBucket, Trees, Snowflake, Leaf, Truck, ClipboardList, Target, Lightbulb, AlertTriangle, Star, MessageSquare } from "lucide-react";
-import { henryAsk, buildHenryContext, getHenryVoiceConfig, getHenryOpeningQuestions, HENRY_ICON_MAP } from "@/lib/henryBrain";
+import { henryAsk, buildHenryContext, getHenryVoiceConfig, getHenryOpeningQuestions, HENRY_ICON_MAP, isJobScheduledOnDate } from "@/lib/henryBrain";
 
 // Resolve lucide icon components by name from the shared map.
 const HENRY_ICONS = {
@@ -208,7 +208,7 @@ export default function Henry() {
 
     const today = new Date().toISOString().split('T')[0];
     const todayJobs = jobsData.filter(j =>
-      j.scheduled_start?.startsWith(today) &&
+      isJobScheduledOnDate(j, today) &&
       ['scheduled', 'in_progress'].includes(j.status)
     );
     const inProgress = todayJobs.filter(j => j.status === 'in_progress');
@@ -255,7 +255,7 @@ export default function Henry() {
     const today = new Date().toISOString().split('T')[0];
     const jobs = await base44.entities.Job.filter({ company_id: companyId }).catch(() => []);
     const todayJobs = jobs.filter(j =>
-      j.scheduled_start?.startsWith(today) &&
+      isJobScheduledOnDate(j, today) &&
       ['scheduled', 'in_progress', 'new'].includes(j.status)
     );
 
