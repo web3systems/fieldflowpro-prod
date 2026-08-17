@@ -83,7 +83,12 @@ export default function Jobs() {
   const [tagInput, setTagInput] = useState("");
   const [checklistInput, setChecklistInput] = useState("");
   const [subscription, setSubscription] = useState(null);
-  const [viewMode, setViewMode] = useState(() => localStorage.getItem("jobsViewMode") || "kanban");
+  const [viewMode, setViewMode] = useState(() => {
+    const saved = localStorage.getItem("jobsViewMode");
+    if (saved) return saved;
+    // Default to list on mobile, kanban on desktop
+    return window.matchMedia("(max-width: 1023px)").matches ? "list" : "kanban";
+  });
   const [sortField, setSortField] = useState("");
   const [sortDir, setSortDir] = useState("asc");
 
