@@ -29,26 +29,30 @@ function getGreeting() {
 }
 
 function speak(text, onEnd) {
-  if (!window.speechSynthesis) return;
-  window.speechSynthesis.cancel();
-  const utt = new SpeechSynthesisUtterance(text);
-  const cfg = getHenryVoiceConfig();
-  utt.rate = cfg.rate;
-  utt.pitch = cfg.pitch;
-  if (cfg.voice) {
-    utt.voice = cfg.voice;
-  } else {
-    // Fallback: prefer a male voice if no explicit selection
-    const voices = window.speechSynthesis.getVoices();
-    const maleNames = ['Google UK English Male', 'Microsoft David', 'Daniel', 'Alex', 'Ralph', 'Oliver', 'Arthur', 'Microsoft Guy', 'Google US English Male'];
-    const preferred = voices.find(v => maleNames.some(n => v.name.includes(n))) ||
-      voices.find(v => v.name.toLowerCase().includes('male')) ||
-      voices.find(v => v.lang?.startsWith('en')) ||
-      voices[0];
-    if (preferred) utt.voice = preferred;
+  if (!window.speechSynthesis) { if (onEnd) onEnd(); return; }
+  try {
+    window.speechSynthesis.cancel();
+    const utt = new SpeechSynthesisUtterance(text);
+    const cfg = getHenryVoiceConfig();
+    utt.rate = cfg.rate;
+    utt.pitch = cfg.pitch;
+    if (cfg.voice) {
+      utt.voice = cfg.voice;
+    } else {
+      // Fallback: prefer a male voice if no explicit selection
+      const voices = window.speechSynthesis.getVoices();
+      const maleNames = ['Google UK English Male', 'Microsoft David', 'Daniel', 'Alex', 'Ralph', 'Oliver', 'Arthur', 'Microsoft Guy', 'Google US English Male'];
+      const preferred = voices.find(v => maleNames.some(n => v.name.includes(n))) ||
+        voices.find(v => v.name.toLowerCase().includes('male')) ||
+        voices.find(v => v.lang?.startsWith('en')) ||
+        voices[0];
+      if (preferred) utt.voice = preferred;
+    }
+    if (onEnd) { utt.onend = onEnd; utt.onerror = onEnd; }
+    window.speechSynthesis.speak(utt);
+  } catch (e) {
+    if (onEnd) onEnd();
   }
-  if (onEnd) utt.onend = onEnd;
-  window.speechSynthesis.speak(utt);
 }
 
 export default function Henry() {
@@ -75,10 +79,19 @@ export default function Henry() {
   const henrySay = useCallback((text, onEnd) => {
     addMessage("henry", text);
     setIsSpeaking(true);
-    speak(text, () => {
+    let done = false;
+    let safety;
+    const finish = () => {
+      if (done) return;
+      done = true;
+      clearTimeout(safety);
       setIsSpeaking(false);
       if (onEnd) onEnd();
-    });
+    };
+    speak(text, finish);
+    // Safety net: some browsers never fire onend (mobile Safari, Chrome cancel-then-speak).
+    const estMs = Math.min(Math.max(4000, text.length * 70), 30000);
+    safety = setTimeout(finish, estMs);
   }, [addMessage]);
 
   // Initialize on load
