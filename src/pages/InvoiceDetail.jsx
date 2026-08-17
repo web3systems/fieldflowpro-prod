@@ -190,10 +190,18 @@ export default function InvoiceDetail() {
 
   async function handleSave() {
     setSaving(true);
-    await base44.entities.Invoice.update(id, form);
-    setInvoice(inv => ({ ...inv, ...form }));
-    setSaving(false);
-    setEditingInfo(false);
+    try {
+      // Strip built-in fields that shouldn't be in the update payload
+      const { id: _id, created_date, updated_date, created_by_id, ...updateData } = form;
+      await base44.entities.Invoice.update(id, updateData);
+      setInvoice(inv => ({ ...inv, ...updateData }));
+      setEditingInfo(false);
+    } catch (err) {
+      console.error("Save failed:", err);
+      alert("Failed to save invoice: " + (err?.message || "Unknown error"));
+    } finally {
+      setSaving(false);
+    }
   }
 
   async function handleSendEmail() {

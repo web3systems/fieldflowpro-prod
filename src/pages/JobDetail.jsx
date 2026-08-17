@@ -104,37 +104,45 @@ export default function JobDetail() {
 
   async function handleSave(statusOverride, extraData) {
     setSaving(true);
-    let dataToSave;
-    if (typeof statusOverride === 'string') {
-      dataToSave = { ...form, status: statusOverride, ...extraData };
-    } else if (statusOverride && typeof statusOverride === 'object') {
-      // Called with a data override object (e.g. from seedFromLegacy)
-      dataToSave = { ...form, ...statusOverride };
-    } else {
-      dataToSave = form;
-    }
-    const oldStatus = job?.status;
-    const newStatus = dataToSave.status;
-    await base44.entities.Job.update(id, dataToSave);
-    setJob(j => ({ ...j, ...dataToSave }));
-    // Audit log for status changes
-    if (oldStatus && newStatus && oldStatus !== newStatus) {
-      base44.entities.AuditLog.create({
-        company_id: activeCompany.id,
-        action: "status_change",
-        entity_type: "Job",
-        entity_id: id,
-        notes: `Status changed from "${oldStatus}" to "${newStatus}"`,
-        performed_by_id: user?.id,
-        performed_by_name: user?.full_name,
-        performed_by_email: user?.email,
-      }).catch(() => {});
-    }
-    setSaving(false);
-    toast({ title: "Job saved!" });
-    // Prompt to generate invoice if just marked completed and no invoice exists
-    if (statusOverride === "completed" && existingInvoices.length === 0) {
-      setShowInvoicePrompt(true);
+    try {
+      let dataToSave;
+      if (typeof statusOverride === 'string') {
+        dataToSave = { ...form, status: statusOverride, ...extraData };
+      } else if (statusOverride && typeof statusOverride === 'object') {
+        // Called with a data override object (e.g. from seedFromLegacy)
+        dataToSave = { ...form, ...statusOverride };
+      } else {
+        dataToSave = form;
+      }
+      // Strip built-in fields that shouldn't be in the update payload
+      const { id: _id, created_date, updated_date, created_by_id, ...updateData } = dataToSave;
+      const oldStatus = job?.status;
+      const newStatus = updateData.status;
+      await base44.entities.Job.update(id, updateData);
+      setJob(j => ({ ...j, ...updateData }));
+      // Audit log for status changes
+      if (oldStatus && newStatus && oldStatus !== newStatus) {
+        base44.entities.AuditLog.create({
+          company_id: activeCompany.id,
+          action: "status_change",
+          entity_type: "Job",
+          entity_id: id,
+          notes: `Status changed from "${oldStatus}" to "${newStatus}"`,
+          performed_by_id: user?.id,
+          performed_by_name: user?.full_name,
+          performed_by_email: user?.email,
+        }).catch(() => {});
+      }
+      toast({ title: "Job saved!" });
+      // Prompt to generate invoice if just marked completed and no invoice exists
+      if (statusOverride === "completed" && existingInvoices.length === 0) {
+        setShowInvoicePrompt(true);
+      }
+    } catch (err) {
+      console.error("Save failed:", err);
+      toast({ title: "Failed to save job", description: err?.message || "Unknown error", variant: "destructive" });
+    } finally {
+      setSaving(false);
     }
   }
 

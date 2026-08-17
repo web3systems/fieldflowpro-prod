@@ -270,7 +270,8 @@ export default function EstimateDetail() {
   async function handleApprove() {
     setApproving(true);
     try {
-      await base44.entities.Estimate.update(id, { ...form, status: "approved" });
+      const { id: _id, created_date, updated_date, created_by_id, ...updateData } = { ...form, status: "approved" };
+      await base44.entities.Estimate.update(id, updateData);
       setForm(f => ({ ...f, status: "approved" }));
       setEstimate(e => ({ ...e, status: "approved" }));
       await ensureJobFromEstimate();
@@ -283,12 +284,18 @@ export default function EstimateDetail() {
   async function handleStatusChange(v) {
     const updatedForm = { ...form, status: v };
     setForm(updatedForm);
-    // Save the full form — not just the status — so unsaved line item / SOW
-    // changes are persisted before creating a job from the estimate.
-    await base44.entities.Estimate.update(id, updatedForm);
-    setEstimate(e => ({ ...e, ...updatedForm }));
-    if (v === "approved") {
-      await ensureJobFromEstimate();
+    try {
+      // Save the full form — not just the status — so unsaved line item / SOW
+      // changes are persisted before creating a job from the estimate.
+      const { id: _id, created_date, updated_date, created_by_id, ...updateData } = updatedForm;
+      await base44.entities.Estimate.update(id, updateData);
+      setEstimate(e => ({ ...e, ...updatedForm }));
+      if (v === "approved") {
+        await ensureJobFromEstimate();
+      }
+    } catch (err) {
+      console.error("Status change failed:", err);
+      alert("Failed to update estimate status: " + (err?.message || "Unknown error"));
     }
   }
 
