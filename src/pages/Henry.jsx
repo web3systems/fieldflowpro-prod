@@ -297,7 +297,7 @@ export default function Henry() {
     const active = await ensureCompany();
     const companyId = active?.id;
     const firstName = user?.full_name?.split(' ')[0] || 'there';
-    const dateStr = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+    const dateStr = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', timeZone: HENRY_TIMEZONE });
 
     // Fetch weather + jobs + dispatch suggestions in parallel
     const [weatherData, jobsData, dispatchData] = await Promise.all([
