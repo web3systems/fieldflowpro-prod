@@ -28,26 +28,41 @@ function getGreeting() {
   return "evening";
 }
 
+function resolveHenryVoice() {
+  if (!window.speechSynthesis) return null;
+  const uri = localStorage.getItem("henry_voice_uri");
+  const live = window.speechSynthesis.getVoices() || [];
+  // 1) Fresh live match (most reliable — a live SpeechSynthesisVoice object)
+  if (uri && live.length) {
+    const found = live.find(v => v.voiceURI === uri);
+    if (found) return found;
+  }
+  // 2) Cached match (Chrome can return [] right after cancel())
+  const cfg = getHenryVoiceConfig();
+  if (cfg.voice) return cfg.voice;
+  // 3) Male-voice fallback when no preference is set
+  const voices = live.length ? live : live;
+  const maleNames = ['Google UK English Male', 'Microsoft David', 'Daniel', 'Alex', 'Ralph', 'Oliver', 'Arthur', 'Microsoft Guy', 'Google US English Male'];
+  return voices.find(v => maleNames.some(n => v.name.includes(n))) ||
+    voices.find(v => v.name.toLowerCase().includes('male')) ||
+    voices.find(v => v.lang?.startsWith('en')) ||
+    voices[0] || null;
+}
+
 function speak(text, onEnd) {
   if (!window.speechSynthesis) { if (onEnd) onEnd(); return; }
   try {
-    window.speechSynthesis.cancel();
+    // Only cancel if something is actually speaking — calling cancel() when idle
+    // is what disrupts Chrome's voice list and drops Henry to the default voice.
+    if (window.speechSynthesis.speaking || window.speechSynthesis.pending) {
+      window.speechSynthesis.cancel();
+    }
     const utt = new SpeechSynthesisUtterance(text);
     const cfg = getHenryVoiceConfig();
     utt.rate = cfg.rate;
     utt.pitch = cfg.pitch;
-    if (cfg.voice) {
-      utt.voice = cfg.voice;
-    } else {
-      // Fallback: prefer a male voice if no explicit selection
-      const voices = window.speechSynthesis.getVoices();
-      const maleNames = ['Google UK English Male', 'Microsoft David', 'Daniel', 'Alex', 'Ralph', 'Oliver', 'Arthur', 'Microsoft Guy', 'Google US English Male'];
-      const preferred = voices.find(v => maleNames.some(n => v.name.includes(n))) ||
-        voices.find(v => v.name.toLowerCase().includes('male')) ||
-        voices.find(v => v.lang?.startsWith('en')) ||
-        voices[0];
-      if (preferred) utt.voice = preferred;
-    }
+    const voice = resolveHenryVoice();
+    if (voice) utt.voice = voice;
     if (onEnd) { utt.onend = onEnd; utt.onerror = onEnd; }
     window.speechSynthesis.speak(utt);
   } catch (e) {
