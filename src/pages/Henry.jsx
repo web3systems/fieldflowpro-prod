@@ -106,6 +106,7 @@ export default function Henry() {
   const recognitionRef = useRef(null);
   const messagesEndRef = useRef(null);
   const initialized = useRef(false);
+  const hasGreeted = useRef(false);
   const pendingActionRef = useRef(null);
   const handleCommandRef = useRef(null);
 
@@ -155,7 +156,8 @@ export default function Henry() {
         const greeting = getGreeting();
 
         setTimeout(() => {
-          if (_henryHasGreeted) return;
+          if (hasGreeted.current || _henryHasGreeted) return;
+          hasGreeted.current = true;
           _henryHasGreeted = true;
           henrySay(
             `Good ${greeting}, ${firstName}. I'm Henry, your field operations manager. How can I help you today? Say "morning briefing" to get started.`
@@ -164,7 +166,8 @@ export default function Henry() {
       } catch (e) {
         console.error('Henry init error:', e);
         setTimeout(() => {
-          if (_henryHasGreeted) return;
+          if (hasGreeted.current || _henryHasGreeted) return;
+          hasGreeted.current = true;
           _henryHasGreeted = true;
           henrySay("Good day! I'm Henry, your field operations manager. How can I help you today?");
         }, 1000);
