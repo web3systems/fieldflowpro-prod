@@ -147,7 +147,13 @@ export function isJobScheduledOnDate(job, dateStr) {
     }
   }
   return candidates.some(ts => {
-    const d = new Date(ts);
+    if (!ts) return false;
+    const s = String(ts);
+    // Date-only string (YYYY-MM-DD) from <input type="date">: compare directly.
+    // new Date("2026-08-17") parses as UTC midnight, which in negative-offset
+    // timezones (e.g. EDT) shifts to the previous local day and never matches.
+    if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s === dateStr;
+    const d = new Date(s);
     if (isNaN(d.getTime())) return false;
     return d.toLocaleDateString('en-CA') === dateStr;
   });

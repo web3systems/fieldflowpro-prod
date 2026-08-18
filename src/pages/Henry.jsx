@@ -51,20 +51,30 @@ function resolveHenryVoice() {
 
 function speak(text, onEnd) {
   if (!window.speechSynthesis) { if (onEnd) onEnd(); return; }
-  try {
-    // Only cancel if something is actually speaking — calling cancel() when idle
-    // is what disrupts Chrome's voice list and drops Henry to the default voice.
-    if (window.speechSynthesis.speaking || window.speechSynthesis.pending) {
-      window.speechSynthesis.cancel();
+  const run = () => {
+    try {
+      const utt = new SpeechSynthesisUtterance(text);
+      const cfg = getHenryVoiceConfig();
+      utt.rate = cfg.rate;
+      utt.pitch = cfg.pitch;
+      const voice = resolveHenryVoice();
+      if (voice) utt.voice = voice;
+      if (onEnd) { utt.onend = onEnd; utt.onerror = onEnd; }
+      window.speechSynthesis.speak(utt);
+    } catch (e) {
+      if (onEnd) onEnd();
     }
-    const utt = new SpeechSynthesisUtterance(text);
-    const cfg = getHenryVoiceConfig();
-    utt.rate = cfg.rate;
-    utt.pitch = cfg.pitch;
-    const voice = resolveHenryVoice();
-    if (voice) utt.voice = voice;
-    if (onEnd) { utt.onend = onEnd; utt.onerror = onEnd; }
-    window.speechSynthesis.speak(utt);
+  };
+  try {
+    if (window.speechSynthesis.speaking || window.speechSynthesis.pending) {
+      // Cancel, then defer to the next tick — Chrome empties its voice list
+      // synchronously after cancel(), which drops the next utterance to the
+      // default voice. A 0ms delay lets it repopulate so the chosen voice sticks.
+      window.speechSynthesis.cancel();
+      setTimeout(run, 0);
+    } else {
+      run();
+    }
   } catch (e) {
     if (onEnd) onEnd();
   }
