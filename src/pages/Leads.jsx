@@ -59,6 +59,13 @@ export default function Leads() {
     if (activeCompany) loadLeads();
   }, [activeCompany]);
 
+  // Auto-open the "New Lead" sheet when navigated with ?new=1 (e.g. from the
+  // Schedule calendar's "Consultation" option).
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("new") === "1") openCreate();
+  }, []);
+
   async function loadLeads() {
     setLoading(true);
     const list = await base44.entities.Lead.filter({ company_id: activeCompany.id });
