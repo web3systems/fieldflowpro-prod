@@ -133,10 +133,14 @@ export function getHenryOpeningQuestions(company) {
 // Does this job have an appointment (or legacy scheduled_start) on the given
 // YYYY-MM-DD date? Jobs were migrated from a single scheduled_start field to
 // an appointments[] array, so we check both.
-// Compare a job's scheduled date (in the user's LOCAL timezone) against a
-// local YYYY-MM-DD string. We parse each timestamp with new Date() and convert
-// to a local date string so UTC-stored timestamps that cross the local date
-// boundary (e.g. an 8pm EDT job stored as the next day in UTC) still match.
+// Henry's fixed timezone — the business operates in US Eastern time, so
+// "today" is always the Eastern day regardless of the browser/server clock.
+export const HENRY_TIMEZONE = 'America/New_York';
+
+// Compare a job's scheduled date (in Henry's fixed Eastern timezone) against
+// a YYYY-MM-DD string. Timestamps are converted to the Eastern day so that
+// UTC-stored values that cross the date boundary (e.g. a 9pm ET job stored as
+// the next day in UTC) still match the correct local day.
 export function isJobScheduledOnDate(job, dateStr) {
   if (!job) return false;
   const candidates = [];
@@ -155,7 +159,7 @@ export function isJobScheduledOnDate(job, dateStr) {
     if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s === dateStr;
     const d = new Date(s);
     if (isNaN(d.getTime())) return false;
-    return d.toLocaleDateString('en-CA') === dateStr;
+    return d.toLocaleDateString('en-CA', { timeZone: HENRY_TIMEZONE }) === dateStr;
   });
 }
 

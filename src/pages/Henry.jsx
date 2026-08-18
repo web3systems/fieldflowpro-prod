@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { Mic, MicOff, Zap, Briefcase, Users, FileText, Sun, Send, DollarSign, Calculator, TrendingUp, Wrench, Calendar, Clock, MapPin, Bell, MessageCircle, Package, Camera, CheckSquare, BookOpen, BarChart3, Home, CreditCard, Megaphone, Phone, Hammer, PaintBucket, Trees, Snowflake, Leaf, Truck, ClipboardList, Target, Lightbulb, AlertTriangle, Star, MessageSquare } from "lucide-react";
-import { buildHenryContext, getHenryVoiceConfig, getHenryOpeningQuestions, HENRY_ICON_MAP, isJobScheduledOnDate } from "@/lib/henryBrain";
+import { buildHenryContext, getHenryVoiceConfig, getHenryOpeningQuestions, HENRY_ICON_MAP, HENRY_TIMEZONE, isJobScheduledOnDate } from "@/lib/henryBrain";
 import { henryDecideAction, runHenryAction } from "@/lib/henryActions";
 
 // Resolve lucide icon components by name from the shared map.
@@ -312,7 +312,7 @@ export default function Henry() {
         : Promise.resolve(null),
     ]);
 
-    const today = new Date().toLocaleDateString('en-CA'); // local YYYY-MM-DD (en-CA = ISO format)
+    const today = new Date().toLocaleDateString('en-CA', { timeZone: HENRY_TIMEZONE }); // Eastern YYYY-MM-DD
     const todayJobs = jobsData.filter(j =>
       isJobScheduledOnDate(j, today) &&
       ['scheduled', 'in_progress'].includes(j.status)
@@ -359,7 +359,7 @@ export default function Henry() {
     const companyId = active?.id;
     if (!companyId) { henrySay("No company found. Please set up your company first."); return; }
 
-    const today = new Date().toLocaleDateString('en-CA'); // local YYYY-MM-DD (en-CA = ISO format)
+    const today = new Date().toLocaleDateString('en-CA', { timeZone: HENRY_TIMEZONE }); // Eastern YYYY-MM-DD
     const jobs = await base44.entities.Job.filter({ company_id: companyId }).catch(() => []);
     const todayJobs = jobs.filter(j =>
       isJobScheduledOnDate(j, today) &&
