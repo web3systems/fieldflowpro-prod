@@ -68,6 +68,11 @@ export async function henryAsk(userMessage, context, extraTraining) {
 // Shared voice selection — reads the user's choices from localStorage
 // (set in Settings → Henry AI). Returns { voice, pitch, rate } for the
 // speechSynthesis utterance, or null if no voice configured.
+// Cached voice list — Chrome can momentarily return [] from getVoices() right
+// after speechSynthesis.cancel(), which made Henry drop to the default voice on
+// every line after the first. We keep the last known-good list as a fallback.
+let _henryVoiceCache = [];
+
 export function getHenryVoiceConfig() {
   if (typeof window === "undefined" || !window.speechSynthesis) return { pitch: 0.82, rate: 0.9 };
   const uri = localStorage.getItem("henry_voice_uri");
@@ -75,7 +80,9 @@ export function getHenryVoiceConfig() {
   const rate = parseFloat(localStorage.getItem("henry_rate") || "0.9");
   let voice = null;
   if (uri) {
-    const voices = window.speechSynthesis.getVoices();
+    const live = window.speechSynthesis.getVoices() || [];
+    if (live.length) _henryVoiceCache = live;
+    const voices = _henryVoiceCache.length ? _henryVoiceCache : live;
     voice = voices.find(v => v.voiceURI === uri) || null;
   }
   return { voice, pitch, rate };
