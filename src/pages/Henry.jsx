@@ -28,25 +28,30 @@ function getGreeting() {
   return "evening";
 }
 
-function resolveHenryVoice() {
-  if (!window.speechSynthesis) return null;
+// Resolve the chosen voice ONCE (when the voice list is available) and reuse
+// that same SpeechSynthesisVoice object for every utterance. Calling
+// getVoices() at speak-time is unreliable — Chrome returns [] right after
+// cancel(), which drops Henry to the default voice. A voice object resolved
+// before any cancel() stays valid across cancels.
+let _henryVoice = null;
+
+function primeHenryVoice() {
+  if (!window.speechSynthesis) return;
   const uri = localStorage.getItem("henry_voice_uri");
-  const live = window.speechSynthesis.getVoices() || [];
-  // 1) Fresh live match (most reliable — a live SpeechSynthesisVoice object)
-  if (uri && live.length) {
-    const found = live.find(v => v.voiceURI === uri);
-    if (found) return found;
+  const voices = window.speechSynthesis.getVoices() || [];
+  if (!voices.length) return;
+  if (uri) {
+    const found = voices.find(v => v.voiceURI === uri);
+    if (found) { _henryVoice = found; return; }
   }
-  // 2) Cached match (Chrome can return [] right after cancel())
-  const cfg = getHenryVoiceConfig();
-  if (cfg.voice) return cfg.voice;
-  // 3) Male-voice fallback when no preference is set
-  const voices = live.length ? live : live;
-  const maleNames = ['Google UK English Male', 'Microsoft David', 'Daniel', 'Alex', 'Ralph', 'Oliver', 'Arthur', 'Microsoft Guy', 'Google US English Male'];
-  return voices.find(v => maleNames.some(n => v.name.includes(n))) ||
-    voices.find(v => v.name.toLowerCase().includes('male')) ||
-    voices.find(v => v.lang?.startsWith('en')) ||
-    voices[0] || null;
+  if (!_henryVoice) {
+    // Male-voice fallback when no preference is set
+    const maleNames = ['Google UK English Male', 'Microsoft David', 'Daniel', 'Alex', 'Ralph', 'Oliver', 'Arthur', 'Microsoft Guy', 'Google US English Male'];
+    _henryVoice = voices.find(v => maleNames.some(n => v.name.includes(n))) ||
+      voices.find(v => v.name.toLowerCase().includes('male')) ||
+      voices.find(v => v.lang?.startsWith('en')) ||
+      voices[0] || null;
+  }
 }
 
 function speak(text, onEnd) {
@@ -57,8 +62,7 @@ function speak(text, onEnd) {
       const cfg = getHenryVoiceConfig();
       utt.rate = cfg.rate;
       utt.pitch = cfg.pitch;
-      const voice = resolveHenryVoice();
-      if (voice) utt.voice = voice;
+      if (_henryVoice) utt.voice = _henryVoice;
       if (onEnd) { utt.onend = onEnd; utt.onerror = onEnd; }
       window.speechSynthesis.speak(utt);
     } catch (e) {
@@ -67,9 +71,6 @@ function speak(text, onEnd) {
   };
   try {
     if (window.speechSynthesis.speaking || window.speechSynthesis.pending) {
-      // Cancel, then defer to the next tick — Chrome empties its voice list
-      // synchronously after cancel(), which drops the next utterance to the
-      // default voice. A 0ms delay lets it repopulate so the chosen voice sticks.
       window.speechSynthesis.cancel();
       setTimeout(run, 0);
     } else {
@@ -155,10 +156,11 @@ export default function Henry() {
       }
     }
 
-    // Load voices async (Chrome requires this)
+    // Resolve and cache the chosen voice once voices are available, then reuse
+    // it for every utterance (see primeHenryVoice).
     if (window.speechSynthesis) {
-      window.speechSynthesis.getVoices();
-      window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
+      primeHenryVoice();
+      window.speechSynthesis.onvoiceschanged = () => primeHenryVoice();
     }
 
     init();
