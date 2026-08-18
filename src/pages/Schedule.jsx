@@ -92,6 +92,7 @@ export default function Schedule() {
   const [techs, setTechs] = useState([]);
   const [bookings, setBookings] = useState([]);
   const [tasks, setTasks] = useState([]);
+  const [leads, setLeads] = useState([]);
   const [view, setView] = useState(Views.MONTH);
   const [date, setDate] = useState(new Date());
   const [eventOpen, setEventOpen] = useState(false);
@@ -126,18 +127,20 @@ export default function Schedule() {
   }, [activeCompany]);
 
   async function loadData() {
-    const [j, c, t, b, tk] = await Promise.all([
+    const [j, c, t, b, tk, l] = await Promise.all([
       base44.entities.Job.filter({ company_id: activeCompany.id }),
       base44.entities.Customer.filter({ company_id: activeCompany.id }),
       base44.entities.Technician.filter({ company_id: activeCompany.id }),
       base44.entities.ServiceBooking.filter({ company_id: activeCompany.id, status: "pending" }),
       base44.entities.Task.filter({ company_id: activeCompany.id }),
+      base44.entities.Lead.filter({ company_id: activeCompany.id }),
     ]);
     setJobs(j);
     setCustomers(c);
     setTechs(t);
     setBookings(b);
     setTasks(tk);
+    setLeads(l);
   }
 
   const filteredJobs = useMemo(() => {
@@ -250,8 +253,23 @@ export default function Schedule() {
       });
     });
 
+    // Lead follow-ups (consultations) — show on the customer schedule
+    leads.forEach(lead => {
+      if (!lead.follow_up_date) return;
+      if (lead.status === "won" || lead.status === "lost") return;
+      const name = [lead.first_name, lead.last_name].filter(Boolean).join(" ") || "Lead";
+      result.push({
+        id: `lead_${lead.id}`,
+        title: `Consultation · ${name}`,
+        start: new Date(lead.follow_up_date + "T09:00:00"),
+        end: new Date(lead.follow_up_date + "T10:00:00"),
+        resource: lead,
+        isLead: true,
+      });
+    });
+
     return result;
-  }, [filteredJobs, customers]);
+  }, [filteredJobs, customers, leads]);
 
   // Filter events by history range when history mode is active
   const displayEvents = useMemo(() => {
@@ -277,6 +295,19 @@ export default function Schedule() {
   }, [displayEvents, historyMode]);
 
   const eventStyleGetter = (event) => {
+    if (event.isLead) {
+      return {
+        style: {
+          backgroundColor: '#0d9488',
+          borderRadius: '5px',
+          color: 'white',
+          border: '1px dashed rgba(255,255,255,0.5)',
+          padding: '2px 5px',
+          fontSize: '12px',
+          fontWeight: '500',
+        }
+      };
+    }
     let backgroundColor = '#3b82f6';
     if (event.isAppointment && event.aptStatus) {
       backgroundColor = APPOINTMENT_STATUS_COLORS[event.aptStatus] || '#3b82f6';
@@ -300,6 +331,10 @@ export default function Schedule() {
   function handleSelectEvent(event) {
     if (event.isTask) {
       navigate(createPageUrl("Tasks"));
+      return;
+    }
+    if (event.isLead) {
+      navigate(`/LeadDetail/${event.resource.id}`);
       return;
     }
     const job = event.resource;
@@ -637,7 +672,10 @@ async function convertBookingToJob(booking) {
                   {s.label}
                 </span>
               ))}
-
+              <span className="flex items-center gap-1.5 text-xs text-slate-500">
+                <span className="w-2.5 h-2.5 rounded-sm flex-shrink-0 border border-teal-400" style={{ backgroundColor: '#0d9488' }} />
+                Consultation
+              </span>
             </>
           ) : (
             <>
