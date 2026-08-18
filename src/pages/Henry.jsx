@@ -34,6 +34,9 @@ function getGreeting() {
 // cancel(), which drops Henry to the default voice. A voice object resolved
 // before any cancel() stays valid across cancels.
 let _henryVoice = null;
+// Module-level guard: Henry should greet exactly once per page load, even if
+// the component remounts (StrictMode double-invoke, layout re-renders, etc.).
+let _henryHasGreeted = false;
 
 function primeHenryVoice() {
   if (!window.speechSynthesis) return;
@@ -54,10 +57,18 @@ function primeHenryVoice() {
   }
 }
 
+// Prime as early as possible (voices may already be cached by the browser).
+if (typeof window !== "undefined" && window.speechSynthesis) {
+  primeHenryVoice();
+}
+
 function speak(text, onEnd) {
   if (!window.speechSynthesis) { if (onEnd) onEnd(); return; }
   const run = () => {
     try {
+      // Ensure the persisted voice is resolved before every utterance — voices
+      // may load after the first render, so re-prime on demand.
+      if (!_henryVoice) primeHenryVoice();
       const utt = new SpeechSynthesisUtterance(text);
       const cfg = getHenryVoiceConfig();
       utt.rate = cfg.rate;
@@ -144,6 +155,8 @@ export default function Henry() {
         const greeting = getGreeting();
 
         setTimeout(() => {
+          if (_henryHasGreeted) return;
+          _henryHasGreeted = true;
           henrySay(
             `Good ${greeting}, ${firstName}. I'm Henry, your field operations manager. How can I help you today? Say "morning briefing" to get started.`
           );
@@ -151,6 +164,8 @@ export default function Henry() {
       } catch (e) {
         console.error('Henry init error:', e);
         setTimeout(() => {
+          if (_henryHasGreeted) return;
+          _henryHasGreeted = true;
           henrySay("Good day! I'm Henry, your field operations manager. How can I help you today?");
         }, 1000);
       }
