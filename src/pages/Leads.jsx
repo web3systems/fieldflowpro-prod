@@ -91,19 +91,9 @@ export default function Leads() {
       estimated_value: parseFloat(form.estimated_value) || 0
     };
     const created = await base44.entities.Lead.create(data);
-    // From the Schedule "Consultation" flow: also add a task to the Company
-    // Tasks / Projects calendar so the consultation shows up on that calendar.
-    const params = new URLSearchParams(window.location.search);
-    if (params.get("new") === "1" && form.follow_up_date) {
-      await base44.entities.Task.create({
-        company_id: activeCompany.id,
-        title: `Consultation: ${form.first_name} ${form.last_name}`,
-        due_date: form.follow_up_date,
-        priority: "medium",
-        status: "todo",
-        notes: form.service_interest ? `Service interest: ${form.service_interest}` : (form.notes || ""),
-      });
-    }
+    // The lead's follow_up_date renders it on the Customer Schedule calendar
+    // (see Schedule.jsx events memo). No task is created — the consultation
+    // belongs on the customer calendar, not the company tasks calendar.
     setSaving(false);
     setSheetOpen(false);
     navigate(createPageUrl(`LeadDetail/${created.id}`));
