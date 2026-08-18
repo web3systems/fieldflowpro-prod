@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { X, Mic, MicOff, Zap, Briefcase, Users, FileText, Sun, DollarSign, Calculator, TrendingUp, Wrench, Send, Calendar, Clock, MapPin, Bell, MessageCircle, Package, Camera, CheckSquare, BookOpen, BarChart3, Home, CreditCard, Megaphone, Phone, Hammer, PaintBucket, Trees, Snowflake, Leaf, Truck, ClipboardList, Target, Lightbulb, AlertTriangle, Star, MessageSquare } from "lucide-react";
-import { henryAsk, buildHenryContext, getHenryVoiceConfig, getHenryOpeningQuestions, HENRY_ICON_MAP } from "@/lib/henryBrain";
+import { henryAsk, buildHenryContext, getHenryVoiceConfig, getHenryOpeningQuestions, HENRY_ICON_MAP, hasGreeted, markGreeted } from "@/lib/henryBrain";
 
 const HENRY_ICONS = {
   Sun, Briefcase, Zap, FileText, Wrench, DollarSign, Calculator, TrendingUp,
@@ -83,6 +83,8 @@ export default function HenryModal({ onClose, company, user }) {
     }
     const firstName = user?.full_name?.split(' ')[0] || 'there';
     setTimeout(() => {
+      if (hasGreeted()) return;
+      markGreeted();
       henrySay(`Good ${getGreeting()}, ${firstName}. I'm Henry, your field operations manager. What would you like to work on today?`);
     }, 400);
   }, [henrySay, user]);

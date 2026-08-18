@@ -137,6 +137,16 @@ export function getHenryOpeningQuestions(company) {
 // "today" is always the Eastern day regardless of the browser/server clock.
 export const HENRY_TIMEZONE = 'America/New_York';
 
+// Shared greeting guard — both src/pages/Henry.jsx and
+// components/henry/HenryModal.jsx render a Henry interface, and either may
+// mount (or both may be present). This single module-level flag guarantees the
+// welcome greeting fires exactly once per page load, no matter which
+// component mounts first. Each component must call hasGreeted() before
+// greeting and markGreeted() immediately before speaking.
+export let _henryHasGreeted = false;
+export function markGreeted() { _henryHasGreeted = true; }
+export function hasGreeted() { return _henryHasGreeted; }
+
 // Compare a job's scheduled date (in Henry's fixed Eastern timezone) against
 // a YYYY-MM-DD string. Timestamps are converted to the Eastern day so that
 // UTC-stored values that cross the date boundary (e.g. a 9pm ET job stored as
@@ -148,6 +158,9 @@ export function isJobScheduledOnDate(job, dateStr) {
   if (Array.isArray(job.appointments)) {
     for (const a of job.appointments) {
       if (a?.scheduled_start) candidates.push(a.scheduled_start);
+      // Fallback: a multi-day appointment may only have scheduled_end; if it
+      // ends on the target day it is still happening that day.
+      if (!a?.scheduled_start && a?.scheduled_end) candidates.push(a.scheduled_end);
     }
   }
   return candidates.some(ts => {

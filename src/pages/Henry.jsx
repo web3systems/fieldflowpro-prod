@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { Mic, MicOff, Zap, Briefcase, Users, FileText, Sun, Send, DollarSign, Calculator, TrendingUp, Wrench, Calendar, Clock, MapPin, Bell, MessageCircle, Package, Camera, CheckSquare, BookOpen, BarChart3, Home, CreditCard, Megaphone, Phone, Hammer, PaintBucket, Trees, Snowflake, Leaf, Truck, ClipboardList, Target, Lightbulb, AlertTriangle, Star, MessageSquare } from "lucide-react";
-import { buildHenryContext, getHenryVoiceConfig, getHenryOpeningQuestions, HENRY_ICON_MAP, HENRY_TIMEZONE, isJobScheduledOnDate } from "@/lib/henryBrain";
+import { buildHenryContext, getHenryVoiceConfig, getHenryOpeningQuestions, HENRY_ICON_MAP, HENRY_TIMEZONE, isJobScheduledOnDate, hasGreeted, markGreeted } from "@/lib/henryBrain";
 import { henryDecideAction, runHenryAction } from "@/lib/henryActions";
 
 // Resolve lucide icon components by name from the shared map.
@@ -34,9 +34,6 @@ function getGreeting() {
 // cancel(), which drops Henry to the default voice. A voice object resolved
 // before any cancel() stays valid across cancels.
 let _henryVoice = null;
-// Module-level guard: Henry should greet exactly once per page load, even if
-// the component remounts (StrictMode double-invoke, layout re-renders, etc.).
-let _henryHasGreeted = false;
 
 function primeHenryVoice() {
   if (!window.speechSynthesis) return;
@@ -106,7 +103,6 @@ export default function Henry() {
   const recognitionRef = useRef(null);
   const messagesEndRef = useRef(null);
   const initialized = useRef(false);
-  const hasGreeted = useRef(false);
   const pendingActionRef = useRef(null);
   const handleCommandRef = useRef(null);
 
@@ -156,9 +152,8 @@ export default function Henry() {
         const greeting = getGreeting();
 
         setTimeout(() => {
-          if (hasGreeted.current || _henryHasGreeted) return;
-          hasGreeted.current = true;
-          _henryHasGreeted = true;
+          if (hasGreeted()) return;
+          markGreeted();
           henrySay(
             `Good ${greeting}, ${firstName}. I'm Henry, your field operations manager. How can I help you today? Say "morning briefing" to get started.`
           );
@@ -166,9 +161,8 @@ export default function Henry() {
       } catch (e) {
         console.error('Henry init error:', e);
         setTimeout(() => {
-          if (hasGreeted.current || _henryHasGreeted) return;
-          hasGreeted.current = true;
-          _henryHasGreeted = true;
+          if (hasGreeted()) return;
+          markGreeted();
           henrySay("Good day! I'm Henry, your field operations manager. How can I help you today?");
         }, 1000);
       }
