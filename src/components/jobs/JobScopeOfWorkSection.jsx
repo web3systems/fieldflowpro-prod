@@ -176,7 +176,7 @@ export default function JobScopeOfWorkSection({ job, form, setForm, onSave }) {
           <CardHeader className="pb-2">
             <CardTitle className="text-base flex items-center gap-2">
               <Plus className="w-4 h-4 text-blue-600" />
-              New Statement of Work / Change Order
+              New Additional Work / Change Order
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
@@ -212,7 +212,7 @@ export default function JobScopeOfWorkSection({ job, form, setForm, onSave }) {
       ) : (
         <div className="flex justify-center">
           <Button variant="outline" className="gap-2" onClick={() => setAdding(true)}>
-            <Plus className="w-4 h-4" /> Add Statement of Work
+            <Plus className="w-4 h-4" /> Add Additional Work
           </Button>
         </div>
       )}
