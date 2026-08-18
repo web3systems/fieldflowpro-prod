@@ -270,7 +270,7 @@ export default function Henry() {
         : Promise.resolve(null),
     ]);
 
-    const today = new Date().toISOString().split('T')[0];
+    const today = new Date().toLocaleDateString('en-CA'); // local YYYY-MM-DD (en-CA = ISO format)
     const todayJobs = jobsData.filter(j =>
       isJobScheduledOnDate(j, today) &&
       ['scheduled', 'in_progress'].includes(j.status)
@@ -317,7 +317,7 @@ export default function Henry() {
     const companyId = active?.id;
     if (!companyId) { henrySay("No company found. Please set up your company first."); return; }
 
-    const today = new Date().toISOString().split('T')[0];
+    const today = new Date().toLocaleDateString('en-CA'); // local YYYY-MM-DD (en-CA = ISO format)
     const jobs = await base44.entities.Job.filter({ company_id: companyId }).catch(() => []);
     const todayJobs = jobs.filter(j =>
       isJobScheduledOnDate(j, today) &&
