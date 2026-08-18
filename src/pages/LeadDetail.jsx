@@ -14,6 +14,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import LeadSidebar from "@/components/leads/LeadSidebar";
 import LeadActivity from "@/components/leads/LeadActivity";
 import LeadReplyBox from "@/components/leads/LeadReplyBox";
+import LeadAssigneeSelect from "@/components/leads/LeadAssigneeSelect";
 
 const STAGES = [
   { value: "new", label: "New", color: "bg-blue-100 text-blue-700", dot: "bg-blue-500" },
@@ -36,6 +37,7 @@ export default function LeadDetail() {
   const [converting, setConverting] = useState(false);
   const [editing, setEditing] = useState(false);
   const [editForm, setEditForm] = useState({});
+  const [members, setMembers] = useState([]);
 
   const loadData = useCallback(async () => {
     if (!id) return;
@@ -53,15 +55,27 @@ export default function LeadDetail() {
 
   useEffect(() => { loadData(); }, [loadData]);
 
+  useEffect(() => {
+    if (!lead?.company_id) return;
+    base44.functions.invoke("getCompanyTeam", { company_id: lead.company_id })
+      .then(res => setMembers(res.data?.team || []))
+      .catch(() => setMembers([]));
+  }, [lead?.company_id]);
+
   async function handleUpdate(data) {
     await base44.entities.Lead.update(id, data);
     setLead(prev => ({ ...prev, ...data }));
   }
 
   async function handleSaveEdit() {
+    const wasAssigned = lead.assigned_to;
+    const nowAssigned = editForm.assigned_to;
     await base44.entities.Lead.update(id, editForm);
     setLead(editForm);
     setEditing(false);
+    if (nowAssigned && nowAssigned !== wasAssigned) {
+      base44.functions.invoke("notifyLeadAssigned", { lead_id: id }).catch(() => {});
+    }
   }
 
   async function handleConvert() {
@@ -179,6 +193,16 @@ export default function LeadDetail() {
                     <Input type="date" value={editForm.follow_up_date || ""} onChange={e => setEditForm(f => ({ ...f, follow_up_date: e.target.value }))} className="h-8 text-sm" />
                   </div>
                   <div>
+                    <Label className="text-xs">Assign To</Label>
+                    <LeadAssigneeSelect
+                      companyId={lead.company_id}
+                      members={members}
+                      value={editForm.assigned_to || ""}
+                      onChange={v => setEditForm(f => ({ ...f, assigned_to: v }))}
+                      className="h-8 text-sm"
+                    />
+                  </div>
+                  <div>
                     <Label className="text-xs">Notes</Label>
                     <Textarea value={editForm.notes || ""} onChange={e => setEditForm(f => ({ ...f, notes: e.target.value }))} rows={3} className="text-sm" />
                   </div>
@@ -209,6 +233,15 @@ export default function LeadDetail() {
                       <p className="text-sm text-slate-800 capitalize">{lead.source.replace("_", " ")}</p>
                     </div>
                   )}
+                  {lead.assigned_to && (() => {
+                    const m = members.find(x => (x.user_id || x.user_email) === lead.assigned_to);
+                    return (
+                      <div>
+                        <p className="text-xs text-slate-400">Assigned to</p>
+                        <p className="text-sm text-slate-800">{m?.user_name || m?.user_email || "Team member"}</p>
+                      </div>
+                    );
+                  })()}
                   {lead.notes && (
                     <div className="col-span-full">
                       <p className="text-xs text-slate-400">Notes</p>

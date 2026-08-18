@@ -8,6 +8,7 @@ import {
   ChevronRight, Trash2, Code2, ArrowUp, ArrowDown
 } from "lucide-react";
 import EmbedCodeModal from "../components/leads/EmbedCodeModal";
+import LeadAssigneeSelect from "@/components/leads/LeadAssigneeSelect";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -37,7 +38,8 @@ const SOURCES = ["website", "referral", "google", "facebook", "instagram", "yelp
 const defaultForm = {
   first_name: "", last_name: "", email: "", phone: "",
   address: "", source: "website", service_interest: "",
-  status: "new", notes: "", estimated_value: "", follow_up_date: ""
+  status: "new", notes: "", estimated_value: "", follow_up_date: "",
+  assigned_to: ""
 };
 
 export default function Leads() {
@@ -91,6 +93,9 @@ export default function Leads() {
       estimated_value: parseFloat(form.estimated_value) || 0
     };
     const created = await base44.entities.Lead.create(data);
+    if (data.assigned_to) {
+      base44.functions.invoke("notifyLeadAssigned", { lead_id: created.id }).catch(() => {});
+    }
     // The lead's follow_up_date renders it on the Customer Schedule calendar
     // (see Schedule.jsx events memo). No task is created — the consultation
     // belongs on the customer calendar, not the company tasks calendar.
@@ -307,6 +312,14 @@ export default function Leads() {
               <div>
                 <Label>Follow Up Date</Label>
                 <Input type="date" value={form.follow_up_date} onChange={e => setForm({ ...form, follow_up_date: e.target.value })} />
+              </div>
+              <div>
+                <Label>Assign To</Label>
+                <LeadAssigneeSelect
+                  companyId={activeCompany?.id}
+                  value={form.assigned_to || ""}
+                  onChange={v => setForm({ ...form, assigned_to: v })}
+                />
               </div>
               <div>
                 <Label>Notes</Label>
