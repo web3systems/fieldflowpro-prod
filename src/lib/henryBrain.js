@@ -133,12 +133,24 @@ export function getHenryOpeningQuestions(company) {
 // Does this job have an appointment (or legacy scheduled_start) on the given
 // YYYY-MM-DD date? Jobs were migrated from a single scheduled_start field to
 // an appointments[] array, so we check both.
+// Compare a job's scheduled date (in the user's LOCAL timezone) against a
+// local YYYY-MM-DD string. We parse each timestamp with new Date() and convert
+// to a local date string so UTC-stored timestamps that cross the local date
+// boundary (e.g. an 8pm EDT job stored as the next day in UTC) still match.
 export function isJobScheduledOnDate(job, dateStr) {
   if (!job) return false;
-  if (job.scheduled_start && job.scheduled_start.startsWith(dateStr)) return true;
-  const appts = job.appointments;
-  if (Array.isArray(appts) && appts.some(a => a?.scheduled_start && a.scheduled_start.startsWith(dateStr))) return true;
-  return false;
+  const candidates = [];
+  if (job.scheduled_start) candidates.push(job.scheduled_start);
+  if (Array.isArray(job.appointments)) {
+    for (const a of job.appointments) {
+      if (a?.scheduled_start) candidates.push(a.scheduled_start);
+    }
+  }
+  return candidates.some(ts => {
+    const d = new Date(ts);
+    if (isNaN(d.getTime())) return false;
+    return d.toLocaleDateString('en-CA') === dateStr;
+  });
 }
 
 // Earliest scheduled datetime for a job across scheduled_start + appointments.
