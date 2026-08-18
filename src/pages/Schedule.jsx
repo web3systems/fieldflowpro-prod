@@ -106,6 +106,11 @@ export default function Schedule() {
     priority: "medium",
     notes: "",
     assigned_to_id: "",
+    first_name: "",
+    last_name: "",
+    email: "",
+    phone: "",
+    service_interest: "",
   });
   const [filterTech, setFilterTech] = useState("all");
   const [historyMode, setHistoryMode] = useState(false);
@@ -316,6 +321,11 @@ export default function Schedule() {
       priority: "medium",
       notes: "",
       assigned_to_id: "",
+      first_name: "",
+      last_name: "",
+      email: "",
+      phone: "",
+      service_interest: "",
     });
     setEventOpen(true);
   }
@@ -333,6 +343,40 @@ export default function Schedule() {
       const qs = params.toString();
       navigate(`/NewEstimate${qs ? "?" + qs : ""}`);
       setEventOpen(false);
+      return;
+    }
+
+    // Consultation — create a lead, then a task so it shows on the tasks calendar
+    if (eventForm.type === "consultation") {
+      if (!eventForm.first_name || !eventForm.last_name || !eventForm.date) return;
+      setSaving(true);
+      try {
+        await base44.entities.Lead.create({
+          company_id: activeCompany.id,
+          first_name: eventForm.first_name,
+          last_name: eventForm.last_name,
+          email: eventForm.email || "",
+          phone: eventForm.phone || "",
+          service_interest: eventForm.service_interest || "",
+          notes: eventForm.notes || "",
+          source: "other",
+          status: "new",
+          follow_up_date: eventForm.date,
+        });
+        await base44.entities.Task.create({
+          company_id: activeCompany.id,
+          title: `Consultation: ${eventForm.first_name} ${eventForm.last_name}`,
+          due_date: eventForm.date,
+          priority: eventForm.priority || "medium",
+          status: "todo",
+          notes: eventForm.notes || (eventForm.service_interest ? `Service interest: ${eventForm.service_interest}` : ""),
+        });
+        setEventOpen(false);
+        setCalendarType("tasks");
+        await loadData();
+      } finally {
+        setSaving(false);
+      }
       return;
     }
 
@@ -706,6 +750,7 @@ async function convertBookingToJob(booking) {
                       </>
                     )}
                     <SelectItem value="task">Company Task / Project</SelectItem>
+                    <SelectItem value="consultation">Consultation</SelectItem>
                   </SelectContent>
                 </Select>
                 {(eventForm.type === "estimate" || eventForm.type === "job") && (
@@ -720,6 +765,32 @@ async function convertBookingToJob(booking) {
                 <div>
                   <Label>Title *</Label>
                   <Input value={eventForm.title} onChange={e => setEventForm({ ...eventForm, title: e.target.value })} placeholder="Task title" />
+                </div>
+              )}
+
+              {/* Consultation — lead capture fields */}
+              {eventForm.type === "consultation" && (
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label>First Name *</Label>
+                    <Input value={eventForm.first_name} onChange={e => setEventForm({ ...eventForm, first_name: e.target.value })} placeholder="John" />
+                  </div>
+                  <div>
+                    <Label>Last Name *</Label>
+                    <Input value={eventForm.last_name} onChange={e => setEventForm({ ...eventForm, last_name: e.target.value })} placeholder="Doe" />
+                  </div>
+                  <div>
+                    <Label>Email</Label>
+                    <Input type="email" value={eventForm.email} onChange={e => setEventForm({ ...eventForm, email: e.target.value })} placeholder="john@example.com" />
+                  </div>
+                  <div>
+                    <Label>Phone</Label>
+                    <Input value={eventForm.phone} onChange={e => setEventForm({ ...eventForm, phone: e.target.value })} placeholder="(555) 123-4567" />
+                  </div>
+                  <div className="col-span-2">
+                    <Label>Service Interest</Label>
+                    <Input value={eventForm.service_interest} onChange={e => setEventForm({ ...eventForm, service_interest: e.target.value })} placeholder="What do they need?" />
+                  </div>
                 </div>
               )}
 
@@ -759,7 +830,7 @@ async function convertBookingToJob(booking) {
                   <Label>Date *</Label>
                   <Input type="date" value={eventForm.date} onChange={e => setEventForm({ ...eventForm, date: e.target.value })} />
                 </div>
-                {eventForm.type === "task" ? (
+                {(eventForm.type === "task" || eventForm.type === "consultation") ? (
                   <div>
                     <Label>Priority</Label>
                     <Select value={eventForm.priority} onValueChange={v => setEventForm({ ...eventForm, priority: v })}>
@@ -783,8 +854,8 @@ async function convertBookingToJob(booking) {
                 )}
               </div>
 
-              {/* Notes — only for tasks */}
-              {eventForm.type === "task" && (
+              {/* Notes — for tasks and consultations */}
+              {(eventForm.type === "task" || eventForm.type === "consultation") && (
                 <div>
                   <Label>Notes</Label>
                   <Textarea value={eventForm.notes} onChange={e => setEventForm({ ...eventForm, notes: e.target.value })} rows={3} placeholder="Details..." />
@@ -795,10 +866,16 @@ async function convertBookingToJob(booking) {
                 <Button variant="outline" onClick={() => setEventOpen(false)} className="flex-1">Cancel</Button>
                 <Button
                   onClick={handleEventSave}
-                  disabled={eventForm.type === "task" ? (saving || !eventForm.title || !eventForm.date) : !eventForm.date}
+                  disabled={
+                    eventForm.type === "task" ? (saving || !eventForm.title || !eventForm.date)
+                    : eventForm.type === "consultation" ? (saving || !eventForm.first_name || !eventForm.last_name || !eventForm.date)
+                    : !eventForm.date
+                  }
                   className="flex-1 bg-blue-600 hover:bg-blue-700"
                 >
-                  {eventForm.type === "task" ? (saving ? "Adding..." : "Add Task") : "Add New"}
+                  {eventForm.type === "task" ? (saving ? "Adding..." : "Add Task")
+                    : eventForm.type === "consultation" ? (saving ? "Saving..." : "Schedule Consultation")
+                    : "Add New"}
                 </Button>
               </div>
             </div>
