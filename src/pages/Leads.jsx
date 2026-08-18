@@ -60,10 +60,15 @@ export default function Leads() {
   }, [activeCompany]);
 
   // Auto-open the "New Lead" sheet when navigated with ?new=1 (e.g. from the
-  // Schedule calendar's "Consultation" option).
+  // Schedule calendar's "Consultation" option), prefilling the follow-up date
+  // from ?date= so the resulting task lands on the chosen calendar day.
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    if (params.get("new") === "1") openCreate();
+    if (params.get("new") === "1") {
+      const date = params.get("date");
+      setForm({ ...defaultForm, follow_up_date: date || "" });
+      setSheetOpen(true);
+    }
   }, []);
 
   async function loadLeads() {
@@ -86,6 +91,19 @@ export default function Leads() {
       estimated_value: parseFloat(form.estimated_value) || 0
     };
     const created = await base44.entities.Lead.create(data);
+    // From the Schedule "Consultation" flow: also add a task to the Company
+    // Tasks / Projects calendar so the consultation shows up on that calendar.
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("new") === "1" && form.follow_up_date) {
+      await base44.entities.Task.create({
+        company_id: activeCompany.id,
+        title: `Consultation: ${form.first_name} ${form.last_name}`,
+        due_date: form.follow_up_date,
+        priority: "medium",
+        status: "todo",
+        notes: form.service_interest ? `Service interest: ${form.service_interest}` : (form.notes || ""),
+      });
+    }
     setSaving(false);
     setSheetOpen(false);
     navigate(createPageUrl(`LeadDetail/${created.id}`));

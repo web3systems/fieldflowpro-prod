@@ -709,7 +709,9 @@ async function convertBookingToJob(booking) {
                 <Select value={eventForm.type} onValueChange={v => {
                   if (v === "consultation") {
                     setEventOpen(false);
-                    navigate(`${createPageUrl("Leads")}?new=1`);
+                    const qs = new URLSearchParams({ new: "1" });
+                    if (eventForm.date) qs.set("date", eventForm.date);
+                    navigate(`${createPageUrl("Leads")}?${qs.toString()}`);
                     return;
                   }
                   setEventForm({ ...eventForm, type: v });
