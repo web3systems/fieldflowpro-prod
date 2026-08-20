@@ -3,7 +3,7 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { useApp } from "../Layout";
 import { createPageUrl } from "@/utils";
-import { ArrowLeft, FileText, Briefcase, DollarSign, ExternalLink, Calendar, ChevronRight, Link2, CreditCard } from "lucide-react";
+import { ArrowLeft, FileText, Briefcase, DollarSign, ExternalLink, Calendar, ChevronRight, Link2, CreditCard, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
@@ -13,6 +13,7 @@ import CustomerAddresses from "@/components/customers/CustomerAddresses";
 import CustomerTasks from "@/components/customers/CustomerTasks";
 import CustomerNotes from "@/components/customers/CustomerNotes";
 import AssignRecordModal from "@/components/customers/AssignRecordModal";
+import EditCustomerModal from "@/components/customers/EditCustomerModal";
 import CustomerSmsPanel from "@/components/customers/CustomerSmsPanel";
 import CustomerReviews from "@/components/reviews/CustomerReviews";
 import RequestReviewModal from "@/components/reviews/RequestReviewModal";
@@ -42,6 +43,7 @@ export default function CustomerDetail() {
   const [sendingInvite, setSendingInvite] = useState(false);
   const [assignModal, setAssignModal] = useState(null); // "job" | "estimate" | "invoice"
   const [showReviewModal, setShowReviewModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
 
   const loadData = useCallback(async () => {
     if (!id) return;
@@ -128,6 +130,9 @@ export default function CustomerDetail() {
           </div>
         </div>
         <div className="flex gap-2 flex-shrink-0">
+          <Button size="sm" variant="outline" onClick={() => setShowEditModal(true)} className="gap-1 text-xs">
+            <Pencil className="w-3.5 h-3.5" /> Edit
+          </Button>
           <Button size="sm" variant="outline" onClick={() => navigate(createPageUrl(`Estimates?customer_id=${id}`))} className="gap-1 text-xs hidden sm:flex">
             <FileText className="w-3.5 h-3.5" /> New Estimate
           </Button>
@@ -217,6 +222,13 @@ export default function CustomerDetail() {
           />
         </div>
       </div>
+
+      <EditCustomerModal
+        open={showEditModal}
+        onClose={() => setShowEditModal(false)}
+        customer={customer}
+        onSaved={loadData}
+      />
 
       <RequestReviewModal
         open={showReviewModal}
