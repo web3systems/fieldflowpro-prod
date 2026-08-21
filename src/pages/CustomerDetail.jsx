@@ -6,6 +6,10 @@ import { createPageUrl } from "@/utils";
 import { ArrowLeft, FileText, Briefcase, DollarSign, ExternalLink, Calendar, ChevronRight, Link2, CreditCard, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem,
+  DropdownMenuTrigger, DropdownMenuLabel, DropdownMenuSeparator
+} from "@/components/ui/dropdown-menu";
 import { format } from "date-fns";
 
 import CustomerSidebar from "@/components/customers/CustomerSidebar";
@@ -130,6 +134,32 @@ export default function CustomerDetail() {
           </div>
         </div>
         <div className="flex gap-2 flex-shrink-0">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button size="sm" variant="outline" className="gap-1 text-xs">
+                <ExternalLink className="w-3.5 h-3.5" /> Customer Portal
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-52">
+              <DropdownMenuLabel className="flex items-center gap-2">
+                Portal access
+                {customer.portal_invite_sent
+                  ? <Badge className="text-[10px] bg-green-100 text-green-700">Invited</Badge>
+                  : <Badge className="text-[10px] bg-amber-100 text-amber-700">Not invited</Badge>}
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {customer.email ? (
+                <>
+                  <DropdownMenuItem onClick={handlePortalInvite} disabled={sendingInvite}>
+                    {sendingInvite ? "Sending..." : customer.portal_invite_sent ? "Resend invite" : "Send invite"}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handlePreviewPortal}>Preview portal</DropdownMenuItem>
+                </>
+              ) : (
+                <DropdownMenuItem disabled>No email on file</DropdownMenuItem>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
           <Button size="sm" variant="outline" onClick={() => setShowEditModal(true)} className="gap-1 text-xs">
             <Pencil className="w-3.5 h-3.5" /> Edit
           </Button>
@@ -177,8 +207,8 @@ export default function CustomerDetail() {
         </div>
       </div>
 
-      {/* Split Layout: main content + right summary panel */}
-      <div className="flex gap-5">
+      {/* Split Layout: swapped — summary/notes/reviews on left, work sections on right */}
+      <div className="flex gap-5 lg:flex-row-reverse">
         {/* Main content */}
         <div className="flex-1 min-w-0 space-y-4">
           {/* Mobile sidebar summary */}
