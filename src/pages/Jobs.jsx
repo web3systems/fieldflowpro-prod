@@ -457,7 +457,13 @@ export default function Jobs() {
                       {job.job_number && (
                         <span className="text-xs font-mono font-semibold text-slate-400">{job.job_number}</span>
                       )}
-                      <h3 className="font-bold text-slate-900">{getCustomerName(job.customer_id)}</h3>
+                      <h3 className="font-bold text-slate-900">
+                        {job.customer_id ? (
+                          <Link to={`/CustomerDetail/${job.customer_id}`} onClick={e => e.stopPropagation()} className="hover:text-blue-600 hover:underline">
+                            {getCustomerName(job.customer_id)}
+                          </Link>
+                        ) : getCustomerName(job.customer_id)}
+                      </h3>
                       <Badge className={`text-xs border ${getStatusStyle(job.status)}`}>
                         {job.status?.replace("_", " ")}
                       </Badge>

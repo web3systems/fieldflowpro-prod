@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { useApp } from "../Layout";
 import { createPageUrl } from "@/utils";
 import {
   Plus, Search, UserPlus, Phone, Mail,
-  ChevronRight, Trash2, Code2, ArrowUp, ArrowDown
+  ChevronRight, Trash2, Code2, ArrowUp, ArrowDown, ExternalLink
 } from "lucide-react";
 import EmbedCodeModal from "../components/leads/EmbedCodeModal";
 import LeadAssigneeSelect from "@/components/leads/LeadAssigneeSelect";
@@ -56,6 +56,7 @@ export default function Leads() {
   const [embedOpen, setEmbedOpen] = useState(false);
   const [sortField, setSortField] = useState("");
   const [sortDir, setSortDir] = useState("asc");
+  const [customers, setCustomers] = useState([]);
 
   useEffect(() => {
     if (activeCompany) loadLeads();
@@ -75,8 +76,12 @@ export default function Leads() {
 
   async function loadLeads() {
     setLoading(true);
-    const list = await base44.entities.Lead.filter({ company_id: activeCompany.id });
+    const [list, custs] = await Promise.all([
+      base44.entities.Lead.filter({ company_id: activeCompany.id }),
+      base44.entities.Customer.filter({ company_id: activeCompany.id }),
+    ]);
     setLeads(list);
+    setCustomers(custs);
     setLoading(false);
   }
 
@@ -125,6 +130,10 @@ export default function Leads() {
   });
 
   const getStage = (status) => STAGES.find(s => s.value === status) || STAGES[0];
+  // Match a lead to its converted Customer record (conversion copies email/name)
+  const findCustomerForLead = (lead) => customers.find(c => lead.email
+    ? (c.email || "").toLowerCase() === (lead.email || "").toLowerCase()
+    : (c.first_name || "").toLowerCase() === (lead.first_name || "").toLowerCase() && (c.last_name || "").toLowerCase() === (lead.last_name || "").toLowerCase());
   const totalValue = filtered.reduce((s, l) => s + (l.estimated_value || 0), 0);
 
   return (
@@ -220,7 +229,17 @@ export default function Leads() {
                     <div className={`w-2 h-10 rounded-full flex-shrink-0 ${stage.dot}`} />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <h3 className="font-semibold text-slate-800">{lead.first_name} {lead.last_name}</h3>
+                        <h3 className="font-semibold text-slate-800">
+                          {(() => {
+                            const cust = findCustomerForLead(lead);
+                            return cust ? (
+                              <Link to={`/CustomerDetail/${cust.id}`} onClick={e => e.stopPropagation()} className="hover:text-blue-600 hover:underline inline-flex items-center gap-1">
+                                {lead.first_name} {lead.last_name}
+                                <ExternalLink className="w-3 h-3 text-blue-500" />
+                              </Link>
+                            ) : <>{lead.first_name} {lead.last_name}</>;
+                          })()}
+                        </h3>
                         <Badge className={`text-xs ${stage.color}`}>{stage.label}</Badge>
                         {lead.source && (
                           <Badge className="text-xs bg-slate-100 text-slate-600 capitalize">{lead.source.replace("_", " ")}</Badge>

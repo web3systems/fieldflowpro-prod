@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import { MapPin, Calendar, ChevronRight, User } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -120,7 +120,11 @@ export default function JobKanbanBoard({ jobs, customers, techs, onStatusChange,
                             <CardContent className="p-3">
                               <div className="flex items-start justify-between gap-1 mb-1">
                                 <h4 className="text-sm font-semibold text-slate-900 leading-tight line-clamp-1">
-                                  {getCustomerName(job.customer_id)}
+                                  {job.customer_id ? (
+                                    <Link to={`/CustomerDetail/${job.customer_id}`} onClick={e => e.stopPropagation()} className="hover:text-blue-600 hover:underline">
+                                      {getCustomerName(job.customer_id)}
+                                    </Link>
+                                  ) : getCustomerName(job.customer_id)}
                                 </h4>
                                 {job.priority === "urgent" && (
                                   <Badge className={`text-[10px] px-1.5 py-0 ${PRIORITY_BADGE.urgent}`}>!</Badge>
