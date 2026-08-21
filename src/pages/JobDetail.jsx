@@ -3,33 +3,20 @@ import { useParams, useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { useApp } from "../Layout";
 import { createPageUrl } from "@/utils";
-import { ArrowLeft, Briefcase, Star, CreditCard, FileText, Phone, Mail, MapPin, ExternalLink, ChevronRight, Trash2, DollarSign } from "lucide-react";
-import { Link } from "react-router-dom";
+import { ArrowLeft, Briefcase, Star, CreditCard, FileText, Trash2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 
 import JobSidebar from "@/components/jobs/JobSidebar";
-import JobWorkflowBar from "@/components/jobs/JobWorkflowBar";
-import JobAppointmentSection from "@/components/jobs/JobAppointmentSection";
-import JobFieldTechSection from "@/components/jobs/JobFieldTechSection";
-import JobLineItemsSection from "@/components/jobs/JobLineItemsSection";
-import JobInvoiceSection from "@/components/jobs/JobInvoiceSection";
-import JobNotesSection from "@/components/jobs/JobNotesSection";
-import JobPhotosSection from "@/components/jobs/JobPhotosSection";
-import JobCostingSection from "@/components/jobs/JobCostingSection";
-import JobReceiptsSection from "@/components/jobs/JobReceiptsSection";
-import JobActivityFeed from "@/components/jobs/JobActivityFeed";
-import WorkLogSection from "@/components/jobs/WorkLogSection";
-import JobTasksSection from "@/components/jobs/JobTasksSection";
-import JobMarginReview from "@/components/jobs/JobMarginReview";
-import JobProfitSummary from "@/components/jobs/JobProfitSummary";
-import JobScopeOfWorkSection from "@/components/jobs/JobScopeOfWorkSection";
 import AttachDocumentModal from "@/components/jobs/AttachDocumentModal";
 import DepositRequestModal from "@/components/jobs/DepositRequestModal";
-import JobDepositStatus from "@/components/jobs/JobDepositStatus";
 import RequestReviewModal from "@/components/reviews/RequestReviewModal";
+import JobOverviewTab from "@/components/jobs/tabs/JobOverviewTab";
+import JobWorkTab from "@/components/jobs/tabs/JobWorkTab";
+import JobSchedulingTab from "@/components/jobs/tabs/JobSchedulingTab";
+import JobAdminTab from "@/components/jobs/tabs/JobAdminTab";
 
 const STATUS_COLORS = {
   new: "bg-blue-100 text-blue-700 border-blue-200",
@@ -39,6 +26,13 @@ const STATUS_COLORS = {
   cancelled: "bg-red-100 text-red-700 border-red-200",
   on_hold: "bg-gray-100 text-gray-700 border-gray-200",
 };
+
+const TABS = [
+  { id: "overview", label: "Overview" },
+  { id: "work", label: "Work" },
+  { id: "scheduling", label: "Scheduling" },
+  { id: "admin", label: "Admin" },
+];
 
 const defaultJob = {
   title: "", description: "", status: "new", priority: "medium",
@@ -70,6 +64,8 @@ export default function JobDetail() {
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [marginRule, setMarginRule] = useState(null);
   const [depositData, setDepositData] = useState(null); // tracks deposit state locally
+  const [jobPayments, setJobPayments] = useState([]);
+  const [activeTab, setActiveTab] = useState("overview");
   const { toast } = useToast();
 
   const loadData = useCallback(async () => {
@@ -85,6 +81,8 @@ export default function JobDetail() {
       setDepositData({ deposit_amount: j.deposit_amount, deposit_status: j.deposit_status, deposit_paid_date: j.deposit_paid_date, deposit_stripe_link: j.deposit_stripe_link });
       const invs = await base44.entities.Invoice.filter({ job_id: id });
       setExistingInvoices(invs);
+      const pmts = await base44.entities.Payment.filter({ job_id: id }).catch(() => []);
+      setJobPayments(pmts);
       if (j.estimate_id) {
         const ests = await base44.entities.Estimate.filter({ id: j.estimate_id });
         if (ests[0]) setLinkedEstimate(ests[0]);
@@ -261,6 +259,16 @@ export default function JobDetail() {
 
   const customer = customers.find(c => c.id === form.customer_id);
 
+  const ctx = {
+    id, job, form, setForm, customers, customer, techs,
+    onSave: handleSave, saving,
+    activeCompany, existingInvoices, marginRule, linkedEstimate,
+    depositData, setDepositData, setShowDepositModal,
+    generateInvoice: () => generateInvoice(false),
+    collectPayment: () => generateInvoice(true),
+    invoiceActionLoading, setJob, navigate, jobPayments,
+  };
+
   return (
     <div className="p-4 md:p-6 pb-24 lg:pb-6 max-w-7xl mx-auto">
       {/* Header */}
@@ -382,174 +390,28 @@ export default function JobDetail() {
         />
 
         {/* Main Content */}
-        <div className="flex-1 min-w-0 space-y-4">
-          {/* Mobile customer info */}
-          <div className="lg:hidden bg-white border border-slate-200 rounded-xl p-4 space-y-2">
-            <div className="flex items-center justify-between">
-              <p className="font-semibold text-slate-800 text-sm">{customer ? (customer.business_name || `${customer.first_name || ""} ${customer.last_name || ""}`.trim()) : "No customer"}</p>
-              {customer && <Link to={`/CustomerDetail/${customer.id}`} className="flex items-center gap-1 text-xs text-blue-600 hover:underline">Profile <ExternalLink className="w-3 h-3" /></Link>}
-            </div>
-            {customer?.phone && <a href={`tel:${customer.phone}`} className="flex items-center gap-1.5 text-xs text-blue-600 hover:underline"><Phone className="w-3 h-3" />{customer.phone}</a>}
-            {customer?.email && <a href={`mailto:${customer.email}`} className="flex items-center gap-1.5 text-xs text-blue-600 hover:underline"><Mail className="w-3 h-3" />{customer.email}</a>}
-            {customer?.address && <p className="text-xs text-slate-600 flex items-start gap-1"><MapPin className="w-3 h-3 mt-0.5 flex-shrink-0" />{customer.address}{customer.city ? `, ${customer.city}` : ""}{customer.state ? `, ${customer.state}` : ""} {customer.zip || ""}</p>}
-            {form.scheduled_start && <p className="text-xs text-slate-400">Scheduled: {format(new Date(form.scheduled_start), "MMM d, yyyy · h:mm a")}</p>}
-            {form.total_amount > 0 && <p className="text-sm font-semibold text-slate-900">${form.total_amount.toLocaleString()}</p>}
+        <div className="flex-1 min-w-0">
+          {/* Tabs */}
+          <div className="flex gap-1 border-b border-slate-200 mb-4 overflow-x-auto">
+            {TABS.map(t => (
+              <button
+                key={t.id}
+                onClick={() => setActiveTab(t.id)}
+                className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px whitespace-nowrap transition-colors ${
+                  activeTab === t.id
+                    ? "border-blue-600 text-blue-600"
+                    : "border-transparent text-slate-500 hover:text-slate-800"
+                }`}
+              >
+                {t.label}
+              </button>
+            ))}
           </div>
 
-          {/* Workflow Pipeline */}
-          <JobWorkflowBar
-            job={job}
-            form={form}
-            onSave={handleSave}
-            onGenerateInvoice={() => generateInvoice(false)}
-            onCollectPayment={() => generateInvoice(true)}
-            invoiceLoading={invoiceActionLoading}
-          />
-
-          {/* Internal Task Board */}
-          <JobTasksSection
-            job={job}
-            techs={techs}
-            onTasksUpdated={(checklist) => setJob(j => ({ ...j, checklist }))}
-          />
-
-          {/* Appointments */}
-          <JobAppointmentSection form={form} setForm={setForm} techs={techs} onSave={handleSave} saving={saving} />
-
-          {/* Field Tech Status */}
-          <JobFieldTechSection form={form} setForm={setForm} techs={techs} onSave={handleSave} />
-
-          {/* Estimate Section */}
-          {job?.estimate_id && (
-            <div className="bg-white border border-slate-200 rounded-xl p-4">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-sm font-semibold text-slate-700 flex items-center gap-1.5">
-                  <FileText className="w-4 h-4 text-slate-500" /> Estimate
-                </h3>
-                <Button size="sm" variant="outline" className="gap-1 text-xs text-green-700 border-green-300 hover:bg-green-50" onClick={() => setShowDepositModal(true)}>
-                  <CreditCard className="w-3 h-3" /> Request Deposit
-                </Button>
-              </div>
-              {linkedEstimate ? (
-                <div
-                  onClick={() => navigate(`/EstimateDetail/${linkedEstimate.id}`)}
-                  className="flex items-center justify-between p-2.5 rounded-lg border border-slate-100 hover:bg-slate-50 cursor-pointer"
-                >
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-slate-800 truncate">{linkedEstimate.title || linkedEstimate.estimate_number || "Estimate"}</p>
-                    <p className="text-xs text-slate-400">{format(new Date(linkedEstimate.created_date), "MMM d, yyyy")}</p>
-                  </div>
-                  <div className="flex items-center gap-2 ml-2">
-                    <Badge className={`text-xs ${linkedEstimate.status === "approved" ? "bg-green-100 text-green-700" : linkedEstimate.status === "declined" ? "bg-red-100 text-red-700" : linkedEstimate.status === "sent" ? "bg-blue-100 text-blue-700" : "bg-gray-100 text-gray-600"}`}>
-                      {linkedEstimate.status}
-                    </Badge>
-                    {linkedEstimate.total > 0 && <span className="text-xs font-semibold text-slate-700">${linkedEstimate.total.toLocaleString()}</span>}
-                    <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
-                  </div>
-                </div>
-              ) : (
-                <p className="text-sm text-slate-400 text-center py-2">Loading estimate...</p>
-              )}
-            </div>
-          )}
-
-          {/* Deposit Status / Request */}
-          {(() => {
-            const dep = depositData || {};
-            const hasDeposit = dep.deposit_status;
-            const hasLineItems = (form.line_items || []).length > 0;
-            if (hasDeposit) {
-              return (
-                <JobDepositStatus
-                  job={{ ...job, ...dep }}
-                  onDepositUpdated={(updated) => {
-                    setDepositData({ deposit_amount: updated.deposit_amount, deposit_status: updated.deposit_status, deposit_paid_date: updated.deposit_paid_date, deposit_stripe_link: updated.deposit_stripe_link });
-                    setJob(j => ({ ...j, ...updated }));
-                    setForm(f => ({ ...f, line_items: updated.line_items || f.line_items, total_amount: updated.total_amount ?? f.total_amount, deposit_status: "paid", deposit_paid_date: updated.deposit_paid_date }));
-                  }}
-                />
-              );
-            }
-            if (hasLineItems) {
-              return (
-                <div className="bg-white border border-slate-200 rounded-xl px-5 py-4 flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-semibold text-slate-700">Deposit</p>
-                    <p className="text-xs text-slate-400">No deposit collected yet</p>
-                  </div>
-                  <button
-                    onClick={() => setShowDepositModal(true)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 rounded-lg transition-colors"
-                  >
-                    <DollarSign className="w-3.5 h-3.5" /> Request Deposit
-                  </button>
-                </div>
-              );
-            }
-            return null;
-          })()}
-
-          {/* Invoice Section */}
-          <JobInvoiceSection
-            jobId={id}
-            companyId={activeCompany?.id}
-            customerId={form.customer_id}
-            onGenerateInvoice={() => generateInvoice(false)}
-            invoiceLoading={invoiceActionLoading}
-          />
-
-          {/* Profit Summary */}
-          <JobProfitSummary invoices={existingInvoices} form={form} marginRule={marginRule} />
-
-          {/* Statement of Work & Change Orders */}
-          <JobScopeOfWorkSection
-            job={job}
-            form={form}
-            setForm={setForm}
-            onSave={handleSave}
-          />
-
-          {/* Line Items */}
-          <JobLineItemsSection
-            form={form}
-            setForm={setForm}
-            companyId={activeCompany?.id}
-            onSave={handleSave}
-            onGenerateInvoice={() => generateInvoice(false)}
-            invoiceLoading={invoiceActionLoading}
-          />
-
-          {/* Margin Review */}
-          <JobMarginReview job={job} company={activeCompany} marginRule={marginRule} />
-
-          {/* Job Costing Breakdown */}
-          <JobCostingSection form={form} receipts={job?.receipts || []} />
-
-          {/* Receipts & Expenses */}
-          <JobReceiptsSection
-            job={job}
-            onReceiptsUpdated={(receipts) => setJob(j => ({ ...j, receipts }))}
-          />
-
-          {/* Before & After Photos */}
-          <JobPhotosSection
-            job={job}
-            onPhotosUpdated={(field, updated) => setJob(j => ({ ...j, [field]: updated }))}
-          />
-
-          {/* Notes */}
-          <JobNotesSection
-            job={job}
-            customer={customer}
-            onInternalNoteAdded={(log) => setJob(j => ({ ...j, internal_notes_log: log }))}
-            onCustomerNoteAdded={(notes) => setJob(j => ({ ...j, customer_notes: notes }))}
-          />
-
-          {/* Work Logs */}
-          <WorkLogSection job={job} techs={techs} />
-
-          {/* Activity Feed */}
-          <JobActivityFeed job={job} form={form} customer={customer} techs={techs} />
+          {activeTab === "overview" && <JobOverviewTab ctx={ctx} />}
+          {activeTab === "work" && <JobWorkTab ctx={ctx} />}
+          {activeTab === "scheduling" && <JobSchedulingTab ctx={ctx} />}
+          {activeTab === "admin" && <JobAdminTab ctx={ctx} />}
         </div>
       </div>
     </div>
