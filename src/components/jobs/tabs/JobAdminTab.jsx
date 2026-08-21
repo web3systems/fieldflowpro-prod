@@ -1,5 +1,5 @@
 import { format } from "date-fns";
-import { FileText, CreditCard, ChevronRight, DollarSign } from "lucide-react";
+import { FileText, ChevronRight, DollarSign } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import JobLineItemsSection from "@/components/jobs/JobLineItemsSection";
@@ -41,13 +41,10 @@ export default function JobAdminTab({ ctx }) {
       {/* Estimate + deposit request */}
       {job?.estimate_id && (
         <div className="bg-white border border-slate-200 rounded-xl p-4">
-          <div className="flex items-center justify-between mb-3">
+          <div className="mb-3">
             <h3 className="text-sm font-semibold text-slate-700 flex items-center gap-1.5">
               <FileText className="w-4 h-4 text-slate-500" /> Estimate
             </h3>
-            <Button size="sm" variant="outline" className="gap-1 text-xs text-green-700 border-green-300 hover:bg-green-50" onClick={() => setShowDepositModal(true)}>
-              <CreditCard className="w-3 h-3" /> Request Deposit
-            </Button>
           </div>
           {linkedEstimate ? (
             <div
