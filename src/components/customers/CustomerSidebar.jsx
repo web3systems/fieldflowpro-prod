@@ -154,9 +154,9 @@ export default function CustomerSidebar({ customer, invoices, onUpdate, onPortal
         <h3 className="text-sm font-semibold text-slate-700 mb-3 flex items-center gap-1.5">
           <Bell className="w-3.5 h-3.5" /> Communication preferences
         </h3>
-        <div className="space-y-2.5">
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-slate-600">Notifications enabled</span>
+        <div className="grid grid-cols-3 gap-2">
+          <div className="flex flex-col items-center gap-1.5 p-2.5 rounded-lg bg-slate-50 text-center">
+            <span className="text-[11px] text-slate-600 leading-tight">Notifications</span>
             <button
               onClick={() => togglePref("notifications_enabled")}
               className={`text-xs font-medium px-2 py-0.5 rounded-full ${customer.notifications_enabled !== false ? "bg-green-100 text-green-700" : "bg-slate-100 text-slate-500"}`}
@@ -164,8 +164,8 @@ export default function CustomerSidebar({ customer, invoices, onUpdate, onPortal
               {customer.notifications_enabled !== false ? "Yes" : "No"}
             </button>
           </div>
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-slate-600 flex items-center gap-1"><MessageSquare className="w-3 h-3" />SMS consent</span>
+          <div className="flex flex-col items-center gap-1.5 p-2.5 rounded-lg bg-slate-50 text-center">
+            <span className="text-[11px] text-slate-600 leading-tight flex items-center gap-1 justify-center"><MessageSquare className="w-3 h-3" />SMS</span>
             <button
               onClick={() => togglePref("sms_consent")}
               className={`text-xs font-medium px-2 py-0.5 rounded-full border ${customer.sms_consent ? "bg-green-100 text-green-700 border-green-200" : "bg-red-50 text-red-600 border-red-200"}`}
@@ -173,16 +173,14 @@ export default function CustomerSidebar({ customer, invoices, onUpdate, onPortal
               {customer.sms_consent ? "Opted-in" : "Opted-out"}
             </button>
           </div>
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-slate-600">Marketing consent</span>
-            <div className="flex items-center gap-1.5">
-              <span className={`text-xs font-medium px-2 py-0.5 rounded-full border ${customer.marketing_consent ? "bg-green-100 text-green-700 border-green-200" : "bg-red-50 text-red-600 border-red-200"}`}>
-                {customer.marketing_consent ? "Opted-in" : "Opted-out"}
-              </span>
-              {!customer.marketing_consent && (
-                <button onClick={() => togglePref("marketing_consent")} className="text-xs text-blue-600 hover:underline">Opt-in</button>
-              )}
-            </div>
+          <div className="flex flex-col items-center gap-1.5 p-2.5 rounded-lg bg-slate-50 text-center">
+            <span className="text-[11px] text-slate-600 leading-tight">Marketing</span>
+            <span className={`text-xs font-medium px-2 py-0.5 rounded-full border ${customer.marketing_consent ? "bg-green-100 text-green-700 border-green-200" : "bg-red-50 text-red-600 border-red-200"}`}>
+              {customer.marketing_consent ? "Opted-in" : "Opted-out"}
+            </span>
+            {!customer.marketing_consent && (
+              <button onClick={() => togglePref("marketing_consent")} className="text-[11px] text-blue-600 hover:underline">Opt-in</button>
+            )}
           </div>
         </div>
       </div>
