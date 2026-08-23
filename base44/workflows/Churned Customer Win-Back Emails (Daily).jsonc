@@ -1,0 +1,41 @@
+{
+  "name": "Churned Customer Win-Back Emails (Daily)",
+  "description": "Sends win-back emails to cancelled accounts at 7 days and 30 days post-cancellation.",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "recurring",
+      "cron_expression": "0 14 * * *",
+      "one_time_date": null,
+      "timezone": "UTC",
+      "interval_value": null,
+      "interval_unit": null,
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "churned_customer_win_back_emails_daily",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "run_function": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "sendWinBackEmails",
+            "args": {}
+          },
+          "then": "end"
+        }
+      }
+    ]
+  }
+}

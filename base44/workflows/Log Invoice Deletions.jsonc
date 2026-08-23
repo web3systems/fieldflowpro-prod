@@ -1,0 +1,34 @@
+{
+  "name": "Log Invoice Deletions",
+  "description": "",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "entity",
+      "events": [
+        "delete"
+      ],
+      "entity_name": "Invoice"
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "log_invoice_deletions",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "run_function": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "auditLogDelete",
+            "args": {}
+          },
+          "then": "end"
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "name": "New Lead Notification (info@honeydocrew.co)",
+  "description": "Sends a branded email to info@honeydocrew.co and company managers whenever a new lead is created, regardless of source (manual entry, Facebook ads, website, integration ingest, etc.)",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "entity",
+      "events": [
+        "create"
+      ],
+      "entity_name": "Lead"
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "new_lead_notification_info_honeydocrew_co",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "run_function": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "sendLeadNotification",
+            "args": {}
+          },
+          "then": "end"
+        }
+      }
+    ]
+  }
+}
