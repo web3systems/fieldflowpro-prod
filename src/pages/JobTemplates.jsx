@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { useApp } from "../Layout";
+import WebsiteTemplateGallery from '@/components/website/WebsiteTemplateGallery';
 import {
   Layers, Plus, Pencil, Trash2, Copy, X, Search, Save, Clock,
 } from "lucide-react";
@@ -44,6 +45,7 @@ export default function JobTemplates() {
   const [loading, setLoading] = useState(true);
   const [q, setQ] = useState("");
   const [editing, setEditing] = useState(null);
+  const [section, setSection] = useState(() => new URLSearchParams(window.location.search).get('section') === 'websites' ? 'websites' : 'jobs');
 
   const canEdit = activeCompany && ["admin", "super_admin", "manager"].includes(user?.role);
 
@@ -135,13 +137,13 @@ export default function JobTemplates() {
             <Layers className="w-4 h-4" />
           </div>
           <div>
-            <span className="font-semibold text-slate-800 block leading-tight">Job Templates</span>
+            <span className="font-semibold text-slate-800 block leading-tight">Templates</span>
             <span className="text-xs text-slate-500">
-              Reusable job types — line items, descriptions, and labor hours.
+              {section === 'jobs' ? 'Reusable job types — line items, descriptions, and labor hours.' : 'Editable website designs for your service business.'}
             </span>
           </div>
         </div>
-        {canEdit && (
+        {canEdit && section === 'jobs' && (
           <Button
             onClick={() => setEditing(blank(activeCompany?.id))}
             className="bg-blue-600 hover:bg-blue-700 gap-1.5"
@@ -151,7 +153,11 @@ export default function JobTemplates() {
         )}
       </div>
 
-      <div className="max-w-6xl mx-auto p-4 md:p-6 space-y-4">
+      <div className="max-w-6xl mx-auto px-4 md:px-6 pt-4 flex gap-2" role="group" aria-label="Template collection">
+        <Button variant={section === 'jobs' ? 'default' : 'outline'} aria-pressed={section === 'jobs'} onClick={() => setSection('jobs')}>Job Templates</Button>
+        <Button variant={section === 'websites' ? 'default' : 'outline'} aria-pressed={section === 'websites'} onClick={() => setSection('websites')}>Website Templates</Button>
+      </div>
+      {section === 'websites' ? <WebsiteTemplateGallery /> : <div className="max-w-6xl mx-auto p-4 md:p-6 space-y-4">
         <div className="relative max-w-sm">
           <Search className="w-4 h-4 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
           <Input
@@ -276,7 +282,7 @@ export default function JobTemplates() {
             ← Back to creating an estimate
           </Link>
         </div>
-      </div>
+      </div>}
 
       {/* Editor Dialog */}
       <Dialog open={!!editing} onOpenChange={(o) => { if (!o) setEditing(null); }}>

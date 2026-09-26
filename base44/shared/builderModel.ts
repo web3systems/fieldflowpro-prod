@@ -1,3 +1,4 @@
+import { serviceTemplateDocument } from './serviceTemplateDocument.ts';
 export const modelVersion = 1;
 const fail = message => { throw new Error(message); };
 const text = (v, max = 500) => typeof v === 'string' && v.length <= max ? v : fail('Invalid or oversized text');
@@ -42,6 +43,8 @@ export function publicDocument(d) {
 }
 export const imageIds = d => [...new Set([...d.pages.flatMap(p => p.blocks), ...(d.reusable || [])].map(b => b.image_id).filter(Boolean))];
 export function templateDocument(template, name) {
+  const serviceDocument = serviceTemplateDocument(template, name);
+  if (serviceDocument) return validateDocument(serviceDocument);
   const profiles = { field: ['Practical help for your next project', 'Field services', '#2563eb', 'split'], local: ['A local service built around you', 'Local services', '#0f766e', 'center'], consulting: ['A clear next step for your business', 'Consulting & freelance', '#4338ca', 'split'], startup: ['Your next chapter starts here', 'New business', '#9f1239', 'center'] };
   const [title, label, primary, layout] = profiles[template] || profiles.startup;
   const block = (id, type, heading, body) => ({ id, type, title: heading, body: [{ text: body, bold: false, italic: false, underline: false }], image_id: '', alt: '', button: '', href: '', layout, spacing: 'roomy', background: '#ffffff', foreground: '#172033' });

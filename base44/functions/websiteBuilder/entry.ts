@@ -2,6 +2,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.49';
 import { assertBuilderApp, builderAccess, builderSiteAccess } from '../../shared/builderAccess.ts';
 import { validateDocument, templateDocument, slug } from '../../shared/builderModel.ts';
 import { builderChecks } from '../../shared/builderChecks.ts';
+import { serviceTemplateCatalog } from '../../shared/serviceTemplateCatalog.ts';
 import { verifyBuilderImages, publishBuilderDocument } from '../../shared/builderPublishing.ts';
 export default async function(req) {
   try {
@@ -12,6 +13,7 @@ export default async function(req) {
     const raw = await req.text();
     if (raw.length > 75000) throw new Error('Request exceeds the draft safety limit');
     const body = JSON.parse(raw);
+    if (body.action === 'templates') return Response.json({ templates: serviceTemplateCatalog() });
     if (body.action === 'selfCheck') return Response.json(await builderChecks());
     if (body.action === 'validate') return Response.json({ document: validateDocument(body.document || templateDocument(body.template, 'Sample business')), writes: 0 });
     if (['list', 'create'].includes(body.action)) {

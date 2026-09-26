@@ -1,11 +1,16 @@
 import { templateDocument, validateDocument, publicDocument, safeLink } from './builderModel.ts';
 import { builderAccess } from './builderAccess.ts';
+import { serviceTemplateCatalog, serviceTrades } from './serviceTemplateCatalog.ts';
 export async function builderChecks() {
   const results = [];
   const check = (name, test) => { try { if (!test()) throw new Error('Assertion failed'); results.push({ name, passed: true }); } catch (error) { results.push({ name, passed: false, error: error.message }); } };
   const rejects = fn => { try { fn(); return false; } catch (_) { return true; } };
   const fixture = () => templateDocument('field', 'Nonproduction sample');
   for (const key of ['field', 'local', 'consulting', 'startup']) check(`${key} template validates`, () => validateDocument(templateDocument(key, 'Sample')).pages.length === 3);
+  const templates = serviceTemplateCatalog();
+  check('45 unique service templates, five per trade', () => templates.length === 45 && new Set(templates.map(t => t.id)).size === 45 && serviceTrades.every(t => templates.filter(x => x.trade === t.id).length === 5));
+  check('All service templates validate with contact forms and valid page links', () => templates.every(t => { const d = validateDocument(templateDocument(t.id, 'Sample')); return d.pages.length >= 5 && d.pages.some(p => p.blocks.some(b => b.type === 'contact')) && d.pages.every(p => p.blocks.every(b => !b.href.startsWith('/') || d.pages.some(target => '/' + target.slug === b.href))); }));
+  check('Five distinct designs per trade', () => serviceTrades.every(t => new Set(templates.filter(x => x.trade === t.id).map(x => JSON.stringify(templateDocument(x.id, 'Sample')))).size === 5));
   check('Reject duplicate page slugs', () => { const d = fixture(); d.pages[1].slug = 'home'; return rejects(() => validateDocument(d)); });
   check('Reject unsupported schema version', () => { const d = fixture(); d.schema_version = 2; return rejects(() => validateDocument(d)); });
   check('Reject javascript and data links', () => rejects(() => safeLink('javascript:alert(1)')) && rejects(() => safeLink('data:text/html,test')));
