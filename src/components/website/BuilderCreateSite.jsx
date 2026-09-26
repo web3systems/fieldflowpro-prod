@@ -22,7 +22,7 @@ export default function BuilderCreateSite({ companyId }) {
     <p className="text-xs text-muted-foreground">A permanent unique suffix is added to prevent site-address collisions.</p>
     <BuilderField label="Creation path" value={path} onChange={setPath} options={[{ value: 'template', label: 'Customizable visual template' }, { value: 'ai', label: 'Guided advanced AI brief' }]} />
     {path === 'template' ? <><BuilderTemplateSelect value={template} onChange={setTemplate} /><Link to="/JobTemplates?section=websites" className="block text-sm text-primary underline">Browse and preview all 45 service templates</Link>{!catalog.isLoading && !validTemplate && <p className="text-sm text-destructive">Choose an available template from the list.</p>}</> : <p className="text-sm text-muted-foreground">Create a private starter, then complete your brief and preview the real AI proposal before applying. AI uses integration credits.</p>}
-    <p className="text-xs text-muted-foreground">Templates contain labeled sample copy, not business claims or customer testimonials.</p>
+    <p className="text-xs text-muted-foreground">Templates include sample copy and AI-generated illustrative photos. Replace them with your own details and images; they do not depict your actual team or projects.</p>
     {error && <p role="alert" className="text-destructive">{error}</p>}
     <Button disabled={busy || (path === 'template' && !validTemplate)}>{busy ? 'Creating…' : path === 'ai' ? 'Create draft & open AI brief' : 'Start with template'}</Button>
   </form>;

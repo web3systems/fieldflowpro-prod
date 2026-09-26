@@ -3,6 +3,7 @@ import { assertBuilderApp, builderAccess, builderSiteAccess } from '../../shared
 import { validateDocument, templateDocument, slug } from '../../shared/builderModel.ts';
 import { builderChecks } from '../../shared/builderChecks.ts';
 import { serviceTemplateCatalog } from '../../shared/serviceTemplateCatalog.ts';
+import { templateImageAssets } from '../../shared/serviceTemplateImages.ts';
 import { verifyBuilderImages, publishBuilderDocument } from '../../shared/builderPublishing.ts';
 export default async function(req) {
   try {
@@ -15,7 +16,10 @@ export default async function(req) {
     const body = JSON.parse(raw);
     if (body.action === 'templates') return Response.json({ templates: serviceTemplateCatalog() });
     if (body.action === 'selfCheck') return Response.json(await builderChecks());
-    if (body.action === 'validate') return Response.json({ document: validateDocument(body.document || templateDocument(body.template, 'Sample business')), writes: 0 });
+    if (body.action === 'validate') {
+      const document = validateDocument(body.document || templateDocument(body.template, 'Sample business'));
+      return Response.json({ document, assets: templateImageAssets(document), writes: 0 });
+    }
     if (['list', 'create'].includes(body.action)) {
       const { db } = await builderAccess(base44, body.company_id);
       if (body.action === 'list') {
@@ -31,7 +35,7 @@ export default async function(req) {
     const { site, db } = await builderSiteAccess(base44, body.site_id);
     if (body.action === 'load') {
       const media = await verifyBuilderImages(db, site.company_id, validateDocument(site.draft));
-      const assets = {};
+      const assets = templateImageAssets(site.draft);
       for (const m of media) assets[m.id] = (await base44.asServiceRole.integrations.Core.CreateFileSignedUrl({ file_uri: m.file_uri, expires_in: 3600 })).signed_url;
       return Response.json({ site, assets });
     }

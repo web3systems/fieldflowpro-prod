@@ -1,14 +1,16 @@
 import { serviceTrades, serviceStyles } from './serviceTemplateCatalog.ts';
+import { serviceTemplateImages } from './serviceTemplateImages.ts';
 export function serviceTemplateDocument(template, name) {
   const trade = serviceTrades.find(t => serviceStyles.some(s => `${t.id}-${s.id}` === template));
   if (!trade) return null;
   const style = serviceStyles.find(s => `${trade.id}-${s.id}` === template);
+  const image = serviceTemplateImages[trade.id];
   const dark = style.id === 'commercial', background = dark ? '#121c2b' : '#ffffff', foreground = dark ? '#f8fafc' : '#172033';
   const tint = dark ? '#1e293b' : trade.tint, primary = dark ? '#93c5fd' : trade.primary;
   const run = text => ({ text, bold: false, italic: false, underline: false });
   const block = (id, type, title, copy, extra = {}) => ({ id, type, title, body: [run(copy)], image_id: '', alt: '', button: '', href: '', layout: style.layout, spacing: style.spacing, background, foreground, ...extra });
   const page = (id, title, blocks) => ({ id, slug: id, title, kind: 'page', visible: true, seo_title: `${title} | ${name}`.slice(0, 160), seo_description: `${trade.label} services for ${trade.audience}. Explore services and discuss your project with ${name}.`.slice(0, 320), category: '', blocks });
-  const hero = block('hero', 'hero', trade.headline[serviceStyles.indexOf(style)], `Explore ${trade.label.toLowerCase()} services for ${trade.audience}. ${trade.detail}`, { background: style.id === 'neighborhood' ? tint : background, button: style.id === 'booking' ? 'Request a visit' : 'Explore services', href: style.id === 'booking' ? '#visit-request' : '/services' });
+  const hero = block('hero', 'hero', trade.headline[serviceStyles.indexOf(style)], `Explore ${trade.label.toLowerCase()} services for ${trade.audience}. ${trade.detail}`, { image_id: image.id, alt: image.alt, layout: ['modern', 'commercial', 'booking'].includes(style.id) ? 'split' : style.layout, background: style.id === 'neighborhood' ? tint : background, button: style.id === 'booking' ? 'Request a visit' : 'Explore services', href: style.id === 'booking' ? '#visit-request' : '/services' });
   const services = block('service-overview', 'text', dark ? 'Service capabilities' : 'How we can help', trade.services.map(([title, copy]) => `${title}\n${copy}`).join('\n\n'), { background: tint });
   const process = block('project-process', 'text', 'A clear path from idea to next step', trade.process, { spacing: 'normal' });
   const approach = block('our-approach', 'text', 'Your property. Your priorities.', `Every property has its own needs. Start a conversation about your goals, preferences and the ${trade.label.toLowerCase()} work you have in mind.`, { background: tint });

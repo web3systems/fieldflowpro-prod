@@ -1,6 +1,8 @@
 import { templateDocument, validateDocument, publicDocument, safeLink } from './builderModel.ts';
 import { builderAccess } from './builderAccess.ts';
 import { serviceTemplateCatalog, serviceTrades } from './serviceTemplateCatalog.ts';
+import { getTemplateImage, templateImageAssets } from './serviceTemplateImages.ts';
+import { verifyBuilderImages } from './builderPublishing.ts';
 export async function builderChecks() {
   const results = [];
   const check = (name, test) => { try { if (!test()) throw new Error('Assertion failed'); results.push({ name, passed: true }); } catch (error) { results.push({ name, passed: false, error: error.message }); } };
@@ -11,6 +13,15 @@ export async function builderChecks() {
   check('45 unique service templates, five per trade', () => templates.length === 45 && new Set(templates.map(t => t.id)).size === 45 && serviceTrades.every(t => templates.filter(x => x.trade === t.id).length === 5));
   check('All service templates validate with contact forms and valid page links', () => templates.every(t => { const d = validateDocument(templateDocument(t.id, 'Sample')); return d.pages.length >= 5 && d.pages.some(p => p.blocks.some(b => b.type === 'contact')) && d.pages.every(p => p.blocks.every(b => !b.href.startsWith('/') || d.pages.some(target => '/' + target.slug === b.href))); }));
   check('Five distinct designs per trade', () => serviceTrades.every(t => new Set(templates.filter(x => x.trade === t.id).map(x => JSON.stringify(templateDocument(x.id, 'Sample')))).size === 5));
+  check('All 45 templates include a resolvable hero photo', () => templates.every(t => { const d = templateDocument(t.id, 'Sample'); const hero = d.pages[0].blocks[0]; return !!hero.alt && templateImageAssets(d)[hero.image_id] === t.preview_image; }));
+  check('Template image allowlist rejects unknown and prototype keys', () => !getTemplateImage('template-untrusted-hero') && !getTemplateImage('toString') && !getTemplateImage('__proto__'));
+  let mediaReads = 0;
+  const mockMedia = { BuilderMedia: { filter: async () => { mediaReads++; return []; } } };
+  await verifyBuilderImages(mockMedia, 'sample-company', templateDocument('cleaning-modern', 'Sample'));
+  check('Trusted template photos do not read private media', () => mediaReads === 0);
+  const foreign = templateDocument('cleaning-modern', 'Sample'); foreign.pages[0].blocks[0].image_id = 'foreign-private-image';
+  let foreignDenied = false; try { await verifyBuilderImages(mockMedia, 'sample-company', foreign); } catch (_) { foreignDenied = true; }
+  check('Unowned private images remain rejected', () => foreignDenied && mediaReads === 1);
   check('Reject duplicate page slugs', () => { const d = fixture(); d.pages[1].slug = 'home'; return rejects(() => validateDocument(d)); });
   check('Reject unsupported schema version', () => { const d = fixture(); d.schema_version = 2; return rejects(() => validateDocument(d)); });
   check('Reject javascript and data links', () => rejects(() => safeLink('javascript:alert(1)')) && rejects(() => safeLink('data:text/html,test')));

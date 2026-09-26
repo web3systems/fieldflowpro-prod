@@ -1,6 +1,7 @@
 import { imageIds, publicDocument } from './builderModel.ts';
+import { getTemplateImage, templateImageAssets } from './serviceTemplateImages.ts';
 export async function verifyBuilderImages(db, companyId, document) {
-  const images = await Promise.all(imageIds(document).map(async id => {
+  const images = await Promise.all(imageIds(document).filter(id => !getTemplateImage(id)).map(async id => {
     const m = (await db.BuilderMedia.filter({ id, company_id: companyId }, '-created_date', 1))[0];
     if (!m) throw new Error('An image does not belong to this company media library');
     return m;
@@ -10,7 +11,7 @@ export async function verifyBuilderImages(db, companyId, document) {
 export async function publishBuilderDocument(base44, db, site, user) {
   const document = publicDocument(site.draft);
   const images = await verifyBuilderImages(db, site.company_id, document);
-  const assets = {};
+  const assets = templateImageAssets(document);
   for (const media of images) {
     const { signed_url } = await base44.asServiceRole.integrations.Core.CreateFileSignedUrl({ file_uri: media.file_uri, expires_in: 60 });
     const response = await fetch(signed_url);
