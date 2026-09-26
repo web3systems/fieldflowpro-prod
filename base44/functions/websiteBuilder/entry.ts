@@ -2,7 +2,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.49';
 import { assertBuilderApp, builderAccess, builderSiteAccess } from '../../shared/builderAccess.ts';
 import { validateDocument, templateDocument, slug } from '../../shared/builderModel.ts';
 import { builderChecks } from '../../shared/builderChecks.ts';
-import { serviceTemplateCatalog } from '../../shared/serviceTemplateCatalog.ts';
+import { builderTemplateResponse } from '../../shared/builderTemplateResponse.ts';
 import { templateImageAssets } from '../../shared/serviceTemplateImages.ts';
 import { verifyBuilderImages, publishBuilderDocument } from '../../shared/builderPublishing.ts';
 export default async function(req) {
@@ -14,12 +14,8 @@ export default async function(req) {
     const raw = await req.text();
     if (raw.length > 75000) throw new Error('Request exceeds the draft safety limit');
     const body = JSON.parse(raw);
-    if (body.action === 'templates') return Response.json({ templates: serviceTemplateCatalog() });
+    if (['templates', 'validate'].includes(body.action)) return builderTemplateResponse(body);
     if (body.action === 'selfCheck') return Response.json(await builderChecks());
-    if (body.action === 'validate') {
-      const document = validateDocument(body.document || templateDocument(body.template, 'Sample business'));
-      return Response.json({ document, assets: templateImageAssets(document), writes: 0 });
-    }
     if (['list', 'create'].includes(body.action)) {
       const { db } = await builderAccess(base44, body.company_id);
       if (body.action === 'list') {
@@ -31,6 +27,9 @@ export default async function(req) {
       const document = templateDocument(body.template, body.name.trim());
       const site = await db.BuilderSite.create({ company_id: body.company_id, name: body.name.trim(), route_key: `${prefix}-${crypto.randomUUID()}`, draft: document, draft_token: crypto.randomUUID(), domain_status: 'pending' });
       return Response.json({ site });
+    }
+    if (!['load', 'revisions', 'save', 'applyAI', 'checkpoint', 'restore', 'publish', 'unpublish', 'domain'].includes(body.action)) {
+      return Response.json({ error: 'Unsupported website action' }, { status: 400 });
     }
     const { site, db } = await builderSiteAccess(base44, body.site_id);
     if (body.action === 'load') {

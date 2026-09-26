@@ -1,6 +1,7 @@
 import { base44 } from '@/api/base44Client';
 export async function builderCall(action, data = {}) {
-  const res = await base44.functions.invoke('websiteBuilder', { action, ...data });
+  const endpoint = ['templates', 'validate'].includes(action) ? 'websiteTemplates' : 'websiteBuilder';
+  const res = await base44.functions.invoke(endpoint, { ...data, action });
   if (res.data?.error) throw new Error(res.data.error);
   return res.data;
 }
