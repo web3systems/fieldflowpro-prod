@@ -1,0 +1,56 @@
+{
+  "name": "BuilderRevision",
+  "type": "object",
+  "properties": {
+    "company_id": {
+      "type": "string"
+    },
+    "site_id": {
+      "type": "string"
+    },
+    "document": {
+      "type": "object"
+    },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "published",
+        "checkpoint"
+      ]
+    },
+    "actor_id": {
+      "type": "string"
+    },
+    "label": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "company_id",
+    "site_id",
+    "document",
+    "kind"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "service_role"
+      }
+    },
+    "create": {
+      "user_condition": {
+        "role": "service_role"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "service_role"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "service_role"
+      }
+    }
+  }
+}

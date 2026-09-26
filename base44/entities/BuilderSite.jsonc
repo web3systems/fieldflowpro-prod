@@ -1,0 +1,65 @@
+{
+  "name": "BuilderSite",
+  "type": "object",
+  "properties": {
+    "company_id": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "route_key": {
+      "type": "string"
+    },
+    "draft": {
+      "type": "object"
+    },
+    "draft_token": {
+      "type": "string"
+    },
+    "published_revision_id": {
+      "type": "string"
+    },
+    "requested_domain": {
+      "type": "string"
+    },
+    "domain_status": {
+      "type": "string",
+      "enum": [
+        "pending"
+      ],
+      "default": "pending"
+    },
+    "ai_requested_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "company_id",
+    "name",
+    "route_key",
+    "draft_token"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "service_role"
+      }
+    },
+    "create": {
+      "user_condition": {
+        "role": "service_role"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "service_role"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "service_role"
+      }
+    }
+  }
+}

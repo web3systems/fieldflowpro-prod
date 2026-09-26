@@ -77,6 +77,7 @@ const navGroups = [
     { label: "Price Book", icon: BookOpen, page: "PriceBook" },
     { label: "Receipt Scanner", icon: Camera, page: "ReceiptScanner" },
     { label: "Templates", icon: Layers, page: "JobTemplates" },
+    { label: "Website Builder", icon: Globe, page: "WebsiteBuilder", websiteBuilderOnly: true },
     { label: "Team Live Map", icon: MapPin, page: "TimeClockMap", managerOnly: true },
   ] },
   { divider: true },
@@ -312,7 +313,7 @@ export default function Layout({ children, currentPageName }) {
               <div key={`div-${gIdx}`} className="my-2 mx-3 border-t border-slate-700/40" />
             ) : (
               <Fragment key={`grp-${gIdx}`}>
-                {group.items.filter(item => !item.managerOnly || isManagerPlus).map(({ label, icon: Icon, page }) => (
+                {group.items.filter(item => (!item.managerOnly || isManagerPlus) && (!item.websiteBuilderOnly || ['owner', 'manager'].includes(companyRole) || isPlatformSuperAdmin)).map(({ label, icon: Icon, page }) => (
                   <Link
                     key={page}
                     to={createPageUrl(page)}

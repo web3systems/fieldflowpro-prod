@@ -1,0 +1,4 @@
+import { Input } from '@/components/ui/input';
+export default function BuilderField({ label, value, onChange, options, ...props }) {
+  return <label className="block text-sm space-y-1"><span className="text-muted-foreground">{label}</span>{options ? <select className="w-full rounded-md border bg-background p-2" value={value} onChange={e => onChange(e.target.value)} {...props}>{options.map(o => <option key={typeof o === 'string' ? o : o.value} value={typeof o === 'string' ? o : o.value}>{typeof o === 'string' ? o : o.label}</option>)}</select> : <Input value={value ?? ''} onChange={e => onChange(e.target.value)} {...props} />}</label>;
+}

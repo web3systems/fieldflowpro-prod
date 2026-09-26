@@ -1,0 +1,63 @@
+{
+  "name": "BuilderSubmission",
+  "type": "object",
+  "properties": {
+    "site_id": {
+      "type": "string"
+    },
+    "company_id": {
+      "type": "string"
+    },
+    "fingerprint": {
+      "type": "string"
+    },
+    "ip_hash": {
+      "type": "string"
+    },
+    "challenge": {
+      "type": "string"
+    },
+    "expires_at": {
+      "type": "string"
+    },
+    "state": {
+      "type": "string",
+      "enum": [
+        "issued",
+        "processing",
+        "complete"
+      ]
+    },
+    "record_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "site_id",
+    "company_id",
+    "ip_hash",
+    "state"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "service_role"
+      }
+    },
+    "create": {
+      "user_condition": {
+        "role": "service_role"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "service_role"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "service_role"
+      }
+    }
+  }
+}

@@ -74,6 +74,9 @@ import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { AuthProvider } from '@/lib/AuthContext';
+import WebsiteBuilder from '@/pages/WebsiteBuilder';
+import WebsiteEditor from '@/pages/WebsiteEditor';
+import ClientWebsite from '@/pages/ClientWebsite';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -113,6 +116,7 @@ function App() {
             <Route path="/terms" element={<TermsAndConditions />} />
             <Route path="/Articles" element={<Articles />} />
             <Route path="/ArticleDetail/:id" element={<ArticleDetail />} />
+            <Route path="/sites/:routeKey/:pageSlug?" element={<ClientWebsite />} />
 
             {/* Protected app routes — auth required */}
             <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
@@ -127,6 +131,8 @@ function App() {
                   }
                 />
               ))}
+              <Route path="/WebsiteBuilder" element={<LayoutWrapper currentPageName="WebsiteBuilder"><WebsiteBuilder /></LayoutWrapper>} />
+              <Route path="/WebsiteEditor/:siteId" element={<LayoutWrapper currentPageName="WebsiteBuilder"><WebsiteEditor /></LayoutWrapper>} />
               <Route path="/Henry" element={<LayoutWrapper currentPageName="Henry"><Henry /></LayoutWrapper>} />
               <Route path="/Schedule" element={<LayoutWrapper currentPageName="Schedule"><Schedule /></LayoutWrapper>} />
               <Route path="/SuperAdminDashboard" element={<LayoutWrapper currentPageName="SuperAdminDashboard"><SuperAdminDashboard /></LayoutWrapper>} />

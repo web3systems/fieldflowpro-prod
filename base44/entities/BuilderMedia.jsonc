@@ -1,0 +1,46 @@
+{
+  "name": "BuilderMedia",
+  "type": "object",
+  "properties": {
+    "company_id": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "file_uri": {
+      "type": "string"
+    },
+    "mime": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "company_id",
+    "name",
+    "file_uri",
+    "mime"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "service_role"
+      }
+    },
+    "create": {
+      "user_condition": {
+        "role": "service_role"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "service_role"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "service_role"
+      }
+    }
+  }
+}
