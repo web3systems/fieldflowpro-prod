@@ -8,6 +8,8 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import EnterpriseAnswerSection from "@/components/landing/EnterpriseAnswerSection";
+import LandingFaqSection from "@/components/landing/LandingFaqSection";
 
 export default function Landing() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -850,6 +852,12 @@ export default function Landing() {
           </div>
         </div>
       </section>
+
+      {/* ENTERPRISE ANSWER */}
+      <EnterpriseAnswerSection />
+
+      {/* FAQ */}
+      <LandingFaqSection />
 
       {/* FINAL CTA */}
       <section className="py-16 sm:py-24 bg-slate-900">
