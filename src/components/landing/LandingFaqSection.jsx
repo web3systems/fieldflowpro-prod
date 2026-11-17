@@ -1,12 +1,16 @@
 import { Badge } from "@/components/ui/badge";
-import { LANDING_FAQS } from "@/components/landing/landingFaqs";
+import { FAQ_GROUPS } from "@/components/landing/landingFaqs";
 import { ENTERPRISE_QUESTION, ENTERPRISE_ANSWER } from "@/components/landing/enterpriseContent";
+import FaqItem from "@/components/landing/FaqItem";
 import FaqJsonLd from "@/components/landing/FaqJsonLd";
 
 // The enterprise question is answered in its own section just above; the schema covers it too.
 const SCHEMA_ITEMS = [
   { question: ENTERPRISE_QUESTION, answer: ENTERPRISE_ANSWER.join(" ") },
-  ...LANDING_FAQS,
+  ...FAQ_GROUPS.flatMap((group) => group.items).map(({ question, answer, facts = [] }) => ({
+    question,
+    answer: [answer, ...facts].join(" "),
+  })),
 ];
 
 export default function LandingFaqSection() {
@@ -19,15 +23,19 @@ export default function LandingFaqSection() {
           </Badge>
           <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-3">Frequently asked questions</h2>
           <p className="text-slate-500 text-base sm:text-lg max-w-2xl mx-auto">
-            Straight answers about FieldFlow Pro for multi-company and enterprise service businesses.
+            Straight answers about FieldFlow Pro for trade, multi-company, and enterprise service businesses.
           </p>
         </div>
-        <div className="space-y-4">
-          {LANDING_FAQS.map(({ question, answer }) => (
-            <article key={question} className="bg-white rounded-2xl border border-slate-200 p-6 sm:p-7">
-              <h3 className="font-bold text-slate-900 text-base sm:text-lg mb-2">{question}</h3>
-              <p className="text-slate-600 text-sm sm:text-base leading-relaxed">{answer}</p>
-            </article>
+        <div className="space-y-12">
+          {FAQ_GROUPS.map((group) => (
+            <div key={group.id} id={group.id} className="scroll-mt-20">
+              <p className="text-xs font-semibold uppercase tracking-wide text-blue-600 mb-4">{group.title}</p>
+              <div className="space-y-4">
+                {group.items.map((item) => (
+                  <FaqItem key={item.question} {...item} />
+                ))}
+              </div>
+            </div>
           ))}
         </div>
       </div>
